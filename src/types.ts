@@ -8,11 +8,30 @@ export type FixMode = 'auto' | 'manual' | 'guide'
 
 export type DimensionKey =
   | 'tech'
-  | 'content'
   | 'seo'
   | 'geo'
+  | 'content'
   | 'compliance'
   | 'conversion'
+
+export const DIMENSION_ORDER: DimensionKey[] = [
+  'tech', 'seo', 'geo', 'content', 'compliance', 'conversion',
+]
+
+export const DIMENSION_META: Array<{
+  key: DimensionKey
+  name: string
+  weight: number
+  rawMax: number
+  weightPoints: number
+}> = [
+  { key: 'tech',       name: '技术与性能', weight: 0.20, rawMax: 20, weightPoints: 20 },
+  { key: 'seo',        name: 'SEO 友好度', weight: 0.16, rawMax: 20, weightPoints: 16 },
+  { key: 'geo',        name: 'GEO 友好度', weight: 0.14, rawMax: 20, weightPoints: 14 },
+  { key: 'content',    name: '内容质量',   weight: 0.22, rawMax: 20, weightPoints: 22 },
+  { key: 'compliance', name: '全球合规',   weight: 0.16, rawMax: 20, weightPoints: 16 },
+  { key: 'conversion', name: '商业转化',   weight: 0.12, rawMax: 20, weightPoints: 12 },
+]
 
 /** 侧栏可进入的业务页（scanning / fix 为覆盖层，不占导航） */
 export type ViewId =
@@ -48,6 +67,30 @@ export interface DimensionScore {
   rawScore: number
   rawMax: number
   weightPoints: number
+}
+
+/** §22 检测项规则手册 — 单个检测项 */
+export interface DetectionItem {
+  id: string
+  dimensionKey: DimensionKey
+  /** 检测项名称（用户可见） */
+  title: string
+  /** 大白话描述，说明检测什么 */
+  description: string
+  /** 权重分（该检测项在维度内占几分） */
+  weight: number
+  priority: IssuePriority
+  fixMode: FixMode
+}
+
+/** 维度维度下的检测项清单 */
+export interface DimensionConfig {
+  key: DimensionKey
+  name: string
+  weight: number
+  rawMax: number
+  weightPoints: number
+  items: DetectionItem[]
 }
 
 export interface HealthSnapshot {

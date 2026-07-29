@@ -96,78 +96,205 @@ export const mockHealthData: HealthSnapshot = {
   ],
 }
 
+/** §22 规则手册：22 个检测项对应的问题清单 */
 export const mockIssuesData: IssueItem[] = [
+  // —— 技术与性能 ——
   {
-    id: 'iss-ssl',
+    id: 'iss-ssl-tech',
     priority: 'P0',
-    title: 'SSL 证书无效，访客浏览器显示「不安全」警告',
-    description: '证书即将过期或已失效，严重影响访客信任和搜索排名。',
-    dimensionKey: 'compliance',
+    title: 'SSL / HTTPS 证书无效',
+    description: '证书缺失或失效，浏览器显示不安全警告，严重影响信任和搜索排名。',
+    dimensionKey: 'tech',
     fixMode: 'manual',
   },
   {
-    id: 'iss-tdk',
+    id: 'iss-deadlink',
     priority: 'P1',
-    title: 'TDK 未填写（覆盖率 23%）',
-    description: '影响搜索排名，大量页面缺少 Title / Description。',
+    title: '死链与站内 4xx 失效页面',
+    description: '站内链接返回 404/403 等 4xx 状态码，影响爬虫抓取和用户体验。',
+    dimensionKey: 'tech',
+    fixMode: 'auto',
+  },
+  {
+    id: 'iss-sitemap',
+    priority: 'P2',
+    title: 'Sitemap 缺失或不完整',
+    description: 'sitemap.xml 不存在或不可访问，搜索引擎无法全面抓取网站内容。',
+    dimensionKey: 'tech',
+    fixMode: 'auto',
+  },
+  // —— SEO 友好度 ——
+  {
+    id: 'iss-title',
+    priority: 'P1',
+    title: '页面标题 Title 缺失或重复',
+    description: '大量页面缺少 <title> 标签，或多个页面使用相同标题，影响搜索排名。',
+    dimensionKey: 'seo',
+    fixMode: 'auto',
+  },
+  {
+    id: 'iss-meta-desc',
+    priority: 'P1',
+    title: '页面描述 Description 缺失',
+    description: '页面缺少 <meta name="description">，搜索结果无摘要信息，点击率低。',
     dimensionKey: 'seo',
     fixMode: 'auto',
   },
   {
     id: 'iss-alt',
     priority: 'P1',
-    title: '图片 Alt 标签缺失严重',
-    description: '图片无替代文本，影响无障碍与图片搜索收录。',
+    title: '图片 Alt 替代文本缺失',
+    description: '图片无 alt 属性，影响图片搜索收录和无障碍访问。',
     dimensionKey: 'seo',
-    fixMode: 'auto',
-  },
-  {
-    id: 'iss-cookie',
-    priority: 'P1',
-    title: 'Cookie 弹窗未开启（外贸站）',
-    description: '影响全球合规，外贸站需向访客展示 Cookie 同意弹窗。',
-    dimensionKey: 'compliance',
     fixMode: 'auto',
   },
   {
     id: 'iss-h1',
     priority: 'P2',
-    title: '部分页面 H1 结构不规范',
-    description: '多 H1 或缺失，影响页面主题识别。',
-    dimensionKey: 'tech',
+    title: 'H1 标题层级不规范',
+    description: '页面存在多 H1 或 H1 缺失，影响搜索引擎理解页面主题。',
+    dimensionKey: 'seo',
     fixMode: 'auto',
   },
   {
-    id: 'iss-dup',
+    id: 'iss-robots-page',
     priority: 'P2',
-    title: '产品页存在重复内容',
-    description: '相似文案削弱内容质量得分。',
-    dimensionKey: 'content',
-    fixMode: 'guide',
+    title: '重要页面被 robots.txt 拦截',
+    description: '首页、产品页、联系页等重要页面被 robots Disallow 屏蔽。',
+    dimensionKey: 'seo',
+    fixMode: 'auto',
   },
+  {
+    id: 'iss-robots-link',
+    priority: 'P2',
+    title: '站内链接指向被 robots 拦截的页面',
+    description: '站内锚点指向的页面被 robots Disallow，形成无效内链。',
+    dimensionKey: 'seo',
+    fixMode: 'auto',
+  },
+  // —— GEO 友好度 ——
   {
     id: 'iss-jsonld',
     priority: 'P2',
-    title: '结构化数据（JSON-LD）未配置',
-    description: '影响 AI 搜索引用与富摘要展示。',
+    title: '结构化数据 JSON-LD 未配置',
+    description: '页面未部署 Organization/Product/Article 等 Schema，影响 AI 搜索引用。',
     dimensionKey: 'geo',
     fixMode: 'auto',
   },
   {
-    id: 'iss-cta',
+    id: 'iss-faq-breadcrumb',
     priority: 'P2',
-    title: '首页主 CTA 文案偏弱',
-    description: '询盘入口存在，但转化文案可优化。',
-    dimensionKey: 'conversion',
+    title: 'FAQ / Breadcrumb Schema 缺失',
+    description: '缺少 FAQ、面包屑等利于 AI 摘要抓取的结构化数据。',
+    dimensionKey: 'geo',
     fixMode: 'auto',
+  },
+  {
+    id: 'iss-llms',
+    priority: 'P2',
+    title: 'llms.txt 文件缺失',
+    description: '网站未提供 llms.txt，AI 爬虫无法获取网站内容摘要。',
+    dimensionKey: 'geo',
+    fixMode: 'manual',
+  },
+  {
+    id: 'iss-og',
+    priority: 'P2',
+    title: '社交媒体 og 属性缺失',
+    description: '页面未配置 og:title/og:description/og:image，分享到社交媒体时无预览图。',
+    dimensionKey: 'geo',
+    fixMode: 'auto',
+  },
+  // —— 内容质量 ——
+  {
+    id: 'iss-dup',
+    priority: 'P1',
+    title: '页面内容重复度高',
+    description: '检测到相似度超过 80% 的重复内容页面，削弱搜索引擎排名。',
+    dimensionKey: 'content',
+    fixMode: 'guide',
+  },
+  {
+    id: 'iss-thin',
+    priority: 'P2',
+    title: '内容过短页面',
+    description: '检测到正文文字数量 ≤300 字的页面，内容单薄不利于排名。',
+    dimensionKey: 'content',
+    fixMode: 'guide',
+  },
+  {
+    id: 'iss-placeholder',
+    priority: 'P2',
+    title: '占位填充假文本',
+    description: '页面含 lorem ipsum、中文「测试文案」等占位乱码内容。',
+    dimensionKey: 'content',
+    fixMode: 'guide',
   },
   {
     id: 'iss-update',
     priority: 'P2',
-    title: '内容更新已超过 60 天',
-    description: '长期未更新可能影响内容新鲜度与信任。',
+    title: '内容更新超过 60 天',
+    description: '核心页面长期未更新，影响内容新鲜度评分和用户信任。',
     dimensionKey: 'content',
     fixMode: 'guide',
+  },
+  // —— 全球合规 ——
+  {
+    id: 'iss-cookie',
+    priority: 'P1',
+    title: 'Cookie 同意弹窗未开启（外贸站）',
+    description: '外贸站未向访客展示 Cookie 同意弹窗，违反 GDPR/CCPA 合规要求。',
+    dimensionKey: 'compliance',
+    fixMode: 'auto',
+  },
+  {
+    id: 'iss-ssl-comp',
+    priority: 'P0',
+    title: 'SSL 证书未安装（外贸站）',
+    description: '外贸站未安装 SSL 证书，数据传输未加密，浏览器显示不安全。',
+    dimensionKey: 'compliance',
+    fixMode: 'manual',
+  },
+  {
+    id: 'iss-privacy',
+    priority: 'P1',
+    title: '隐私政策页缺失或不完整',
+    description: '无隐私政策页，或页面未覆盖 Cookie 说明与数据收集声明。',
+    dimensionKey: 'compliance',
+    fixMode: 'guide',
+  },
+  // —— 商业转化 ——
+  {
+    id: 'iss-cta',
+    priority: 'P2',
+    title: 'CTA 与表单入口缺失',
+    description: '首页/落地页主 CTA 按钮缺失，访客无明显转化入口。',
+    dimensionKey: 'conversion',
+    fixMode: 'auto',
+  },
+  {
+    id: 'iss-contact',
+    priority: 'P2',
+    title: '联系通道不完整',
+    description: '电话、邮箱、表单、地址、社媒等联系方式不全或不可达。',
+    dimensionKey: 'conversion',
+    fixMode: 'guide',
+  },
+  {
+    id: 'iss-btn-text',
+    priority: 'P2',
+    title: '按钮可辨识文字缺失',
+    description: '存在空按钮、纯图标按钮或图片按钮，访客不知道点击后会发生什么。',
+    dimensionKey: 'conversion',
+    fixMode: 'auto',
+  },
+  {
+    id: 'iss-anchor',
+    priority: 'P2',
+    title: '链接锚文本为空或无意义',
+    description: '存在空链接、纯图标链接或图片链接无 alt，访客和爬虫无法理解链接目的。',
+    dimensionKey: 'conversion',
+    fixMode: 'auto',
   },
 ]
 
@@ -213,27 +340,38 @@ export const mockFunnelMonthData: FunnelData = {
   bounceRate: 61,
 }
 
-/** PRD §5.2 检测项示例扩展至 12 项 */
+/** §22 规则手册：22 检测项，对齐检测明细.xlsx */
 export const mockScanStepsData: ScanStep[] = [
-  // —— 维度01：技术与性能 ——
-  { id: 's1', label: '服务器响应速度检测' },
-  { id: 's2', label: 'SSL / HTTPS 状态检测' },
-  { id: 's3', label: '死链与 Sitemap 检测' },
-  // —— 维度02：SEO 友好度 ——
-  { id: 's4', label: 'SEO TDK 抓取' },
-  { id: 's5', label: '图片 Alt 标签检测' },
-  { id: 's6', label: 'H1 / 标题层级检测' },
-  // —— 维度03：GEO 友好度 ——
-  { id: 's7', label: '结构化数据与 GEO 检测' },
-  // —— 维度04：内容质量（紧邻全球合规前） ——
-  { id: 's8', label: '内容重复度分析' },
-  // —— 维度05：全球合规 ——
-  { id: 's9', label: 'Cookie 弹窗与合规检测' },
-  // —— 维度06：商业转化 ——
-  { id: 's10', label: 'CTA 与表单入口检测' },
-  { id: 's11', label: '联系通道完整性检测' },
-  // —— 收尾：综合评分与报告 ——
-  { id: 's12', label: '综合评分与问题归集' },
+  // —— 维度01：技术与性能（3项，20分） ——
+  { id: 's01', label: 'SSL / HTTPS 证书状态' },
+  { id: 's02', label: '死链与站内 4xx 失效页面' },
+  { id: 's03', label: 'Sitemap 完整性' },
+  // —— 维度02：SEO 友好度（6项，16分） ——
+  { id: 's04', label: '页面标题 Title' },
+  { id: 's05', label: '页面描述 Description' },
+  { id: 's06', label: '图片 Alt 替代文本' },
+  { id: 's07', label: 'H1 标题层级' },
+  { id: 's08', label: '页面被 robots.txt 拦截' },
+  { id: 's09', label: '站内链接 / 资源被 robots 拦截' },
+  // —— 维度03：GEO 友好度（4项，14分） ——
+  { id: 's10', label: '结构化数据 JSON-LD / Schema' },
+  { id: 's11', label: 'FAQ / Breadcrumb Schema' },
+  { id: 's12', label: '是否存在 llms.txt' },
+  { id: 's13', label: '是否存在社交 og 属性' },
+  // —— 维度04：内容质量（4项，22分） ——
+  { id: 's14', label: '内容重复度' },
+  { id: 's15', label: '内容过短页面' },
+  { id: 's16', label: '占位填充假文本' },
+  { id: 's17', label: '内容更新频率' },
+  // —— 维度05：全球合规（3项，16分） ——
+  { id: 's18', label: 'Cookie 同意弹窗' },
+  { id: 's19', label: 'SSL 证书合规' },
+  { id: 's20', label: '隐私政策页完整性' },
+  // —— 维度06：商业转化（4项，12分） ——
+  { id: 's21', label: 'CTA 与表单入口' },
+  { id: 's22', label: '联系通道完整性' },
+  { id: 's23', label: '按钮可辨识文字' },
+  { id: 's24', label: '链接非空锚文本' },
 ]
 
 export const GUIDE_DISMISS_KEY = 'growth-workbench-guide-dismissed-v1'

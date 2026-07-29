@@ -2,7 +2,7 @@ import { Check, Loader2, ScanSearch, CheckCircle2, Zap } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 import { useWorkbench } from '../context/WorkbenchContext'
 
-/** 6 个诊断维度，与报告页六维能力（DIMENSION_META）严格一致，stepIdxs 连续不交错 */
+/** 6 个诊断维度，对齐检测明细.xlsx 的 22 项检测，stepIdxs 连续不交错 */
 const PHASES = [
   {
     id: 'tech',
@@ -11,7 +11,7 @@ const PHASES = [
     desc: '速度与可用性',
     icon: '⚡',
     stepIdxs: [0, 1, 2],
-    items: ['服务器响应', 'SSL / HTTPS', '死链 / Sitemap'],
+    items: ['SSL / HTTPS', '死链 / 4xx', 'Sitemap'],
   },
   {
     id: 'seo',
@@ -19,8 +19,8 @@ const PHASES = [
     label: 'SEO 友好度',
     desc: '可被检索',
     icon: '🔍',
-    stepIdxs: [3, 4, 5],
-    items: ['TDK 抓取', '图片 Alt', 'H1 标题层级'],
+    stepIdxs: [3, 4, 5, 6, 7, 8],
+    items: ['Title', 'Description', 'Alt 文本', 'H1 层级', 'robots 拦截', '内链 robots'],
   },
   {
     id: 'geo',
@@ -28,8 +28,8 @@ const PHASES = [
     label: 'GEO 友好度',
     desc: 'AI 可理解',
     icon: '🤖',
-    stepIdxs: [6],
-    items: ['结构化 / GEO'],
+    stepIdxs: [9, 10, 11, 12],
+    items: ['JSON-LD', 'FAQ/Breadcrumb', 'llms.txt', 'og 属性'],
   },
   {
     id: 'content',
@@ -37,8 +37,8 @@ const PHASES = [
     label: '内容质量',
     desc: '原创与结构',
     icon: '📝',
-    stepIdxs: [7],
-    items: ['内容重复度'],
+    stepIdxs: [13, 14, 15, 16],
+    items: ['内容重复度', '内容过短', '占位假文本', '更新频率'],
   },
   {
     id: 'compliance',
@@ -46,8 +46,8 @@ const PHASES = [
     label: '全球合规',
     desc: '隐私与合规',
     icon: '🛡',
-    stepIdxs: [8],
-    items: ['Cookie 合规'],
+    stepIdxs: [17, 18, 19],
+    items: ['Cookie 弹窗', 'SSL 合规', '隐私政策'],
   },
   {
     id: 'conversion',
@@ -55,15 +55,15 @@ const PHASES = [
     label: '商业转化',
     desc: '留资与联系',
     icon: '🎯',
-    stepIdxs: [9, 10],
-    items: ['CTA 与表单', '联系通道'],
+    stepIdxs: [20, 21, 22, 23],
+    items: ['CTA 入口', '联系通道', '按钮文字', '链接锚文本'],
   },
 ]
 
-/** 最后一步：综合评分与报告生成（不属于六维之一，为收尾步骤） */
-const FINALIZE_STEP = 11
+/** 收尾步骤：生成报告（不属于六维之一） */
+const FINALIZE_STEP = 24
 
-const TOTAL_STEPS = 12
+const TOTAL_STEPS = 24
 
 export function ScanProgressView() {
   const { scanCompleted } = useWorkbench()
