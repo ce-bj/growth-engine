@@ -216,16 +216,21 @@ export interface AgentInfo {
 export type IntentLevel = 'high' | 'medium' | 'low' | 'invalid'
 
 export type LeadSource =
-  | 'google_organic'
-  | 'baidu_organic'
-  | 'google_ads'
+  | 'korean_site'
+  | 'feiyu_crm'
   | 'baidu_ads'
-  | 'social_media'
-  | 'ai_chat'
-  | 'email'
-  | 'direct'
-  | 'referral'
-  | 'unknown'
+  | 'tencent_ads'
+  | 'trade_insight'
+  | 'global_company_db'
+
+export const LEAD_SOURCE_LABELS: Record<LeadSource, string> = {
+  korean_site: '韩语站点',
+  feiyu_crm: '飞鱼CRM',
+  baidu_ads: '百度营销',
+  tencent_ads: '腾讯广告',
+  trade_insight: '外贸客户洞察',
+  global_company_db: '全球企业库',
+}
 
 export type LeadStatus = 'pending' | 'contacted' | 'qualified' | 'converted' | 'invalid'
 
@@ -251,16 +256,50 @@ export interface FollowUpRecord {
   nextContact?: string        // 下次联系时间
 }
 
+export interface NurtureRecord {
+  id: string
+  sequenceName: string
+  sentAt: string
+  channel: 'email' | 'sms' | 'wechat'
+  status: 'sent' | 'opened' | 'clicked' | 'bounced'
+  subject?: string
+}
+
+export interface CustomsData {
+  hsCode: string
+  importExport: 'import' | 'export'
+  importValue: string
+  originCountry: string
+  destCountry: string
+  lastImportDate: string
+  importFrequency: number
+  productDesc: string
+}
+
+export interface AiChatMessage {
+  role: 'user' | 'assistant'
+  text: string
+  time: string
+}
+
 export interface Lead {
   id: string
+  /** 来源：获客渠道 */
   source: LeadSource
-  sourceLabel: string
+  /** 来源站点/语言标签（如：俄语、韩语、英语） */
+  sourceLang?: string
+  /** 来源表单类型（如：智能客服、表单123） */
+  sourceForm?: string
   createdAt: string
   company: string
   contact: string
   email?: string
   phone?: string
   jobTitle?: string
+  /** 基础画像：行业 */
+  industry?: string
+  /** 基础画像：规模，如「1-50人」「50-200人」「200人以上」 */
+  companyScale?: string
   intentLevel: IntentLevel
   intentScore: number
   intentReason: string
@@ -269,15 +308,28 @@ export interface Lead {
   tags: LeadTag[]
   status: LeadStatus
   statusLabel: string
-  followUpBy?: string
+  /** 归属销售 */
+  owner?: string
   followUpAt?: string
   notes?: string
   /** 跟进历史（内存中维护） */
   followUpRecords?: FollowUpRecord[]
+  /** 海关数据 */
+  customsData?: CustomsData
+  /** 表单提交内容 */
+  formSubmission?: string
+  /** 智能客服对话摘要 */
+  aiChat?: string
+  /** 智能客服对话内容 */
+  aiChatMessages?: AiChatMessage[]
+  /** 国家 */
+  country?: string
   /** 地域 */
   region?: string
   /** 公司地址 */
   address?: string
+  /** 培育履历（自动培育序列记录） */
+  nurtureRecords?: NurtureRecord[]
 }
 
 export interface LeadStats {
@@ -285,6 +337,7 @@ export interface LeadStats {
   todayNew: number
   highIntent: number
   pendingFollowUp: number
+  slaBreach: number
 }
 
 /** §14 内容运营 */
