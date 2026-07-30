@@ -340,77 +340,162 @@ export interface LeadStats {
   slaBreach: number
 }
 
-/** §14 内容运营 */
-export type ContentStatus = 'idle' | 'running' | 'paused'
+/** §14 内容运营：内容全生命周期原型 */
+export type ContentTab = 'overview' | 'plan' | 'calendar' | 'assets' | 'publishing' | 'performance'
 
-export type ArticleStatus = 'draft' | 'pending' | 'generating' | 'published' | 'failed'
+export type ContentChannel = 'website' | 'linkedin' | 'facebook' | 'x'
 
-export type ArticleType = 'blog' | 'case' | 'insight' | 'guide'
+export type ContentType =
+  | 'product'
+  | 'solution'
+  | 'scenario'
+  | 'case'
+  | 'guide'
+  | 'faq'
+  | 'insight'
 
-export interface ArticleTypeInfo {
-  key: ArticleType
-  label: string
-  icon: string
-  color: string
-  desc: string
+export type ContentTaskKind =
+  | 'create'
+  | 'optimize'
+  | 'expand'
+  | 'repurpose'
+  | 'localize'
+  | 'refresh'
+  | 'compliance'
+  | 'retire'
+
+export type ContentTaskStatus =
+  | 'needs_material'
+  | 'ready'
+  | 'generating'
+  | 'quality_review'
+  | 'compliance_review'
+  | 'channel_adaptation'
+  | 'pending_approval'
+  | 'scheduled'
+  | 'published'
+  | 'observing'
+  | 'needs_optimization'
+  | 'retired'
+
+export type ComplianceLevel = 'pass' | 'low' | 'medium' | 'high' | 'blocking'
+export type PublicationStatus = 'pending_approval' | 'scheduled' | 'published' | 'partial' | 'failed' | 'retired'
+
+export interface ContentQualityScore {
+  overall: number
+  relevance: number
+  accuracy: number
+  completeness: number
+  readability: number
+  authenticity: number
+  channelFit: number
 }
 
-export interface ContentArticle {
+export interface ComplianceIssue {
+  id: string
+  level: ComplianceLevel
+  category: 'fact' | 'brand' | 'copyright' | 'privacy' | 'industry' | 'advertising' | 'platform' | 'localization'
+  title: string
+  detail: string
+  resolved: boolean
+}
+
+export interface KnowledgeReference {
+  id: string
+  category: string
+  title: string
+  source: string
+  verified: boolean
+}
+
+export interface ChannelVersion {
+  channel: ContentChannel
+  title: string
+  body: string
+  account: string
+  scheduledAt?: string
+  status: 'draft' | 'ready' | 'scheduled' | 'published' | 'failed'
+  url?: string
+  error?: string
+}
+
+export interface ContentTask {
   id: string
   title: string
-  type: ArticleType
-  keywords: string[]
-  status: ArticleStatus
-  wordCount: number
-  publishedAt?: string
-  cmsUrl?: string
-  socialSync?: string[]
-  /** 近7天 UV，来自 LandingPage 数据 */
-  uv?: number
-  /** 近7天 PV（页面浏览量） */
-  pv?: number
-  /** 近7天留资数 */
-  inquiryCount?: number
-  /** 近7天跳出率 */
-  bounceRate?: number
+  kind: ContentTaskKind
+  type: ContentType
+  status: ContentTaskStatus
+  priority: 'P0' | 'P1' | 'P2'
+  theme: string
+  audience: string
+  userQuestion: string
+  channels: ContentChannel[]
+  dueDate: string
+  reason: string
+  outline: string[]
+  masterDraft: string
+  knowledge: KnowledgeReference[]
+  missingMaterials: string[]
+  quality: ContentQualityScore
+  compliance: ComplianceIssue[]
+  channelVersions: ChannelVersion[]
 }
 
-export interface ContentKeyword {
-  keyword: string
-  volume: number
-  difficulty: number
-  opportunity: 'high' | 'medium' | 'low'
-  articleCount: number
-}
-
-export interface ContentPlan {
+export interface ContentCalendarItem {
   id: string
-  keyword: string
-  articleType: ArticleType
-  targetWordCount: number
-  status: 'pending' | 'generating' | 'ready' | 'published' | 'failed'
-  estimatedTraffic: number
-  createdAt: string
-  /** 选题依据，展示在计划卡片内 */
-  reason?: string
-  /** 选题依据类型：A=更新老文章，B=渠道补位，C=关键词长尾 */
-  reasonType?: 'A' | 'B' | 'C'
+  taskId: string
+  date: string
+  time: string
+  title: string
+  channel: ContentChannel
+  stage: 'production' | 'review' | 'publish'
+  state: 'normal' | 'warning' | 'failed'
 }
 
-export interface ContentStats {
-  totalArticles: number
-  publishedThisWeek: number
-  publishedThisMonth: number
-  keywordCoverage: number
-  estimatedWeeklyTraffic: number
-  pendingCount: number
-  running: boolean
-  /** 近30天内容总 UV（来自 LandingPage 数据汇总） */
-  monthlyUV?: number
-  /** 近30天内容总 PV */
-  monthlyPV?: number
-  /** 近30天内容总留资数 */
-  monthlyInquiries?: number
-  /** 近30天内容平均跳出率 */
-  avgBounceRate?: number
+export interface ContentAsset {
+  id: string
+  taskId: string
+  title: string
+  type: ContentType
+  language: string
+  status: 'draft' | 'reviewing' | 'published' | 'needs_update' | 'retired'
+  qualityScore: number
+  compliance: ComplianceLevel
+  channels: ContentChannel[]
+  updatedAt: string
+  expiresAt: string
+  uv: number
+  effectiveReadRate: number
+}
+
+export interface PublicationRecord {
+  id: string
+  taskId: string
+  title: string
+  status: PublicationStatus
+  approvedBy?: string
+  scheduledAt?: string
+  channels: ChannelVersion[]
+}
+
+export interface ContentThemePerformance {
+  id: string
+  theme: string
+  taskId: string
+  website: {
+    uv: number
+    effectiveReadRate: number
+    avgDuration: string
+    scrollRate: number
+    bounceRate: number
+    relatedClicks: number
+  }
+  social: {
+    impressions: number
+    engagements: number
+    engagementRate: number
+    linkClicks: number
+  }
+  conclusion: string
+  action: 'expand' | 'optimize' | 'refresh' | 'review'
 }
