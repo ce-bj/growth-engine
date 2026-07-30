@@ -3528,6 +3528,16 @@ a:hover {
   font-weight: 600;
 }
 
+/* 归因报告 · 周期切换条 */
+.attr-period-tabs {
+  flex-wrap: wrap;
+}
+
+.attr-period-tabs .report-tab {
+  padding: 8px 14px;
+  font-size: 13px;
+}
+
 /* ── 模块标签（任务中心） ── */
 .badge--module-attribution {
   background: #eff6ff;

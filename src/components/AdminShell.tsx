@@ -21,7 +21,7 @@ import { scoreColor, scoreLevel, scoreLevelBadgeClass, scoreLevelLabel } from '.
 const NAV: { id: ViewId; label: string; icon: typeof LayoutDashboard; badge?: 'tasks' }[] = [
   { id: 'dashboard', label: '数据看板', icon: LayoutDashboard },
   { id: 'report', label: '诊断报告', icon: FileBarChart2 },
-  { id: 'tasks', label: '智能体任务', icon: Wrench, badge: 'tasks' },
+  { id: 'tasks', label: '智能体任务中心', icon: Wrench, badge: 'tasks' },
   { id: 'content', label: '内容运营', icon: FileText },
   { id: 'leads', label: '线索管理', icon: UserCheck },
   { id: 'history', label: '检测历史', icon: ClipboardList },
@@ -32,7 +32,7 @@ const NAV: { id: ViewId; label: string; icon: typeof LayoutDashboard; badge?: 't
 const PAGE_META: Record<string, { title: string; crumb: string }> = {
   dashboard: { title: '数据看板', crumb: '概览' },
   report: { title: '诊断报告', crumb: '诊断' },
-  tasks: { title: '智能体任务', crumb: '执行' },
+  tasks: { title: '智能体任务中心', crumb: '执行' },
   content: { title: '内容运营', crumb: '运营' },
   history: { title: '检测历史', crumb: '档案' },
   weekly: { title: '周报中心', crumb: '运营' },

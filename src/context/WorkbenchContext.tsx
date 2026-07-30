@@ -103,7 +103,14 @@ interface WorkbenchApi {
   attributionConfig: AttributionConfig
   attributionChangeId: string | null
   reportInitialTab: 'health' | 'attribution'
+  /** 全部归因报告（本期 + 历史，本期在前） */
+  attributionReports: AttributionReport[]
+  /** 当前选中的归因报告周期 id */
+  attributionReportId: string
+  /** 当前选中周期的报告（执行动作只发生在本期） */
+  activeAttributionReport: AttributionReport
   openAttributionReport: (reportId: string, changeId?: string) => void
+  selectAttributionReport: (reportId: string) => void
   selectAttributionChange: (changeId: string) => void
   confirmMeasure: (changeId: string, measureId: string) => void
   ignoreMeasure: (changeId: string, measureId: string) => void
@@ -168,6 +175,8 @@ export function WorkbenchProvider({ children }: { children: ReactNode }) {
   const [attributionConfig, setAttributionConfig] = useState<AttributionConfig>(DEFAULT_ATTRIBUTION_CONFIG)
   const [attributionChangeId, setAttributionChangeId] = useState<string | null>(null)
   const [reportInitialTab, setReportInitialTab] = useState<'health' | 'attribution'>('health')
+  // 当前选中的归因报告周期（默认本期）
+  const [attributionReportId, setAttributionReportId] = useState<string>(mockAttributionReport.id)
 
   const pushToast = useCallback((type: ToastItem['type'], message: string, autoDismiss = true) => {
     const id = `toast-${++toastSeq}`
@@ -531,11 +540,12 @@ export function WorkbenchProvider({ children }: { children: ReactNode }) {
 
   const openAttributionReport = useCallback(
     (reportId: string, changeId?: string) => {
-      // 定位报告（本期或历史），设置选中变化，跳诊断报告归因 Tab
+      // 定位报告（本期或历史），切换选中周期与选中变化，跳诊断报告归因 Tab
       const all = [attributionReport, ...attributionHistory]
       const found = all.find((r) => r.id === reportId)
       if (!found) return
       const firstChange = changeId ?? found.changes[0]?.id ?? null
+      setAttributionReportId(reportId)
       setAttributionChangeId(firstChange)
       setReportInitialTab('attribution')
       navigate('report')
@@ -555,8 +565,30 @@ export function WorkbenchProvider({ children }: { children: ReactNode }) {
     setAttributionChangeId(changeId)
   }, [])
 
+  const selectAttributionReport = useCallback(
+    (reportId: string) => {
+      const all = [attributionReport, ...attributionHistory]
+      const found = all.find((r) => r.id === reportId)
+      if (!found) return
+      setAttributionReportId(reportId)
+      setAttributionChangeId(found.changes[0]?.id ?? null)
+    },
+    [attributionReport, attributionHistory],
+  )
+
   const confirmMeasure = useCallback(
     (changeId: string, measureId: string) => {
+      // 取该变化的复盘脚本（对齐方案案例结局），缺省按成功回放
+      const script = mockAttributionReport.changes.find((c) => c.id === changeId)
+        ?.reviewScript ?? {
+        result: 'success' as const,
+        note: 'T+7 复盘：异常指标回归正常区间，措施起效。沉淀为标准措施。',
+      }
+      const REVIEW_TOAST: Record<'success' | 'partial' | 'failed', string> = {
+        success: '复盘完成：措施起效，指标回归正常',
+        partial: '复盘完成：部分改善，已追加措施回方案池',
+        failed: '复盘完成：未见改善，已沉淀并建议重新归因',
+      }
       setAttributionReport((prev) => ({
         ...prev,
         changes: prev.changes.map((c) =>
@@ -588,7 +620,7 @@ export function WorkbenchProvider({ children }: { children: ReactNode }) {
         }))
         pushToast('success', '措施执行成功，将进入复盘周期')
       }, 2000)
-      // 模拟复盘：6 秒后回填复盘结果
+      // 模拟复盘：6 秒后按复盘脚本回填结果
       window.setTimeout(() => {
         setAttributionReport((prev) => ({
           ...prev,
@@ -597,8 +629,8 @@ export function WorkbenchProvider({ children }: { children: ReactNode }) {
               ? c
               : {
                   ...c,
-                  reviewResult: 'success' as const,
-                  reviewNote: 'T+7 复盘：异常指标回归正常区间，措施起效。沉淀为标准措施。',
+                  reviewResult: script.result,
+                  reviewNote: script.note,
                 },
           ),
         }))
@@ -610,7 +642,7 @@ export function WorkbenchProvider({ children }: { children: ReactNode }) {
               : t,
           ),
         )
-        pushToast('success', '复盘完成：措施起效，指标回归正常')
+        pushToast(script.result === 'failed' ? 'warning' : 'success', REVIEW_TOAST[script.result])
       }, 8000)
     },
     [pushToast],
@@ -639,6 +671,15 @@ export function WorkbenchProvider({ children }: { children: ReactNode }) {
   const closeAttributionDetail = useCallback(() => {
     setAttributionChangeId(null)
   }, [])
+
+  const attributionReports = useMemo(
+    () => [attributionReport, ...attributionHistory],
+    [attributionReport, attributionHistory],
+  )
+  const activeAttributionReport = useMemo(
+    () => attributionReports.find((r) => r.id === attributionReportId) ?? attributionReport,
+    [attributionReports, attributionReportId, attributionReport],
+  )
 
   const currentSite = mockSitesData.find((s) => s.id === siteId) ?? mockSitesData[0]
   const funnel = funnelPeriod === 'week' ? mockFunnelWeekData : mockFunnelMonthData
@@ -716,7 +757,11 @@ export function WorkbenchProvider({ children }: { children: ReactNode }) {
       attributionConfig,
       attributionChangeId,
       reportInitialTab,
+      attributionReports,
+      attributionReportId,
+      activeAttributionReport,
       openAttributionReport,
+      selectAttributionReport,
       selectAttributionChange,
       confirmMeasure,
       ignoreMeasure,
@@ -778,7 +823,11 @@ export function WorkbenchProvider({ children }: { children: ReactNode }) {
       attributionConfig,
       attributionChangeId,
       reportInitialTab,
+      attributionReports,
+      attributionReportId,
+      activeAttributionReport,
       openAttributionReport,
+      selectAttributionReport,
       selectAttributionChange,
       confirmMeasure,
       ignoreMeasure,

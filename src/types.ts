@@ -554,6 +554,16 @@ export interface EvidenceCard {
   action: string
 }
 
+/** 用户意图数据（第二层④，对齐方案 4.3.4，调 L3 搜索意图精准匹配） */
+export interface IntentEvidence {
+  /** 站内搜索词信号 */
+  siteSearch?: string
+  /** SEO/广告来路关键词信号 */
+  inboundKeyword?: string
+  /** 客服对话意图信号 */
+  csIntent?: string
+}
+
 /** 措施（异常类产出） */
 export interface AttributionMeasure {
   measureId: string
@@ -585,6 +595,8 @@ export interface AttributionChange {
   causeCategory: string
   confidence: 'high' | 'medium' | 'low'
   evidence: string[]
+  /** 意图数据（第二层④，意图类归因时填充，对齐方案 4.3.4） */
+  intentData?: IntentEvidence
   /** Agent 对话式分析过程（模板化渲染的条目） */
   analysisSteps: string[]
   /** 异常类：措施清单 */
@@ -602,6 +614,11 @@ export interface AttributionChange {
   /** 复盘结果（异常类执行后回填） */
   reviewResult?: 'success' | 'partial' | 'failed'
   reviewNote?: string
+  /** 演示脚本：本期报告确认执行后回放的复盘结论（对齐方案案例结局） */
+  reviewScript?: {
+    result: 'success' | 'partial' | 'failed'
+    note: string
+  }
 }
 
 /** 一期归因报告 */

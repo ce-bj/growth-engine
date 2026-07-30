@@ -174,7 +174,30 @@ function ChangeDetail({ change }: { change: AttributionChange }) {
         </ol>
       </AgentBubble>
 
-      {/* ② 结论 + 证据 */}
+      {/* ② 意图数据下钻（如有，调 L3 搜索意图精准匹配） */}
+      {change.intentData ? (
+        <AgentBubble title="意图数据下钻（调 L3 搜索意图精准匹配）">
+          <ul className="agent-evidence">
+            {change.intentData.siteSearch ? (
+              <li>
+                <b>站内搜索</b>：{change.intentData.siteSearch}
+              </li>
+            ) : null}
+            {change.intentData.inboundKeyword ? (
+              <li>
+                <b>来路关键词</b>：{change.intentData.inboundKeyword}
+              </li>
+            ) : null}
+            {change.intentData.csIntent ? (
+              <li>
+                <b>客服对话意图</b>：{change.intentData.csIntent}
+              </li>
+            ) : null}
+          </ul>
+        </AgentBubble>
+      ) : null}
+
+      {/* ③ 结论 + 证据 */}
       <AgentBubble title="归因结论">
         <p>
           <b>{change.rootCause}</b>
@@ -187,7 +210,7 @@ function ChangeDetail({ change }: { change: AttributionChange }) {
         </ul>
       </AgentBubble>
 
-      {/* ③ 应对产出：按变化类型区分 */}
+      {/* ④ 应对产出：按变化类型区分 */}
       {change.changeType === 'down' && change.measures ? (
         <AgentBubble title="解决方案与措施">
           {change.measures.map((m) => (
@@ -226,7 +249,7 @@ function ChangeDetail({ change }: { change: AttributionChange }) {
         </AgentBubble>
       ) : null}
 
-      {/* ④ 复盘（如有） */}
+      {/* ⑤ 复盘（如有） */}
       {change.reviewResult ? (
         <AgentBubble title="复盘结果">
           <p>
@@ -256,8 +279,17 @@ function ChangeDetail({ change }: { change: AttributionChange }) {
 /* ── 归因报告主视图：左清单 + 右详情 ───────────────────────────── */
 
 export function AttributionReportView() {
-  const { attributionReport, attributionChangeId, selectAttributionChange } = useWorkbench()
-  const changes = attributionReport.changes
+  const {
+    attributionReport,
+    attributionReports,
+    activeAttributionReport,
+    attributionChangeId,
+    selectAttributionReport,
+    selectAttributionChange,
+  } = useWorkbench()
+  const report = activeAttributionReport
+  const isCurrent = report.id === attributionReport.id
+  const changes = report.changes
   const activeId = attributionChangeId ?? changes[0]?.id ?? null
   const active = changes.find((c) => c.id === activeId) ?? changes[0]
 
@@ -267,12 +299,27 @@ export function AttributionReportView() {
 
   return (
     <div className="stack">
+      {/* 周期切换：一个周期一份报告，同一指标在一个周期只有一条主线 */}
+      <div className="report-tabs attr-period-tabs">
+        {attributionReports.map((r) => (
+          <button
+            key={r.id}
+            type="button"
+            className={`report-tab${r.id === report.id ? ' report-tab--active' : ''}`}
+            onClick={() => selectAttributionReport(r.id)}
+          >
+            {r.id === attributionReport.id ? '本期 · ' : ''}
+            {r.periodLabel}
+          </button>
+        ))}
+      </div>
+
       <div className="report-banner">
         <div>
           <h1 className="report-banner__title">业务指标归因分析</h1>
           <p className="report-banner__sub">
-            周期 {attributionReport.periodLabel} · 生成于 {attributionReport.generatedAt} · 下次分析{' '}
-            {attributionReport.nextAnalysisAt}
+            周期 {report.periodLabel} · 生成于 {report.generatedAt}
+            {isCurrent ? ` · 下次分析 ${report.nextAnalysisAt}` : ''}
           </p>
         </div>
         <div className="attr-summary">
@@ -285,7 +332,9 @@ export function AttributionReportView() {
       <div className="attr-layout">
         {/* 左侧：变化清单 */}
         <aside className="attr-list card">
-          <div className="attr-list__head muted">本期变化（{changes.length}）</div>
+          <div className="attr-list__head muted">
+            {isCurrent ? '本期变化' : '该期变化'}（{changes.length}）
+          </div>
           {changes.map((c) => (
             <ChangeListItem
               key={c.id}
