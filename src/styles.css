@@ -3497,6 +3497,306 @@ a:hover {
   background: rgba(255, 255, 255, 0.22) !important;
 }
 
+/* ── 诊断报告 Tab（健康度 | 归因分析） ── */
+.report-tabs {
+  display: flex;
+  gap: 4px;
+  border-bottom: 1px solid #e2e8f0;
+  margin-bottom: 4px;
+}
+
+.report-tab {
+  padding: 10px 18px;
+  font-size: 14px;
+  font-weight: 500;
+  color: #64748b;
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  cursor: pointer;
+  margin-bottom: -1px;
+  transition: color 0.15s ease, border-color 0.15s ease;
+}
+
+.report-tab:hover {
+  color: #334155;
+}
+
+.report-tab--active {
+  color: #2563eb;
+  border-bottom-color: #2563eb;
+  font-weight: 600;
+}
+
+/* ── 模块标签（任务中心） ── */
+.badge--module-attribution {
+  background: #eff6ff;
+  color: #2563eb;
+  border: 1px solid #bfdbfe;
+}
+
+.badge--module-health {
+  background: #f0fdf4;
+  color: #16a34a;
+  border: 1px solid #bbf7d0;
+}
+
+/* ── 归因报告布局：左清单 + 右详情 ── */
+.attr-layout {
+  display: grid;
+  grid-template-columns: 300px 1fr;
+  gap: 16px;
+  align-items: start;
+}
+
+.attr-list {
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: 720px;
+  overflow-y: auto;
+}
+
+.attr-list__head {
+  font-size: 12px;
+  padding: 4px 6px 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.attr-change-item {
+  display: block;
+  width: 100%;
+  text-align: left;
+  padding: 12px;
+  border-radius: 10px;
+  border: 1px solid #e2e8f0;
+  background: #fff;
+  cursor: pointer;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.attr-change-item:hover {
+  border-color: #cbd5e1;
+}
+
+.attr-change-item--active {
+  border-color: #2563eb;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+}
+
+.attr-change-item__top {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 6px;
+}
+
+.attr-change-item__amount {
+  margin-left: auto;
+  font-size: 13px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.attr-change-item__metric {
+  font-size: 14px;
+  font-weight: 600;
+  color: #1e293b;
+}
+
+.attr-change-item__sub {
+  font-size: 12px;
+  color: #94a3b8;
+  margin-top: 2px;
+}
+
+.attr-detail-pane {
+  padding: 24px;
+  min-height: 480px;
+}
+
+.attr-detail__head {
+  margin-bottom: 20px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.attr-detail__title {
+  font-size: 20px;
+  font-weight: 700;
+  margin: 10px 0 6px;
+  color: #0f172a;
+}
+
+/* ── 归因汇总 pill（banner 内） ── */
+.attr-summary {
+  display: flex;
+  gap: 8px;
+}
+
+.attr-summary__pill {
+  padding: 6px 14px;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 600;
+  background: rgba(255, 255, 255, 0.14);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+}
+
+.attr-summary__pill--down { background: rgba(239, 68, 68, 0.25); }
+.attr-summary__pill--up { background: rgba(34, 197, 94, 0.25); }
+.attr-summary__pill--flat { background: rgba(148, 163, 184, 0.25); }
+
+/* ── Agent 对话气泡 ── */
+.agent-bubble {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 18px;
+}
+
+.agent-bubble__avatar {
+  flex-shrink: 0;
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  background: linear-gradient(135deg, #2563eb, #7c3aed);
+  color: #fff;
+  font-size: 13px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.agent-bubble__body {
+  flex: 1;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 4px 14px 14px 14px;
+  padding: 14px 16px;
+  font-size: 14px;
+  line-height: 1.7;
+  color: #334155;
+}
+
+.agent-bubble__title {
+  font-size: 13px;
+  font-weight: 700;
+  color: #2563eb;
+  margin-bottom: 8px;
+  letter-spacing: 0.3px;
+}
+
+.agent-bubble__body p {
+  margin: 0 0 6px;
+}
+
+.agent-steps {
+  margin: 0;
+  padding-left: 20px;
+}
+
+.agent-steps li {
+  margin-bottom: 5px;
+}
+
+.agent-evidence {
+  margin: 8px 0 0;
+  padding-left: 18px;
+  color: #64748b;
+  font-size: 13px;
+}
+
+.agent-evidence li {
+  margin-bottom: 4px;
+}
+
+/* ── 措施卡片 ── */
+.attr-measure {
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  padding: 14px;
+  margin-bottom: 12px;
+  background: #fff;
+}
+
+.attr-measure:last-child {
+  margin-bottom: 0;
+}
+
+.attr-measure__head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.attr-measure__target {
+  margin-left: auto;
+  font-size: 12px;
+}
+
+.attr-measure__desc {
+  font-size: 14px;
+  font-weight: 600;
+  color: #1e293b;
+  margin-bottom: 10px;
+}
+
+.attr-measure__meta {
+  font-size: 12px;
+  margin-top: 10px;
+}
+
+/* ── 依据卡片三段式 ── */
+.attr-evidence {
+  background: #eff6ff;
+  border: 1px solid #dbeafe;
+  border-radius: 8px;
+  padding: 10px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.attr-evidence__row {
+  display: flex;
+  gap: 10px;
+  font-size: 13px;
+  color: #334155;
+}
+
+.attr-evidence__label {
+  flex-shrink: 0;
+  width: 34px;
+  font-weight: 700;
+  color: #2563eb;
+  font-size: 12px;
+}
+
+/* ── 持平类建议 ── */
+.attr-suggestion {
+  border-left: 3px solid #2563eb;
+  background: #fff;
+  padding: 10px 12px;
+  border-radius: 0 8px 8px 0;
+  margin-top: 10px;
+  font-size: 14px;
+}
+
+.attr-suggestion__meta {
+  font-size: 12px;
+  margin-top: 4px;
+}
+
+@media (max-width: 960px) {
+  .attr-layout {
+    grid-template-columns: 1fr;
+  }
+}
+
 /* 分数环 + 雷达 */
 .report-hero {
   display: grid;

@@ -3,6 +3,7 @@ import { Button } from '../components/Button'
 import { AGENT_LIST, PLATFORM_NAME } from '../data/mock'
 import { useWorkbench } from '../context/WorkbenchContext'
 import { formatDelta } from '../lib/score'
+import { ATTRIBUTION_PERIOD_OPTIONS } from '../types'
 
 export function WeeklyView() {
   const {
@@ -178,7 +179,8 @@ export function WeeklyView() {
 }
 
 export function SettingsView() {
-  const { currentSite, sites, setSiteId, siteId } = useWorkbench()
+  const { currentSite, sites, setSiteId, siteId, attributionConfig, setAttributionConfig, pushToast } =
+    useWorkbench()
   const [activeAgent, setActiveAgent] = useState<typeof AGENT_LIST[number] | null>(null)
 
   return (
@@ -216,6 +218,46 @@ export function SettingsView() {
         </div>
         <div className="row" style={{ marginTop: 20 }}>
           <Button onClick={() => alert('设置已保存（样例）')}>保存设置</Button>
+        </div>
+      </div>
+
+      {/* 业务指标归因分析 · 周期配置 */}
+      <div className="card">
+        <h2 className="card__title">业务指标归因分析</h2>
+        <p className="muted" style={{ marginBottom: 16 }}>
+          归因 Agent 定时分析业务指标变化（异常 / 提升 / 持平），下钻到根因并给出解决方案。仅定时触发。
+        </p>
+        <div className="form-grid">
+          <label className="form-field">
+            <span>启用归因分析</span>
+            <select
+              value={attributionConfig.enabled ? 'on' : 'off'}
+              onChange={(e) =>
+                setAttributionConfig({ ...attributionConfig, enabled: e.target.value === 'on' })
+              }
+            >
+              <option value="on">开启</option>
+              <option value="off">关闭</option>
+            </select>
+          </label>
+          <label className="form-field">
+            <span>归因周期</span>
+            <select
+              value={attributionConfig.periodDays}
+              onChange={(e) =>
+                setAttributionConfig({ ...attributionConfig, periodDays: Number(e.target.value) })
+              }
+            >
+              {ATTRIBUTION_PERIOD_OPTIONS.map((d) => (
+                <option key={d} value={d}>
+                  每 {d} 天
+                </option>
+              ))}
+            </select>
+          </label>
+        </div>
+        <div className="row" style={{ marginTop: 20 }}>
+          <Button onClick={() => pushToast('success', '归因分析配置已保存')}>保存配置</Button>
         </div>
       </div>
 

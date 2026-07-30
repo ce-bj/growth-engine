@@ -1,9 +1,11 @@
+import { useState } from 'react'
 import { Download } from 'lucide-react'
 import { Button } from '../components/Button'
 import { RadarChart } from '../components/RadarChart'
 import { useWorkbench } from '../context/WorkbenchContext'
 import { formatDelta, scoreColor, scoreLevel, scoreLevelBadgeClass, scoreLevelLabel } from '../lib/score'
 import type { IssueItem } from '../types'
+import { AttributionReportView } from './AttributionReportView'
 
 function PriorityBadge({ p }: { p: IssueItem['priority'] }) {
   if (p === 'P0') return <span className="badge badge--danger">P0</span>
@@ -59,11 +61,30 @@ export function ReportView() {
     startFixDimension,
     exportPdf,
     exportingPdf,
+    reportInitialTab,
   } = useWorkbench()
+
+  const [tab, setTab] = useState<'health' | 'attribution'>(reportInitialTab)
 
   const level = scoreLevel(health.totalScore)
   const delta = formatDelta(health.totalScore, health.previousScore)
   const allGreen = priorityIssues.length === 0 && p2Issues.length === 0
+
+  if (tab === 'attribution') {
+    return (
+      <div className="stack">
+        <div className="report-tabs">
+          <button type="button" className="report-tab" onClick={() => setTab('health')}>
+            网站健康度
+          </button>
+          <button type="button" className="report-tab report-tab--active" onClick={() => setTab('attribution')}>
+            业务指标归因
+          </button>
+        </div>
+        <AttributionReportView />
+      </div>
+    )
+  }
 
   const dimColor = (raw: number, max: number) => {
     const pct = (raw / max) * 100
@@ -74,6 +95,16 @@ export function ReportView() {
 
   return (
     <div className="stack">
+      {/* Tab 切换 */}
+      <div className="report-tabs">
+        <button type="button" className="report-tab report-tab--active" onClick={() => setTab('health')}>
+          网站健康度
+        </button>
+        <button type="button" className="report-tab" onClick={() => setTab('attribution')}>
+          业务指标归因
+        </button>
+      </div>
+
       {/* 顶部横幅 */}
       <div className="report-banner">
         <div>

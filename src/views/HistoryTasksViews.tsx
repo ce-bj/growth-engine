@@ -96,20 +96,28 @@ export function HistoryView() {
 }
 
 export function TasksView() {
-  const { taskRows, startFixTask, pendingTaskCount } = useWorkbench()
+  const { taskRows, startFixTask, pendingTaskCount, attributionTasks, openAttributionReport } =
+    useWorkbench()
   const open = taskRows.filter((t) => t.status !== 'done' && t.status !== 'failed')
   const done = taskRows.filter((t) => t.status === 'done' || t.status === 'failed')
+  const openAttribution = attributionTasks.filter(
+    (t) => t.status !== 'done' && t.status !== 'failed',
+  )
+  const doneAttribution = attributionTasks.filter(
+    (t) => t.status === 'done' || t.status === 'failed',
+  )
+  const totalPending = pendingTaskCount + openAttribution.length
 
   return (
     <div className="stack">
       <div className="stat-row">
         <div className="stat-card">
           <span className="muted">待处理</span>
-          <strong>{pendingTaskCount}</strong>
+          <strong>{totalPending}</strong>
         </div>
         <div className="stat-card">
           <span className="muted">本周已完成</span>
-          <strong>{done.length}</strong>
+          <strong>{done.length + doneAttribution.length}</strong>
         </div>
         <div className="stat-card">
           <span className="muted">自动修复占比</span>
@@ -123,11 +131,60 @@ export function TasksView() {
         </div>
       </div>
 
+      {/* ── 归因分析任务（线 B） ── */}
       <div className="table-card">
-        <div className="table-card__head">待处理任务</div>
+        <div className="table-card__head">归因分析报告</div>
         <table className="data-table">
           <thead>
             <tr>
+              <th>模块</th>
+              <th>任务</th>
+              <th>摘要</th>
+              <th>状态</th>
+              <th>更新时间</th>
+              <th>操作</th>
+            </tr>
+          </thead>
+          <tbody>
+            {openAttribution.map((t) => (
+              <tr key={t.id}>
+                <td>
+                  <span className="badge badge--module-attribution">归因分析</span>
+                </td>
+                <td style={{ maxWidth: 280 }}>{t.title}</td>
+                <td className="muted">{t.summary}</td>
+                <td>
+                  <span className={statusClass(t.status)}>{STATUS_LABEL[t.status]}</span>
+                </td>
+                <td className="mono muted">{t.updatedAt}</td>
+                <td>
+                  <Button
+                    size="sm"
+                    onClick={() => t.attributionReportId && openAttributionReport(t.attributionReportId)}
+                  >
+                    查看报告
+                  </Button>
+                </td>
+              </tr>
+            ))}
+            {openAttribution.length === 0 ? (
+              <tr>
+                <td colSpan={6} className="empty-cell">
+                  暂无待处理归因报告
+                </td>
+              </tr>
+            ) : null}
+          </tbody>
+        </table>
+      </div>
+
+      {/* ── 健康度修复任务（线 A） ── */}
+      <div className="table-card">
+        <div className="table-card__head">健康度修复任务</div>
+        <table className="data-table">
+          <thead>
+            <tr>
+              <th>模块</th>
               <th>优先级</th>
               <th>任务</th>
               <th>维度</th>
@@ -140,6 +197,9 @@ export function TasksView() {
           <tbody>
             {open.map((t) => (
               <tr key={t.id}>
+                <td>
+                  <span className="badge badge--module-health">健康度修复</span>
+                </td>
                 <td>
                   <span
                     className={
@@ -177,7 +237,7 @@ export function TasksView() {
             ))}
             {open.length === 0 ? (
               <tr>
-                <td colSpan={7} className="empty-cell">
+                <td colSpan={8} className="empty-cell">
                   暂无待处理任务
                 </td>
               </tr>
@@ -191,16 +251,34 @@ export function TasksView() {
         <table className="data-table">
           <thead>
             <tr>
+              <th>模块</th>
               <th>任务</th>
-              <th>维度</th>
+              <th>维度/摘要</th>
               <th>分数变化</th>
               <th>完成时间</th>
               <th>状态</th>
             </tr>
           </thead>
           <tbody>
+            {doneAttribution.map((t) => (
+              <tr key={t.id}>
+                <td>
+                  <span className="badge badge--module-attribution">归因分析</span>
+                </td>
+                <td>{t.title}</td>
+                <td className="muted">{t.summary}</td>
+                <td className="mono">—</td>
+                <td className="mono muted">{t.updatedAt}</td>
+                <td>
+                  <span className={statusClass(t.status)}>{STATUS_LABEL[t.status]}</span>
+                </td>
+              </tr>
+            ))}
             {done.map((t) => (
               <tr key={t.id}>
+                <td>
+                  <span className="badge badge--module-health">健康度修复</span>
+                </td>
                 <td>{t.title}</td>
                 <td className="muted">
                   {DIMENSION_META.find((d) => d.key === t.dimensionKey)?.name}

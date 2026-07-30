@@ -499,3 +499,150 @@ export interface ContentThemePerformance {
   conclusion: string
   action: 'expand' | 'optimize' | 'refresh' | 'review'
 }
+
+/* ═══════════════════════════════════════════════════════════════
+   业务指标归因分析（线 B）— 对齐产品方案 v1.1
+   与线 A 健康度体检完全独立，只共用智能体任务中心
+   ═══════════════════════════════════════════════════════════════ */
+
+/** 变化类型：异常(下降) / 提升(上升) / 持平(平稳) */
+export type ChangeType = 'down' | 'up' | 'flat'
+
+/** 6 段转化漏斗 */
+export type FunnelSegment =
+  | 'channel_arrival'
+  | 'landing_page'
+  | 'site_browsing'
+  | 'conversion_entry'
+  | 'conversion_interaction'
+  | 'lead_success'
+
+export const FUNNEL_SEGMENT_LABELS: Record<FunnelSegment, string> = {
+  channel_arrival: '渠道到达',
+  landing_page: '落地页',
+  site_browsing: '站内浏览',
+  conversion_entry: '转化入口触发',
+  conversion_interaction: '转化交互',
+  lead_success: '成功留资',
+}
+
+/** 措施调度的 L4 模块 */
+export type AttributionTargetModule =
+  | 'ai_content_engine'
+  | 'conversion_path_designer'
+  | 'smart_form'
+  | 'ai_cs_pro'
+  | 'tool_agent'
+  | 'none'
+
+export const TARGET_MODULE_LABELS: Record<AttributionTargetModule, string> = {
+  ai_content_engine: 'AI 内容引擎',
+  conversion_path_designer: '转化路径设计器',
+  smart_form: '智能表单系统',
+  ai_cs_pro: 'AI 智能客服 PRO',
+  tool_agent: '工具/Agent',
+  none: '只出方案',
+}
+
+/** 执行边界 */
+export type ExecutionBoundary = 'auto' | 'confirm' | 'advice_only'
+
+/** 依据卡片三段式：现状数据 + 对比基准 + 具体动作 */
+export interface EvidenceCard {
+  currentValue: string
+  benchmark: string
+  action: string
+}
+
+/** 措施（异常类产出） */
+export interface AttributionMeasure {
+  measureId: string
+  description: string
+  rootCause: string
+  rootCauseConfidence: 'high' | 'medium' | 'low'
+  evidenceCard: EvidenceCard
+  measureType: 'quick_fix' | 'root_cure'
+  cost: 'low' | 'medium' | 'high'
+  timeToEffect: 'instant' | 'day' | 'week' | 'month'
+  risk: 'low' | 'medium' | 'high'
+  targetModule: AttributionTargetModule
+  suggestedBoundary: ExecutionBoundary
+  /** 执行状态（确认后流转） */
+  execStatus?: 'pending_confirm' | 'executing' | 'success' | 'failed' | 'rejected' | 'advice_only'
+}
+
+/** 单条变化的归因结果 */
+export interface AttributionChange {
+  id: string
+  changeType: ChangeType
+  changedMetric: string
+  changedValue: string
+  baselineValue: string
+  changeAmount: string
+  severity: IssuePriority | null
+  funnelSegment: FunnelSegment
+  rootCause: string
+  causeCategory: string
+  confidence: 'high' | 'medium' | 'low'
+  evidence: string[]
+  /** Agent 对话式分析过程（模板化渲染的条目） */
+  analysisSteps: string[]
+  /** 异常类：措施清单 */
+  measures?: AttributionMeasure[]
+  /** 提升类：夸赞文案 + 保持建议 */
+  praiseText?: string
+  keepAdvice?: string
+  /** 持平类：说明 + 提升建议 */
+  explainText?: string
+  improveSuggestions?: Array<{
+    suggestion: string
+    targetModule: AttributionTargetModule
+    expectedEffect: string
+  }>
+  /** 复盘结果（异常类执行后回填） */
+  reviewResult?: 'success' | 'partial' | 'failed'
+  reviewNote?: string
+}
+
+/** 一期归因报告 */
+export interface AttributionReport {
+  id: string
+  periodLabel: string
+  generatedAt: string
+  periodDays: number
+  nextAnalysisAt: string
+  siteId: string
+  changes: AttributionChange[]
+}
+
+/** 智能体任务中心 · 统一任务模型（归因 + 健康修复 + 内容） */
+export type AgentTaskModule = 'attribution' | 'health_fix' | 'content'
+
+export const AGENT_MODULE_LABELS: Record<AgentTaskModule, string> = {
+  attribution: '归因分析',
+  health_fix: '健康度修复',
+  content: '内容运营',
+}
+
+export interface AgentTaskRow {
+  id: string
+  module: AgentTaskModule
+  title: string
+  summary: string
+  status: TaskStatus
+  priority: IssuePriority | null
+  createdAt: string
+  updatedAt: string
+  /** 归因报告任务 → 跳转归因详情 */
+  attributionReportId?: string
+  /** 健康度修复任务 → 打开 FixDrawer（对齐 FixTaskRow） */
+  fixTaskId?: string
+}
+
+/** 站点设置 · 归因分析周期配置 */
+export interface AttributionConfig {
+  enabled: boolean
+  periodDays: number
+}
+
+export const ATTRIBUTION_PERIOD_OPTIONS = [7, 14, 30] as const
