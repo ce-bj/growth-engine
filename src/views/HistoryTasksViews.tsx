@@ -155,6 +155,11 @@ export function TasksView() {
                 <td className="muted">{t.summary}</td>
                 <td>
                   <span className={statusClass(t.status)}>{STATUS_LABEL[t.status]}</span>
+                  {t.reviewPending ? (
+                    <span className="badge badge--info" style={{ marginLeft: 6 }}>
+                      {t.reviewPending}
+                    </span>
+                  ) : null}
                 </td>
                 <td className="mono muted">{t.updatedAt}</td>
                 <td>

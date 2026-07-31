@@ -578,17 +578,19 @@ export function WorkbenchProvider({ children }: { children: ReactNode }) {
 
   const confirmMeasure = useCallback(
     (changeId: string, measureId: string) => {
-      // 取该变化的复盘脚本（对齐方案案例结局），缺省按成功回放
-      const script = mockAttributionReport.changes.find((c) => c.id === changeId)
-        ?.reviewScript ?? {
+      // 取该变化的复盘脚本 + 措施的复盘周期（对齐方案 9.2 分档）
+      const changeRef = mockAttributionReport.changes.find((c) => c.id === changeId)
+      const script = changeRef?.reviewScript ?? {
         result: 'success' as const,
         note: 'T+7 复盘：异常指标回归正常区间，措施起效。沉淀为标准措施。',
       }
+      const reviewPeriod = changeRef?.measures?.find((m) => m.measureId === measureId)?.reviewPeriod ?? 'T+7'
       const REVIEW_TOAST: Record<'success' | 'partial' | 'failed', string> = {
         success: '复盘完成：措施起效，指标回归正常',
         partial: '复盘完成：部分改善，已追加措施回方案池',
         failed: '复盘完成：未见改善，已沉淀并建议重新归因',
       }
+      // ① 确认 → 执行中
       setAttributionReport((prev) => ({
         ...prev,
         changes: prev.changes.map((c) =>
@@ -603,7 +605,7 @@ export function WorkbenchProvider({ children }: { children: ReactNode }) {
         ),
       }))
       pushToast('info', '措施已确认，正在调度执行…')
-      // 模拟执行：2 秒后成功，T+? 复盘
+      // ② 执行完成（演示 2 秒）→ 出产出 → 任务进入「待复盘 T+N」
       window.setTimeout(() => {
         setAttributionReport((prev) => ({
           ...prev,
@@ -618,9 +620,20 @@ export function WorkbenchProvider({ children }: { children: ReactNode }) {
                 },
           ),
         }))
-        pushToast('success', '措施执行成功，将进入复盘周期')
+        setAttributionTasks((prev) =>
+          prev.map((t) =>
+            t.module === 'attribution' && t.status === 'running'
+              ? {
+                  ...t,
+                  reviewPending: `待复盘 ${reviewPeriod}`,
+                  updatedAt: new Date().toISOString().slice(0, 16).replace('T', ' '),
+                }
+              : t,
+          ),
+        )
+        pushToast('success', `措施执行成功，产出已就绪，进入复盘周期（${reviewPeriod}）`)
       }, 2000)
-      // 模拟复盘：6 秒后按复盘脚本回填结果
+      // ③ 复盘到点（演示 6 秒模拟 T+N 到期）→ 回填复盘结果，任务 done
       window.setTimeout(() => {
         setAttributionReport((prev) => ({
           ...prev,
@@ -634,11 +647,15 @@ export function WorkbenchProvider({ children }: { children: ReactNode }) {
                 },
           ),
         }))
-        // 全部措施执行完 → 任务标 done
         setAttributionTasks((prev) =>
           prev.map((t) =>
             t.module === 'attribution' && t.status === 'running'
-              ? { ...t, status: 'done', updatedAt: new Date().toISOString().slice(0, 16).replace('T', ' ') }
+              ? {
+                  ...t,
+                  status: 'done',
+                  reviewPending: undefined,
+                  updatedAt: new Date().toISOString().slice(0, 16).replace('T', ' '),
+                }
               : t,
           ),
         )

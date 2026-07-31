@@ -3601,13 +3601,15 @@ a:hover {
   align-items: center;
   gap: 6px;
   margin-bottom: 6px;
+  flex-wrap: wrap;
 }
 
 .attr-change-item__amount {
   margin-left: auto;
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 700;
-  font-variant-numeric: tabular-nums;
+  color: #0f172a;
+  white-space: nowrap;
 }
 
 .attr-change-item__metric {
@@ -3799,6 +3801,46 @@ a:hover {
 .attr-suggestion__meta {
   font-size: 12px;
   margin-top: 4px;
+}
+
+/* ── 执行产出块（生成页面/重写版/日志/A/B 变体） ── */
+.attr-deliverable {
+  margin-top: 10px;
+  background: #f0fdf4;
+  border: 1px solid #bbf7d0;
+  border-radius: 8px;
+  padding: 10px 12px;
+}
+
+.attr-deliverable__head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.attr-deliverable__title {
+  font-weight: 600;
+  font-size: 13px;
+  color: #166534;
+}
+
+.attr-deliverable__link {
+  margin-left: auto;
+  font-size: 13px;
+  font-weight: 600;
+  color: #2563eb;
+  text-decoration: none;
+}
+
+.attr-deliverable__link:hover {
+  text-decoration: underline;
+}
+
+.attr-deliverable__note {
+  font-size: 12.5px;
+  margin-top: 6px;
+  color: #334155;
 }
 
 @media (max-width: 960px) {

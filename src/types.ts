@@ -547,6 +547,20 @@ export const TARGET_MODULE_LABELS: Record<AttributionTargetModule, string> = {
 /** 执行边界 */
 export type ExecutionBoundary = 'auto' | 'confirm' | 'advice_only'
 
+/** 复盘周期（对齐方案 9.2 按措施见效周期分档） */
+export type ReviewPeriod = 'T+3' | 'T+7' | 'T+14' | 'T+30'
+
+/** 执行产出（执行后客户可查看的交付物：生成页面 / 重写页面 / 修复日志 / A/B 变体） */
+export interface MeasureDeliverable {
+  kind: 'page' | 'rewrite' | 'log' | 'ab_test'
+  /** 产物标题（如「CNC 加工配件 · 智能营销页」） */
+  title: string
+  /** 可跳转查看的链接（预览地址） */
+  url?: string
+  /** 产物说明（预览内容摘要 / 修复明细 / 变体说明） */
+  previewNote?: string
+}
+
 /** 依据卡片三段式：现状数据 + 对比基准 + 具体动作 */
 export interface EvidenceCard {
   currentValue: string
@@ -577,6 +591,10 @@ export interface AttributionMeasure {
   risk: 'low' | 'medium' | 'high'
   targetModule: AttributionTargetModule
   suggestedBoundary: ExecutionBoundary
+  /** 复盘周期（按见效周期分档：止血 T+3 / 治本 T+7 / 意图 T+14 / 长效 T+30） */
+  reviewPeriod?: ReviewPeriod
+  /** 执行后产生的可查看交付物 */
+  deliverable?: MeasureDeliverable
   /** 执行状态（确认后流转） */
   execStatus?: 'pending_confirm' | 'executing' | 'success' | 'failed' | 'rejected' | 'advice_only'
 }
@@ -654,6 +672,8 @@ export interface AgentTaskRow {
   attributionReportId?: string
   /** 健康度修复任务 → 打开 FixDrawer（对齐 FixTaskRow） */
   fixTaskId?: string
+  /** 归因任务「已完成执行、待复盘」标识，如「待复盘 T+7」 */
+  reviewPending?: string
 }
 
 /** 站点设置 · 归因分析周期配置 */

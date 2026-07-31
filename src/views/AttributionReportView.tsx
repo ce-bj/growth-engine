@@ -39,6 +39,26 @@ const EXEC_STATUS_META: Record<
   advice_only: { label: '只出方案', cls: 'badge--neutral' },
 }
 
+/** 清单上的方案处理状态：可执行 → 待处理/已采纳/已忽略；只出文字方案 → 仅建议 */
+function getActionStatus(change: AttributionChange): { label: string; cls: string } {
+  if (change.changeType === 'up') return { label: '无需执行', cls: 'badge--success' }
+  if (change.changeType === 'flat') return { label: '仅建议', cls: 'badge--neutral' }
+
+  const measures = change.measures ?? []
+  if (measures.length === 0) return { label: '仅建议', cls: 'badge--neutral' }
+
+  const actionable = measures.filter((m) => m.suggestedBoundary !== 'advice_only')
+  if (actionable.length === 0) return { label: '仅建议', cls: 'badge--neutral' }
+
+  if (actionable.every((m) => m.execStatus === 'rejected')) {
+    return { label: '已忽略', cls: 'badge--neutral' }
+  }
+  if (actionable.some((m) => m.execStatus === 'success' || m.execStatus === 'executing')) {
+    return { label: '已采纳', cls: 'badge--success' }
+  }
+  return { label: '待处理', cls: 'badge--warning' }
+}
+
 /* ── 左侧 · 变化清单条目 ────────────────────────────────────────── */
 
 function ChangeListItem({
@@ -51,6 +71,7 @@ function ChangeListItem({
   onSelect: () => void
 }) {
   const meta = CHANGE_TYPE_META[change.changeType]
+  const action = getActionStatus(change)
   return (
     <button
       type="button"
@@ -62,11 +83,12 @@ function ChangeListItem({
         {change.severity ? (
           <span className={`badge badge--neutral`}>{change.severity}</span>
         ) : null}
+        <span className={`badge ${action.cls}`}>{action.label}</span>
         <span className="attr-change-item__amount">{change.changeAmount}</span>
       </div>
       <div className="attr-change-item__metric">{change.changedMetric}</div>
       <div className="attr-change-item__sub">
-        {change.changedValue}（基准 {change.baselineValue}）· {FUNNEL_SEGMENT_LABELS[change.funnelSegment]}
+        {change.changedValue}（上期 {change.baselineValue}）· {FUNNEL_SEGMENT_LABELS[change.funnelSegment]}
       </div>
     </button>
   )
@@ -129,7 +151,32 @@ function MeasureCard({
       <div className="attr-measure__meta muted">
         置信度 {CONFIDENCE_LABEL[measure.rootCauseConfidence]} · 成本 {COST_LABEL[measure.cost]} ·
         起效 {TIME_LABEL[measure.timeToEffect]} · 风险 {COST_LABEL[measure.risk]}
+        {measure.reviewPeriod ? ` · 复盘 ${measure.reviewPeriod}` : ''}
       </div>
+
+      {/* 执行产出（执行完成后展示，客户可查看生成的页面/重写版/日志/变体） */}
+      {measure.deliverable &&
+      (measure.execStatus === 'success' || measure.execStatus === 'executing') ? (
+        <div className="attr-deliverable">
+          <div className="attr-deliverable__head">
+            <span className="badge badge--success">产出已就绪</span>
+            <span className="attr-deliverable__title">{measure.deliverable.title}</span>
+            {measure.deliverable.url ? (
+              <a
+                className="attr-deliverable__link"
+                href={measure.deliverable.url}
+                target="_blank"
+                rel="noreferrer"
+              >
+                查看 →
+              </a>
+            ) : null}
+          </div>
+          {measure.deliverable.previewNote ? (
+            <div className="muted attr-deliverable__note">{measure.deliverable.previewNote}</div>
+          ) : null}
+        </div>
+      ) : null}
 
       {actionable && measure.execStatus === 'pending_confirm' ? (
         <div className="row" style={{ gap: 8, marginTop: 10 }}>
@@ -150,17 +197,21 @@ function MeasureCard({
 function ChangeDetail({ change }: { change: AttributionChange }) {
   const { confirmMeasure, ignoreMeasure } = useWorkbench()
   const meta = CHANGE_TYPE_META[change.changeType]
+  const action = getActionStatus(change)
   return (
     <div className="attr-detail">
       <div className="attr-detail__head">
         <span className={`badge ${meta.cls}`} style={{ fontSize: 13, padding: '3px 10px' }}>
           {meta.label}
         </span>
+        <span className={`badge ${action.cls}`} style={{ fontSize: 13, padding: '3px 10px', marginLeft: 6 }}>
+          {action.label}
+        </span>
         <h3 className="attr-detail__title">
-          {change.changedMetric} {change.changeAmount}
+          {change.changedMetric} · {change.changeAmount}
         </h3>
         <div className="muted">
-          本期 {change.changedValue} · 基准 {change.baselineValue} ·{' '}
+          本期 {change.changedValue} · 上期 {change.baselineValue} ·{' '}
           {FUNNEL_SEGMENT_LABELS[change.funnelSegment]} · 置信度 {CONFIDENCE_LABEL[change.confidence]}
         </div>
       </div>
