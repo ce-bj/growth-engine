@@ -341,7 +341,7 @@ export interface LeadStats {
 }
 
 /** §14 内容运营：内容全生命周期原型 */
-export type ContentTab = 'overview' | 'plan' | 'calendar' | 'assets' | 'publishing' | 'performance'
+export type ContentTab = 'overview' | 'library' | 'plan' | 'review' | 'calendar' | 'assets' | 'publishing' | 'performance'
 
 export type ContentChannel = 'website' | 'linkedin' | 'facebook' | 'x'
 
@@ -408,6 +408,21 @@ export interface KnowledgeReference {
   verified: boolean
 }
 
+/** 知识库调用风险追踪：内容生成过程中命中的 RAG no-hit（知识库未命中）事件 */
+export type KnowledgeRiskLevel = 'critical' | 'high' | 'medium' | 'low'
+export type KnowledgeRiskStatus = 'pending' | 'resolved'
+
+export interface KnowledgeRiskEvent {
+  id: string
+  taskId: string
+  taskTitle: string
+  issueType: string
+  diagnosis: string
+  level: KnowledgeRiskLevel
+  status: KnowledgeRiskStatus
+  occurredAt: string
+}
+
 export interface ChannelVersion {
   channel: ContentChannel
   title: string
@@ -439,17 +454,44 @@ export interface ContentTask {
   quality: ContentQualityScore
   compliance: ComplianceIssue[]
   channelVersions: ChannelVersion[]
+  /** 全球站：本内容需要发布到的语言站点（为空表示仅中文站） */
+  locales?: string[]
+  /** 母稿生成时在术语库中未命中译名的专业名词 */
+  missingTerms?: string[]
+}
+
+/** 全球站：语言站点 */
+export interface ContentLocale {
+  code: string
+  label: string
+  site: string
+}
+
+export type GlossaryStatus = 'ready' | 'partial' | 'missing'
+
+/** 专业名词的定义与各语言站点译名 */
+export interface GlossaryTerm {
+  id: string
+  term: string
+  category: string
+  definition: string
+  /** 语言站点 code → 译名，缺失以空字符串表示 */
+  translations: Record<string, string>
+  updatedAt: string
 }
 
 export interface ContentCalendarItem {
   id: string
   taskId: string
+  /** 完整日期 YYYY-MM-DD，便于按周翻页查看历史 */
   date: string
   time: string
   title: string
   channel: ContentChannel
   stage: 'production' | 'review' | 'publish'
   state: 'normal' | 'warning' | 'failed'
+  /** 历史节点是否已完成 */
+  done?: boolean
 }
 
 export interface ContentAsset {
@@ -683,3 +725,50 @@ export interface AttributionConfig {
 }
 
 export const ATTRIBUTION_PERIOD_OPTIONS = [7, 14, 30] as const
+
+/** 效果分析按周维度的总统计 */
+export interface ContentWeeklyPerformance {
+  weekStart: string
+  label: string
+  websiteUv: number
+  effectiveReadRate: number
+  socialImpressions: number
+  engagementRate: number
+  linkClicks: number
+  /** 该周发布到官网的内容条数 */
+  websitePublished: number
+  /** 该周发布到社媒的内容条数（按渠道版本计） */
+  socialPublished: number
+}
+
+/** 单条已发布内容的发布计数与效果明细 */
+export interface ContentPublishStat {
+  id: string
+  taskId: string
+  weekStart: string
+  title: string
+  publishedAt: string
+  /** 官网发布次数（含更新重发） */
+  websiteCount: number
+  /** 社媒发布条数 */
+  socialCount: number
+  channelCounts: Array<{ channel: ContentChannel; count: number; url?: string; lastPublishedAt: string }>
+  uv: number
+  effectiveReadRate: number
+  avgDuration: string
+  impressions: number
+  engagements: number
+  engagementRate: number
+  linkClicks: number
+}
+
+/** 发布管理 · 发布设置 */
+export interface PublishSettings {
+  contentIds: string[]
+  channels: ContentChannel[]
+  locales: string[]
+  mode: 'immediate' | 'scheduled'
+  scheduledAt: string
+  failStrategy: 'continue' | 'stop'
+  approval: 'manual' | 'auto'
+}

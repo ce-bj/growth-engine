@@ -1,14 +1,16 @@
 import { AlertTriangle, ArrowRight, CalendarClock, CheckCircle2, ShieldAlert } from 'lucide-react'
 import { Button } from '../../components/Button'
-import type { ContentTab, ContentTask, PublicationRecord } from '../../types'
-import { MetricCard, StatusBadge } from './ContentPrimitives'
+import type { ContentTab, ContentTask, KnowledgeRiskEvent, PublicationRecord } from '../../types'
+import { filterRecentKnowledgeRisks, KnowledgeRiskBadge, MetricCard, StatusBadge } from './ContentPrimitives'
 
-export function ContentOverview({ tasks, publications, onNavigate, onOpenTask }: { tasks: ContentTask[]; publications: PublicationRecord[]; onNavigate: (tab: ContentTab) => void; onOpenTask: (id: string) => void }) {
+export function ContentOverview({ tasks, publications, knowledgeRisks, onNavigate, onOpenTask, onOpenKnowledgeRiskDetail }: { tasks: ContentTask[]; publications: PublicationRecord[]; knowledgeRisks: KnowledgeRiskEvent[]; onNavigate: (tab: ContentTab) => void; onOpenTask: (id: string, step?: number) => void; onOpenKnowledgeRiskDetail: () => void }) {
   const active = tasks.filter((t) => ['generating', 'quality_review', 'compliance_review', 'channel_adaptation'].includes(t.status)).length
   const approval = tasks.filter((t) => t.status === 'pending_approval').length
   const scheduled = tasks.filter((t) => t.status === 'scheduled').length
   const published = tasks.filter((t) => ['published', 'observing'].includes(t.status)).length
   const failed = publications.filter((p) => p.status === 'failed' || p.status === 'partial').length
+  const recentKnowledgeRisks = filterRecentKnowledgeRisks(knowledgeRisks, 7, 5)
+  const openKnowledgeRisks = knowledgeRisks.filter((item) => item.status !== 'resolved')
 
   return <div className="content-page-stack">
     <section className="content-hero">
@@ -39,6 +41,12 @@ export function ContentOverview({ tasks, publications, onNavigate, onOpenTask }:
           <button onClick={() => onNavigate('publishing')}><AlertTriangle size={17} /><span><b>Facebook 发布失败</b><small>平台授权失效，可重新连接后重试</small></span><em>处理发布</em></button>
           <button onClick={() => onOpenTask('ct-006')}><CheckCircle2 size={17} /><span><b>安全说明已通过审核</b><small>将在 07/31 18:00 更新网站</small></span><em>查看排期</em></button>
         </div>
+      </section>
+
+      <section className="content-panel">
+        <div className="content-panel__head"><div><span className="content-eyebrow">RAG RISK TRACE</span><h3>知识库调用风险样本</h3></div><div className="content-panel__head-actions"><span className="content-risk-summary has-risk">{openKnowledgeRisks.length} 条待处理</span><Button size="sm" variant="text" onClick={onOpenKnowledgeRiskDetail}>查看详情</Button></div></div>
+        <p className="content-panel__desc">生产过程中调用知识库出现 RAG no-hit（未命中知识库），展示最近 7 天内最多 5 条，点击可直接跳转到对应任务定位问题。</p>
+        <div className="content-knowledge-risk-compact-list">{recentKnowledgeRisks.length === 0 ? <p className="muted">最近 7 天没有知识库调用风险。</p> : recentKnowledgeRisks.map((risk) => <button key={risk.id} onClick={() => onOpenTask(risk.taskId, 1)}><KnowledgeRiskBadge level={risk.level} /><span className="content-knowledge-risk-compact-list__body"><b>{risk.issueType}</b><small>{risk.taskTitle} · {risk.occurredAt}</small></span><em>{risk.status === 'resolved' ? '已解决' : '查看任务'}</em></button>)}</div>
       </section>
     </div>
 
