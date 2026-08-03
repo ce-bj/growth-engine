@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useWorkbench } from '../context/WorkbenchContext'
-import { contentAssetsData, contentCalendarData, contentLocalesData, contentPublishStatsData, contentTasksData, glossaryTermsData, knowledgeRiskEventsData, publicationRecordsData, themePerformanceData, weeklyPerformanceData } from '../data/contentMock'
-import type { ChannelVersion, ContentAsset, ContentChannel, ContentTab, ContentTask, ContentThemePerformance, GlossaryTerm, KnowledgeRiskEvent, PublicationRecord, PublishSettings } from '../types'
+import { contentAssetsData, contentCalendarData, contentLocalesData, contentOpportunitiesData, contentPlanItemsData, contentPublishStatsData, contentTasksData, glossaryTermsData, knowledgeRiskEventsData, publicationRecordsData, themePerformanceData, weeklyPerformanceData } from '../data/contentMock'
+import type { ChannelProfile, ChannelVersion, ContentAsset, ContentChannel, ContentOpportunity, ContentPlanItem, ContentTab, ContentTask, ContentThemePerformance, GlossaryTerm, KnowledgeRiskEvent, PublicationRecord, PublishSettings } from '../types'
 import { ContentAssets } from './content/ContentAssets'
 import { ContentCalendar } from './content/ContentCalendar'
 import { ContentCreateDrawer, type ContentCreatePayload } from './content/ContentCreateDrawer'
@@ -26,6 +26,8 @@ export function ContentView() {
   const { pushToast } = useWorkbench()
   const [tab, setTab] = useState<ContentTab>('overview')
   const [tasks, setTasks] = useState<ContentTask[]>(contentTasksData)
+  const [opportunities, setOpportunities] = useState<ContentOpportunity[]>(contentOpportunitiesData)
+  const [planItems, setPlanItems] = useState<ContentPlanItem[]>(contentPlanItemsData)
   const [publications, setPublications] = useState<PublicationRecord[]>(publicationRecordsData)
   const [knowledgeRisks, setKnowledgeRisks] = useState<KnowledgeRiskEvent[]>(knowledgeRiskEventsData)
   const [glossaryTerms, setGlossaryTerms] = useState<GlossaryTerm[]>(glossaryTermsData)
@@ -82,9 +84,65 @@ export function ContentView() {
     openTask(id, 0)
   }
 
+  const updateBrief = (taskId: string, patch: Partial<Pick<ContentTask, 'title' | 'audience' | 'userQuestion' | 'theme' | 'reason' | 'dueDate'>>) => {
+    setTasks((current) => current.map((task) => task.id === taskId ? { ...task, ...patch } : task))
+  }
+
+  const updateOutline = (taskId: string, outline: string[]) => {
+    setTasks((current) => current.map((task) => task.id === taskId ? { ...task, outline } : task))
+  }
+
   const resolveMaterials = (taskId: string) => {
     setTasks((current) => current.map((task) => task.id === taskId ? { ...task, status: 'ready', missingMaterials: [] } : task))
     pushToast('success', '资料已补充完整，可以开始生产', true)
+  }
+
+  const confirmChannelProfiles = (taskId: string, profiles: ChannelProfile[]) => {
+    setTasks((current) => current.map((task) => task.id === taskId ? { ...task, channelProfiles: profiles, status: 'generating' } : task))
+    pushToast('success', '渠道字段已确认，进入内容概览生成', true)
+  }
+
+  const adoptOpportunity = (id: string) => {
+    const opportunity = opportunities.find((item) => item.id === id)
+    if (!opportunity) return
+    const planItem: ContentPlanItem = {
+      id: `pi-new-${Date.now()}`, opportunityId: opportunity.id, title: opportunity.suggestedTitle, type: 'guide',
+      kind: opportunity.relatedTaskId ? 'optimize' : 'create', theme: opportunity.suggestedTheme, audience: '待细化目标受众',
+      channels: opportunity.suggestedChannels, priority: opportunity.suggestedPriority, dueDate: '2026-08-20',
+      reason: opportunity.evidence, status: 'proposed',
+    }
+    setPlanItems((current) => [planItem, ...current])
+    setOpportunities((current) => current.map((item) => item.id === id ? { ...item, status: 'adopted' } : item))
+    pushToast('success', '已采纳为本期计划项', true)
+  }
+
+  const dismissOpportunity = (id: string) => {
+    setOpportunities((current) => current.map((item) => item.id === id ? { ...item, status: 'dismissed' } : item))
+    pushToast('info', '已忽略该内容洞察', true)
+  }
+
+  const promoteToTask = (planItemId: string) => {
+    const item = planItems.find((p) => p.id === planItemId)
+    if (!item) return
+    const id = `ct-new-${Date.now()}`
+    const task: ContentTask = {
+      id, title: item.title, kind: item.kind, type: item.type, priority: item.priority,
+      status: 'ready',
+      theme: item.theme, audience: item.audience, userQuestion: '', channels: item.channels,
+      dueDate: item.dueDate, reason: item.reason, outline: [], masterDraft: '', knowledge: [],
+      missingMaterials: [],
+      quality: { overall: 0, relevance: 0, accuracy: 0, completeness: 0, readability: 0, authenticity: 0, channelFit: 0 },
+      compliance: [], channelVersions: [],
+    }
+    setTasks((current) => [task, ...current])
+    setPlanItems((current) => current.map((p) => p.id === planItemId ? { ...p, status: 'promoted', promotedTaskId: id } : p))
+    pushToast('success', '计划项已转入生产，创建内容任务', true)
+    openTask(id, 0)
+  }
+
+  const dropPlanItem = (id: string) => {
+    setPlanItems((current) => current.map((item) => item.id === id ? { ...item, status: 'dropped' } : item))
+    pushToast('info', '计划项已放弃', true)
   }
 
   const generateDraft = (taskId: string) => {
@@ -130,8 +188,11 @@ export function ContentView() {
     }
   }
 
-  const resolveCompliance = (taskId: string) => {    setTasks((current) => current.map((task) => task.id === taskId ? { ...task, status: 'channel_adaptation', compliance: task.compliance.map((issue) => ({ ...issue, resolved: true })) } : task))
-    pushToast('success', '合规建议已应用，内容可以进入渠道适配', true)
+  const toggleComplianceIssue = (taskId: string, issueId: string) => {
+    setTasks((current) => current.map((task) => task.id !== taskId ? task : {
+      ...task,
+      compliance: task.compliance.map((issue) => issue.id === issueId ? { ...issue, resolved: !issue.resolved } : issue),
+    }))
   }
 
   const ignoreWarningsAndProceed = (taskId: string) => {
@@ -200,14 +261,14 @@ export function ContentView() {
 
   const glossaryDrawer = glossaryState.open && <ContentGlossary terms={glossaryTerms} locales={contentLocalesData} highlightTerms={glossaryState.highlight} onClose={() => setGlossaryState({ open: false, highlight: [] })} onUpdateTranslation={updateTranslation} onSyncKnowledge={() => pushToast('success', '术语与译名已同步到企业知识库', true)} />
 
-  if (activeTask) return <div className="content-view"><ContentWorkbench task={activeTask} initialStep={workbenchStep} knowledgeRisks={knowledgeRisks} locales={contentLocalesData} glossaryTerms={glossaryTerms} onBack={() => { setActiveTaskId(null); setWorkbenchStep(undefined) }} onResolveMaterials={resolveMaterials} onGenerateDraft={generateDraft} onRegenerateDraft={regenerateDraft} onResolveCompliance={resolveCompliance} onIgnoreWarnings={ignoreWarningsAndProceed} onGenerateChannel={generateChannelVersion} onUpdateChannelVersion={updateChannelVersion} onSubmitApproval={submitForApproval} onApprove={approveAndSchedule} onOpenGlossary={openGlossary} onOpenKnowledgeRisks={() => { setActiveTaskId(null); setKnowledgeRiskDetailOpen(true) }} />{glossaryDrawer}</div>
+  if (activeTask) return <div className="content-view"><ContentWorkbench task={activeTask} initialStep={workbenchStep} knowledgeRisks={knowledgeRisks} locales={contentLocalesData} glossaryTerms={glossaryTerms} onBack={() => { setActiveTaskId(null); setWorkbenchStep(undefined) }} onUpdateBrief={updateBrief} onUpdateOutline={updateOutline} onResolveMaterials={resolveMaterials} onConfirmChannelProfiles={confirmChannelProfiles} onGenerateDraft={generateDraft} onRegenerateDraft={regenerateDraft} onToggleComplianceIssue={toggleComplianceIssue} onIgnoreWarnings={ignoreWarningsAndProceed} onGenerateChannel={generateChannelVersion} onUpdateChannelVersion={updateChannelVersion} onSubmitApproval={submitForApproval} onApprove={approveAndSchedule} onOpenGlossary={openGlossary} onOpenKnowledgeRisks={() => { setActiveTaskId(null); setKnowledgeRiskDetailOpen(true) }} />{glossaryDrawer}</div>
 
   if (knowledgeRiskDetailOpen) return <div className="content-view"><ContentKnowledgeRiskDetail risks={knowledgeRisks} onBack={() => setKnowledgeRiskDetailOpen(false)} onOpenTask={openTask} onMarkResolved={markKnowledgeRiskResolved} /></div>
 
   return <div className="content-view"><ContentTabs active={tab} onChange={navigate} />
     {tab === 'overview' && <ContentOverview tasks={tasks} publications={publications} knowledgeRisks={knowledgeRisks} onNavigate={navigate} onOpenTask={openTask} onOpenKnowledgeRiskDetail={() => setKnowledgeRiskDetailOpen(true)} />}
     {tab === 'library' && <ContentLibrary tasks={tasks} onOpenTask={openTask} onNavigate={navigate} onCreate={() => setCreateDrawerOpen(true)} onOpenGlossary={() => openGlossary()} onOpenPerformanceDetail={openPerformanceDetail} />}
-    {tab === 'plan' && <ContentPlan tasks={tasks} onOpenTask={openTask} onCreate={() => setCreateDrawerOpen(true)} />}
+    {tab === 'plan' && <ContentPlan tasks={tasks} opportunities={opportunities} planItems={planItems} onOpenTask={openTask} onCreate={() => setCreateDrawerOpen(true)} onAdoptOpportunity={adoptOpportunity} onDismissOpportunity={dismissOpportunity} onPromoteToTask={promoteToTask} onDropPlanItem={dropPlanItem} />}
     {tab === 'review' && <ContentReview tasks={tasks} onOpenTask={openTask} />}
     {tab === 'calendar' && <ContentCalendar items={contentCalendarData} onOpenTask={openTask} />}
     {tab === 'assets' && <ContentAssets assets={contentAssetsData} onOpenTask={openTask} onRefresh={refreshAsset} />}

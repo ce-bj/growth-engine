@@ -370,6 +370,7 @@ export type ContentTaskKind =
 export type ContentTaskStatus =
   | 'needs_material'
   | 'ready'
+  | 'channel_setup'
   | 'generating'
   | 'quality_review'
   | 'compliance_review'
@@ -437,6 +438,20 @@ export interface ChannelVersion {
   error?: string
 }
 
+/** 渠道定义字段：单个渠道需要确认的一个配置项，字段值后续从平台其他功能（账号管理/CMS等）获取 */
+export interface ChannelFieldDef {
+  key: string
+  label: string
+  /** 字段值后续接入的来源说明 */
+  source: string
+}
+
+/** 单个渠道已确认的定义字段取值 */
+export interface ChannelProfile {
+  channel: ContentChannel
+  fields: Record<string, string>
+}
+
 export interface ContentTask {
   id: string
   title: string
@@ -457,11 +472,61 @@ export interface ContentTask {
   quality: ContentQualityScore
   compliance: ComplianceIssue[]
   channelVersions: ChannelVersion[]
+  /** 已确认的渠道定义字段（步骤三：渠道选择与字段配置产出） */
+  channelProfiles?: ChannelProfile[]
   /** 全球站：本内容需要发布到的语言站点（为空表示仅中文站） */
   locales?: string[]
   /** 母稿生成时在术语库中未命中译名的专业名词 */
   missingTerms?: string[]
 }
+
+/** 内容洞察产出：可能需要做点什么，尚未被采纳，不属于计划 */
+export type OpportunitySource = 'inventory' | 'read_performance' | 'social_performance' | 'business_focus' | 'manual' | 'retrospective'
+
+export const OPPORTUNITY_SOURCE_LABELS: Record<OpportunitySource, string> = {
+  inventory: '内容盘点',
+  read_performance: '阅读表现',
+  social_performance: '社媒表现',
+  business_focus: '业务重点',
+  manual: '运营人员',
+  retrospective: '内容复盘',
+}
+
+export interface ContentOpportunity {
+  id: string
+  source: OpportunitySource
+  /** 触发依据，如“近30天阅读量下降40%” */
+  evidence: string
+  suggestedTitle: string
+  suggestedTheme: string
+  suggestedChannels: ContentChannel[]
+  suggestedPriority: 'P0' | 'P1' | 'P2'
+  /** 若为优化/更新类机会，关联的既有内容任务 */
+  relatedTaskId?: string
+  status: 'open' | 'adopted' | 'dismissed'
+}
+
+export type PlanItemStatus = 'proposed' | 'accepted' | 'promoted' | 'dropped'
+
+/** 计划项：已采纳进本期计划、尚未转入生产的轻量记录（“计划做的内容”） */
+export interface ContentPlanItem {
+  id: string
+  opportunityId?: string
+  title: string
+  type: ContentType
+  kind: ContentTaskKind
+  theme: string
+  audience: string
+  /** 意向渠道，转入生产后作为 ContentTask.channels 的初始值 */
+  channels: ContentChannel[]
+  priority: 'P0' | 'P1' | 'P2'
+  dueDate: string
+  reason: string
+  status: PlanItemStatus
+  /** 转入生产后创建的内容任务 id */
+  promotedTaskId?: string
+}
+
 
 /** 全球站：语言站点 */
 export interface ContentLocale {

@@ -2,6 +2,8 @@ import type {
   ContentAsset,
   ContentCalendarItem,
   ContentLocale,
+  ContentOpportunity,
+  ContentPlanItem,
   ContentPublishStat,
   ContentTask,
   ContentThemePerformance,
@@ -52,6 +54,12 @@ export const contentTasksData: ContentTask[] = [
       { channel: 'facebook', title: '工业机器人怎么选？先看这 6 项', body: '负载只是第一步。工作半径、精度、节拍、防护等级和工具重量同样重要。查看完整选型清单与应用示例。', account: 'Example Automation Global', status: 'ready' },
       { channel: 'x', title: '工业机器人选型 6 项检查', body: '选机器人别只看负载：①工艺目标 ②工作半径 ③重复精度 ④节拍 ⑤环境 ⑥末端工具。完整指南将结合真实项目逐项展开。', account: '@ExampleAuto', status: 'ready' },
     ],
+    channelProfiles: [
+      { channel: 'website', fields: { columnPath: '/guides/robot-selection', seoKeyword: '工业机器人选型', template: '长文指南模板' } },
+      { channel: 'linkedin', fields: { account: 'Example Automation', language: '中文 + 英语', hashtags: '#IndustrialRobots #Automation' } },
+      { channel: 'facebook', fields: { account: 'Example Automation Global', audienceRegion: '欧洲 / 北美', imageSpec: '1200x630 横版' } },
+      { channel: 'x', fields: { account: '@ExampleAuto', threadMode: '单条 + 图文', hashtags: '#Robotics #Manufacturing' } },
+    ],
   },
   {
     id: 'ct-002', title: '汽车零部件焊接应用案例', kind: 'create', type: 'case', status: 'needs_material', priority: 'P1', theme: '汽车焊接自动化', audience: '汽车零部件工厂技术与生产负责人', userQuestion: '同类型工厂如何部署焊接工作站，实际改善了什么？', channels: ['website', 'linkedin'], dueDate: '2026-08-06', reason: '网站缺少可证明项目交付能力的真实案例。', outline: ['客户背景', '原有问题', '方案设计', '实施过程', '结果数据', '适用企业'], masterDraft: '', knowledge: [{ id: 'kr-4', category: '项目资料', title: '焊接线交付记录', source: '项目中心 PJ-106', verified: true }], missingMaterials: ['客户公开授权', '实施前后节拍数据'], quality: { overall: 48, relevance: 16, accuracy: 7, completeness: 7, readability: 10, authenticity: 3, channelFit: 5 }, compliance: [{ id: 'ci-4', level: 'blocking', category: 'privacy', title: '客户案例尚未获得公开授权', detail: '客户名称、Logo和现场图片均不可发布。', resolved: false }], channelVersions: [],
@@ -67,6 +75,11 @@ export const contentTasksData: ContentTask[] = [
       { channel: 'linkedin', title: '码垛自动化落地前，先确认这三件事', body: '稳定节拍、现场空间与来料一致性，是码垛项目能否稳定运行的三个前提。本文结合白皮书中的项目经验逐项说明。', account: 'Example Automation', status: 'ready' },
       { channel: 'facebook', title: '码垛自动化的 3 个实施前提', body: '准备引入码垛机器人？先确认节拍、空间和来料稳定性。完整白皮书已经整理好。', account: 'Example Automation Global', status: 'ready' },
       { channel: 'x', title: '码垛自动化实施清单', body: '码垛项目落地前确认：节拍稳定、现场空间、来料一致性。缺一项，后续调试成本都可能显著增加。', account: '@ExampleAuto', status: 'ready' },
+    ],
+    channelProfiles: [
+      { channel: 'linkedin', fields: { account: 'Example Automation', language: '中文 + 英语', hashtags: '#Palletizing #Logistics' } },
+      { channel: 'facebook', fields: { account: 'Example Automation Global', audienceRegion: '东南亚 / 中东', imageSpec: '1200x630 横版' } },
+      { channel: 'x', fields: { account: '@ExampleAuto', threadMode: '单条 + 图文', hashtags: '#Automation' } },
     ],
   },
   {
@@ -217,4 +230,20 @@ export const contentPublishStatsData: ContentPublishStat[] = [
     ],
     uv: 196, effectiveReadRate: 28, avgDuration: '0m 46s', impressions: 2800, engagements: 81, engagementRate: 2.9, linkClicks: 26,
   },
+]
+
+/** 内容洞察：内容运营 Agent 工作方法论 §2.3 第①段"内容洞察"产出，尚未被采纳前不属于计划 */
+export const contentOpportunitiesData: ContentOpportunity[] = [
+  { id: 'op-1', source: 'inventory', evidence: '内容盘点发现「装配机器人」产品线缺少 FAQ，客服工单中相关问题占比 18%。', suggestedTitle: '装配机器人常见问题', suggestedTheme: '装配机器人使用', suggestedChannels: ['website'], suggestedPriority: 'P1', status: 'open' },
+  { id: 'op-2', source: 'read_performance', evidence: '「机器人维护保养」内容近 30 天有效阅读率降至 28%，跳出率 72%，明显低于同类内容均值。', suggestedTitle: '机器人维护保养指南重构', suggestedTheme: '机器人维护保养', suggestedChannels: ['website'], suggestedPriority: 'P1', relatedTaskId: 'ct-004', status: 'open' },
+  { id: 'op-3', source: 'social_performance', evidence: '「工业机器人选型指南」LinkedIn 版本互动率 5.1%，显著高于账号均值，具备扩展为系列内容的潜力。', suggestedTitle: '选型系列：负载与工作半径深度拆解', suggestedTheme: '工业机器人选型', suggestedChannels: ['linkedin', 'facebook'], suggestedPriority: 'P2', relatedTaskId: 'ct-001', status: 'open' },
+  { id: 'op-4', source: 'business_focus', evidence: '业务侧新增中东市场拓展计划，官网与社媒尚无面向该地区的本地化内容。', suggestedTitle: '中东市场喷涂自动化应用介绍', suggestedTheme: '喷涂机器人海外拓展', suggestedChannels: ['website', 'facebook'], suggestedPriority: 'P2', status: 'open' },
+]
+
+/** 计划项：内容运营 Agent 工作方法论 §2.3 第②段"内容计划"产出，转入生产前不占用生产资源 */
+export const contentPlanItemsData: ContentPlanItem[] = [
+  { id: 'pi-1', opportunityId: 'op-1', title: '装配机器人常见问题', type: 'faq', kind: 'create', theme: '装配机器人使用', audience: '正在评估装配自动化的工程师', channels: ['website'], priority: 'P1', dueDate: '2026-08-12', reason: '内容盘点发现客服工单集中反映的问题尚无官网内容覆盖。', status: 'accepted' },
+  { id: 'pi-2', opportunityId: 'op-2', title: '机器人维护保养指南重构', type: 'guide', kind: 'optimize', theme: '机器人维护保养', audience: '设备维护工程师', channels: ['website'], priority: 'P1', dueDate: '2026-08-10', reason: '现有内容阅读表现持续下滑，需重构结构与检查清单。', status: 'promoted', promotedTaskId: 'ct-004' },
+  { id: 'pi-3', opportunityId: 'op-3', title: '选型系列：负载与工作半径深度拆解', type: 'guide', kind: 'expand', theme: '工业机器人选型', audience: '制造企业自动化负责人', channels: ['linkedin', 'facebook'], priority: 'P2', dueDate: '2026-08-15', reason: '选型指南社媒互动表现突出，扩展子主题可延续热度。', status: 'proposed' },
+  { id: 'pi-4', title: '备件供应与响应时效说明', type: 'faq', kind: 'create', theme: '售后服务', audience: '设备采购与维护负责人', channels: ['website'], priority: 'P2', dueDate: '2026-08-20', reason: '运营人员反馈售前咨询中常问备件供应周期，暂无内容承接。', status: 'dropped' },
 ]

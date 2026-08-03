@@ -1,5 +1,5 @@
 import type { CSSProperties } from 'react'
-import type { ComplianceLevel, ContentChannel, ContentLocale, ContentTask, ContentTaskStatus, GlossaryStatus, GlossaryTerm, KnowledgeRiskEvent, KnowledgeRiskLevel, KnowledgeRiskStatus } from '../../types'
+import type { ChannelFieldDef, ComplianceLevel, ContentChannel, ContentLocale, ContentTask, ContentTaskStatus, GlossaryStatus, GlossaryTerm, KnowledgeRiskEvent, KnowledgeRiskLevel, KnowledgeRiskStatus } from '../../types'
 
 /** 内容运营演示数据锚定的当前时间点，用于"最近 N 天"筛选 */
 const DEMO_TODAY = new Date('2026-07-30T23:59:59')
@@ -19,8 +19,32 @@ export const CHANNEL_META: Record<ContentChannel, { label: string; short: string
   x: { label: 'X / Twitter', short: 'X', color: '#0f172a' },
 }
 
+/** 渠道定义字段：字段值后续从平台其他功能（账号管理/CMS集成等）获取，原型阶段用示例值填充 */
+export const CHANNEL_FIELD_DEFS: Record<ContentChannel, ChannelFieldDef[]> = {
+  website: [
+    { key: 'columnPath', label: '栏目路径', source: '网站CMS/栏目配置' },
+    { key: 'seoKeyword', label: 'SEO 关键词', source: '网站CMS/栏目配置' },
+    { key: 'template', label: '页面模板', source: '网站CMS/栏目配置' },
+  ],
+  linkedin: [
+    { key: 'account', label: '企业主页账号', source: '社媒账号管理' },
+    { key: 'language', label: '内容语言', source: '社媒账号管理' },
+    { key: 'hashtags', label: '建议话题标签', source: '社媒账号管理' },
+  ],
+  facebook: [
+    { key: 'account', label: '主页账号', source: '社媒账号管理' },
+    { key: 'audienceRegion', label: '目标地域', source: '社媒账号管理' },
+    { key: 'imageSpec', label: '图片规格', source: '社媒账号管理' },
+  ],
+  x: [
+    { key: 'account', label: '账号', source: '社媒账号管理' },
+    { key: 'threadMode', label: '线程模式', source: '社媒账号管理' },
+    { key: 'hashtags', label: '话题标签', source: '社媒账号管理' },
+  ],
+}
+
 export const STATUS_LABEL: Record<ContentTaskStatus, string> = {
-  needs_material: '待补资料', ready: '待生产', generating: '生产中', quality_review: '质量审核',
+  needs_material: '待补资料', ready: '待生产', channel_setup: '渠道配置', generating: '生产中', quality_review: '质量审核',
   compliance_review: '合规审核', channel_adaptation: '渠道适配', pending_approval: '待审批',
   scheduled: '已排期', published: '已发布', observing: '观察中', needs_optimization: '待优化', retired: '已下架',
 }
@@ -83,8 +107,8 @@ export type ReviewVerdict = 'pass' | 'warning' | 'block'
 
 export function getReviewVerdict(task: ContentTask): ReviewVerdict {
   const unresolved = task.compliance.filter((issue) => !issue.resolved)
-  if (unresolved.some((issue) => issue.level === 'blocking')) return 'block'
-  if (unresolved.some((issue) => issue.level === 'high' || issue.level === 'medium')) return 'warning'
+  if (unresolved.some((issue) => issue.level === 'blocking' || issue.level === 'high')) return 'block'
+  if (unresolved.some((issue) => issue.level === 'medium' || issue.level === 'low')) return 'warning'
   return 'pass'
 }
 
@@ -99,21 +123,22 @@ export function ReviewVerdictBadge({ verdict }: { verdict: ReviewVerdict }) {
   return <span className={`content-verdict-badge ${meta.className}`}>{meta.label}</span>
 }
 
-/** 内容生产六步流程，与任务工作台的步骤条一一对应 */
-export const CONTENT_STEPS = ['任务简报', '资料与素材', '母稿生产', '质量与合规', '渠道版本', '审批与发布'] as const
+/** 内容生产七步流程，与任务工作台的步骤条一一对应 */
+export const CONTENT_STEPS = ['任务简报', '资料与素材', '渠道选择与字段配置', '内容概览生成', '质量与合规', '渠道内容生成', '审批与发布'] as const
 
-/** 由任务状态推导当前所处的生产步骤下标；返回 6 表示六步已全部走完 */
+/** 由任务状态推导当前所处的生产步骤下标；返回 7 表示七步已全部走完 */
 export function getTaskStep(status: ContentTaskStatus): number {
   switch (status) {
     case 'needs_material': return 1
-    case 'ready':
-    case 'generating': return 2
+    case 'ready': return 2
+    case 'channel_setup': return 2
+    case 'generating': return 3
     case 'quality_review':
-    case 'compliance_review': return 3
-    case 'channel_adaptation': return 4
+    case 'compliance_review': return 4
+    case 'channel_adaptation': return 5
     case 'pending_approval':
-    case 'scheduled': return 5
-    default: return 6
+    case 'scheduled': return 6
+    default: return 7
   }
 }
 
