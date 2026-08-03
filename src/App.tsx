@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { AdminShell } from './components/AdminShell'
 import { FixDrawer } from './components/FixDrawer'
 import { GuideModal } from './components/GuideModal'
+import { SiteSwitchModal } from './components/SiteSwitchModal'
 import { ToastStack } from './components/ToastStack'
 import { WorkbenchProvider, useWorkbench } from './context/WorkbenchContext'
 import { ContentView } from './views/ContentView'
@@ -16,7 +17,7 @@ import { SettingsView, WeeklyView } from './views/WeeklySettingsViews'
 import './styles.css'
 
 function Pages() {
-  const { view, toasts, dismissToast } = useWorkbench()
+  const { view, toasts, dismissToast, sites, startDetect } = useWorkbench()
 
   // 线索数据：列表与详情页共享，避免详情页修改后列表不回显
   const [leads, setLeads] = useState<Lead[]>(mockLeadsData)
@@ -56,6 +57,7 @@ function Pages() {
       )}
       <FixDrawer />
       <GuideModal />
+      <SiteSwitchModal />
       <ToastStack toasts={toasts} onDismiss={dismissToast} />
     </AdminShell>
   )

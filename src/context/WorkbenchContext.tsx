@@ -67,6 +67,13 @@ interface WorkbenchApi {
   // 自动验证相关
   verifyCountdown: number | null  // null = 未在验证倒计时
   verifyStartScore: number | null
+  // 渠道配置状态
+  adsConfigured: boolean
+  seoConfigured: boolean
+  discoveryActive: boolean
+  // 冷启动相关
+  domainBound: boolean
+  dismissConfigIssue: (issueId: string) => void
   navigate: (view: ViewId) => void
   dismissGuide: () => void
   startDetect: () => void
@@ -74,6 +81,9 @@ interface WorkbenchApi {
   goReport: () => void
   openWeeklyPreview: (id: string | null) => void
   setSiteId: (id: string) => void
+  pendingSiteId: string | null
+  confirmSiteSwitch: () => void
+  cancelSiteSwitch: () => void
   setFunnelPeriod: (p: FunnelPeriod) => void
   setTrendDays: (d: 7 | 30) => void
   setShowP2: (v: boolean) => void
@@ -111,13 +121,14 @@ let toastSeq = 0
 export function WorkbenchProvider({ children }: { children: ReactNode }) {
   const [view, setView] = useState<ViewId>('dashboard')
   const [hasDetected, setHasDetected] = useState(true)
-  const [showGuide, setShowGuide] = useState(() => !readGuideDismissed())
+  const [showGuide, setShowGuide] = useState(true) // TODO: 改回 () => !readGuideDismissed()
   const [loadingDashboard, setLoadingDashboard] = useState(false)
   const [scanning, setScanning] = useState(false)
   const [scanCompleted, setScanCompleted] = useState(0)
-  const [siteId, setSiteId] = useState(
+  const [siteId, setSiteIdState] = useState(
     mockSitesData.find((s) => s.isPrimary)?.id ?? mockSitesData[0].id,
   )
+  const [pendingSiteId, setPendingSiteId] = useState<string | null>(null)
   const [funnelPeriod, setFunnelPeriod] = useState<FunnelPeriod>('week')
   const [health, setHealth] = useState<HealthSnapshot>(createInitialHealth)
   const [issues, setIssues] = useState<IssueItem[]>(mockIssuesData)
@@ -137,6 +148,14 @@ export function WorkbenchProvider({ children }: { children: ReactNode }) {
   const [verifyCountdown, setVerifyCountdown] = useState<number | null>(null)
   const [verifyStartScore, setVerifyStartScore] = useState<number | null>(null)
   const [verifyTimer, setVerifyTimer] = useState<number | null>(null)
+
+  // 渠道配置状态
+  const [adsConfigured, setAdsConfigured] = useState(false)
+  const [seoConfigured, setSeoConfigured] = useState(false) // 演示：默认未配置
+  const [discoveryActive, setDiscoveryActive] = useState(true) // 自然收录渠道：有数据时显示
+
+  // 冷启动状态
+  const [domainBound, setDomainBound] = useState(true) // TODO: 改回 false
 
   const pushToast = useCallback((type: ToastItem['type'], message: string, autoDismiss = true) => {
     const id = `toast-${++toastSeq}`
@@ -159,6 +178,11 @@ export function WorkbenchProvider({ children }: { children: ReactNode }) {
     } catch {
       /* ignore */
     }
+  }, [])
+
+  // 完成/移除配置项（从 issues 数组中移除 config 维度的问题）
+  const dismissConfigIssue = useCallback((issueId: string) => {
+    setIssues((prev) => prev.filter((i) => i.id !== issueId))
   }, [])
 
   const runScanSequence = useCallback(() => {
@@ -481,9 +505,26 @@ export function WorkbenchProvider({ children }: { children: ReactNode }) {
     }, 1200)
   }, [pushToast])
 
+  // 切换站点弹窗逻辑
+  const setSiteId = useCallback((id: string) => {
+    setPendingSiteId(id)
+  }, [])
+
+  const confirmSiteSwitch = useCallback(() => {
+    if (!pendingSiteId) return
+    setSiteIdState(pendingSiteId)
+    setPendingSiteId(null)
+    setHasDetected(false)
+    startDetect()
+  }, [pendingSiteId, startDetect])
+
+  const cancelSiteSwitch = useCallback(() => {
+    setPendingSiteId(null)
+  }, [])
+
   const openHistoryReport = useCallback(
     (row: DetectHistoryRow) => {
-      setSiteId(row.siteId)
+      setSiteIdState(row.siteId)
       setHealth((prev) => ({
         ...prev,
         totalScore: row.totalScore,
@@ -546,6 +587,11 @@ export function WorkbenchProvider({ children }: { children: ReactNode }) {
       pendingTaskCount,
       verifyCountdown,
       verifyStartScore,
+      adsConfigured,
+      seoConfigured,
+      discoveryActive,
+      domainBound,
+      dismissConfigIssue,
       navigate,
       dismissGuide,
       startDetect,
@@ -553,6 +599,9 @@ export function WorkbenchProvider({ children }: { children: ReactNode }) {
       goReport,
       openWeeklyPreview,
       setSiteId,
+      pendingSiteId,
+      confirmSiteSwitch,
+      cancelSiteSwitch,
       setFunnelPeriod,
       setTrendDays,
       setShowP2,
@@ -599,6 +648,11 @@ export function WorkbenchProvider({ children }: { children: ReactNode }) {
       pendingTaskCount,
       verifyCountdown,
       verifyStartScore,
+      adsConfigured,
+      seoConfigured,
+      discoveryActive,
+      domainBound,
+      dismissConfigIssue,
       navigate,
       dismissGuide,
       startDetect,

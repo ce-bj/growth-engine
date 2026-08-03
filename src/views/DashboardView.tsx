@@ -32,6 +32,10 @@ interface ChannelDetail {
   landingPages: LandingPage[]
   isSocial?: boolean
   socialSources?: SocialSource[]
+  /** 广告投放是否已配置 Google Ads 账号 */
+  adsConfigured?: boolean
+  /** 全球SEO是否已配置 Google Search Console */
+  gscConfigured?: boolean
 }
 
 interface LandingPage {
@@ -77,6 +81,7 @@ const CHANNEL_DATA: ChannelDetail[] = [
   {
     key: 'ad',
     name: '广告投放',
+    adsConfigured: false,
     uv: 494,
     uvDelta: '+12%',
     uvPercent: 40,
@@ -196,7 +201,8 @@ const CHANNEL_DATA: ChannelDetail[] = [
   },
   {
     key: 'seo',
-    name: '外贸SEO',
+    name: '全球SEO',
+    gscConfigured: true,
     uv: 222,
     uvDelta: '+15%',
     uvPercent: 18,
@@ -282,6 +288,35 @@ const CHANNEL_DATA: ChannelDetail[] = [
       { path: '/blog/automation-trends-2026', name: '2026年制造业自动化趋势', uv: 25, uvDelta: '+5%', pv: 48, avgPages: '1.9', bounceRate: 52, stayTime: '42s', ctaRate: '3.5%', formRate: '5.2%', aiChat: 1, socialJump: 0, inquiryCount: 1, inquiryRate: '4.0%', articleType: 'insight', isArticle: true },
       { path: '/products', name: '产品页', uv: 22, uvDelta: '+2%', pv: 42, avgPages: '1.9', bounceRate: 58, stayTime: '35s', ctaRate: '2.8%', formRate: '4.2%', aiChat: 1, socialJump: 1, inquiryCount: 1, inquiryRate: '4.5%' },
       { path: '/', name: '首页', uv: 14, uvDelta: '+3%', pv: 28, avgPages: '2.0', bounceRate: 48, stayTime: '38s', ctaRate: '3.2%', formRate: '4.8%', aiChat: 0, socialJump: 0, inquiryCount: 0, inquiryRate: '0%' },
+    ],
+  },
+  {
+    key: 'discovery',
+    name: '自然收录',
+    uv: 78,
+    uvDelta: '+22%',
+    uvPercent: 6,
+    pv: 234,
+    avgPages: '3.0',
+    bounceRate: 38,
+    bounceRateDelta: '-8%',
+    stayTime: '62s',
+    ctaRate: '5.8%',
+    ctaDelta: '+0.8%',
+    formRate: '8.5%',
+    formDelta: '+2.0%',
+    aiChat: 3,
+    aiChatDelta: '+1',
+    socialJump: 0,
+    socialJumpDelta: '0',
+    inquiryCount: 4,
+    inquiryDelta: '+2',
+    inquiryRate: '5.1%',
+    inquiryRateDelta: '+0.5%',
+    landingPages: [
+      { path: '/blog/industry-news', name: '行业资讯', uv: 32, uvDelta: '+15%', pv: 58, avgPages: '1.8', bounceRate: 35, stayTime: '68s', ctaRate: '6.2%', formRate: '9.5%', aiChat: 1, socialJump: 0, inquiryCount: 2, inquiryRate: '6.3%', articleType: 'insight', isArticle: true },
+      { path: '/products/smart-sensor', name: '智能传感器产品', uv: 28, uvDelta: '+10%', pv: 52, avgPages: '1.9', bounceRate: 42, stayTime: '58s', ctaRate: '5.5%', formRate: '8.2%', aiChat: 1, socialJump: 0, inquiryCount: 1, inquiryRate: '3.6%' },
+      { path: '/', name: '首页', uv: 18, uvDelta: '+8%', pv: 35, avgPages: '1.9', bounceRate: 38, stayTime: '52s', ctaRate: '5.2%', formRate: '7.8%', aiChat: 1, socialJump: 0, inquiryCount: 1, inquiryRate: '5.6%' },
     ],
   },
 ]
@@ -561,6 +596,11 @@ export function DashboardView() {
     navigate,
     verifyCountdown,
     verifyStartScore,
+    adsConfigured,
+    seoConfigured,
+    discoveryActive,
+    issues,
+    dismissConfigIssue,
   } = wb
 
   const [expandedChannel, setExpandedChannel] = useState<string | null>(null)
@@ -569,19 +609,20 @@ export function DashboardView() {
 
   /** 多渠道7日趋势 mock（增长平稳） */
   const TREND_DATA = [
-    { day: '周一', 广告投放: 462, 社交媒体: 285, 外贸SEO: 198, 直接访问: 138, 外链: 56 },
-    { day: '周二', 广告投放: 478, 社交媒体: 296, 外贸SEO: 205, 直接访问: 142, 外链: 58 },
-    { day: '周三', 广告投放: 485, 社交媒体: 302, 外贸SEO: 212, 直接访问: 144, 外链: 60 },
-    { day: '周四', 广告投放: 494, 社交媒体: 309, 外贸SEO: 222, 直接访问: 148, 外链: 61 },
-    { day: '周五', 广告投放: 510, 社交媒体: 318, 外贸SEO: 235, 直接访问: 152, 外链: 65 },
-    { day: '周六', 广告投放: 488, 社交媒体: 295, 外贸SEO: 218, 直接访问: 145, 外链: 59 },
-    { day: '周日', 广告投放: 502, 社交媒体: 312, 外贸SEO: 228, 直接访问: 150, 外链: 63 },
+    { day: '周一', 广告投放: 462, 社交媒体: 285, 全球SEO: 198, 直接访问: 138, 外链: 56, 自然收录: 52 },
+    { day: '周二', 广告投放: 478, 社交媒体: 296, 全球SEO: 205, 直接访问: 142, 外链: 58, 自然收录: 58 },
+    { day: '周三', 广告投放: 485, 社交媒体: 302, 全球SEO: 212, 直接访问: 144, 外链: 60, 自然收录: 62 },
+    { day: '周四', 广告投放: 494, 社交媒体: 309, 全球SEO: 222, 直接访问: 148, 外链: 61, 自然收录: 68 },
+    { day: '周五', 广告投放: 510, 社交媒体: 318, 全球SEO: 235, 直接访问: 152, 外链: 65, 自然收录: 72 },
+    { day: '周六', 广告投放: 488, 社交媒体: 295, 全球SEO: 218, 直接访问: 145, 外链: 59, 自然收录: 65 },
+    { day: '周日', 广告投放: 502, 社交媒体: 312, 全球SEO: 228, 直接访问: 150, 外链: 63, 自然收录: 78 },
   ]
 
   const CHANNEL_COLORS: Record<string, string> = {
     '广告投放': '#3b82f6',
     '社交媒体': '#22c55e',
-    '外贸SEO': '#a855f7',
+    '全球SEO': '#a855f7',
+  '自然收录': '#14b8a6',
     '直接访问': '#f59e0b',
     '外链': '#ef4444',
   }
@@ -649,12 +690,20 @@ export function DashboardView() {
           })),
         }))
       default:
-        return CHANNEL_DATA
+        return CHANNEL_DATA.filter((ch) => {
+          if (ch.key === 'ad' && !adsConfigured) return false
+          if (ch.key === 'seo' && !seoConfigured) return false
+          if (ch.key === 'discovery' && !discoveryActive) return false
+          return true
+        })
     }
   }
 
   const activeChannelData = getChannelData()
   const activeChannel = activeChannelData.find((ch) => ch.key === showChannelModal)
+
+  // 冷启动任务（config 维度未完成项）
+  const configIssues = issues.filter(i => i.dimensionKey === 'config')
 
   if (loadingDashboard) {
     return (
@@ -666,19 +715,7 @@ export function DashboardView() {
     )
   }
 
-  if (!hasDetected) {
-    return (
-      <div className="card empty-state">
-        <div className="empty-state__icon" aria-hidden style={{ color: 'var(--color-primary)' }}>
-          ○
-        </div>
-        <h2 className="empty-state__title">暂无数据，开始检测您的网站</h2>
-        <p className="empty-state__desc">了解六个维度表现，并获得 AI 修复建议</p>
-        <Button onClick={startDetect}>立即检测</Button>
-      </div>
-    )
-  }
-
+  // 正常数据看板
   const level = scoreLevel(health.totalScore)
   const delta = formatDelta(health.totalScore, health.previousScore)
   const pending = p0Count + p1Count
@@ -698,6 +735,39 @@ export function DashboardView() {
 
   return (
     <div className="stack">
+      {/* 冷启动任务面板 - 看板顶部 */}
+      {configIssues.length > 0 && (
+        <section className="card cold-start-panel">
+          <div className="cold-start-panel__header">
+            <h2 className="card__title">🎉 欢迎使用增长工作台</h2>
+            <p className="cold-start-panel__desc">
+              完成以下 {configIssues.length} 项基础配置，即可解锁全部数据洞察功能，让您的网站流量和转化更上一层楼！
+            </p>
+          </div>
+          <div className="cold-start-list">
+            {configIssues.map((issue, index) => (
+              <div key={issue.id} className="cold-start-item">
+                <div className="cold-start-item__left">
+                  <span className="cold-start-item__step">{index + 1}</span>
+                  <div className="cold-start-item__content">
+                    <span className="cold-start-item__title">{issue.title}</span>
+                    <span className={`cold-start-item__priority cold-start-item__priority--${issue.priority.toLowerCase()}`}>
+                      {issue.priority}
+                    </span>
+                  </div>
+                </div>
+                <button className="btn btn--sm btn--primary" onClick={() => alert(`配置: ${issue.title}`)}>
+                  去设置
+                </button>
+              </div>
+            ))}
+          </div>
+          <div className="cold-start-panel__footer">
+            <p className="cold-start-panel__tip">💡 完成配置后，系统将自动为您展示网站健康度报告和流量转化数据</p>
+          </div>
+        </section>
+      )}
+
       {/* 自动验证倒计时提醒 */}
       {verifyCountdown !== null && (
         <div className="admin-callout admin-callout--info">
@@ -805,7 +875,8 @@ export function DashboardView() {
               <Legend wrapperStyle={{ fontSize: 12 }} />
               <Line type="monotone" dataKey="广告投放" stroke="#3b82f6" strokeWidth={2} dot={{ r: 3 }} />
               <Line type="monotone" dataKey="社交媒体" stroke="#22c55e" strokeWidth={2} dot={{ r: 3 }} />
-              <Line type="monotone" dataKey="外贸SEO" stroke="#a855f7" strokeWidth={2} dot={{ r: 3 }} />
+              <Line type="monotone" dataKey="全球SEO" stroke="#a855f7" strokeWidth={2} dot={{ r: 3 }} />
+              <Line type="monotone" dataKey="自然收录" stroke="#14b8a6" strokeWidth={2} dot={{ r: 3 }} />
               <Line type="monotone" dataKey="直接访问" stroke="#f59e0b" strokeWidth={2} dot={{ r: 3 }} />
               <Line type="monotone" dataKey="外链" stroke="#ef4444" strokeWidth={2} dot={{ r: 3 }} />
             </LineChart>
@@ -890,9 +961,47 @@ export function DashboardView() {
       <section className="card">
         <div className="section-header">
           <h2 className="card__title">流量来源</h2>
-          <span className="muted">{activeChannelData.length} 个渠道</span>
+          <span className="muted">{activeChannelData.length + (!adsConfigured ? 1 : 0) + (!seoConfigured ? 1 : 0)} 个渠道</span>
         </div>
         <div className="channel-cards-grid">
+          {/* 广告投放骨架卡片 - 未配置时显示 */}
+          {!adsConfigured && (
+            <div className="channel-card channel-card--skeleton">
+              <div className="channel-card__head">
+                <div className="channel-card__title">
+                  <span className="channel-card__name">广告投放</span>
+                  <span className="channel-card__tag">未配置</span>
+                </div>
+              </div>
+              <div className="channel-card__body">
+                <p style={{ color: '#64748b', fontSize: 14, margin: '12px 0' }}>
+                  配置 Google Ads 账号后可查看广告投放数据
+                </p>
+                <button className="btn btn--primary btn--sm" onClick={() => alert('配置 Google Ads 账号')}>
+                  连接账号
+                </button>
+              </div>
+            </div>
+          )}
+          {/* 全球SEO骨架卡片 - 未配置时显示 */}
+          {!seoConfigured && (
+            <div className="channel-card channel-card--skeleton">
+              <div className="channel-card__head">
+                <div className="channel-card__title">
+                  <span className="channel-card__name">全球SEO</span>
+                  <span className="channel-card__tag">未配置</span>
+                </div>
+              </div>
+              <div className="channel-card__body">
+                <p style={{ color: '#64748b', fontSize: 14, margin: '12px 0' }}>
+                  连接 Google Search Console 后可查看SEO数据
+                </p>
+                <button className="btn btn--primary btn--sm" onClick={() => alert('配置 Google Search Console')}>
+                  连接账号
+                </button>
+              </div>
+            </div>
+          )}
           {activeChannelData.map((channel) => {
             const color = CHANNEL_COLORS[channel.name] || '#64748b'
             const isHi = channel.uvPercent >= 25

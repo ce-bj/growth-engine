@@ -13,9 +13,10 @@ export type DimensionKey =
   | 'content'
   | 'compliance'
   | 'conversion'
+  | 'config'
 
 export const DIMENSION_ORDER: DimensionKey[] = [
-  'tech', 'seo', 'geo', 'content', 'compliance', 'conversion',
+  'tech', 'seo', 'geo', 'content', 'compliance', 'conversion', 'config',
 ]
 
 export const DIMENSION_META: Array<{
@@ -31,6 +32,7 @@ export const DIMENSION_META: Array<{
   { key: 'content',    name: '内容质量',   weight: 0.22, rawMax: 20, weightPoints: 22 },
   { key: 'compliance', name: '全球合规',   weight: 0.16, rawMax: 20, weightPoints: 16 },
   { key: 'conversion', name: '商业转化',   weight: 0.12, rawMax: 20, weightPoints: 12 },
+  { key: 'config',     name: '基础配置',   weight: 0,    rawMax: 0,  weightPoints: 0  },
 ]
 
 /** 侧栏可进入的业务页（scanning / fix 为覆盖层，不占导航） */
@@ -110,6 +112,7 @@ export interface IssueItem {
   description: string
   dimensionKey: DimensionKey
   fixMode: FixMode
+  status?: 'open' | 'done'
 }
 
 export interface FunnelSource {
