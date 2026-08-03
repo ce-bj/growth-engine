@@ -1,21 +1,22 @@
-import { AlertTriangle, ArrowLeft, Check, ChevronDown, ChevronRight, ChevronUp, CircleAlert, FileCheck2, Globe, Languages, Library, Plus, RefreshCw, Send, Sparkles, Trash2 } from 'lucide-react'
+import { AlertTriangle, ArrowLeft, Check, ChevronDown, ChevronRight, ChevronUp, CircleAlert, FileCheck2, Globe, Languages, Library, Plus, RefreshCw, Send, ShieldAlert, Sparkles, Trash2 } from 'lucide-react'
 import { useState } from 'react'
 import { Button } from '../../components/Button'
-import type { ChannelProfile, ContentChannel, ContentLocale, ContentTask, GlossaryTerm, KnowledgeRiskEvent } from '../../types'
+import type { ChannelProfile, ContentChannel, ContentLocale, ContentTask, GlossaryTerm, KnowledgeRiskEvent, MaterialBudgetItem } from '../../types'
 import { ContentAssistantPanel, type AssistantQuickAction } from './ContentAssistantPanel'
-import { CHANNEL_FIELD_DEFS, ChannelBadge, CHANNEL_META, CONTENT_STEPS, getGlossaryStatus, getReviewVerdict, getTaskStep, KNOWLEDGE_RISK_SOURCE_LABEL, KnowledgeRiskBadge, KNOWLEDGE_RISK_STATUS_LABEL, QualityRing, ReviewVerdictBadge, StatusBadge } from './ContentPrimitives'
+import { CHANNEL_FIELD_DEFS, ChannelBadge, CHANNEL_META, CONTENT_STEPS, getGlossaryStatus, getReviewVerdict, getTaskStep, KNOWLEDGE_RISK_SOURCE_LABEL, KnowledgeRiskBadge, KNOWLEDGE_RISK_STATUS_LABEL, MATERIAL_BUDGET_TEMPLATES, MaterialBudgetStatusBadge, OriginBadge, QualityRing, ReviewVerdictBadge, StatusBadge, TYPE_LABEL } from './ContentPrimitives'
 
-export function ContentWorkbench({ task, initialStep, knowledgeRisks, locales, glossaryTerms, onBack, onUpdateBrief, onUpdateOutline, onResolveMaterials, onConfirmChannelProfiles, onGenerateDraft, onRegenerateDraft, onToggleComplianceIssue, onIgnoreWarnings, onGenerateChannel, onUpdateChannelVersion, onSubmitApproval, onApprove, onOpenGlossary, onOpenKnowledgeRisks }: {
+export function ContentWorkbench({ task, initialStep, knowledgeRisks, locales, glossaryTerms, onBack, onUpdateBrief, onUpdateOutline, onResolveMaterials, onConfirmChannelProfiles, onUpdateBudget, onGenerateDraft, onRegenerateDraft, onToggleComplianceIssue, onIgnoreWarnings, onGenerateChannel, onUpdateChannelVersion, onSubmitApproval, onApprove, onOpenGlossary, onOpenKnowledgeRisks }: {
   task: ContentTask
   initialStep?: number
   knowledgeRisks: KnowledgeRiskEvent[]
   locales: ContentLocale[]
   glossaryTerms: GlossaryTerm[]
   onBack: () => void
-  onUpdateBrief: (taskId: string, patch: Partial<Pick<ContentTask, 'title' | 'audience' | 'userQuestion' | 'theme' | 'reason' | 'dueDate'>>) => void
+  onUpdateBrief: (taskId: string, patch: Partial<Pick<ContentTask, 'title' | 'audience' | 'userQuestion' | 'theme' | 'reason' | 'dueDate' | 'locales'>>) => void
   onUpdateOutline: (taskId: string, outline: string[]) => void
   onResolveMaterials: (taskId: string) => void
   onConfirmChannelProfiles: (taskId: string, profiles: ChannelProfile[]) => void
+  onUpdateBudget: (taskId: string, budget: MaterialBudgetItem[]) => void
   onGenerateDraft: (taskId: string) => void
   onRegenerateDraft: (taskId: string) => void
   onToggleComplianceIssue: (taskId: string, issueId: string) => void
@@ -27,7 +28,7 @@ export function ContentWorkbench({ task, initialStep, knowledgeRisks, locales, g
   onOpenGlossary: (terms: string[]) => void
   onOpenKnowledgeRisks: () => void
 }) {
-  const [step, setStep] = useState(initialStep ?? Math.min(getTaskStep(task.status), CONTENT_STEPS.length - 1))
+  const [step, setStep] = useState(initialStep ?? (task.origin ? 0 : Math.min(getTaskStep(task.status), CONTENT_STEPS.length - 1)))
   const [channel, setChannel] = useState<ContentChannel>(task.channelVersions[0]?.channel ?? task.channels[0] ?? 'website')
   const [scheduledAt, setScheduledAt] = useState('2026-08-03T10:00')
   const [failStrategy, setFailStrategy] = useState<'continue' | 'stop'>('continue')
@@ -57,6 +58,26 @@ export function ContentWorkbench({ task, initialStep, knowledgeRisks, locales, g
   })
   const hasDraftGap = termGaps.length > 0 || openKnowledgeRisks.length > 0
   const verifiedKnowledge = task.knowledge.filter((ref) => ref.verified)
+
+  /** 步骤②：语言站点选择（本内容要发布到的语言站点） */
+  const selectedLocaleCodes = task.locales ?? []
+  function toggleLocale(code: string) {
+    const next = selectedLocaleCodes.includes(code)
+      ? selectedLocaleCodes.filter((c) => c !== code)
+      : [...selectedLocaleCodes, code]
+    onUpdateBrief(task.id, { locales: next })
+  }
+
+  /** 一次性物料预算：有显式预算则用，否则按内容类型模板推导初始清单 */
+  const budget: MaterialBudgetItem[] = task.materialBudget ?? MATERIAL_BUDGET_TEMPLATES[task.type].map((tpl, i) => ({ id: `mb-tpl-${i}`, templateKey: tpl.templateKey, name: tpl.name, status: tpl.defaultStatus, note: tpl.note, addedDuringGeneration: false }))
+  const budgetReady = budget.every((item) => item.status === 'ready')
+  const budgetMissing = budget.filter((item) => item.status !== 'ready')
+
+  /** 步骤③：把某项素材标记为已就绪（一次性补齐，用户确认） */
+  function markBudgetReady(itemId: string) {
+    const next = budget.map((item) => item.id === itemId ? { ...item, status: 'ready' as const } : item)
+    onUpdateBudget(task.id, next)
+  }
 
   function updateField(ch: ContentChannel, key: string, value: string) {
     setFieldValues((prev) => ({ ...prev, [ch]: { ...prev[ch], [key]: value } }))
@@ -103,11 +124,29 @@ export function ContentWorkbench({ task, initialStep, knowledgeRisks, locales, g
       assistantMessage = '这是本次内容任务的简报，你可以直接编辑标题、受众、主题、依据等字段；确认无误后进入下一步"资料与素材"。'
       break
     case 1: {
-      if (task.missingMaterials.length) {
-        assistantMessage = `还缺 ${task.missingMaterials.length} 项资料，补充完成后点击下方按钮确认。`
-        assistantQuickActions.push({ label: '已补充全部资料', onClick: () => onResolveMaterials(task.id) })
+      // 步骤② 渠道与发布目标
+      const localeReady = task.locales && task.locales.length > 0
+      const fieldReady = allFieldsFilled
+      if (localeReady && fieldReady) {
+        assistantMessage = '渠道与发布目标已确认，可以进入资料与素材。'
+        assistantQuickActions.push({ label: '确认渠道与发布目标', onClick: confirmChannelProfiles })
       } else {
-        assistantMessage = '资料已准备完整，可以继续下一步。'
+        assistantMessage = localeReady ? '请先填写完所有已选渠道的定义字段。' : '请先选择本内容要发布的渠道与语言站点。'
+      }
+      if (taskLocales.length > 0 && termGaps.length > 0) {
+        assistantMessage += ` 所选语言站点有 ${termGaps.length} 个专业名词还缺译名。`
+        assistantQuickActions.push({ label: '去配置术语与翻译', onClick: () => onOpenGlossary(termGaps) })
+      }
+      break
+    }
+    case 2: {
+      // 步骤③ 资料与素材：一次性物料预算
+      if (budgetMissing.length) {
+        assistantMessage = `物料预算已列出本篇内容共需 ${budget.length} 项素材，其中 ${budgetMissing.length} 项待补充/授权。逐项补齐并标记为已就绪后，一次性进入生成。`
+        assistantQuickActions.push({ label: budgetMissing.length ? '全部补齐后进入生成' : '进入生成', onClick: () => onResolveMaterials(task.id), disabled: !budgetReady })
+      } else {
+        assistantMessage = '物料预算已全部就绪，可以进入内容概览生成。'
+        assistantQuickActions.push({ label: '进入内容概览生成', onClick: () => onResolveMaterials(task.id) })
       }
       if (taskLocales.length > 0 && termGaps.length > 0) {
         assistantMessage += ` 另外有 ${termGaps.length} 个专业名词还缺目标语言译名。`
@@ -115,10 +154,6 @@ export function ContentWorkbench({ task, initialStep, knowledgeRisks, locales, g
       }
       break
     }
-    case 2:
-      assistantMessage = allFieldsFilled ? '渠道字段已填写完整，确认后即可进入内容概览生成。' : '请先填写完所有已选渠道的定义字段。'
-      assistantQuickActions.push({ label: '确认渠道字段，进入内容概览生成', onClick: confirmChannelProfiles, disabled: !allFieldsFilled })
-      break
     case 3:
       if (!task.masterDraft) {
         assistantMessage = '大纲已经可以编辑，确认后点击下方按钮生成内容概览。'
@@ -166,19 +201,25 @@ export function ContentWorkbench({ task, initialStep, knowledgeRisks, locales, g
     <div className="content-stepper">{CONTENT_STEPS.map((label, index) => <button key={label} className={`${step === index ? 'is-active' : ''} ${index < step ? 'is-done' : ''}`} onClick={() => setStep(index)}><span>{index < step ? <Check size={13} /> : index + 1}</span><b>{label}</b>{index < CONTENT_STEPS.length - 1 && <ChevronRight size={14} />}</button>)}</div>
 
     <section className="content-workbench__body">
-      {step === 0 && <div className="content-workbench-grid"><div className="content-panel"><span className="content-eyebrow">CONTENT BRIEF</span><h3>任务说明</h3><div className="content-brief-form">
+      {step === 0 && <div className="content-workbench-grid"><div className="content-panel"><span className="content-eyebrow">CONTENT BRIEF</span><h3>任务说明</h3>{task.origin && <div className="content-origin-card"><div className="content-origin-card__head"><OriginBadge source={task.origin.source} /><b>{task.origin.sourceLabel}</b></div>{task.origin.evidence && <div className="content-origin-evidence"><span>{task.origin.evidence.currentValue}</span><i>→</i><span>{task.origin.evidence.action}</span></div>}{task.origin.attributionRef && <small>复盘周期 {task.origin.attributionRef.reviewPeriod} · 关联归因分析</small>}</div>}<div className="content-brief-form">
         <label className="content-form-field"><span>内容标题</span><input className="form-input" value={task.title} onChange={(e) => onUpdateBrief(task.id, { title: e.target.value })} /></label>
         <label className="content-form-field"><span>目标受众</span><input className="form-input" value={task.audience} onChange={(e) => onUpdateBrief(task.id, { audience: e.target.value })} /></label>
         <label className="content-form-field"><span>访客问题</span><input className="form-input" value={task.userQuestion} onChange={(e) => onUpdateBrief(task.id, { userQuestion: e.target.value })} /></label>
         <label className="content-form-field"><span>内容主题</span><input className="form-input" value={task.theme} onChange={(e) => onUpdateBrief(task.id, { theme: e.target.value })} /></label>
         <label className="content-form-field"><span>任务依据</span><textarea rows={3} value={task.reason} onChange={(e) => onUpdateBrief(task.id, { reason: e.target.value })} /></label>
         <label className="content-form-field"><span>计划时间</span><input type="date" className="form-input" value={task.dueDate} onChange={(e) => onUpdateBrief(task.id, { dueDate: e.target.value })} /></label>
-      </div></div><div className="content-panel"><span className="content-eyebrow">TARGET CHANNELS</span><h3>目标渠道</h3><div className="content-channel-stack">{task.channels.map((item) => <ChannelBadge key={item} channel={item} />)}</div><div className="content-note"><Sparkles size={16} /><p>先形成统一事实和核心表达，再从内容概览生成各渠道版本。</p></div></div></div>}
+      </div></div><div className="content-panel"><span className="content-eyebrow">TARGET CHANNELS</span><h3>目标渠道</h3><div className="content-channel-stack">{task.channels.map((item) => <ChannelBadge key={item} channel={item} />)}</div><div className="content-note"><Sparkles size={16} /><p>下一步将选择本内容要发布到的语言站点与发布目标。</p></div></div></div>}
 
-      {step === 1 && <div className="content-workbench-grid"><div className="content-panel"><div className="content-panel__head"><div><span className="content-eyebrow">KNOWLEDGE REFERENCES</span><h3>知识库调用结果</h3></div><Library size={20} /></div><div className="content-reference-list">{task.knowledge.length ? task.knowledge.map((ref) => <div key={ref.id}><span className={ref.verified ? 'is-verified' : ''}>{ref.verified ? <Check size={12} /> : '!'}</span><p><b>{ref.title}</b><small>{ref.category} · {ref.source}</small></p></div>) : <p className="muted">任务开始后将调用企业与行业知识库。</p>}</div>
+      {step === 1 && <div className="content-workbench-grid"><div className="content-panel"><span className="content-eyebrow">TARGET CHANNELS</span><h3>发布渠道</h3><div className="content-channel-stack">{task.channels.map((item) => <ChannelBadge key={item} channel={item} />)}</div><div className="content-note"><Sparkles size={16} /><p>先确认发布渠道与语言站点，再进入资料与素材——发布到哪些站点决定了需要哪些术语译名和素材。</p></div>
+        <div className="content-locale-select"><span className="content-eyebrow">LOCALE TARGETS</span><h3>语言站点</h3><p className="muted">选择要发布到的语言站点（留空表示仅中文站）。</p><div className="content-locale-chips">{locales.map((locale) => <button key={locale.code} type="button" className={`${selectedLocaleCodes.includes(locale.code) ? 'is-active' : ''}`} onClick={() => toggleLocale(locale.code)}>{locale.label}<small>{locale.site}</small></button>)}</div>{selectedLocaleCodes.length > 0 && termGaps.length > 0 && <div className="content-term-gap-tags" style={{ marginTop: 10 }}>{termGaps.map((item) => <em key={item}>{item} 缺译名</em>)}</div>}</div>
+      </div>
+        <div className="content-panel content-channel-fields-panel"><span className="content-eyebrow">CHANNEL FIELDS</span><h3>渠道定义字段</h3><div className="content-channel-fields-list">{task.channels.map((ch) => <div key={ch} className="content-channel-fields-card"><div className="content-channel-fields-card__head"><ChannelBadge channel={ch} /></div>{CHANNEL_FIELD_DEFS[ch].map((field) => <label key={field.key} className="content-form-field"><span>{field.label}<small>{field.source}</small></span><input className="form-input" value={fieldValues[ch]?.[field.key] ?? ''} onChange={(e) => updateField(ch, field.key, e.target.value)} /></label>)}</div>)}</div>
+          <Button block disabled={!allFieldsFilled} onClick={confirmChannelProfiles}>确认渠道与发布目标，进入资料与素材</Button>
+        </div></div>}
+
+      {step === 2 && <div className="content-workbench-grid"><div className="content-panel"><div className="content-panel__head"><div><span className="content-eyebrow">MATERIAL BUDGET</span><h3>一次性物料预算</h3></div><span className={`content-material-count ${budgetReady ? 'is-ready' : ''}`}>{budgetReady ? '全部就绪' : `${budgetMissing.length}/${budget.length} 待补充`}</span></div><p className="content-panel__desc">已按内容类型「{TYPE_LABEL[task.type]}」与目标站点推导本篇内容所需的全部素材，一次性列齐。每一项可追溯到模板来源；生成过程中的知识库缺口也会自动归入此处，不再反复打断。</p><div className="content-material-list">{budget.map((item) => <article key={item.id} className={`is-${item.status} ${item.addedDuringGeneration ? 'is-added' : ''}`}><span className="content-material-state">{item.status === 'ready' ? <Check size={13} /> : item.status === 'pending_auth' ? <ShieldAlert size={13} /> : <CircleAlert size={13} />}</span><div><b>{item.name}</b><small>{item.note}</small></div><MaterialBudgetStatusBadge status={item.status} />{item.status !== 'ready' && <Button size="sm" variant="secondary" onClick={() => markBudgetReady(item.id)}>已补充/已授权</Button>}</article>)}</div><Button block disabled={!budgetReady} onClick={() => onResolveMaterials(task.id)}>{budgetReady ? '物料预算已就绪，进入内容概览生成' : `还有 ${budgetMissing.length} 项素材待补充，补齐后进入生成`}</Button></div><div className="content-panel"><span className="content-eyebrow">KNOWLEDGE REFERENCES</span><h3>知识库调用结果</h3><div className="content-reference-list">{task.knowledge.length ? task.knowledge.map((ref) => <div key={ref.id}><span className={ref.verified ? 'is-verified' : ''}>{ref.verified ? <Check size={12} /> : '!'}</span><p><b>{ref.title}</b><small>{ref.category} · {ref.source}</small></p></div>) : <p className="muted">任务开始后将调用企业与行业知识库。</p>}</div>
         {taskKnowledgeRisks.length > 0 && <div className="content-knowledge-risk-panel"><div className="content-panel__head"><div><span className="content-eyebrow">RAG RISK TRACE</span><h3>知识库调用风险</h3></div><span className="content-risk-summary has-risk">{taskKnowledgeRisks.length} 条</span></div><div className="content-knowledge-risk-list">{taskKnowledgeRisks.map((risk) => <article key={risk.id} className={`is-${risk.level}`}><div className="content-knowledge-risk-list__head"><KnowledgeRiskBadge level={risk.level} /><span className={`content-knowledge-risk-status is-${risk.status}`}>{KNOWLEDGE_RISK_STATUS_LABEL[risk.status]}</span></div><b>{risk.issueType}</b><p>{risk.diagnosis}</p><small>{KNOWLEDGE_RISK_SOURCE_LABEL} · {risk.occurredAt}</small></article>)}</div></div>}
-      </div><div className="content-panel"><span className="content-eyebrow">MISSING MATERIALS</span><h3>缺失资料</h3>{task.missingMaterials.length ? <div className="content-missing-list">{task.missingMaterials.map((item) => <div key={item}><CircleAlert size={15} />{item}</div>)}<Button size="sm" onClick={() => onResolveMaterials(task.id)}>已补充全部资料</Button></div> : <div className="content-empty-success"><FileCheck2 size={28} /><b>资料已准备完整</b><span>关键事实均有可追溯来源</span></div>}
-        {taskLocales.length > 0 && <div className={`content-locale-notice ${termGaps.length ? 'is-warning' : 'is-ready'}`}>
+      </div><div className="content-panel"><span className="content-eyebrow">TERM & LOCALE</span><h3>术语与多语言</h3>{taskLocales.length > 0 ? <div className={`content-locale-notice ${termGaps.length ? 'is-warning' : 'is-ready'}`}>
           <div className="content-locale-notice__head"><Globe size={16} /><b>本内容将发布到多语言站点</b></div>
           <div className="content-locale-notice__sites">{taskLocales.map((locale) => <span key={locale.code}>{locale.label}<small>{locale.site}</small></span>)}</div>
           {termGaps.length ? <>
@@ -189,13 +230,8 @@ export function ContentWorkbench({ task, initialStep, knowledgeRisks, locales, g
             <p>目标语言站点涉及的专业名词译名已全部配置完成。</p>
             <Button size="sm" variant="secondary" onClick={() => onOpenGlossary([])}><Languages size={13} />查看术语与翻译</Button>
           </>}
-        </div>}
+        </div> : <p className="muted">本内容仅发布中文站，无需多语言术语配置。</p>}
       </div></div>}
-
-      {step === 2 && <div className="content-workbench-grid"><div className="content-panel"><span className="content-eyebrow">TARGET CHANNELS</span><h3>已选发布渠道</h3><div className="content-channel-stack">{task.channels.map((item) => <ChannelBadge key={item} channel={item} />)}</div><div className="content-note"><Sparkles size={16} /><p>渠道字段值后续将从账号管理、CMS 等其他功能取得，原型阶段用示例值填充，可编辑确认。</p></div></div>
-        <div className="content-panel content-channel-fields-panel"><span className="content-eyebrow">CHANNEL FIELDS</span><h3>渠道定义字段</h3><div className="content-channel-fields-list">{task.channels.map((ch) => <div key={ch} className="content-channel-fields-card"><div className="content-channel-fields-card__head"><ChannelBadge channel={ch} /></div>{CHANNEL_FIELD_DEFS[ch].map((field) => <label key={field.key} className="content-form-field"><span>{field.label}<small>{field.source}</small></span><input className="form-input" value={fieldValues[ch]?.[field.key] ?? ''} onChange={(e) => updateField(ch, field.key, e.target.value)} /></label>)}</div>)}</div>
-          <Button block disabled={!allFieldsFilled} onClick={confirmChannelProfiles}>确认渠道字段，进入内容概览生成</Button>
-        </div></div>}
 
       {step === 3 && <div className="content-draft-layout"><aside className="content-outline"><span className="content-eyebrow">OUTLINE</span><h3>内容大纲</h3><div className="content-outline-list">{task.outline.map((item, index) => <div key={index} className="content-outline-item"><span>{String(index + 1).padStart(2, '0')}</span><input value={item} placeholder="大纲内容" onChange={(e) => updateOutlineItem(index, e.target.value)} /><div className="content-outline-item__actions"><button title="上移" disabled={index === 0} onClick={() => moveOutlineItem(index, -1)}><ChevronUp size={13} /></button><button title="下移" disabled={index === task.outline.length - 1} onClick={() => moveOutlineItem(index, 1)}><ChevronDown size={13} /></button><button title="删除" onClick={() => removeOutlineItem(index)}><Trash2 size={13} /></button></div></div>)}</div><button className="content-outline-add" onClick={addOutlineItem}><Plus size={13} />新增大纲项</button></aside><div className="content-editor"><div className="content-editor__head"><div><span className="content-eyebrow">CONTENT OVERVIEW</span><h3>内容概览</h3></div><div><Button size="sm" variant="secondary">调整语气</Button><Button size="sm"><Sparkles size={14} />AI 重写</Button></div></div>
         <div className="content-editor__canvas"><h1>{task.title}</h1>{task.masterDraft ? task.masterDraft.split('\n\n').map((p) => <p key={p}>{p}</p>) : <div className="content-generating-state"><Sparkles size={30} /><b>等待生成内容概览</b><span>将基于已确认大纲、知识资料与渠道字段生成</span><Button onClick={() => onGenerateDraft(task.id)}>开始生成</Button></div>}</div></div>

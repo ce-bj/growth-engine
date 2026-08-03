@@ -1,5 +1,5 @@
 import type { ContentTask } from '../../types'
-import { getReviewVerdict, MetricCard, QualityRing, ReviewVerdictBadge, StatusBadge, TYPE_LABEL, ChannelBadge } from './ContentPrimitives'
+import { getReviewVerdict, MetricCard, OriginBadge, QualityRing, ReviewVerdictBadge, StatusBadge, TYPE_LABEL, ChannelBadge } from './ContentPrimitives'
 import { Button } from '../../components/Button'
 
 export function ContentReview({ tasks, onOpenTask }: { tasks: ContentTask[]; onOpenTask: (id: string, step?: number) => void }) {
@@ -23,7 +23,7 @@ export function ContentReview({ tasks, onOpenTask }: { tasks: ContentTask[]; onO
       <div className="content-panel__head"><div><span className="content-eyebrow">REVIEW QUEUE</span><h3>审核队列</h3><p className="content-panel__desc">结论口径：存在未处理阻断项 → 已拦截；存在未处理高/中风险 → 有警告；否则审核通过。</p></div></div>
       <div className="table-wrap"><table className="content-data-table"><thead><tr><th>内容任务</th><th>类型</th><th>任务状态</th><th>质量分</th><th>结论</th><th>目标渠道</th><th>操作</th></tr></thead><tbody>
         {queue.length === 0 ? <tr><td colSpan={7} className="content-empty-row">当前没有处于审核阶段的内容。</td></tr> : verdicts.map(({ task, verdict }) => <tr key={task.id}>
-          <td><b>{task.title}</b><p>{task.theme}</p></td>
+          <td><b>{task.title}</b><p>{task.theme}</p>{task.origin && <OriginBadge source={task.origin.source} />}</td>
           <td>{TYPE_LABEL[task.type]}</td>
           <td><StatusBadge status={task.status} /></td>
           <td><QualityRing score={task.quality.overall} size="sm" /></td>

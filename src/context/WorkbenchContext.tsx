@@ -4,7 +4,9 @@ import {
   useContext,
   useMemo,
   useState,
+  type Dispatch,
   type ReactNode,
+  type SetStateAction,
 } from 'react'
 import {
   GUIDE_DISMISS_KEY,
@@ -29,6 +31,9 @@ import type {
   AgentTaskRow,
   AttributionConfig,
   AttributionReport,
+  ContentOpportunity,
+  ContentPlanItem,
+  ContentTask,
   DetectHistoryRow,
   FixTarget,
   FixTaskRow,
@@ -39,6 +44,9 @@ import type {
   ViewId,
   WeeklyReportRow,
 } from '../types'
+import { contentOpportunitiesData, contentPlanItemsData, contentTasksData } from '../data/contentMock'
+import { deriveMaterialBudget } from '../lib/materialBudget'
+import { planContent } from '../lib/contentPlanner'
 
 type FixPhase = 'analyzing' | 'confirm' | 'manual' | 'applying' | 'done'
 
@@ -127,6 +135,14 @@ interface WorkbenchApi {
   closeAttributionDetail: () => void
   setAttributionConfig: (cfg: AttributionConfig) => void
   setReportInitialTab: (tab: 'health' | 'attribution') => void
+  // 内容运营（全局任务状态，供归因诊断联动创建任务）
+  contentTasks: ContentTask[]
+  contentOpportunities: ContentOpportunity[]
+  contentPlanItems: ContentPlanItem[]
+  setContentTasks: Dispatch<SetStateAction<ContentTask[]>>
+  setContentOpportunities: Dispatch<SetStateAction<ContentOpportunity[]>>
+  setContentPlanItems: Dispatch<SetStateAction<ContentPlanItem[]>>
+  addContentTask: (task: ContentTask) => void
 }
 
 const WorkbenchContext = createContext<WorkbenchApi | null>(null)
@@ -196,6 +212,15 @@ export function WorkbenchProvider({ children }: { children: ReactNode }) {
   const [reportInitialTab, setReportInitialTab] = useState<'health' | 'attribution'>('health')
   // 当前选中的归因报告周期（默认本期）
   const [attributionReportId, setAttributionReportId] = useState<string>(mockAttributionReport.id)
+
+  // 内容运营：全局任务/机会/计划项状态（归因诊断确认措施后联动创建内容任务）
+  const [contentTasks, setContentTasks] = useState<ContentTask[]>(contentTasksData)
+  const [contentOpportunities, setContentOpportunities] = useState<ContentOpportunity[]>(contentOpportunitiesData)
+  const [contentPlanItems, setContentPlanItems] = useState<ContentPlanItem[]>(contentPlanItemsData)
+
+  const addContentTask = useCallback((task: ContentTask) => {
+    setContentTasks((prev) => [task, ...prev])
+  }, [])
 
   const pushToast = useCallback((type: ToastItem['type'], message: string, autoDismiss = true) => {
     const id = `toast-${++toastSeq}`
@@ -626,6 +651,7 @@ export function WorkbenchProvider({ children }: { children: ReactNode }) {
         note: 'T+7 复盘：异常指标回归正常区间，措施起效。沉淀为标准措施。',
       }
       const reviewPeriod = changeRef?.measures?.find((m) => m.measureId === measureId)?.reviewPeriod ?? 'T+7'
+      const targetMeasure = changeRef?.measures?.find((m) => m.measureId === measureId)
       const REVIEW_TOAST: Record<'success' | 'partial' | 'failed', string> = {
         success: '复盘完成：措施起效，指标回归正常',
         partial: '复盘完成：部分改善，已追加措施回方案池',
@@ -672,6 +698,35 @@ export function WorkbenchProvider({ children }: { children: ReactNode }) {
               : t,
           ),
         )
+        // 内容联动：targetModule = ai_content_engine 的措施 → 内容规划 Agent 推导 → 创建内容任务（带诊断证据来源追踪）
+        if (targetMeasure?.targetModule === 'ai_content_engine' && changeRef) {
+          const plan = planContent({ measure: targetMeasure, change: changeRef })
+          const taskId = `ct-attr-${Date.now()}`
+          const task: ContentTask = {
+            id: taskId,
+            title: plan.title,
+            kind: plan.kind,
+            type: plan.type,
+            status: 'ready',
+            priority: plan.priority,
+            theme: plan.theme,
+            audience: plan.audience,
+            userQuestion: plan.userQuestion,
+            channels: plan.channels,
+            dueDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10),
+            reason: targetMeasure.description,
+            outline: [],
+            masterDraft: '',
+            knowledge: [],
+            missingMaterials: [],
+            origin: plan.origin,
+            materialBudget: deriveMaterialBudget(plan.type, plan.theme),
+            quality: { overall: 0, relevance: 0, accuracy: 0, completeness: 0, readability: 0, authenticity: 0, channelFit: 0 },
+            compliance: [],
+            channelVersions: [],
+          }
+          setContentTasks((prev) => [task, ...prev])
+        }
         pushToast('success', `措施执行成功，产出已就绪，进入复盘周期（${reviewPeriod}）`)
       }, 2000)
       // ③ 复盘到点（演示 6 秒模拟 T+N 到期）→ 回填复盘结果，任务 done
@@ -834,6 +889,13 @@ export function WorkbenchProvider({ children }: { children: ReactNode }) {
       closeAttributionDetail,
       setAttributionConfig,
       setReportInitialTab,
+      contentTasks,
+      contentOpportunities,
+      contentPlanItems,
+      setContentTasks,
+      setContentOpportunities,
+      setContentPlanItems,
+      addContentTask,
     }),
     [
       view,
@@ -903,6 +965,9 @@ export function WorkbenchProvider({ children }: { children: ReactNode }) {
       confirmMeasure,
       ignoreMeasure,
       closeAttributionDetail,
+      contentTasks,
+      contentOpportunities,
+      contentPlanItems,
     ],
   )
 

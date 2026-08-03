@@ -478,6 +478,45 @@ export interface ContentTask {
   locales?: string[]
   /** 母稿生成时在术语库中未命中译名的专业名词 */
   missingTerms?: string[]
+  /** 任务来源：简报「生成依据/来源追踪」区块的数据来源（诊断/洞察/手动） */
+  origin?: ContentTaskOrigin
+  /** 一次性物料预算：进入生成前按内容类型模板推导的完整素材需求清单 */
+  materialBudget?: MaterialBudgetItem[]
+}
+
+/** 任务来源类型：归因诊断 / 内容洞察 / 手动创建 */
+export type ContentTaskSource = 'attribution' | 'opportunity' | 'manual'
+
+/** 内容任务来源追踪：诊断/洞察转来的任务可回链到上游证据 */
+export interface ContentTaskOrigin {
+  source: ContentTaskSource
+  /** 归因：关联的变化 + 措施 + 复盘周期（用于回链归因报告） */
+  attributionRef?: { changeId: string; measureId: string; reviewPeriod: ReviewPeriod }
+  /** 洞察：关联的内容机会 id */
+  opportunityId?: string
+  /** 来源标签（用户可见），如「归因分析 · 广告渠道落地页跳出率」 */
+  sourceLabel: string
+  /** 来源证据卡（现状/基准/动作） */
+  evidence?: { currentValue: string; benchmark: string; action: string }
+}
+
+/** 物料预算单项状态：已就绪 / 缺失 / 待授权 */
+export type MaterialBudgetStatus = 'ready' | 'missing' | 'pending_auth'
+
+/** 物料预算单项 */
+export interface MaterialBudgetItem {
+  id: string
+  /** 素材名，如「客户授权资料」 */
+  name: string
+  /** 对应内容类型模板的哪一项 */
+  templateKey: string
+  status: MaterialBudgetStatus
+  /** 已有来源，如「CRM」「项目中心」 */
+  source?: string
+  /** 备注，如「需客户授权」「需法务确认」 */
+  note?: string
+  /** 生成过程中 RAG no-hit 追加标记 */
+  addedDuringGeneration?: boolean
 }
 
 /** 内容洞察产出：可能需要做点什么，尚未被采纳，不属于计划 */
@@ -503,6 +542,8 @@ export interface ContentOpportunity {
   suggestedPriority: 'P0' | 'P1' | 'P2'
   /** 若为优化/更新类机会，关联的既有内容任务 */
   relatedTaskId?: string
+  /** 内容规划 Agent 从 evidence 推导的目标受众（避免转入生产时硬编码"待细化"） */
+  inferredAudience?: string
   status: 'open' | 'adopted' | 'dismissed'
 }
 

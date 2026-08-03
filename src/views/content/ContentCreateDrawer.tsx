@@ -12,6 +12,7 @@ export interface ContentCreatePayload {
   channels: ContentChannel[]
   theme: string
   audience: string
+  userQuestion: string
   dueDate: string
   reason: string
 }
@@ -45,6 +46,7 @@ export function ContentCreateDrawer({ onClose, onSubmit }: { onClose: () => void
     if (!valid) return
     onSubmit({
       title: title.trim(), type, kind, priority, channels, theme: theme.trim(), audience: audience.trim(),
+      userQuestion: `${audience.trim()}在${theme.trim()}上最关心什么？`,
       dueDate, reason: reason.trim(),
     })
   }

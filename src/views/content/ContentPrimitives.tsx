@@ -1,5 +1,5 @@
 import type { CSSProperties } from 'react'
-import type { ChannelFieldDef, ComplianceLevel, ContentChannel, ContentLocale, ContentTask, ContentTaskStatus, GlossaryStatus, GlossaryTerm, KnowledgeRiskEvent, KnowledgeRiskLevel, KnowledgeRiskStatus } from '../../types'
+import type { ChannelFieldDef, ComplianceLevel, ContentChannel, ContentLocale, ContentTask, ContentTaskSource, ContentTaskStatus, ContentType, GlossaryStatus, GlossaryTerm, KnowledgeRiskEvent, KnowledgeRiskLevel, KnowledgeRiskStatus, MaterialBudgetStatus } from '../../types'
 
 /** 内容运营演示数据锚定的当前时间点，用于"最近 N 天"筛选 */
 const DEMO_TODAY = new Date('2026-07-30T23:59:59')
@@ -88,6 +88,15 @@ export function StatusBadge({ status }: { status: ContentTaskStatus }) {
   return <span className={`content-status content-status--${status}`}>{STATUS_LABEL[status]}</span>
 }
 
+/** 任务来源标签：归因诊断 / 内容洞察 / 手动创建，复用步骤①来源卡片的配色 */
+export const ORIGIN_SOURCE_LABEL: Record<ContentTaskSource, string> = {
+  attribution: '归因诊断', opportunity: '内容洞察', manual: '手动创建',
+}
+
+export function OriginBadge({ source }: { source: ContentTaskSource }) {
+  return <span className={`content-origin-tag is-${source}`}>{ORIGIN_SOURCE_LABEL[source]}</span>
+}
+
 export function ComplianceBadge({ level }: { level: ComplianceLevel }) {
   const meta = COMPLIANCE_META[level]
   return <span className={`content-compliance-badge ${meta.className}`}>{meta.label}</span>
@@ -123,15 +132,16 @@ export function ReviewVerdictBadge({ verdict }: { verdict: ReviewVerdict }) {
   return <span className={`content-verdict-badge ${meta.className}`}>{meta.label}</span>
 }
 
-/** 内容生产七步流程，与任务工作台的步骤条一一对应 */
-export const CONTENT_STEPS = ['任务简报', '资料与素材', '渠道选择与字段配置', '内容概览生成', '质量与合规', '渠道内容生成', '审批与发布'] as const
+/** 内容生产七步流程，与任务工作台的步骤条一一对应。
+ *  步骤顺序已调整：渠道与发布目标前置（决定术语译名/素材需求），资料与素材随后 */
+export const CONTENT_STEPS = ['任务简报', '渠道与发布目标', '资料与素材', '内容概览生成', '质量与合规', '渠道内容生成', '审批与发布'] as const
 
 /** 由任务状态推导当前所处的生产步骤下标；返回 7 表示七步已全部走完 */
 export function getTaskStep(status: ContentTaskStatus): number {
   switch (status) {
-    case 'needs_material': return 1
-    case 'ready': return 2
-    case 'channel_setup': return 2
+    case 'needs_material': return 2
+    case 'ready': return 3
+    case 'channel_setup': return 3
     case 'generating': return 3
     case 'quality_review':
     case 'compliance_review': return 4
@@ -179,6 +189,58 @@ export function getWeekStart(date: Date) {
   const weekday = (copy.getDay() + 6) % 7
   copy.setDate(copy.getDate() - weekday)
   return formatDate(copy)
+}
+
+/** 一次性物料预算：按内容类型模板推导"这篇内容需要哪些素材"。每项带 status 初值，知识库命中与否在生成前由推导逻辑判断 */
+export const MATERIAL_BUDGET_TEMPLATES: Record<ContentType, { templateKey: string; name: string; defaultStatus: MaterialBudgetStatus; note?: string }[]> = {
+  product: [
+    { templateKey: 'spec', name: '产品规格与型号矩阵', defaultStatus: 'ready', note: '来源：PIM / 产品中心' },
+    { templateKey: 'scene', name: '应用场景说明', defaultStatus: 'missing', note: '需补充真实应用场景案例' },
+    { templateKey: 'limit', name: '使用限制与适用条件', defaultStatus: 'ready', note: '来源：技术文档 / 合规中心' },
+    { templateKey: 'diff', name: '型号差异对照', defaultStatus: 'missing', note: '需产品经理确认差异点' },
+  ],
+  solution: [
+    { templateKey: 'pain', name: '行业痛点数据', defaultStatus: 'missing', note: '需行业报告或调研数据' },
+    { templateKey: 'fit', name: '方案适用边界', defaultStatus: 'ready', note: '来源：方案中心' },
+    { templateKey: 'roi', name: '投资回报测算', defaultStatus: 'pending_auth', note: '需财务口径确认' },
+  ],
+  scenario: [
+    { templateKey: 'step', name: '作业流程说明', defaultStatus: 'ready', note: '来源：应用工艺文档' },
+    { templateKey: 'param', name: '关键工艺参数', defaultStatus: 'missing', note: '需工艺工程师确认' },
+    { templateKey: 'env', name: '现场环境前提', defaultStatus: 'ready', note: '来源：项目实施资料' },
+  ],
+  case: [
+    { templateKey: 'auth', name: '客户公开授权', defaultStatus: 'pending_auth', note: '需法务 / 客户确认' },
+    { templateKey: 'before_after', name: '实施前后数据', defaultStatus: 'missing', note: '需项目中心提供' },
+    { templateKey: 'quote', name: '客户证言', defaultStatus: 'ready', note: '来源：案例库' },
+    { templateKey: 'photo', name: '现场图片授权', defaultStatus: 'pending_auth', note: '需确认可公开' },
+  ],
+  guide: [
+    { templateKey: 'param', name: '关键参数 / 规格表', defaultStatus: 'ready', note: '来源：产品参数中心' },
+    { templateKey: 'benchmark', name: '行业基准数据', defaultStatus: 'missing', note: '需行业报告，并标注出处' },
+    { templateKey: 'term', name: '术语定义', defaultStatus: 'ready', note: '来源：术语库' },
+    { templateKey: 'checklist', name: '检查清单素材', defaultStatus: 'missing', note: '需结合客服/搜索高频问题' },
+  ],
+  faq: [
+    { templateKey: 'ticket', name: '客服工单高频问题', defaultStatus: 'ready', note: '来源：客服系统' },
+    { templateKey: 'clause', name: '条款 / 维护周期数据', defaultStatus: 'missing', note: '需售后确认口径' },
+  ],
+  insight: [
+    { templateKey: 'report', name: '白皮书 / 行业报告', defaultStatus: 'ready', note: '来源：市场资料库' },
+    { templateKey: 'data_auth', name: '引用数据授权', defaultStatus: 'pending_auth', note: '需确认出处可标注' },
+  ],
+}
+
+/** 物料预算单项状态徽标 */
+const MATERIAL_STATUS_META: Record<MaterialBudgetStatus, { label: string; className: string }> = {
+  ready: { label: '已就绪', className: 'is-ready' },
+  missing: { label: '缺失', className: 'is-missing' },
+  pending_auth: { label: '待授权', className: 'is-auth' },
+}
+
+export function MaterialBudgetStatusBadge({ status }: { status: MaterialBudgetStatus }) {
+  const meta = MATERIAL_STATUS_META[status]
+  return <span className={`content-material-badge ${meta.className}`}>{meta.label}</span>
 }
 
 export function formatDate(date: Date) {

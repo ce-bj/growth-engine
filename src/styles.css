@@ -7484,3 +7484,45 @@ a:hover {
 /* 末行分隔线与卡片下边框重叠，去掉一条 */
 .content-table-card .content-data-table tbody tr:last-child td { border-bottom: none; }
 .content-empty-row { padding: 28px 20px !important; text-align: center; color: var(--color-text-secondary); }
+
+/* ═══ 内容工作流重构：任务简报来源追踪 / 渠道与发布目标 / 一次性物料预算 ═══ */
+
+/* 简报「生成依据/来源追踪」区块 */
+.content-origin-card { margin-bottom: 14px; padding: 12px 14px; border: 1px solid #c7d2fe; border-left-width: 3px; border-radius: 10px; background: #eef2ff; }
+.content-origin-card__head { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+.content-origin-card__head b { font-size: 12px; color: var(--color-text); }
+.content-origin-tag { padding: 2px 8px; border-radius: 20px; font-size: 10px; font-weight: 600; white-space: nowrap; }
+.content-origin-tag.is-attribution { color: #1d4ed8; background: #dbeafe; }
+.content-origin-tag.is-opportunity { color: #047857; background: #d1fae5; }
+.content-origin-tag.is-manual { color: #6b7280; background: #f3f4f6; }
+.content-origin-evidence { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; font-size: 11px; color: var(--color-text-secondary); }
+.content-origin-evidence i { color: var(--color-primary); font-style: normal; }
+.content-origin-card small { color: var(--color-text-placeholder); font-size: 10px; }
+
+/* 渠道步骤：语言站点选择 */
+.content-locale-select { margin-top: 16px; padding-top: 14px; border-top: 1px dashed var(--color-border); }
+.content-locale-select h3 { font-size: 14px; margin: 4px 0 6px; }
+.content-locale-chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.content-locale-chips button { display: flex; flex-direction: column; gap: 1px; padding: 8px 12px; border: 1px solid var(--color-border); border-radius: 8px; background: #fff; font-size: 12px; font-weight: 600; color: var(--color-text); cursor: pointer; }
+.content-locale-chips button.is-active { border-color: var(--color-primary); background: var(--color-primary-soft, #eef2ff); color: var(--color-primary); }
+.content-locale-chips button small { font-size: 10px; font-weight: 400; color: var(--color-text-secondary); }
+
+/* 一次性物料预算 */
+.content-material-count { padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 600; color: #92400e; background: #fef3c7; }
+.content-material-count.is-ready { color: #166534; background: #dcfce7; }
+.content-material-list { display: flex; flex-direction: column; gap: 8px; margin-top: 14px; }
+.content-material-list article { display: flex; align-items: center; gap: 9px; padding: 11px; border: 1px solid #e2e8f0; border-left-width: 3px; border-radius: 8px; }
+.content-material-list article.is-ready { border-left-color: #22c55e; background: #f8fef9; }
+.content-material-list article.is-missing { border-left-color: #f59e0b; background: #fffdf7; }
+.content-material-list article.is-pending_auth { border-left-color: #3b82f6; background: #f8fafc; }
+.content-material-list article.is-added { box-shadow: inset 0 0 0 1px #c7d2fe; }
+.content-material-state { display: grid; place-items: center; width: 21px; height: 21px; flex-shrink: 0; color: #b45309; background: #fef3c7; border-radius: 50%; }
+.content-material-list article.is-ready .content-material-state { color: #16a34a; background: #dcfce7; }
+.content-material-list article.is-pending_auth .content-material-state { color: #2563eb; background: #dbeafe; }
+.content-material-list article > div { flex: 1; min-width: 0; }
+.content-material-list article b { font-size: 11px; }
+.content-material-list article small { display: block; color: var(--color-text-placeholder); font-size: 9px; }
+.content-material-badge { padding: 2px 8px; border-radius: 20px; font-size: 10px; font-weight: 600; white-space: nowrap; }
+.content-material-badge.is-ready { color: #166534; background: #dcfce7; }
+.content-material-badge.is-missing { color: #92400e; background: #fef3c7; }
+.content-material-badge.is-auth { color: #1d4ed8; background: #dbeafe; }

@@ -2,7 +2,7 @@ import { Languages, Plus, Search } from 'lucide-react'
 import { useMemo, useState } from 'react'
 import { Button } from '../../components/Button'
 import type { ContentChannel, ContentTab, ContentTask } from '../../types'
-import { CHANNEL_META, ChannelBadge, CONTENT_STEPS, ContentStepBar, getTaskStep, isPublishedStatus, KIND_LABEL, MetricCard, QualityRing, StatusBadge, STATUS_LABEL, TYPE_LABEL } from './ContentPrimitives'
+import { CHANNEL_META, ChannelBadge, CONTENT_STEPS, ContentStepBar, getTaskStep, isPublishedStatus, KIND_LABEL, MetricCard, OriginBadge, QualityRing, StatusBadge, STATUS_LABEL, TYPE_LABEL } from './ContentPrimitives'
 
 /** 每个阶段对应的下一步入口：未发布内容在操作栏直接跳到该处理页面 */
 function nextAction(step: number): { label: string; target: 'workbench' | ContentTab; workbenchStep?: number; hint: string } {
@@ -99,7 +99,7 @@ export function ContentLibrary({ tasks, onOpenTask, onNavigate, onCreate, onOpen
           const action = nextAction(taskStep)
           return <tr key={task.id}>
             <td>
-              <div className="content-library-title"><span className={`content-priority is-${task.priority.toLowerCase()}`}>{task.priority}</span><b>{task.title}</b></div>
+              <div className="content-library-title"><span className={`content-priority is-${task.priority.toLowerCase()}`}>{task.priority}</span><b>{task.title}</b>{task.origin && <OriginBadge source={task.origin.source} />}</div>
               <span>{task.theme} · {task.audience} · 计划 {task.dueDate}</span>
               {task.locales?.length ? <div className="content-locale-tags">{task.locales.map((code) => <em key={code}>{code.toUpperCase()} 站</em>)}</div> : null}
             </td>
