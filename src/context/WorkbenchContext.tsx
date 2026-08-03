@@ -19,7 +19,16 @@ import {
   mockSitesData,
   mockWeeklyReportsData,
 } from '../data/mock'
+import {
+  DEFAULT_ATTRIBUTION_CONFIG,
+  mockAttributionHistoryReports,
+  mockAttributionReport,
+  mockAttributionTasks,
+} from '../data/attributionMock'
 import type {
+  AgentTaskRow,
+  AttributionConfig,
+  AttributionReport,
   DetectHistoryRow,
   FixTarget,
   FixTaskRow,
@@ -97,6 +106,27 @@ interface WorkbenchApi {
   pushToast: (type: ToastItem['type'], message: string, autoDismiss?: boolean) => void
   dismissToast: (id: string) => void
   openHistoryReport: (row: DetectHistoryRow) => void
+  // 业务指标归因（线 B）
+  attributionReport: AttributionReport
+  attributionHistory: AttributionReport[]
+  attributionTasks: AgentTaskRow[]
+  attributionConfig: AttributionConfig
+  attributionChangeId: string | null
+  reportInitialTab: 'health' | 'attribution'
+  /** 全部归因报告（本期 + 历史，本期在前） */
+  attributionReports: AttributionReport[]
+  /** 当前选中的归因报告周期 id */
+  attributionReportId: string
+  /** 当前选中周期的报告（执行动作只发生在本期） */
+  activeAttributionReport: AttributionReport
+  openAttributionReport: (reportId: string, changeId?: string) => void
+  selectAttributionReport: (reportId: string) => void
+  selectAttributionChange: (changeId: string) => void
+  confirmMeasure: (changeId: string, measureId: string) => void
+  ignoreMeasure: (changeId: string, measureId: string) => void
+  closeAttributionDetail: () => void
+  setAttributionConfig: (cfg: AttributionConfig) => void
+  setReportInitialTab: (tab: 'health' | 'attribution') => void
 }
 
 const WorkbenchContext = createContext<WorkbenchApi | null>(null)
@@ -156,6 +186,16 @@ export function WorkbenchProvider({ children }: { children: ReactNode }) {
 
   // 冷启动状态
   const [domainBound, setDomainBound] = useState(true) // TODO: 改回 false
+
+  // 业务指标归因（线 B）状态
+  const [attributionReport, setAttributionReport] = useState<AttributionReport>(mockAttributionReport)
+  const [attributionHistory] = useState<AttributionReport[]>(mockAttributionHistoryReports)
+  const [attributionTasks, setAttributionTasks] = useState<AgentTaskRow[]>(mockAttributionTasks)
+  const [attributionConfig, setAttributionConfig] = useState<AttributionConfig>(DEFAULT_ATTRIBUTION_CONFIG)
+  const [attributionChangeId, setAttributionChangeId] = useState<string | null>(null)
+  const [reportInitialTab, setReportInitialTab] = useState<'health' | 'attribution'>('health')
+  // 当前选中的归因报告周期（默认本期）
+  const [attributionReportId, setAttributionReportId] = useState<string>(mockAttributionReport.id)
 
   const pushToast = useCallback((type: ToastItem['type'], message: string, autoDismiss = true) => {
     const id = `toast-${++toastSeq}`
@@ -537,6 +577,168 @@ export function WorkbenchProvider({ children }: { children: ReactNode }) {
     [navigate],
   )
 
+  /* ── 业务指标归因（线 B）动作 ───────────────────────────────── */
+
+  const openAttributionReport = useCallback(
+    (reportId: string, changeId?: string) => {
+      // 定位报告（本期或历史），切换选中周期与选中变化，跳诊断报告归因 Tab
+      const all = [attributionReport, ...attributionHistory]
+      const found = all.find((r) => r.id === reportId)
+      if (!found) return
+      const firstChange = changeId ?? found.changes[0]?.id ?? null
+      setAttributionReportId(reportId)
+      setAttributionChangeId(firstChange)
+      setReportInitialTab('attribution')
+      navigate('report')
+      // 任务标为已读（处理中）
+      setAttributionTasks((prev) =>
+        prev.map((t) =>
+          t.attributionReportId === reportId && t.status === 'pending'
+            ? { ...t, status: 'running', updatedAt: new Date().toISOString().slice(0, 16).replace('T', ' ') }
+            : t,
+        ),
+      )
+    },
+    [attributionReport, attributionHistory, navigate],
+  )
+
+  const selectAttributionChange = useCallback((changeId: string) => {
+    setAttributionChangeId(changeId)
+  }, [])
+
+  const selectAttributionReport = useCallback(
+    (reportId: string) => {
+      const all = [attributionReport, ...attributionHistory]
+      const found = all.find((r) => r.id === reportId)
+      if (!found) return
+      setAttributionReportId(reportId)
+      setAttributionChangeId(found.changes[0]?.id ?? null)
+    },
+    [attributionReport, attributionHistory],
+  )
+
+  const confirmMeasure = useCallback(
+    (changeId: string, measureId: string) => {
+      // 取该变化的复盘脚本 + 措施的复盘周期（对齐方案 9.2 分档）
+      const changeRef = mockAttributionReport.changes.find((c) => c.id === changeId)
+      const script = changeRef?.reviewScript ?? {
+        result: 'success' as const,
+        note: 'T+7 复盘：异常指标回归正常区间，措施起效。沉淀为标准措施。',
+      }
+      const reviewPeriod = changeRef?.measures?.find((m) => m.measureId === measureId)?.reviewPeriod ?? 'T+7'
+      const REVIEW_TOAST: Record<'success' | 'partial' | 'failed', string> = {
+        success: '复盘完成：措施起效，指标回归正常',
+        partial: '复盘完成：部分改善，已追加措施回方案池',
+        failed: '复盘完成：未见改善，已沉淀并建议重新归因',
+      }
+      // ① 确认 → 执行中
+      setAttributionReport((prev) => ({
+        ...prev,
+        changes: prev.changes.map((c) =>
+          c.id !== changeId
+            ? c
+            : {
+                ...c,
+                measures: c.measures?.map((m) =>
+                  m.measureId === measureId ? { ...m, execStatus: 'executing' as const } : m,
+                ),
+              },
+        ),
+      }))
+      pushToast('info', '措施已确认，正在调度执行…')
+      // ② 执行完成（演示 2 秒）→ 出产出 → 任务进入「待复盘 T+N」
+      window.setTimeout(() => {
+        setAttributionReport((prev) => ({
+          ...prev,
+          changes: prev.changes.map((c) =>
+            c.id !== changeId
+              ? c
+              : {
+                  ...c,
+                  measures: c.measures?.map((m) =>
+                    m.measureId === measureId ? { ...m, execStatus: 'success' as const } : m,
+                  ),
+                },
+          ),
+        }))
+        setAttributionTasks((prev) =>
+          prev.map((t) =>
+            t.module === 'attribution' && t.status === 'running'
+              ? {
+                  ...t,
+                  reviewPending: `待复盘 ${reviewPeriod}`,
+                  updatedAt: new Date().toISOString().slice(0, 16).replace('T', ' '),
+                }
+              : t,
+          ),
+        )
+        pushToast('success', `措施执行成功，产出已就绪，进入复盘周期（${reviewPeriod}）`)
+      }, 2000)
+      // ③ 复盘到点（演示 6 秒模拟 T+N 到期）→ 回填复盘结果，任务 done
+      window.setTimeout(() => {
+        setAttributionReport((prev) => ({
+          ...prev,
+          changes: prev.changes.map((c) =>
+            c.id !== changeId
+              ? c
+              : {
+                  ...c,
+                  reviewResult: script.result,
+                  reviewNote: script.note,
+                },
+          ),
+        }))
+        setAttributionTasks((prev) =>
+          prev.map((t) =>
+            t.module === 'attribution' && t.status === 'running'
+              ? {
+                  ...t,
+                  status: 'done',
+                  reviewPending: undefined,
+                  updatedAt: new Date().toISOString().slice(0, 16).replace('T', ' '),
+                }
+              : t,
+          ),
+        )
+        pushToast(script.result === 'failed' ? 'warning' : 'success', REVIEW_TOAST[script.result])
+      }, 8000)
+    },
+    [pushToast],
+  )
+
+  const ignoreMeasure = useCallback(
+    (changeId: string, measureId: string) => {
+      setAttributionReport((prev) => ({
+        ...prev,
+        changes: prev.changes.map((c) =>
+          c.id !== changeId
+            ? c
+            : {
+                ...c,
+                measures: c.measures?.map((m) =>
+                  m.measureId === measureId ? { ...m, execStatus: 'rejected' as const } : m,
+                ),
+              },
+        ),
+      }))
+      pushToast('info', '已忽略该措施')
+    },
+    [pushToast],
+  )
+
+  const closeAttributionDetail = useCallback(() => {
+    setAttributionChangeId(null)
+  }, [])
+
+  const attributionReports = useMemo(
+    () => [attributionReport, ...attributionHistory],
+    [attributionReport, attributionHistory],
+  )
+  const activeAttributionReport = useMemo(
+    () => attributionReports.find((r) => r.id === attributionReportId) ?? attributionReport,
+    [attributionReports, attributionReportId, attributionReport],
+  )
+
   const currentSite = mockSitesData.find((s) => s.id === siteId) ?? mockSitesData[0]
   const funnel = funnelPeriod === 'week' ? mockFunnelWeekData : mockFunnelMonthData
   const p0Count = issues.filter((i) => i.priority === 'P0').length
@@ -615,6 +817,23 @@ export function WorkbenchProvider({ children }: { children: ReactNode }) {
       pushToast,
       dismissToast,
       openHistoryReport,
+      attributionReport,
+      attributionHistory,
+      attributionTasks,
+      attributionConfig,
+      attributionChangeId,
+      reportInitialTab,
+      attributionReports,
+      attributionReportId,
+      activeAttributionReport,
+      openAttributionReport,
+      selectAttributionReport,
+      selectAttributionChange,
+      confirmMeasure,
+      ignoreMeasure,
+      closeAttributionDetail,
+      setAttributionConfig,
+      setReportInitialTab,
     }),
     [
       view,
@@ -669,6 +888,21 @@ export function WorkbenchProvider({ children }: { children: ReactNode }) {
       dismissToast,
       pushToast,
       openHistoryReport,
+      attributionReport,
+      attributionHistory,
+      attributionTasks,
+      attributionConfig,
+      attributionChangeId,
+      reportInitialTab,
+      attributionReports,
+      attributionReportId,
+      activeAttributionReport,
+      openAttributionReport,
+      selectAttributionReport,
+      selectAttributionChange,
+      confirmMeasure,
+      ignoreMeasure,
+      closeAttributionDetail,
     ],
   )
 

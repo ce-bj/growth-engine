@@ -439,6 +439,14 @@ export const AGENT_LIST: AgentInfo[] = [
     icon: '🔍',
   },
   {
+    id: 'agent-attribution',
+    name: '业务指标归因 Agent',
+    layer: 'report',
+    description: '定时分析业务指标变化（异常/提升/持平），下钻归因到根因并给出置信度，异常类产出解决方案与措施，可调度其他 Agent 执行并复盘。',
+    triggerWhen: '按站点设置的归因周期定时触发（≥7天）',
+    icon: '🧭',
+  },
+  {
     id: 'agent-report',
     name: '报告 Agent',
     layer: 'report',

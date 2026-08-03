@@ -344,7 +344,7 @@ export interface LeadStats {
 }
 
 /** §14 内容运营：内容全生命周期原型 */
-export type ContentTab = 'overview' | 'plan' | 'calendar' | 'assets' | 'publishing' | 'performance'
+export type ContentTab = 'overview' | 'library' | 'plan' | 'review' | 'calendar' | 'assets' | 'publishing' | 'performance'
 
 export type ContentChannel = 'website' | 'linkedin' | 'facebook' | 'x'
 
@@ -411,6 +411,21 @@ export interface KnowledgeReference {
   verified: boolean
 }
 
+/** 知识库调用风险追踪：内容生成过程中命中的 RAG no-hit（知识库未命中）事件 */
+export type KnowledgeRiskLevel = 'critical' | 'high' | 'medium' | 'low'
+export type KnowledgeRiskStatus = 'pending' | 'resolved'
+
+export interface KnowledgeRiskEvent {
+  id: string
+  taskId: string
+  taskTitle: string
+  issueType: string
+  diagnosis: string
+  level: KnowledgeRiskLevel
+  status: KnowledgeRiskStatus
+  occurredAt: string
+}
+
 export interface ChannelVersion {
   channel: ContentChannel
   title: string
@@ -442,17 +457,44 @@ export interface ContentTask {
   quality: ContentQualityScore
   compliance: ComplianceIssue[]
   channelVersions: ChannelVersion[]
+  /** 全球站：本内容需要发布到的语言站点（为空表示仅中文站） */
+  locales?: string[]
+  /** 母稿生成时在术语库中未命中译名的专业名词 */
+  missingTerms?: string[]
+}
+
+/** 全球站：语言站点 */
+export interface ContentLocale {
+  code: string
+  label: string
+  site: string
+}
+
+export type GlossaryStatus = 'ready' | 'partial' | 'missing'
+
+/** 专业名词的定义与各语言站点译名 */
+export interface GlossaryTerm {
+  id: string
+  term: string
+  category: string
+  definition: string
+  /** 语言站点 code → 译名，缺失以空字符串表示 */
+  translations: Record<string, string>
+  updatedAt: string
 }
 
 export interface ContentCalendarItem {
   id: string
   taskId: string
+  /** 完整日期 YYYY-MM-DD，便于按周翻页查看历史 */
   date: string
   time: string
   title: string
   channel: ContentChannel
   stage: 'production' | 'review' | 'publish'
   state: 'normal' | 'warning' | 'failed'
+  /** 历史节点是否已完成 */
+  done?: boolean
 }
 
 export interface ContentAsset {
@@ -501,4 +543,235 @@ export interface ContentThemePerformance {
   }
   conclusion: string
   action: 'expand' | 'optimize' | 'refresh' | 'review'
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   业务指标归因分析（线 B）— 对齐产品方案 v1.1
+   与线 A 健康度体检完全独立，只共用智能体任务中心
+   ═══════════════════════════════════════════════════════════════ */
+
+/** 变化类型：异常(下降) / 提升(上升) / 持平(平稳) */
+export type ChangeType = 'down' | 'up' | 'flat'
+
+/** 6 段转化漏斗 */
+export type FunnelSegment =
+  | 'channel_arrival'
+  | 'landing_page'
+  | 'site_browsing'
+  | 'conversion_entry'
+  | 'conversion_interaction'
+  | 'lead_success'
+
+export const FUNNEL_SEGMENT_LABELS: Record<FunnelSegment, string> = {
+  channel_arrival: '渠道到达',
+  landing_page: '落地页',
+  site_browsing: '站内浏览',
+  conversion_entry: '转化入口触发',
+  conversion_interaction: '转化交互',
+  lead_success: '成功留资',
+}
+
+/** 措施调度的 L4 模块 */
+export type AttributionTargetModule =
+  | 'ai_content_engine'
+  | 'conversion_path_designer'
+  | 'smart_form'
+  | 'ai_cs_pro'
+  | 'tool_agent'
+  | 'none'
+
+export const TARGET_MODULE_LABELS: Record<AttributionTargetModule, string> = {
+  ai_content_engine: 'AI 内容引擎',
+  conversion_path_designer: '转化路径设计器',
+  smart_form: '智能表单系统',
+  ai_cs_pro: 'AI 智能客服 PRO',
+  tool_agent: '工具/Agent',
+  none: '只出方案',
+}
+
+/** 执行边界 */
+export type ExecutionBoundary = 'auto' | 'confirm' | 'advice_only'
+
+/** 复盘周期（对齐方案 9.2 按措施见效周期分档） */
+export type ReviewPeriod = 'T+3' | 'T+7' | 'T+14' | 'T+30'
+
+/** 执行产出（执行后客户可查看的交付物：生成页面 / 重写页面 / 修复日志 / A/B 变体） */
+export interface MeasureDeliverable {
+  kind: 'page' | 'rewrite' | 'log' | 'ab_test'
+  /** 产物标题（如「CNC 加工配件 · 智能营销页」） */
+  title: string
+  /** 可跳转查看的链接（预览地址） */
+  url?: string
+  /** 产物说明（预览内容摘要 / 修复明细 / 变体说明） */
+  previewNote?: string
+}
+
+/** 依据卡片三段式：现状数据 + 对比基准 + 具体动作 */
+export interface EvidenceCard {
+  currentValue: string
+  benchmark: string
+  action: string
+}
+
+/** 用户意图数据（第二层④，对齐方案 4.3.4，调 L3 搜索意图精准匹配） */
+export interface IntentEvidence {
+  /** 站内搜索词信号 */
+  siteSearch?: string
+  /** SEO/广告来路关键词信号 */
+  inboundKeyword?: string
+  /** 客服对话意图信号 */
+  csIntent?: string
+}
+
+/** 措施（异常类产出） */
+export interface AttributionMeasure {
+  measureId: string
+  description: string
+  rootCause: string
+  rootCauseConfidence: 'high' | 'medium' | 'low'
+  evidenceCard: EvidenceCard
+  measureType: 'quick_fix' | 'root_cure'
+  cost: 'low' | 'medium' | 'high'
+  timeToEffect: 'instant' | 'day' | 'week' | 'month'
+  risk: 'low' | 'medium' | 'high'
+  targetModule: AttributionTargetModule
+  suggestedBoundary: ExecutionBoundary
+  /** 复盘周期（按见效周期分档：止血 T+3 / 治本 T+7 / 意图 T+14 / 长效 T+30） */
+  reviewPeriod?: ReviewPeriod
+  /** 执行后产生的可查看交付物 */
+  deliverable?: MeasureDeliverable
+  /** 执行状态（确认后流转） */
+  execStatus?: 'pending_confirm' | 'executing' | 'success' | 'failed' | 'rejected' | 'advice_only'
+}
+
+/** 单条变化的归因结果 */
+export interface AttributionChange {
+  id: string
+  changeType: ChangeType
+  changedMetric: string
+  changedValue: string
+  baselineValue: string
+  changeAmount: string
+  severity: IssuePriority | null
+  funnelSegment: FunnelSegment
+  rootCause: string
+  causeCategory: string
+  confidence: 'high' | 'medium' | 'low'
+  evidence: string[]
+  /** 意图数据（第二层④，意图类归因时填充，对齐方案 4.3.4） */
+  intentData?: IntentEvidence
+  /** Agent 对话式分析过程（模板化渲染的条目） */
+  analysisSteps: string[]
+  /** 异常类：措施清单 */
+  measures?: AttributionMeasure[]
+  /** 提升类：夸赞文案 + 保持建议 */
+  praiseText?: string
+  keepAdvice?: string
+  /** 持平类：说明 + 提升建议 */
+  explainText?: string
+  improveSuggestions?: Array<{
+    suggestion: string
+    targetModule: AttributionTargetModule
+    expectedEffect: string
+  }>
+  /** 复盘结果（异常类执行后回填） */
+  reviewResult?: 'success' | 'partial' | 'failed'
+  reviewNote?: string
+  /** 演示脚本：本期报告确认执行后回放的复盘结论（对齐方案案例结局） */
+  reviewScript?: {
+    result: 'success' | 'partial' | 'failed'
+    note: string
+  }
+}
+
+/** 一期归因报告 */
+export interface AttributionReport {
+  id: string
+  periodLabel: string
+  generatedAt: string
+  periodDays: number
+  nextAnalysisAt: string
+  siteId: string
+  changes: AttributionChange[]
+}
+
+/** 智能体任务中心 · 统一任务模型（归因 + 健康修复 + 内容） */
+export type AgentTaskModule = 'attribution' | 'health_fix' | 'content'
+
+export const AGENT_MODULE_LABELS: Record<AgentTaskModule, string> = {
+  attribution: '归因分析',
+  health_fix: '健康度修复',
+  content: '内容运营',
+}
+
+export interface AgentTaskRow {
+  id: string
+  module: AgentTaskModule
+  title: string
+  summary: string
+  status: TaskStatus
+  priority: IssuePriority | null
+  createdAt: string
+  updatedAt: string
+  /** 归因报告任务 → 跳转归因详情 */
+  attributionReportId?: string
+  /** 健康度修复任务 → 打开 FixDrawer（对齐 FixTaskRow） */
+  fixTaskId?: string
+  /** 归因任务「已完成执行、待复盘」标识，如「待复盘 T+7」 */
+  reviewPending?: string
+}
+
+/** 站点设置 · 归因分析周期配置 */
+export interface AttributionConfig {
+  enabled: boolean
+  periodDays: number
+}
+
+export const ATTRIBUTION_PERIOD_OPTIONS = [7, 14, 30] as const
+
+/** 效果分析按周维度的总统计 */
+export interface ContentWeeklyPerformance {
+  weekStart: string
+  label: string
+  websiteUv: number
+  effectiveReadRate: number
+  socialImpressions: number
+  engagementRate: number
+  linkClicks: number
+  /** 该周发布到官网的内容条数 */
+  websitePublished: number
+  /** 该周发布到社媒的内容条数（按渠道版本计） */
+  socialPublished: number
+}
+
+/** 单条已发布内容的发布计数与效果明细 */
+export interface ContentPublishStat {
+  id: string
+  taskId: string
+  weekStart: string
+  title: string
+  publishedAt: string
+  /** 官网发布次数（含更新重发） */
+  websiteCount: number
+  /** 社媒发布条数 */
+  socialCount: number
+  channelCounts: Array<{ channel: ContentChannel; count: number; url?: string; lastPublishedAt: string }>
+  uv: number
+  effectiveReadRate: number
+  avgDuration: string
+  impressions: number
+  engagements: number
+  engagementRate: number
+  linkClicks: number
+}
+
+/** 发布管理 · 发布设置 */
+export interface PublishSettings {
+  contentIds: string[]
+  channels: ContentChannel[]
+  locales: string[]
+  mode: 'immediate' | 'scheduled'
+  scheduledAt: string
+  failStrategy: 'continue' | 'stop'
+  approval: 'manual' | 'auto'
 }
