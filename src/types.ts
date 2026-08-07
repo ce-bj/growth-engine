@@ -452,6 +452,9 @@ export interface ChannelProfile {
   fields: Record<string, string>
 }
 
+/** ResearchAgent 可检索的企业知识域；至少选择一个，禁止让 Agent 无边界地搜索全部知识库 */
+export type ContentKnowledgeScope = 'company' | 'product' | 'service' | 'case' | 'industry'
+
 export interface ContentTask {
   id: string
   title: string
@@ -460,8 +463,27 @@ export interface ContentTask {
   status: ContentTaskStatus
   priority: 'P0' | 'P1' | 'P2'
   theme: string
+  /** 知识检索契约：本次内容围绕的明确业务/知识对象 */
+  contentSubject?: string
+  /** 知识检索契约：允许 ResearchAgent 查询的知识域 */
+  knowledgeScopes?: ContentKnowledgeScope[]
   audience: string
   userQuestion: string
+  /** 任务简报：本内容要推动的主业务目标 */
+  businessGoal?: 'awareness' | 'traffic' | 'decision' | 'conversion' | 'success' | 'compliance'
+  /** 任务简报：发布后的可衡量成功标准 */
+  successMetric?: string
+  /** 任务简报：必须由证据支持的核心主张 */
+  coreMessage?: string
+  /** 任务简报：希望读者完成的下一步行动 */
+  desiredAction?: string
+  /** 任务简报：用户所处的决策旅程阶段 */
+  journeyStage?: 'discover' | 'evaluate' | 'compare' | 'decide' | 'use'
+  /** 任务简报：必须包含 / 禁止出现的边界约束 */
+  mustInclude?: string
+  mustAvoid?: string
+  /** 任务负责人 */
+  owner?: string
   channels: ContentChannel[]
   dueDate: string
   reason: string
@@ -487,6 +509,39 @@ export interface ContentTask {
 /** 任务来源类型：归因诊断 / 内容洞察 / 手动创建 */
 export type ContentTaskSource = 'attribution' | 'opportunity' | 'manual'
 
+/** 外部诊断/洞察 JSON 的递归值类型；保证未知扩展字段可无损保存 */
+export type ContentContextValue = string | number | boolean | null | ContentContextValue[] | { [key: string]: ContentContextValue }
+
+/** 可变来源字段：稳定 item 结构承载任意业务字段，并记录映射来源 */
+export interface ContentSourceContextItem {
+  key: string
+  label: string
+  value: ContentContextValue
+  valueType: 'text' | 'number' | 'boolean' | 'list' | 'object'
+  sourcePath: string
+  semanticRole?: string
+  confidence?: number
+}
+
+export interface ContentSourceContextSection {
+  key: string
+  label: string
+  items: ContentSourceContextItem[]
+}
+
+/** 稳定信封 + 可变 sections：供后续 Agent 使用，同时保留原始 JSON 以便审计和重新解析 */
+export interface ContentSourceContext {
+  schemaVersion: string
+  mapperVersion: string
+  sourceType: ContentTaskSource
+  sourceRef: string
+  receivedAt: string
+  rawPayload: Record<string, ContentContextValue>
+  sections: ContentSourceContextSection[]
+  mappedContractKeys: string[]
+  missingContractKeys: string[]
+}
+
 /** 内容任务来源追踪：诊断/洞察转来的任务可回链到上游证据 */
 export interface ContentTaskOrigin {
   source: ContentTaskSource
@@ -498,6 +553,8 @@ export interface ContentTaskOrigin {
   sourceLabel: string
   /** 来源证据卡（现状/基准/动作） */
   evidence?: { currentValue: string; benchmark: string; action: string }
+  /** 上游可变 JSON 的无损信封与标准化动态字段 */
+  context?: ContentSourceContext
 }
 
 /** 物料预算单项状态：已就绪 / 缺失 / 待授权 */

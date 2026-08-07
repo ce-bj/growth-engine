@@ -54,7 +54,7 @@ export function ContentPublishSettingsDialog({ tasks, locales, onClose, onSave }
         </section>
 
         <section className="content-setting-block">
-          <div className="content-setting-block__head"><b>发布渠道 *</b><span>母稿将按所选渠道生成对应版本</span></div>
+          <div className="content-setting-block__head"><b>发布渠道 *</b><span>选择已完成生成、审查与预览确认的渠道内容</span></div>
           <div className="content-chip-group">{CHANNELS.map((item) => <button type="button" key={item} className={channels.includes(item) ? 'is-active' : ''} onClick={() => toggle(setChannels, item)}>{CHANNEL_META[item].label}</button>)}</div>
         </section>
 

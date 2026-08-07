@@ -6,7 +6,7 @@ export type AssistantQuickAction = { label: string; onClick: () => void; disable
 type ChatEntry = { role: 'assistant' | 'user'; text: string }
 
 /** 工作台侧边的场景化助手：按当前步骤展示脚本提示与快捷操作，输入框仅做原型阶段的模拟对话，不做真实语义解析 */
-export function ContentAssistantPanel({ step, message, quickActions }: { step: number; message: string; quickActions: AssistantQuickAction[] }) {
+export function ContentAssistantPanel({ step, message, quickActions, agentName, agentRole, gateState }: { step: number; message: string; quickActions: AssistantQuickAction[]; agentName: string; agentRole: string; gateState: 'working' | 'waiting' | 'passed' | 'blocked' }) {
   const [log, setLog] = useState<ChatEntry[]>([{ role: 'assistant', text: message }])
   const [draft, setDraft] = useState('')
   const lastMessage = useRef(message)
@@ -30,7 +30,7 @@ export function ContentAssistantPanel({ step, message, quickActions }: { step: n
   }
 
   return <aside className="content-assistant-panel">
-    <div className="content-assistant-panel__head"><Sparkles size={15} /><b>AI 助手</b></div>
+    <div className="content-assistant-panel__head"><Sparkles size={15} /><div><b>{agentName}</b><span>{agentRole}</span></div><em className={`is-${gateState}`}>{gateState === 'working' ? '执行中' : gateState === 'waiting' ? '等待确认' : gateState === 'passed' ? '门禁通过' : '已阻断'}</em></div>
     <div className="content-assistant-panel__log" ref={logRef}>{log.map((entry, index) => <div key={index} className={`content-assistant-msg content-assistant-msg--${entry.role}`}><span className="content-assistant-msg__text">{entry.text}</span></div>)}</div>
     {quickActions.length > 0 && <div className="content-assistant-panel__quick">{quickActions.map((action) => <button key={action.label} disabled={action.disabled} onClick={action.onClick}>{action.label}</button>)}</div>}
     <form className="content-assistant-panel__composer" onSubmit={(e) => { e.preventDefault(); sendDraft() }}>

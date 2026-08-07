@@ -11,8 +11,9 @@ function nextAction(step: number): { label: string; target: 'workbench' | Conten
     case 1: return { label: '补充资料', target: 'workbench', workbenchStep: 1, hint: '知识库资料尚未补齐' }
     case 2: return { label: '进入生产', target: 'workbench', workbenchStep: 2, hint: '等待生成或完善母稿' }
     case 3: return { label: '去审核', target: 'review', hint: '在内容审核页处理质量与合规' }
-    case 4: return { label: '社媒关联', target: 'workbench', workbenchStep: 4, hint: '生成并关联各渠道版本' }
-    case 5: return { label: '去发布', target: 'publishing', hint: '在发布管理页审批与排期' }
+    case 4: return { label: '查看审核', target: 'workbench', workbenchStep: 4, hint: '处理内容质量与合规结论' }
+    case 5: return { label: '预览内容', target: 'workbench', workbenchStep: 5, hint: '逐渠道确认最终呈现' }
+    case 6: return { label: '去发布', target: 'publishing', hint: '在发布管理页审批与排期' }
     default: return { label: '查看效果', target: 'performance', hint: '内容已发布，可查看多渠道表现' }
   }
 }
@@ -42,9 +43,9 @@ export function ContentLibrary({ tasks, onOpenTask, onNavigate, onCreate, onOpen
       && (!query || [task.title, task.theme, task.audience].some((value) => value.toLowerCase().includes(query)))
   })
 
-  const producing = rows.filter((row) => row.step >= 1 && row.step <= 2).length
-  const reviewing = rows.filter((row) => row.step === 3 || row.step === 4).length
-  const waitingPublish = rows.filter((row) => row.step === 5).length
+  const producing = rows.filter((row) => row.step >= 1 && row.step <= 3).length
+  const reviewing = rows.filter((row) => row.step === 4 || row.step === 5).length
+  const waitingPublish = rows.filter((row) => row.step === 6).length
   const publishedCount = rows.filter((row) => row.published).length
   const blocked = rows.filter((row) => row.task.compliance.some((issue) => !issue.resolved && issue.level === 'blocking')).length
 
@@ -59,8 +60,8 @@ export function ContentLibrary({ tasks, onOpenTask, onNavigate, onCreate, onOpen
 
     <div className="content-metric-grid">
       <MetricCard label="全部内容" value={rows.length} sub="本期在管内容任务" />
-      <MetricCard label="生产中" value={producing} sub="资料与母稿阶段" tone={producing ? 'warning' : 'default'} />
-      <MetricCard label="审核与适配" value={reviewing} sub="质量合规 / 渠道版本" tone={reviewing ? 'warning' : 'default'} />
+      <MetricCard label="生产中" value={producing} sub="资料与内容生成阶段" tone={producing ? 'warning' : 'default'} />
+      <MetricCard label="审核与预览" value={reviewing} sub="质量合规 / 渠道预览" tone={reviewing ? 'warning' : 'default'} />
       <MetricCard label="待发布" value={waitingPublish} sub="审批与排期阶段" />
       <MetricCard label="已发布" value={publishedCount} sub="可查看多渠道效果" tone="good" />
       <MetricCard label="阻断项" value={blocked} sub="需先处理后才能发布" tone={blocked ? 'danger' : 'good'} />

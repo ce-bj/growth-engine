@@ -92,10 +92,18 @@ export function ContentView() {
     const task: ContentTask = {
       id, title: payload.title, kind: payload.kind, type: payload.type, priority: payload.priority,
       status: 'ready',
-      theme: payload.theme, audience: payload.audience, userQuestion: payload.userQuestion ?? '', channels: payload.channels,
+      theme: payload.theme, contentSubject: payload.contentSubject, knowledgeScopes: payload.knowledgeScopes,
+      audience: payload.audience, userQuestion: payload.userQuestion ?? '', channels: payload.channels, locales: payload.locales,
+      businessGoal: payload.businessGoal, successMetric: payload.successMetric, journeyStage: payload.journeyStage,
+      coreMessage: payload.coreMessage, desiredAction: payload.desiredAction, mustInclude: payload.mustInclude,
+      mustAvoid: payload.mustAvoid, owner: payload.owner,
       dueDate: payload.dueDate, reason: payload.reason, outline: [], masterDraft: '', knowledge: [],
       missingMaterials: [],
-      origin: { source: 'manual', sourceLabel: '运营人员手动创建' },
+      origin: {
+        source: payload.demandSource,
+        sourceLabel: payload.demandSource === 'attribution' ? '诊断报告 · 自动解析建任务' : payload.demandSource === 'opportunity' ? '内容洞察 · 转入生产' : '运营人员手动创建',
+        context: payload.sourceContext,
+      },
       materialBudget: deriveMaterialBudget(payload.type, payload.theme),
       quality: { overall: 0, relevance: 0, accuracy: 0, completeness: 0, readability: 0, authenticity: 0, channelFit: 0 },
       compliance: [], channelVersions: [],
@@ -106,7 +114,7 @@ export function ContentView() {
     openTask(id, 0)
   }
 
-  const updateBrief = (taskId: string, patch: Partial<Pick<ContentTask, 'title' | 'audience' | 'userQuestion' | 'theme' | 'reason' | 'dueDate' | 'locales'>>) => {
+  const updateBrief = (taskId: string, patch: Partial<Pick<ContentTask, 'title' | 'type' | 'kind' | 'contentSubject' | 'knowledgeScopes' | 'audience' | 'userQuestion' | 'theme' | 'reason' | 'dueDate' | 'locales' | 'channels' | 'businessGoal' | 'successMetric' | 'journeyStage' | 'coreMessage' | 'desiredAction' | 'mustInclude' | 'mustAvoid' | 'owner'>>) => {
     setContentTasks((current) => current.map((task) => task.id === taskId ? { ...task, ...patch } : task))
   }
 
@@ -186,12 +194,19 @@ export function ContentView() {
         '总结与下一步行动',
       ]
       const masterDraft = task.masterDraft || outline.map((section) => `${section}\n\n围绕"${userQuestion}"，面向${task.audience}，结合企业知识库中的产品资料与行业数据，给出可验证、可落地的结论。`).join('\n\n')
+      const channelVersions: ChannelVersion[] = task.channels.map((channel) => ({
+        channel,
+        title: channel === 'website' ? task.title : `${task.title}｜${CHANNEL_META[channel].label}`,
+        body: channel === 'website' ? masterDraft : `${masterDraft.split('\n\n')[0]}\n\n${task.desiredAction || '查看完整内容，了解更多信息。'}`,
+        account: task.channelProfiles?.find((profile) => profile.channel === channel)?.fields.account || `${CHANNEL_META[channel].label} · 企业官方账号`,
+        status: 'ready',
+      }))
       const multiplier = PRIORITY_MULTIPLIER[task.priority]
       const subScores = Object.fromEntries(Object.entries(QUALITY_MAX).map(([key, max]) => [key, Math.round(max * multiplier)])) as Record<keyof typeof QUALITY_MAX, number>
       const overall = Object.values(subScores).reduce((sum, value) => sum + value, 0)
-      return { ...task, userQuestion, outline, masterDraft, quality: { overall, ...subScores }, status: 'quality_review' }
+      return { ...task, userQuestion, outline, masterDraft, channelVersions, quality: { overall, ...subScores }, status: 'quality_review' }
     }))
-    pushToast('success', '母稿已生成，进入质量与合规审核', true)
+    pushToast('success', '内容概览与渠道内容已生成，进入质量与合规审核', true)
   }
 
   /** 补全知识库与术语库后重新生成母稿：重新计算缺口，如实反馈仍未补齐的部分 */
@@ -219,6 +234,13 @@ export function ContentView() {
       masterDraft: item.outline.length
         ? item.outline.map((section) => `${section}\n\n（已按最新知识库与术语库重新生成）围绕"${item.userQuestion || item.theme}"，面向${item.audience}，结合已验证的产品资料、行业数据与术语译名给出结论。`).join('\n\n')
         : item.masterDraft,
+      channelVersions: item.channels.map((channel) => ({
+        channel,
+        title: channel === 'website' ? item.title : `${item.title}｜${CHANNEL_META[channel].label}`,
+        body: `${item.outline[0] || item.title}\n\n已按最新知识库与术语库重新生成渠道内容。${item.desiredAction ? `\n\n${item.desiredAction}` : ''}`,
+        account: item.channelProfiles?.find((profile) => profile.channel === channel)?.fields.account || `${CHANNEL_META[channel].label} · 企业官方账号`,
+        status: 'ready',
+      })),
     }))
     if (remainingTerms.length || openRisks.length) {
       pushToast('warning', `母稿已重新生成，但仍有 ${openRisks.length} 处知识库未命中、${remainingTerms.length} 个术语缺少译名，已归入物料预算待补充`, true)
@@ -236,24 +258,7 @@ export function ContentView() {
 
   const ignoreWarningsAndProceed = (taskId: string) => {
     setContentTasks((current) => current.map((task) => task.id === taskId ? { ...task, status: 'channel_adaptation' } : task))
-    pushToast('success', '已确认审核结论，进入渠道适配', true)
-  }
-
-  const generateChannelVersion = (taskId: string, channel: ContentChannel) => {
-    setContentTasks((current) => current.map((task) => {
-      if (task.id !== taskId || task.channelVersions.some((version) => version.channel === channel)) return task
-      const version: ChannelVersion = {
-        channel, title: task.title,
-        body: task.masterDraft ? task.masterDraft.split('\n\n')[0] : `${task.theme}：${task.userQuestion}`,
-        account: `${CHANNEL_META[channel].label} · 企业官方账号`, status: 'ready',
-      }
-      return { ...task, channelVersions: [...task.channelVersions, version] }
-    }))
-    pushToast('success', `已生成 ${CHANNEL_META[channel].label} 渠道版本`, true)
-  }
-
-  const updateChannelVersion = (taskId: string, channel: ContentChannel, patch: Partial<Pick<ChannelVersion, 'title' | 'body'>>) => {
-    setContentTasks((current) => current.map((task) => task.id !== taskId ? task : { ...task, channelVersions: task.channelVersions.map((version) => version.channel === channel ? { ...version, ...patch } : version) }))
+    pushToast('success', '已确认审核结论，进入渠道内容预览', true)
   }
 
   const submitForApproval = (taskId: string) => {
@@ -300,7 +305,7 @@ export function ContentView() {
 
   const glossaryDrawer = glossaryState.open && <ContentGlossary terms={glossaryTerms} locales={contentLocalesData} highlightTerms={glossaryState.highlight} onClose={() => setGlossaryState({ open: false, highlight: [] })} onUpdateTranslation={updateTranslation} onSyncKnowledge={() => pushToast('success', '术语与译名已同步到企业知识库', true)} />
 
-  if (activeTask) return <div className="content-view"><ContentWorkbench task={activeTask} initialStep={workbenchStep} knowledgeRisks={knowledgeRisks} locales={contentLocalesData} glossaryTerms={glossaryTerms} onBack={() => { setActiveTaskId(null); setWorkbenchStep(undefined) }} onUpdateBrief={updateBrief} onUpdateOutline={updateOutline} onResolveMaterials={resolveMaterials} onConfirmChannelProfiles={confirmChannelProfiles} onUpdateBudget={updateBudget} onGenerateDraft={generateDraft} onRegenerateDraft={regenerateDraft} onToggleComplianceIssue={toggleComplianceIssue} onIgnoreWarnings={ignoreWarningsAndProceed} onGenerateChannel={generateChannelVersion} onUpdateChannelVersion={updateChannelVersion} onSubmitApproval={submitForApproval} onApprove={approveAndSchedule} onOpenGlossary={openGlossary} onOpenKnowledgeRisks={() => { setActiveTaskId(null); setKnowledgeRiskDetailOpen(true) }} />{glossaryDrawer}</div>
+  if (activeTask) return <div className="content-view"><ContentWorkbench task={activeTask} initialStep={workbenchStep} knowledgeRisks={knowledgeRisks} locales={contentLocalesData} glossaryTerms={glossaryTerms} onBack={() => { setActiveTaskId(null); setWorkbenchStep(undefined) }} onUpdateBrief={updateBrief} onUpdateOutline={updateOutline} onResolveMaterials={resolveMaterials} onConfirmChannelProfiles={confirmChannelProfiles} onUpdateBudget={updateBudget} onGenerateDraft={generateDraft} onRegenerateDraft={regenerateDraft} onToggleComplianceIssue={toggleComplianceIssue} onIgnoreWarnings={ignoreWarningsAndProceed} onSubmitApproval={submitForApproval} onApprove={approveAndSchedule} onOpenGlossary={openGlossary} onOpenKnowledgeRisks={() => { setActiveTaskId(null); setKnowledgeRiskDetailOpen(true) }} />{glossaryDrawer}</div>
 
   if (knowledgeRiskDetailOpen) return <div className="content-view"><ContentKnowledgeRiskDetail risks={knowledgeRisks} onBack={() => setKnowledgeRiskDetailOpen(false)} onOpenTask={openTask} onMarkResolved={markKnowledgeRiskResolved} /></div>
 

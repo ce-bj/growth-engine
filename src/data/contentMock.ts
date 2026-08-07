@@ -23,8 +23,18 @@ export const contentTasksData: ContentTask[] = [
     status: 'compliance_review',
     priority: 'P1',
     theme: '工业机器人选型',
+    contentSubject: '工业机器人选型',
+    knowledgeScopes: ['product', 'case', 'industry'],
     audience: '制造企业自动化负责人',
     userQuestion: '负载、工作半径和精度要求不同，应该如何选择机器人？',
+    businessGoal: 'decision',
+    successMetric: '有效阅读率 ≥ 55%，选型咨询 CTA 点击率 ≥ 3%',
+    journeyStage: 'compare',
+    coreMessage: '工业机器人选型必须基于工况、末端负载、工作半径、节拍与环境条件综合校核，不能只比较额定负载。',
+    desiredAction: '下载选型检查清单，或提交工况参数咨询选型',
+    mustInclude: '六项参数、适用边界、参数来源、真实案例的授权状态',
+    mustAvoid: '固定效率提升承诺、行业第一等绝对化表达',
+    owner: '内容运营组 · 李静',
     channels: ['website', 'linkedin', 'facebook', 'x'],
     locales: ['en', 'de'],
     missingTerms: ['重复定位精度', '节拍时间'],
@@ -64,7 +74,7 @@ export const contentTasksData: ContentTask[] = [
     ],
   },
   {
-    id: 'ct-002', title: '汽车零部件焊接应用案例', kind: 'create', type: 'case', status: 'needs_material', priority: 'P1', theme: '汽车焊接自动化', audience: '汽车零部件工厂技术与生产负责人', userQuestion: '同类型工厂如何部署焊接工作站，实际改善了什么？', channels: ['website', 'linkedin'], dueDate: '2026-08-06', reason: '网站缺少可证明项目交付能力的真实案例。', origin: { source: 'manual', sourceLabel: '运营人员手动创建', evidence: { currentValue: '网站暂无客户案例', benchmark: '竞品平均 3+ 案例', action: '补一篇可证明交付能力的真实案例' } }, outline: ['客户背景', '原有问题', '方案设计', '实施过程', '结果数据', '适用企业'], masterDraft: '', knowledge: [{ id: 'kr-4', category: '项目资料', title: '焊接线交付记录', source: '项目中心 PJ-106', verified: true }], missingMaterials: ['客户公开授权', '实施前后节拍数据'], materialBudget: [
+    id: 'ct-002', title: '汽车零部件焊接应用案例', kind: 'create', type: 'case', status: 'needs_material', priority: 'P1', theme: '汽车焊接自动化', contentSubject: '汽车零部件焊接工作站', knowledgeScopes: ['case', 'product', 'industry'], audience: '汽车零部件工厂技术与生产负责人', userQuestion: '同类型工厂如何部署焊接工作站，实际改善了什么？', businessGoal: 'decision', successMetric: '案例页有效阅读率 ≥ 55%，项目咨询 ≥ 5 条/月', journeyStage: 'evaluate', coreMessage: '焊接工作站的真实价值必须由项目约束、实施过程和授权后的前后数据共同证明。', desiredAction: '查看方案能力并提交项目工况', mustInclude: '客户授权、实施前后数据、适用边界', mustAvoid: '未授权客户名、Logo、现场图片和无法证明的提升比例', owner: '行业内容组 · 王晨', channels: ['website', 'linkedin'], dueDate: '2026-08-06', reason: '网站缺少可证明项目交付能力的真实案例。', origin: { source: 'manual', sourceLabel: '运营人员手动创建', evidence: { currentValue: '网站暂无客户案例', benchmark: '竞品平均 3+ 案例', action: '补一篇可证明交付能力的真实案例' } }, outline: ['客户背景', '原有问题', '方案设计', '实施过程', '结果数据', '适用企业'], masterDraft: '', knowledge: [{ id: 'kr-4', category: '项目资料', title: '焊接线交付记录', source: '项目中心 PJ-106', verified: true }], missingMaterials: ['客户公开授权', '实施前后节拍数据'], materialBudget: [
       { id: 'mb-1', templateKey: 'auth', name: '客户公开授权', status: 'pending_auth', note: '需法务 / 客户确认' },
       { id: 'mb-2', templateKey: 'before_after', name: '实施前后数据', status: 'missing', note: '需项目中心提供' },
       { id: 'mb-3', templateKey: 'quote', name: '客户证言', status: 'ready', source: '案例库' },
@@ -96,7 +106,7 @@ export const contentTasksData: ContentTask[] = [
     id: 'ct-007', title: 'PLC 故障排查指南更新', kind: 'refresh', type: 'guide', status: 'observing', priority: 'P2', theme: 'PLC 故障排查', audience: '设备维护工程师', userQuestion: '常见通信与程序故障如何快速定位？', channels: ['website', 'linkedin'], dueDate: '2026-07-24', reason: '旧文章跳出率较高，已补充故障路径图和分步检查清单。', outline: ['故障分类', '排查路径', '常见错误', '检查清单'], masterDraft: '已发布的更新版本。', knowledge: [], missingMaterials: [], quality: { overall: 84, relevance: 18, accuracy: 18, completeness: 17, readability: 14, authenticity: 9, channelFit: 8 }, compliance: [], channelVersions: [{ channel: 'website', title: 'PLC 常见故障排查指南', body: '已发布', account: 'www.example.com', status: 'published', url: 'https://www.example.com/guides/plc-troubleshooting' }, { channel: 'linkedin', title: 'PLC 故障排查：先确认通信还是程序', body: '已发布', account: 'Example Automation', status: 'published', url: 'https://linkedin.com/posts/example-plc' }],
   },
   {
-    id: 'ct-008', title: '广告渠道落地页 · 重写版', kind: 'optimize', type: 'solution', status: 'ready', priority: 'P0', theme: '广告渠道落地页内容重写', audience: '通过广告到达落地页的采购决策者', userQuestion: '广告承诺的能力与落地页内容为什么不匹配？', channels: ['website'], dueDate: '2026-08-08', reason: '归因分析发现广告渠道落地页跳出率 52%，高于行业基准 42%。', origin: { source: 'attribution', sourceLabel: '归因分析 · 广告渠道落地页跳出率', attributionRef: { changeId: 'chg-1', measureId: 'm-1-1', reviewPeriod: 'T+7' }, evidence: { currentValue: '广告渠道落地页跳出率 52%', benchmark: '高于行业平均 42%', action: '按搜索意图重写落地页内容，匹配创意承诺' } }, outline: ['首屏对齐创意承诺', '痛点-方案-案例结构', '产品能力上移'], masterDraft: '', knowledge: [], missingMaterials: [], quality: { overall: 0, relevance: 0, accuracy: 0, completeness: 0, readability: 0, authenticity: 0, channelFit: 0 }, compliance: [], channelVersions: [],
+    id: 'ct-008', title: '广告渠道落地页 · 重写版', kind: 'optimize', type: 'solution', status: 'ready', priority: 'P0', theme: '广告渠道落地页内容重写', contentSubject: '广告承诺对应的工业机器人方案', knowledgeScopes: ['product', 'service', 'case'], audience: '通过广告到达落地页的采购决策者', userQuestion: '广告承诺的能力与落地页内容为什么不匹配？', businessGoal: 'conversion', successMetric: '落地页跳出率从 52% 降至 ≤42%，咨询 CTA 点击率 ≥4%', journeyStage: 'decide', coreMessage: '首屏应直接承接广告承诺，并用可验证能力、案例与适用边界支持采购判断。', desiredAction: '提交方案咨询', mustInclude: '广告承诺、方案能力、证据、适用边界', mustAvoid: '无法证明的效果保证', owner: '增长内容组 · 陈可', channels: ['website'], dueDate: '2026-08-08', reason: '归因分析发现广告渠道落地页跳出率 52%，高于行业基准 42%。', origin: { source: 'attribution', sourceLabel: '归因分析 · 广告渠道落地页跳出率', attributionRef: { changeId: 'chg-1', measureId: 'm-1-1', reviewPeriod: 'T+7' }, evidence: { currentValue: '广告渠道落地页跳出率 52%', benchmark: '高于行业平均 42%', action: '按搜索意图重写落地页内容，匹配创意承诺' } }, outline: ['首屏对齐创意承诺', '痛点-方案-案例结构', '产品能力上移'], masterDraft: '', knowledge: [], missingMaterials: [], quality: { overall: 0, relevance: 0, accuracy: 0, completeness: 0, readability: 0, authenticity: 0, channelFit: 0 }, compliance: [], channelVersions: [],
   },
 ]
 

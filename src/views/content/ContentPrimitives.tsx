@@ -134,7 +134,7 @@ export function ReviewVerdictBadge({ verdict }: { verdict: ReviewVerdict }) {
 
 /** 内容生产七步流程，与任务工作台的步骤条一一对应。
  *  步骤顺序已调整：渠道与发布目标前置（决定术语译名/素材需求），资料与素材随后 */
-export const CONTENT_STEPS = ['任务简报', '渠道与发布目标', '资料与素材', '内容概览生成', '质量与合规', '渠道内容生成', '审批与发布'] as const
+export const CONTENT_STEPS = ['任务简报', '渠道与发布目标', '资料与素材', '内容概览生成', '质量与合规', '渠道内容预览', '审批与发布'] as const
 
 /** 由任务状态推导当前所处的生产步骤下标；返回 7 表示七步已全部走完 */
 export function getTaskStep(status: ContentTaskStatus): number {
