@@ -132,6 +132,10 @@ interface WorkbenchApi {
   selectAttributionChange: (changeId: string) => void
   confirmMeasure: (changeId: string, measureId: string) => void
   ignoreMeasure: (changeId: string, measureId: string) => void
+  /** Demo：内容类模拟已发布（发布后才可复盘） */
+  markMeasureContentPublished: (changeId: string, measureId: string) => void
+  /** Demo：模拟复盘到期 */
+  runMeasureReview: (changeId: string, measureId: string) => void
   closeAttributionDetail: () => void
   setAttributionConfig: (cfg: AttributionConfig) => void
   setReportInitialTab: (tab: 'health' | 'attribution') => void
@@ -143,6 +147,11 @@ interface WorkbenchApi {
   setContentOpportunities: Dispatch<SetStateAction<ContentOpportunity[]>>
   setContentPlanItems: Dispatch<SetStateAction<ContentPlanItem[]>>
   addContentTask: (task: ContentTask) => void
+  /** 归因 → 内容运营深链：打开指定任务工作台（默认第 0 步任务说明） */
+  openContentTaskFromAttribution: (taskId: string, step?: number) => void
+  /** ContentView 消费后清空 */
+  pendingContentTaskOpen: { taskId: string; step: number } | null
+  clearPendingContentTaskOpen: () => void
 }
 
 const WorkbenchContext = createContext<WorkbenchApi | null>(null)
@@ -217,9 +226,17 @@ export function WorkbenchProvider({ children }: { children: ReactNode }) {
   const [contentTasks, setContentTasks] = useState<ContentTask[]>(contentTasksData)
   const [contentOpportunities, setContentOpportunities] = useState<ContentOpportunity[]>(contentOpportunitiesData)
   const [contentPlanItems, setContentPlanItems] = useState<ContentPlanItem[]>(contentPlanItemsData)
+  const [pendingContentTaskOpen, setPendingContentTaskOpen] = useState<{
+    taskId: string
+    step: number
+  } | null>(null)
 
   const addContentTask = useCallback((task: ContentTask) => {
     setContentTasks((prev) => [task, ...prev])
+  }, [])
+
+  const clearPendingContentTaskOpen = useCallback(() => {
+    setPendingContentTaskOpen(null)
   }, [])
 
   const pushToast = useCallback((type: ToastItem['type'], message: string, autoDismiss = true) => {
@@ -236,6 +253,13 @@ export function WorkbenchProvider({ children }: { children: ReactNode }) {
     if (next !== 'weekly') setWeeklyPreviewId(null)
   }, [])
 
+  const openContentTaskFromAttribution = useCallback(
+    (taskId: string, step = 0) => {
+      setPendingContentTaskOpen({ taskId, step })
+      navigate('content')
+    },
+    [navigate],
+  )
   const dismissGuide = useCallback(() => {
     setShowGuide(false)
     try {
@@ -657,7 +681,7 @@ export function WorkbenchProvider({ children }: { children: ReactNode }) {
         partial: '复盘完成：部分改善，已追加措施回方案池',
         failed: '复盘完成：未见改善，已沉淀并建议重新归因',
       }
-      // ① 确认 → 执行中
+      // ① 确认 → 交接中 / 修复中
       setAttributionReport((prev) => ({
         ...prev,
         changes: prev.changes.map((c) =>
@@ -671,39 +695,20 @@ export function WorkbenchProvider({ children }: { children: ReactNode }) {
               },
         ),
       }))
-      pushToast('info', '措施已确认，正在调度执行…')
-      // ② 执行完成（演示 2 秒）→ 出产出 → 任务进入「待复盘 T+N」
+      const isHealthFix = targetMeasure?.suggestedBoundary === 'auto'
+      pushToast(
+        'info',
+        isHealthFix ? '已开始健康度修复…' : '已确认，任务说明已交给内容运营…',
+      )
+      // ② 交接/修复完成（演示 2 秒）
       window.setTimeout(() => {
-        setAttributionReport((prev) => ({
-          ...prev,
-          changes: prev.changes.map((c) =>
-            c.id !== changeId
-              ? c
-              : {
-                  ...c,
-                  measures: c.measures?.map((m) =>
-                    m.measureId === measureId ? { ...m, execStatus: 'success' as const } : m,
-                  ),
-                },
-          ),
-        }))
-        setAttributionTasks((prev) =>
-          prev.map((t) =>
-            t.module === 'attribution' && t.status === 'running'
-              ? {
-                  ...t,
-                  reviewPending: `待复盘 ${reviewPeriod}`,
-                  updatedAt: new Date().toISOString().slice(0, 16).replace('T', ' '),
-                }
-              : t,
-          ),
-        )
-        // 内容联动：targetModule = ai_content_engine 的措施 → 内容规划 Agent 推导 → 创建内容任务（带诊断证据来源追踪）
-        if (targetMeasure?.targetModule === 'ai_content_engine' && changeRef) {
+        let handedContentTaskId: string | undefined
+        // 内容类确认后交接：创建内容任务，并回写 contentTaskId 供一键跳转
+        if (!isHealthFix && targetMeasure && changeRef) {
           const plan = planContent({ measure: targetMeasure, change: changeRef })
-          const taskId = `ct-attr-${Date.now()}`
+          handedContentTaskId = `ct-attr-${Date.now()}`
           const task: ContentTask = {
-            id: taskId,
+            id: handedContentTaskId,
             title: plan.title,
             kind: plan.kind,
             type: plan.type,
@@ -727,10 +732,6 @@ export function WorkbenchProvider({ children }: { children: ReactNode }) {
           }
           setContentTasks((prev) => [task, ...prev])
         }
-        pushToast('success', `措施执行成功，产出已就绪，进入复盘周期（${reviewPeriod}）`)
-      }, 2000)
-      // ③ 复盘到点（演示 6 秒模拟 T+N 到期）→ 回填复盘结果，任务 done
-      window.setTimeout(() => {
         setAttributionReport((prev) => ({
           ...prev,
           changes: prev.changes.map((c) =>
@@ -738,27 +739,198 @@ export function WorkbenchProvider({ children }: { children: ReactNode }) {
               ? c
               : {
                   ...c,
-                  reviewResult: script.result,
-                  reviewNote: script.note,
+                  measures: c.measures?.map((m) =>
+                    m.measureId === measureId
+                      ? {
+                          ...m,
+                          execStatus: 'success' as const,
+                          ...(handedContentTaskId ? { contentTaskId: handedContentTaskId } : {}),
+                        }
+                      : m,
+                  ),
                 },
           ),
         }))
-        setAttributionTasks((prev) =>
-          prev.map((t) =>
-            t.module === 'attribution' && t.status === 'running'
-              ? {
-                  ...t,
-                  status: 'done',
-                  reviewPending: undefined,
-                  updatedAt: new Date().toISOString().slice(0, 16).replace('T', ' '),
-                }
-              : t,
-          ),
-        )
-        pushToast(script.result === 'failed' ? 'warning' : 'success', REVIEW_TOAST[script.result])
-      }, 8000)
+        if (isHealthFix) {
+          setAttributionTasks((prev) =>
+            prev.map((t) =>
+              t.module === 'attribution' && t.status === 'running'
+                ? {
+                    ...t,
+                    reviewPending: `待复盘 ${reviewPeriod}`,
+                    updatedAt: new Date().toISOString().slice(0, 16).replace('T', ' '),
+                  }
+                : t,
+            ),
+          )
+          pushToast('success', `健康度修复完成，进入复盘周期（${reviewPeriod}）`)
+        } else {
+          pushToast('success', '内容运营已接收任务说明。请先发布内容，再进入复盘。')
+        }
+      }, 2000)
+      // ③ 仅健康度：修复后自动模拟复盘到期。内容类须「模拟已发布」后再复盘。
+      if (isHealthFix) {
+        window.setTimeout(() => {
+          setAttributionReport((prev) => ({
+            ...prev,
+            changes: prev.changes.map((c) =>
+              c.id !== changeId
+                ? c
+                : {
+                    ...c,
+                    reviewResult: script.result,
+                    reviewNote: script.note,
+                  },
+            ),
+          }))
+          setAttributionTasks((prev) =>
+            prev.map((t) =>
+              t.module === 'attribution' && t.status === 'running'
+                ? {
+                    ...t,
+                    status: 'done',
+                    reviewPending: undefined,
+                    updatedAt: new Date().toISOString().slice(0, 16).replace('T', ' '),
+                  }
+                : t,
+            ),
+          )
+          pushToast(script.result === 'failed' ? 'warning' : 'success', REVIEW_TOAST[script.result])
+        }, 8000)
+      }
     },
     [pushToast],
+  )
+
+  const markMeasureContentPublished = useCallback(
+    (changeId: string, measureId: string) => {
+      const changeRef =
+        attributionReport.changes.find((c) => c.id === changeId) ??
+        mockAttributionReport.changes.find((c) => c.id === changeId)
+      const measure = changeRef?.measures?.find((m) => m.measureId === measureId)
+      if (!measure?.demoPublishEnabled) {
+        pushToast('warning', '该措施未开启「模拟已发布」演示')
+        return
+      }
+      if (measure.contentPublished) {
+        pushToast('info', '内容已标记为已发布')
+        return
+      }
+      const publishedAt = new Date().toISOString().slice(0, 16).replace('T', ' ')
+      const reviewPeriod = measure.reviewPeriod ?? 'T+7'
+      const taskId = measure.contentTaskId
+
+      setAttributionReport((prev) => ({
+        ...prev,
+        changes: prev.changes.map((c) =>
+          c.id !== changeId
+            ? c
+            : {
+                ...c,
+                measures: c.measures?.map((m) =>
+                  m.measureId === measureId
+                    ? { ...m, contentPublished: true, contentPublishedAt: publishedAt }
+                    : m,
+                ),
+              },
+        ),
+      }))
+
+      if (taskId) {
+        setContentTasks((prev) =>
+          prev.map((t) =>
+            t.id !== taskId
+              ? t
+              : {
+                  ...t,
+                  status: 'published',
+                  channelVersions:
+                    t.channelVersions.length > 0
+                      ? t.channelVersions.map((v) =>
+                          v.channel === 'website' ? { ...v, status: 'published' as const } : v,
+                        )
+                      : [
+                          {
+                            channel: 'website' as const,
+                            title: measure.deliverable?.title ?? t.title,
+                            body: measure.deliverable?.previewNote ?? t.reason,
+                            account: 'www.example.com',
+                            status: 'published' as const,
+                            url: measure.deliverable?.url,
+                          },
+                        ],
+                },
+          ),
+        )
+      }
+
+      setAttributionTasks((prev) =>
+        prev.map((t) =>
+          t.module === 'attribution' && (t.status === 'running' || t.status === 'pending')
+            ? {
+                ...t,
+                status: 'running',
+                reviewPending: `待复盘 ${reviewPeriod}（自发布起算）`,
+                updatedAt: publishedAt,
+              }
+            : t,
+        ),
+      )
+      pushToast('success', `已模拟发布。观察期 ${reviewPeriod} 起算，到期后再复盘。`)
+    },
+    [attributionReport.changes, pushToast],
+  )
+
+  const runMeasureReview = useCallback(
+    (changeId: string, measureId: string) => {
+      const changeRef =
+        attributionReport.changes.find((c) => c.id === changeId) ??
+        mockAttributionReport.changes.find((c) => c.id === changeId)
+      const measure = changeRef?.measures?.find((m) => m.measureId === measureId)
+      if (!measure?.contentPublished && measure?.suggestedBoundary !== 'auto') {
+        pushToast('warning', '请先模拟已发布，再复盘')
+        return
+      }
+      if (changeRef?.reviewResult) {
+        pushToast('info', '该变化已复盘')
+        return
+      }
+      const script = changeRef?.reviewScript ?? {
+        result: 'success' as const,
+        note: 'T+7 复盘：异常指标回归正常区间，措施起效。',
+      }
+      const REVIEW_TOAST: Record<'success' | 'partial' | 'failed', string> = {
+        success: '复盘完成：措施起效，指标回归正常',
+        partial: '复盘完成：部分改善，已追加措施回方案池',
+        failed: '复盘完成：未见改善，已沉淀并建议重新归因',
+      }
+      setAttributionReport((prev) => ({
+        ...prev,
+        changes: prev.changes.map((c) =>
+          c.id !== changeId
+            ? c
+            : {
+                ...c,
+                reviewResult: script.result,
+                reviewNote: script.note,
+              },
+        ),
+      }))
+      setAttributionTasks((prev) =>
+        prev.map((t) =>
+          t.module === 'attribution' && t.status === 'running'
+            ? {
+                ...t,
+                status: 'done',
+                reviewPending: undefined,
+                updatedAt: new Date().toISOString().slice(0, 16).replace('T', ' '),
+              }
+            : t,
+        ),
+      )
+      pushToast(script.result === 'failed' ? 'warning' : 'success', REVIEW_TOAST[script.result])
+    },
+    [attributionReport.changes, pushToast],
   )
 
   const ignoreMeasure = useCallback(
@@ -886,6 +1058,8 @@ export function WorkbenchProvider({ children }: { children: ReactNode }) {
       selectAttributionChange,
       confirmMeasure,
       ignoreMeasure,
+      markMeasureContentPublished,
+      runMeasureReview,
       closeAttributionDetail,
       setAttributionConfig,
       setReportInitialTab,
@@ -896,6 +1070,9 @@ export function WorkbenchProvider({ children }: { children: ReactNode }) {
       setContentOpportunities,
       setContentPlanItems,
       addContentTask,
+      openContentTaskFromAttribution,
+      pendingContentTaskOpen,
+      clearPendingContentTaskOpen,
     }),
     [
       view,
@@ -964,10 +1141,15 @@ export function WorkbenchProvider({ children }: { children: ReactNode }) {
       selectAttributionChange,
       confirmMeasure,
       ignoreMeasure,
+      markMeasureContentPublished,
+      runMeasureReview,
       closeAttributionDetail,
       contentTasks,
       contentOpportunities,
       contentPlanItems,
+      openContentTaskFromAttribution,
+      pendingContentTaskOpen,
+      clearPendingContentTaskOpen,
     ],
   )
 

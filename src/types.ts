@@ -659,12 +659,11 @@ export interface ContentThemePerformance {
 /** 变化类型：异常(下降) / 提升(上升) / 持平(平稳) */
 export type ChangeType = 'down' | 'up' | 'flat'
 
-/** 6 段转化漏斗 */
+/** 5 段转化漏斗 */
 export type FunnelSegment =
   | 'channel_arrival'
   | 'landing_page'
   | 'site_browsing'
-  | 'conversion_entry'
   | 'conversion_interaction'
   | 'lead_success'
 
@@ -672,12 +671,11 @@ export const FUNNEL_SEGMENT_LABELS: Record<FunnelSegment, string> = {
   channel_arrival: '渠道到达',
   landing_page: '落地页',
   site_browsing: '站内浏览',
-  conversion_entry: '转化入口触发',
   conversion_interaction: '转化交互',
   lead_success: '成功留资',
 }
 
-/** 措施调度的 L4 模块 */
+/** 历史字段：曾用于调度 L4；现 UI 不展示，内容交接仍可作演示路由参考 */
 export type AttributionTargetModule =
   | 'ai_content_engine'
   | 'conversion_path_designer'
@@ -687,15 +685,15 @@ export type AttributionTargetModule =
   | 'none'
 
 export const TARGET_MODULE_LABELS: Record<AttributionTargetModule, string> = {
-  ai_content_engine: 'AI 内容引擎',
-  conversion_path_designer: '转化路径设计器',
-  smart_form: '智能表单系统',
-  ai_cs_pro: 'AI 智能客服 PRO',
-  tool_agent: '工具/Agent',
-  none: '只出方案',
+  ai_content_engine: '内容运营（交接）',
+  conversion_path_designer: '转化路径（交接/人工）',
+  smart_form: '表单（仅展示）',
+  ai_cs_pro: '客服（仅展示）',
+  tool_agent: '健康度修复',
+  none: '仅展示',
 }
 
-/** 执行边界 */
+/** 执行边界（归因侧：确认后交接 / 直接修复 / 仅展示） */
 export type ExecutionBoundary = 'auto' | 'confirm' | 'advice_only'
 
 /** 复盘周期（对齐方案 9.2 按措施见效周期分档） */
@@ -748,6 +746,13 @@ export interface AttributionMeasure {
   deliverable?: MeasureDeliverable
   /** 执行状态（确认后流转） */
   execStatus?: 'pending_confirm' | 'executing' | 'success' | 'failed' | 'rejected' | 'advice_only'
+  /** 内容类交接成功后，关联的内容运营任务 id（用于一键跳转） */
+  contentTaskId?: string
+  /** 内容已发布（Demo：模拟已发布后置 true；复盘从此刻起算） */
+  contentPublished?: boolean
+  contentPublishedAt?: string
+  /** Demo 专用：允许在归因卡上「模拟已发布」（如广告落地页重写） */
+  demoPublishEnabled?: boolean
 }
 
 /** 单条变化的归因结果 */

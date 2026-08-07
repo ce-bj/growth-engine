@@ -3,13 +3,13 @@ import type {
   AttributionChange,
   AttributionMeasure,
   ChangeType,
+  ExecutionBoundary,
 } from '../types'
 import {
   FUNNEL_SEGMENT_LABELS,
-  TARGET_MODULE_LABELS,
 } from '../types'
 
-/* ── 标签与样式映射 ─────────────────────────────────────────────── */
+/* ── 标签与样式映射（对齐方法论 v1.11：定边界与交接） ─────────────── */
 
 const CHANGE_TYPE_META: Record<ChangeType, { label: string; cls: string }> = {
   down: { label: '异常', cls: 'badge--danger' },
@@ -21,27 +21,55 @@ const CONFIDENCE_LABEL = { high: '高', medium: '中', low: '低' } as const
 
 const COST_LABEL = { low: '低', medium: '中', high: '高' } as const
 const TIME_LABEL = { instant: '立即', day: '当天', week: '一周', month: '一月' } as const
-const BOUNDARY_LABEL = {
-  auto: '自动执行',
-  confirm: '确认后执行',
-  advice_only: '只出方案',
-} as const
-
-const EXEC_STATUS_META: Record<
-  NonNullable<AttributionMeasure['execStatus']>,
-  { label: string; cls: string }
-> = {
-  pending_confirm: { label: '待确认', cls: 'badge--warning' },
-  executing: { label: '执行中', cls: 'badge--info' },
-  success: { label: '已执行', cls: 'badge--success' },
-  failed: { label: '失败', cls: 'badge--danger' },
-  rejected: { label: '已忽略', cls: 'badge--neutral' },
-  advice_only: { label: '只出方案', cls: 'badge--neutral' },
+const BOUNDARY_LABEL: Record<ExecutionBoundary, string> = {
+  auto: '可直接修复',
+  confirm: '确认后交接',
+  advice_only: '仅展示',
 }
 
-/** 清单上的方案处理状态：可执行 → 待处理/已采纳/已忽略；只出文字方案 → 仅建议 */
+const EXEC_STATUS_CLS: Record<
+  NonNullable<AttributionMeasure['execStatus']>,
+  string
+> = {
+  pending_confirm: 'badge--warning',
+  executing: 'badge--info',
+  success: 'badge--success',
+  failed: 'badge--danger',
+  rejected: 'badge--neutral',
+  advice_only: 'badge--neutral',
+}
+
+/** 按三档边界区分状态文案：内容交接 / 健康度直修 / 站外仅展示 */
+function getExecStatusLabel(
+  measure: AttributionMeasure,
+  changeReviewed?: boolean,
+): string {
+  const status = measure.execStatus ?? 'pending_confirm'
+  const boundary = measure.suggestedBoundary
+  if (status === 'advice_only' || boundary === 'advice_only') return '仅展示'
+  if (status === 'rejected') return '已忽略'
+  if (status === 'failed') return '失败'
+  if (boundary === 'auto') {
+    if (status === 'pending_confirm') return '待修复'
+    if (status === 'executing') return '修复中'
+    if (status === 'success') return changeReviewed ? '已复盘' : '已修复'
+  }
+  // 内容类：确认后交接 → 发布 → 复盘
+  if (status === 'pending_confirm') return '待确认'
+  if (status === 'executing') return '交接中'
+  if (status === 'success') {
+    if (changeReviewed) return '已复盘'
+    if (measure.contentPublished) {
+      return `已发布 · 待复盘 ${measure.reviewPeriod ?? 'T+7'}`
+    }
+    return '已交接'
+  }
+  return status
+}
+
+/** 清单上的方案处理状态 */
 function getActionStatus(change: AttributionChange): { label: string; cls: string } {
-  if (change.changeType === 'up') return { label: '无需执行', cls: 'badge--success' }
+  if (change.changeType === 'up') return { label: '无需交接', cls: 'badge--success' }
   if (change.changeType === 'flat') return { label: '仅建议', cls: 'badge--neutral' }
 
   const measures = change.measures ?? []
@@ -112,23 +140,38 @@ function AgentBubble({ children, title }: { children: React.ReactNode; title?: s
 
 function MeasureCard({
   measure,
+  changeReviewed,
   onConfirm,
   onIgnore,
+  onOpenContentTask,
+  onSimulatePublish,
+  onRunReview,
 }: {
   measure: AttributionMeasure
+  changeReviewed: boolean
   onConfirm: () => void
   onIgnore: () => void
+  onOpenContentTask: (taskId: string) => void
+  onSimulatePublish: () => void
+  onRunReview: () => void
 }) {
-  const st = EXEC_STATUS_META[measure.execStatus ?? 'pending_confirm']
+  const status = measure.execStatus ?? 'pending_confirm'
+  const statusCls = EXEC_STATUS_CLS[status]
+  const statusLabel = getExecStatusLabel(measure, changeReviewed)
   const actionable = measure.suggestedBoundary !== 'advice_only'
+  const isHealthFix = measure.suggestedBoundary === 'auto'
+  const confirmLabel = isHealthFix ? '开始修复' : '确认并交给内容运营'
+  const handedOff =
+    !isHealthFix && measure.execStatus === 'success' && Boolean(measure.contentTaskId)
+  const canSimulatePublish =
+    handedOff && measure.demoPublishEnabled && !measure.contentPublished && !changeReviewed
+  const canRunReview =
+    handedOff && measure.demoPublishEnabled && measure.contentPublished && !changeReviewed
   return (
     <div className="attr-measure">
       <div className="attr-measure__head">
-        <span className={`badge ${st.cls}`}>{st.label}</span>
+        <span className={`badge ${statusCls}`}>{statusLabel}</span>
         <span className="badge badge--neutral">{BOUNDARY_LABEL[measure.suggestedBoundary]}</span>
-        <span className="muted attr-measure__target">
-          → {TARGET_MODULE_LABELS[measure.targetModule]}
-        </span>
       </div>
       <div className="attr-measure__desc">{measure.description}</div>
 
@@ -152,16 +195,19 @@ function MeasureCard({
         置信度 {CONFIDENCE_LABEL[measure.rootCauseConfidence]} · 成本 {COST_LABEL[measure.cost]} ·
         起效 {TIME_LABEL[measure.timeToEffect]} · 风险 {COST_LABEL[measure.risk]}
         {measure.reviewPeriod ? ` · 复盘 ${measure.reviewPeriod}` : ''}
+        {measure.contentPublishedAt ? ` · 发布于 ${measure.contentPublishedAt}` : ''}
       </div>
 
-      {/* 执行产出（执行完成后展示，客户可查看生成的页面/重写版/日志/变体） */}
+      {/* 交接/修复后的可查看产出 */}
       {measure.deliverable &&
       (measure.execStatus === 'success' || measure.execStatus === 'executing') ? (
         <div className="attr-deliverable">
           <div className="attr-deliverable__head">
-            <span className="badge badge--success">产出已就绪</span>
+            <span className="badge badge--success">
+              {isHealthFix ? '修复结果' : measure.contentPublished ? '已发布' : '交接回执'}
+            </span>
             <span className="attr-deliverable__title">{measure.deliverable.title}</span>
-            {measure.deliverable.url ? (
+            {measure.deliverable.url && (isHealthFix || measure.contentPublished) ? (
               <a
                 className="attr-deliverable__link"
                 href={measure.deliverable.url}
@@ -181,11 +227,33 @@ function MeasureCard({
       {actionable && measure.execStatus === 'pending_confirm' ? (
         <div className="row" style={{ gap: 8, marginTop: 10 }}>
           <button type="button" className="btn btn--primary btn--sm" onClick={onConfirm}>
-            确认执行
+            {confirmLabel}
           </button>
           <button type="button" className="btn btn--text btn--sm" onClick={onIgnore}>
             忽略
           </button>
+        </div>
+      ) : null}
+
+      {handedOff && measure.contentTaskId ? (
+        <div className="row" style={{ gap: 8, marginTop: 10, flexWrap: 'wrap' }}>
+          <button
+            type="button"
+            className="btn btn--secondary btn--sm"
+            onClick={() => onOpenContentTask(measure.contentTaskId!)}
+          >
+            在内容运营查看
+          </button>
+          {canSimulatePublish ? (
+            <button type="button" className="btn btn--primary btn--sm" onClick={onSimulatePublish}>
+              模拟已发布
+            </button>
+          ) : null}
+          {canRunReview ? (
+            <button type="button" className="btn btn--primary btn--sm" onClick={onRunReview}>
+              模拟复盘到期
+            </button>
+          ) : null}
         </div>
       ) : null}
     </div>
@@ -195,9 +263,16 @@ function MeasureCard({
 /* ── 右侧 · 归因详情（Agent 对话式） ────────────────────────────── */
 
 function ChangeDetail({ change }: { change: AttributionChange }) {
-  const { confirmMeasure, ignoreMeasure } = useWorkbench()
+  const {
+    confirmMeasure,
+    ignoreMeasure,
+    openContentTaskFromAttribution,
+    markMeasureContentPublished,
+    runMeasureReview,
+  } = useWorkbench()
   const meta = CHANGE_TYPE_META[change.changeType]
   const action = getActionStatus(change)
+  const changeReviewed = Boolean(change.reviewResult)
   return (
     <div className="attr-detail">
       <div className="attr-detail__head">
@@ -263,13 +338,17 @@ function ChangeDetail({ change }: { change: AttributionChange }) {
 
       {/* ④ 应对产出：按变化类型区分 */}
       {change.changeType === 'down' && change.measures ? (
-        <AgentBubble title="解决方案与措施">
+        <AgentBubble title="任务说明 / 应对方案">
           {change.measures.map((m) => (
             <MeasureCard
               key={m.measureId}
               measure={m}
+              changeReviewed={changeReviewed}
               onConfirm={() => confirmMeasure(change.id, m.measureId)}
               onIgnore={() => ignoreMeasure(change.id, m.measureId)}
+              onOpenContentTask={(taskId) => openContentTaskFromAttribution(taskId, 0)}
+              onSimulatePublish={() => markMeasureContentPublished(change.id, m.measureId)}
+              onRunReview={() => runMeasureReview(change.id, m.measureId)}
             />
           ))}
         </AgentBubble>
@@ -293,7 +372,7 @@ function ChangeDetail({ change }: { change: AttributionChange }) {
             <div key={i} className="attr-suggestion">
               <div>{s.suggestion}</div>
               <div className="muted attr-suggestion__meta">
-                → {TARGET_MODULE_LABELS[s.targetModule]} · {s.expectedEffect}（只出方案，不执行）
+                {s.expectedEffect}（仅建议，不交接）
               </div>
             </div>
           ))}

@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useWorkbench } from '../context/WorkbenchContext'
 import { contentAssetsData, contentCalendarData, contentLocalesData, contentPublishStatsData, contentTasksData, glossaryTermsData, knowledgeRiskEventsData, publicationRecordsData, themePerformanceData, weeklyPerformanceData } from '../data/contentMock'
 import type { ChannelProfile, ChannelVersion, ContentAsset, ContentChannel, ContentOpportunity, ContentPlanItem, ContentTab, ContentTask, ContentThemePerformance, GlossaryTerm, KnowledgeRiskEvent, MaterialBudgetItem, PublicationRecord, PublishSettings } from '../types'
@@ -24,7 +24,17 @@ const QUALITY_MAX = { relevance: 20, accuracy: 20, completeness: 20, readability
 const PRIORITY_MULTIPLIER = { P0: 0.92, P1: 0.85, P2: 0.78 } as const
 
 export function ContentView() {
-  const { pushToast, contentTasks, setContentTasks, contentOpportunities, setContentOpportunities, contentPlanItems, setContentPlanItems } = useWorkbench()
+  const {
+    pushToast,
+    contentTasks,
+    setContentTasks,
+    contentOpportunities,
+    setContentOpportunities,
+    contentPlanItems,
+    setContentPlanItems,
+    pendingContentTaskOpen,
+    clearPendingContentTaskOpen,
+  } = useWorkbench()
   const [tab, setTab] = useState<ContentTab>('overview')
   const tasks = contentTasks
   const opportunities = contentOpportunities
@@ -44,6 +54,15 @@ export function ContentView() {
 
   const navigate = (next: ContentTab) => { setActiveTaskId(null); setPerformanceStatId(null); setPublishSettingsOpen(false); setTab(next) }
   const openTask = (id: string, step?: number) => { setKnowledgeRiskDetailOpen(false); setPerformanceStatId(null); setActiveTaskId(id); setWorkbenchStep(step) }
+
+  // 归因措施「在内容运营查看」深链：打开对应任务工作台第 0 步任务说明
+  useEffect(() => {
+    if (!pendingContentTaskOpen) return
+    const { taskId, step } = pendingContentTaskOpen
+    if (!tasks.some((t) => t.id === taskId)) return
+    openTask(taskId, step)
+    clearPendingContentTaskOpen()
+  }, [pendingContentTaskOpen, tasks, clearPendingContentTaskOpen])
   const openGlossary = (highlight: string[] = []) => setGlossaryState({ open: true, highlight })
   const openPerformanceDetail = (taskId: string) => {
     const stat = contentPublishStatsData.find((item) => item.taskId === taskId)

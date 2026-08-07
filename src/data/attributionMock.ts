@@ -14,7 +14,7 @@ import type {
 
 /* ── 变化条目（9 例，按方案第 10 章编号） ─────────────────────── */
 
-/** 案例 1 · 落地页优化（异常 · 确认后执行 · 成功）— 本期 */
+/** 案例 1 · 落地页优化（异常 · 确认后交接 · 成功）— 本期 */
 const change1: AttributionChange = {
   id: 'chg-1',
   changeType: 'down',
@@ -57,6 +57,7 @@ const change1: AttributionChange = {
       targetModule: 'ai_content_engine',
       suggestedBoundary: 'confirm',
       reviewPeriod: 'T+7',
+      demoPublishEnabled: true,
       deliverable: {
         kind: 'rewrite',
         title: '广告渠道落地页 · 重写版（预览）',
@@ -72,7 +73,7 @@ const change1: AttributionChange = {
   },
 }
 
-/** 案例 2 · 404/死链修复（异常 · 自动执行 · 成功）— 本期 */
+/** 案例 2 · 404/死链修复（异常 · 可直接修复 · 成功）— 本期 */
 const change2: AttributionChange = {
   id: 'chg-2',
   changeType: 'down',
@@ -130,7 +131,7 @@ const change2: AttributionChange = {
   },
 }
 
-/** 案例 3 · 预算削减（异常 · 只出方案 · 不追踪）— P1 流量危机期 */
+/** 案例 3 · 预算削减（异常 · 仅展示 · 不追踪）— P1 流量危机期 */
 const change3: AttributionChange = {
   id: 'chg-3',
   changeType: 'down',
@@ -177,7 +178,7 @@ const change3: AttributionChange = {
   ],
 }
 
-/** 案例 4 · SEO 收录减少（异常 · 确认后执行 · T+30 未改善 · 失败沉淀）— P1 流量危机期 */
+/** 案例 4 · SEO 收录减少（异常 · 确认后交接 · T+30 未改善 · 失败沉淀）— P1 流量危机期 */
 const change4: AttributionChange = {
   id: 'chg-4',
   changeType: 'down',
@@ -234,7 +235,7 @@ const change4: AttributionChange = {
     'T+30 复盘：SEO UV 222→218，未见改善。措施沉淀为「弃用」，异常任务已重开归因，回第 3 步重新下钻（候选方向：算法更新/竞对挤压，需调第二层数据再验证）。',
 }
 
-/** 案例 5 · CTA 文案优化（异常 · 确认后执行 · 部分改善）— P2 转化入口卡点儿（已复盘） */
+/** 案例 5 · CTA 文案优化（异常 · 确认后交接 · 部分改善）— P2 转化入口卡点儿（已复盘） */
 const change5: AttributionChange = {
   id: 'chg-5',
   changeType: 'down',
@@ -243,7 +244,7 @@ const change5: AttributionChange = {
   baselineValue: '3.2%',
   changeAmount: '比上期下降 0.5%',
   severity: 'P0',
-  funnelSegment: 'conversion_entry',
+  funnelSegment: 'conversion_interaction',
   rootCause: 'CTA 按钮文案不诱人',
   causeCategory: 'CTA 不明显/时机不对',
   confidence: 'medium',
@@ -254,7 +255,7 @@ const change5: AttributionChange = {
   ],
   analysisSteps: [
     '体检：留资率 2.7%，环比跌 0.5pp，命中异常规则，定级 P0；UV 正常、跳出率正常。',
-    '定位：前段（UV/跳出）正常而留资跌，定位到 ④转化入口触发段。',
+    '定位：前段（UV/跳出）正常而留资跌，定位到 ④转化交互段。',
     '下钻：调入口类型明细——CTA 点击率仅 15%，低于行业平均 25%。',
     '验证：假设「CTA 文案不诱人」→ A/B 测试「获取报价」点击率比「提交」高 38% ✓，假设成立。',
     '结论：CTA 按钮文案不诱人（中置信度 · 流失原因库「CTA 不明显/时机不对」）。',
@@ -291,7 +292,7 @@ const change5: AttributionChange = {
     'T+7 复盘：留资率 2.7%→3.0%，有改善但未回归正常区间（≥3.2%），判定部分改善。沉淀为「调整后使用」，已追加措施（叠加增加 CTA 入口），次期留资率恢复至 3.2%。',
 }
 
-/** 案例 6 · 产品详情页优化（异常 · 确认后执行 · 成功）— 本期 */
+/** 案例 6 · 产品详情页优化（异常 · 确认后交接 · 成功）— 本期 */
 const change6: AttributionChange = {
   id: 'chg-6',
   changeType: 'down',
@@ -311,7 +312,7 @@ const change6: AttributionChange = {
   ],
   analysisSteps: [
     '体检：页面转化率跌幅 TOP5 入榜——/products/cnc-machining 转化率 3.8%→1.2%，入榜即异常信号，定级 P2。',
-    '定位：该页 UV 正常、跳出率略升、留资率跌，定位到 ⑥成功留资段。',
+    '定位：该页 UV 正常、跳出率略升、留资率跌，定位到 ⑤成功留资段。',
     '下钻：调页面明细，定位到该产品详情页。',
     '验证：假设「详情页内容质量差」→ 停留 32s<行业 60s ✓、内容字数低于行业均值 ✓、缺规格表/售后模块 ✓，三条全成立。',
     '结论：详情页内容不符合行业规范且缺关键模块（高置信度 · 流失原因库「内容不吸引/没找到信息」）。',
@@ -379,7 +380,7 @@ const change7: AttributionChange = {
   keepAdvice: '继续强化 SEO 内容产出，保持周更频率，重点维护带来转化的 TOP5 落地页。',
 }
 
-/** 案例 8 · 内容长期未更新（持平 · 说明+建议只出方案）— P3 平台期 */
+/** 案例 8 · 内容长期未更新（持平 · 说明+建议仅展示）— P3 平台期 */
 const change8: AttributionChange = {
   id: 'chg-8',
   changeType: 'flat',
@@ -415,7 +416,7 @@ const change8: AttributionChange = {
   ],
 }
 
-/** 案例 9 · 意图内容缺口（异常 · 确认后执行 · 智能营销页生成 · 成功）— 本期 */
+/** 案例 9 · 意图内容缺口（异常 · 确认后交接 · 智能营销页生成 · 成功）— 本期 */
 const change9: AttributionChange = {
   id: 'chg-9',
   changeType: 'down',
@@ -481,7 +482,7 @@ const change9: AttributionChange = {
 
 /* ── 归因报告（本期 1 期 + 历史 4 期，按时间线排列） ───────────── */
 
-/** 本期 · 2026-07-23 ~ 07-30「承接危机」：落地页段问题集中爆发，4 条异常均可交互执行 */
+/** 本期 · 2026-07-23 ~ 07-30「承接危机」：落地页段问题集中爆发，4 条异常可交互确认/交接 */
 export const mockAttributionReport: AttributionReport = {
   id: 'attr-rpt-2026-07-30',
   periodLabel: '2026-07-23 ~ 2026-07-30',
@@ -525,7 +526,7 @@ export const mockAttributionHistoryReports: AttributionReport[] = [
     changes: [change5],
   },
   {
-    // P1 流量危机：广告（只出方案）+ SEO（执行后 T+30 未改善，失败沉淀）
+    // P1 流量危机：广告（仅展示）+ SEO（交接后 T+30 未改善，失败沉淀）
     id: 'attr-rpt-2026-06-23',
     periodLabel: '2026-06-16 ~ 2026-06-23',
     generatedAt: '2026-06-23 09:00',
@@ -587,7 +588,7 @@ export const mockAttributionTasks: AgentTaskRow[] = [
     id: 'atask-h1',
     module: 'attribution',
     title: '业务指标归因报告 · 2 条变化',
-    summary: '异常 2 · 1 条只出方案 · 1 条复盘未改善已沉淀',
+    summary: '异常 2 · 1 条仅展示 · 1 条复盘未改善已沉淀',
     status: 'done',
     priority: 'P1',
     createdAt: '2026-06-23 09:00',
