@@ -696,6 +696,40 @@ export const TARGET_MODULE_LABELS: Record<AttributionTargetModule, string> = {
 /** 执行边界（归因侧：确认后交接 / 直接修复 / 仅展示） */
 export type ExecutionBoundary = 'auto' | 'confirm' | 'advice_only'
 
+/** §8.2 一期业务任务类型（第 5 步只写业务动作，不写后台能力名） */
+export type AttributionTaskType =
+  | 'edit_page_copy'
+  | 'edit_product_detail'
+  | 'create_product_detail'
+  | 'create_landing_page'
+  | 'publish_single_content'
+  | 'publish_plan'
+  | 'health_fix'
+  | 'external_advice'
+
+export const ATTRIBUTION_TASK_TYPE_LABELS: Record<AttributionTaskType, string> = {
+  edit_page_copy: '修改已有页面文案',
+  edit_product_detail: '修改已有产品详情',
+  create_product_detail: '生成产品详情页',
+  create_landing_page: '生成/重做营销落地页',
+  publish_single_content: '生成并发布单篇内容',
+  publish_plan: '建立持续内容发布计划',
+  health_fix: '健康度修复',
+  external_advice: '站外或人工处理建议',
+}
+
+export function boundaryFromTaskType(taskType: AttributionTaskType): ExecutionBoundary {
+  if (taskType === 'health_fix') return 'auto'
+  if (taskType === 'external_advice') return 'advice_only'
+  return 'confirm'
+}
+
+export function targetModuleFromTaskType(taskType: AttributionTaskType): AttributionTargetModule {
+  if (taskType === 'health_fix') return 'tool_agent'
+  if (taskType === 'external_advice') return 'none'
+  return 'ai_content_engine'
+}
+
 /** 复盘周期（对齐方案 9.2 按措施见效周期分档） */
 export type ReviewPeriod = 'T+3' | 'T+7' | 'T+14' | 'T+30'
 
@@ -727,18 +761,20 @@ export interface IntentEvidence {
   csIntent?: string
 }
 
-/** 措施（异常类产出） */
+/** 措施 / 任务说明（异常类产出，对齐方法论 §8.5） */
 export interface AttributionMeasure {
   measureId: string
+  /** 一句话摘要（列表/交接标题用） */
   description: string
+  /** §8.2 任务类型 */
+  taskType: AttributionTaskType
+  /** 目标对象：哪个 URL、词、健康度问题等 */
+  targetObject: string
+  /** 任务说明中文条目（按类型写全） */
+  taskBrief: string[]
   rootCause: string
   rootCauseConfidence: 'high' | 'medium' | 'low'
   evidenceCard: EvidenceCard
-  measureType: 'quick_fix' | 'root_cure'
-  cost: 'low' | 'medium' | 'high'
-  timeToEffect: 'instant' | 'day' | 'week' | 'month'
-  risk: 'low' | 'medium' | 'high'
-  targetModule: AttributionTargetModule
   suggestedBoundary: ExecutionBoundary
   /** 复盘周期（按见效周期分档：止血 T+3 / 治本 T+7 / 意图 T+14 / 长效 T+30） */
   reviewPeriod?: ReviewPeriod
@@ -751,8 +787,14 @@ export interface AttributionMeasure {
   /** 内容已发布（Demo：模拟已发布后置 true；复盘从此刻起算） */
   contentPublished?: boolean
   contentPublishedAt?: string
-  /** Demo 专用：允许在归因卡上「模拟已发布」（如广告落地页重写） */
+  /** Demo 专用：允许在归因卡上「模拟已发布」 */
   demoPublishEnabled?: boolean
+  /** @deprecated 兼容旧字段；新 mock 可不填，由 taskType 推导 */
+  measureType?: 'quick_fix' | 'root_cure'
+  cost?: 'low' | 'medium' | 'high'
+  timeToEffect?: 'instant' | 'day' | 'week' | 'month'
+  risk?: 'low' | 'medium' | 'high'
+  targetModule?: AttributionTargetModule
 }
 
 /** 单条变化的归因结果 */
@@ -773,22 +815,26 @@ export interface AttributionChange {
   intentData?: IntentEvidence
   /** Agent 对话式分析过程（模板化渲染的条目） */
   analysisSteps: string[]
-  /** 异常类：措施清单 */
+  /** 异常类：任务说明清单 */
   measures?: AttributionMeasure[]
   /** 提升类：夸赞文案 + 保持建议 */
   praiseText?: string
   keepAdvice?: string
-  /** 持平类：说明 + 提升建议 */
+  /** 持平类：说明 + 提升建议（可预填任务说明，只展示） */
   explainText?: string
   improveSuggestions?: Array<{
     suggestion: string
-    targetModule: AttributionTargetModule
-    expectedEffect: string
+    taskType?: AttributionTaskType
+    targetObject?: string
+    taskBrief?: string[]
+    /** @deprecated */
+    targetModule?: AttributionTargetModule
+    expectedEffect?: string
   }>
   /** 复盘结果（异常类执行后回填） */
   reviewResult?: 'success' | 'partial' | 'failed'
   reviewNote?: string
-  /** 演示脚本：本期报告确认执行后回放的复盘结论（对齐方案案例结局） */
+  /** 演示脚本：发布/修复后复盘回放 */
   reviewScript?: {
     result: 'success' | 'partial' | 'failed'
     note: string
@@ -826,8 +872,14 @@ export interface AgentTaskRow {
   updatedAt: string
   /** 归因报告任务 → 跳转归因详情 */
   attributionReportId?: string
+  /** 定位到报告内某条变化 */
+  changeId?: string
+  /** 定位到某条措施 */
+  measureId?: string
   /** 健康度修复任务 → 打开 FixDrawer（对齐 FixTaskRow） */
   fixTaskId?: string
+  /** 内容交接 → 跳转内容运营工作台 */
+  contentTaskId?: string
   /** 归因任务「已完成执行、待复盘」标识，如「待复盘 T+7」 */
   reviewPending?: string
 }

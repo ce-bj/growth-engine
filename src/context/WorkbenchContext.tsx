@@ -2,7 +2,9 @@ import {
   createContext,
   useCallback,
   useContext,
+  useEffect,
   useMemo,
+  useRef,
   useState,
   type Dispatch,
   type ReactNode,
@@ -48,7 +50,7 @@ import { contentOpportunitiesData, contentPlanItemsData, contentTasksData } from
 import { deriveMaterialBudget } from '../lib/materialBudget'
 import { planContent } from '../lib/contentPlanner'
 
-type FixPhase = 'analyzing' | 'confirm' | 'manual' | 'applying' | 'done'
+type FixPhase = 'analyzing' | 'manual' | 'applying' | 'done'
 
 interface WorkbenchApi {
   view: ViewId
@@ -81,9 +83,6 @@ interface WorkbenchApi {
   priorityIssues: IssueItem[]
   weakestDimensionKey: string
   pendingTaskCount: number
-  // 自动验证相关
-  verifyCountdown: number | null  // null = 未在验证倒计时
-  verifyStartScore: number | null
   // 渠道配置状态
   adsConfigured: boolean
   seoConfigured: boolean
@@ -96,6 +95,8 @@ interface WorkbenchApi {
   startDetect: () => void
   goDashboard: () => void
   goReport: () => void
+  /** 打开诊断报告 · 健康度 Tab（线 A / 健康度修复任务） */
+  openHealthReport: () => void
   openWeeklyPreview: (id: string | null) => void
   setSiteId: (id: string) => void
   pendingSiteId: string | null
@@ -107,7 +108,6 @@ interface WorkbenchApi {
   startFixIssue: (issue: IssueItem) => void
   startFixDimension: (dimensionKey: IssueItem['dimensionKey']) => void
   startFixTask: (task: FixTaskRow) => void
-  confirmApply: () => void
   confirmManualDone: () => void
   cancelFix: () => void
   exportPdf: () => void
@@ -149,6 +149,8 @@ interface WorkbenchApi {
   addContentTask: (task: ContentTask) => void
   /** 归因 → 内容运营深链：打开指定任务工作台（默认第 0 步任务说明） */
   openContentTaskFromAttribution: (taskId: string, step?: number) => void
+  /** 任务中心「去确认」：确保内容任务存在并打开其详情 */
+  openContentConfirmFromTaskCenter: (changeId: string, measureId: string) => void
   /** ContentView 消费后清空 */
   pendingContentTaskOpen: { taskId: string; step: number } | null
   clearPendingContentTaskOpen: () => void
@@ -199,11 +201,6 @@ export function WorkbenchProvider({ children }: { children: ReactNode }) {
   const [weeklyRows] = useState(mockWeeklyReportsData)
   const [weeklyPreviewId, setWeeklyPreviewId] = useState<string | null>(null)
 
-  // 自动验证状态
-  const [verifyCountdown, setVerifyCountdown] = useState<number | null>(null)
-  const [verifyStartScore, setVerifyStartScore] = useState<number | null>(null)
-  const [verifyTimer, setVerifyTimer] = useState<number | null>(null)
-
   // 渠道配置状态
   const [adsConfigured, setAdsConfigured] = useState(false)
   const [seoConfigured, setSeoConfigured] = useState(false) // 演示：默认未配置
@@ -231,6 +228,9 @@ export function WorkbenchProvider({ children }: { children: ReactNode }) {
     step: number
   } | null>(null)
 
+  /** 归因侧健康度：接口自动推进，只跑一次 */
+  const healthAutoStartedRef = useRef(false)
+
   const addContentTask = useCallback((task: ContentTask) => {
     setContentTasks((prev) => [task, ...prev])
   }, [])
@@ -248,6 +248,137 @@ export function WorkbenchProvider({ children }: { children: ReactNode }) {
     setToasts((prev) => prev.filter((t) => t.id !== id))
   }, [])
 
+  /* ── 归因侧健康度：挂载后接口自动推进（无需点「开始修复」） ── */
+  useEffect(() => {
+    if (healthAutoStartedRef.current) return
+    healthAutoStartedRef.current = true
+
+    const jobs = mockAttributionReport.changes.flatMap((c) => {
+      if (c.reviewResult) return []
+      return (c.measures ?? [])
+        .filter(
+          (m) =>
+            m.suggestedBoundary === 'auto' &&
+            (m.execStatus === 'pending_confirm' || m.execStatus === 'executing'),
+        )
+        .map((m) => ({
+          changeId: c.id,
+          measureId: m.measureId,
+          reviewPeriod: m.reviewPeriod ?? 'T+3',
+          script: c.reviewScript ?? {
+            result: 'success' as const,
+            note: '健康度复盘完成：措施起效。',
+          },
+          description: m.description,
+        }))
+    })
+    if (jobs.length === 0) return
+
+    setAttributionReport((prev) => ({
+      ...prev,
+      changes: prev.changes.map((c) => ({
+        ...c,
+        measures: c.measures?.map((m) =>
+          m.suggestedBoundary === 'auto' &&
+          (m.execStatus === 'pending_confirm' || m.execStatus === 'executing')
+            ? { ...m, execStatus: 'executing' as const }
+            : m,
+        ),
+      })),
+    }))
+
+    setAttributionTasks((prev) => {
+      const now = new Date().toISOString().slice(0, 16).replace('T', ' ')
+      const next = [...prev]
+      for (const job of jobs) {
+        const exists = next.some(
+          (t) => t.module === 'health_fix' && t.measureId === job.measureId,
+        )
+        if (!exists) {
+          next.unshift({
+            id: `atask-health-${job.measureId}`,
+            module: 'health_fix',
+            title: job.description,
+            summary: '接口自动修复中',
+            status: 'running',
+            priority: 'P2',
+            createdAt: now,
+            updatedAt: now,
+            attributionReportId: mockAttributionReport.id,
+            changeId: job.changeId,
+            measureId: job.measureId,
+          })
+        }
+      }
+      return next
+    })
+
+    const t1 = window.setTimeout(() => {
+      const now = new Date().toISOString().slice(0, 16).replace('T', ' ')
+      setAttributionReport((prev) => ({
+        ...prev,
+        changes: prev.changes.map((c) => ({
+          ...c,
+          measures: c.measures?.map((m) =>
+            jobs.some((j) => j.measureId === m.measureId)
+              ? { ...m, execStatus: 'success' as const }
+              : m,
+          ),
+        })),
+      }))
+      setAttributionTasks((prev) =>
+        prev.map((t) =>
+          t.module === 'health_fix' && jobs.some((j) => j.measureId === t.measureId)
+            ? {
+                ...t,
+                summary: '已修复 · 待复盘',
+                reviewPending: `待复盘 ${
+                  jobs.find((j) => j.measureId === t.measureId)?.reviewPeriod ?? 'T+3'
+                }`,
+                updatedAt: now,
+              }
+            : t,
+        ),
+      )
+      pushToast('success', '健康度修复完成（接口自动），进入复盘周期')
+    }, 2500)
+
+    const t2 = window.setTimeout(() => {
+      const now = new Date().toISOString().slice(0, 16).replace('T', ' ')
+      setAttributionReport((prev) => ({
+        ...prev,
+        changes: prev.changes.map((c) => {
+          const job = jobs.find((j) => j.changeId === c.id)
+          if (!job) return c
+          return {
+            ...c,
+            reviewResult: job.script.result,
+            reviewNote: job.script.note,
+          }
+        }),
+      }))
+      setAttributionTasks((prev) =>
+        prev.map((t) =>
+          t.module === 'health_fix' && jobs.some((j) => j.measureId === t.measureId)
+            ? {
+                ...t,
+                status: 'done',
+                summary: '自动修复已复盘',
+                reviewPending: undefined,
+                updatedAt: now,
+              }
+            : t,
+        ),
+      )
+      pushToast('success', '健康度复盘完成：措施起效')
+    }, 8000)
+
+    return () => {
+      window.clearTimeout(t1)
+      window.clearTimeout(t2)
+    }
+  }, [pushToast])
+
   const navigate = useCallback((next: ViewId) => {
     setView(next)
     if (next !== 'weekly') setWeeklyPreviewId(null)
@@ -260,6 +391,85 @@ export function WorkbenchProvider({ children }: { children: ReactNode }) {
     },
     [navigate],
   )
+
+  /** 任务中心内容类「去确认」：落内容任务（若尚未创建）并打开工作台详情 */
+  const openContentConfirmFromTaskCenter = useCallback(
+    (changeId: string, measureId: string) => {
+      const changeRef =
+        attributionReport.changes.find((c) => c.id === changeId) ??
+        mockAttributionReport.changes.find((c) => c.id === changeId)
+      const measure = changeRef?.measures?.find((m) => m.measureId === measureId)
+      if (!changeRef || !measure) {
+        pushToast('warning', '未找到对应任务说明')
+        return
+      }
+
+      const existingId = measure.contentTaskId
+      const stableId = existingId ?? `ct-attr-${measureId}`
+      const alreadyInList = contentTasks.some((t) => t.id === stableId)
+
+      if (!alreadyInList) {
+        const plan = planContent({ measure, change: changeRef })
+        const task: ContentTask = {
+          id: stableId,
+          title: plan.title,
+          kind: plan.kind,
+          type: plan.type,
+          status: 'ready',
+          priority: plan.priority,
+          theme: plan.theme,
+          audience: plan.audience,
+          userQuestion: plan.userQuestion,
+          channels: plan.channels,
+          dueDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10),
+          reason: measure.description,
+          outline: measure.taskBrief?.length ? [...measure.taskBrief] : [],
+          masterDraft: '',
+          knowledge: [],
+          missingMaterials: [],
+          origin: plan.origin,
+          materialBudget: deriveMaterialBudget(plan.type, plan.theme),
+          quality: {
+            overall: 0,
+            relevance: 0,
+            accuracy: 0,
+            completeness: 0,
+            readability: 0,
+            authenticity: 0,
+            channelFit: 0,
+          },
+          compliance: [],
+          channelVersions: [],
+        }
+        setContentTasks((prev) => [task, ...prev])
+      }
+
+      if (!existingId || existingId !== stableId) {
+        setAttributionReport((prev) => ({
+          ...prev,
+          changes: prev.changes.map((c) =>
+            c.id !== changeId
+              ? c
+              : {
+                  ...c,
+                  measures: c.measures?.map((m) =>
+                    m.measureId === measureId ? { ...m, contentTaskId: stableId } : m,
+                  ),
+                },
+          ),
+        }))
+      }
+
+      openContentTaskFromAttribution(stableId, 0)
+    },
+    [
+      attributionReport.changes,
+      contentTasks,
+      openContentTaskFromAttribution,
+      pushToast,
+    ],
+  )
+
   const dismissGuide = useCallback(() => {
     setShowGuide(false)
     try {
@@ -332,42 +542,116 @@ export function WorkbenchProvider({ children }: { children: ReactNode }) {
     navigate('report')
   }, [hasDetected, navigate, startDetect])
 
+  const openHealthReport = useCallback(() => {
+    setReportInitialTab('health')
+    if (!hasDetected) {
+      startDetect()
+      return
+    }
+    navigate('report')
+  }, [hasDetected, navigate, startDetect])
+
   const openWeeklyPreview = useCallback((id: string | null) => {
     setWeeklyPreviewId(id)
     setView('weekly')
   }, [])
 
-  const beginFix = useCallback((target: FixTarget) => {
-    setFixTarget(target)
-    setFixPhase('analyzing')
-    setFixLogs([])
-
-    window.setTimeout(() => setFixLogs((l) => [...l, `已发现：${target.title}`]), 400)
-    window.setTimeout(() => {
-      setFixLogs((l) => [
-        ...l,
-        target.fixMode === 'auto' ? '已生成修复方案' : '已生成操作指引',
-      ])
-    }, 900)
-    window.setTimeout(() => {
-      if (target.fixMode === 'auto') {
-        setFixPhase('confirm')
-        setFixLogs((l) => [...l, '方案已就绪，等待确认应用'])
+  const applyScoreBump = useCallback(
+    (dimensionKey: IssueItem['dimensionKey'], bump: number, issueId?: string) => {
+      setHealth((prev) => {
+        const dim = prev.dimensions.find((d) => d.key === dimensionKey)
+        const weightPoints = dim?.weightPoints ?? 20
+        const contrib = Math.round((bump / 20) * weightPoints)
+        const dims = prev.dimensions.map((d) =>
+          d.key === dimensionKey
+            ? { ...d, rawScore: Math.min(d.rawMax, d.rawScore + bump) }
+            : d,
+        )
+        return {
+          ...prev,
+          previousScore: prev.totalScore,
+          totalScore: Math.min(100, prev.totalScore + Math.max(contrib, 1)),
+          dimensions: dims,
+        }
+      })
+      if (issueId) {
+        setIssues((prev) => prev.filter((i) => i.id !== issueId))
+        setTaskRows((prev) =>
+          prev.map((t) =>
+            t.issueId === issueId
+              ? {
+                  ...t,
+                  status: 'done',
+                  scoreAfter: Math.min(20, (t.scoreBefore ?? 0) + bump),
+                  updatedAt: new Date().toISOString().slice(0, 16).replace('T', ' '),
+                }
+              : t,
+          ),
+        )
       } else {
-        setFixPhase('manual')
+        setIssues((prev) =>
+          prev.filter((i) => i.dimensionKey !== dimensionKey || i.priority === 'P2'),
+        )
       }
-    }, 1400)
+    },
+    [],
+  )
 
-    if (target.issueId) {
-      setTaskRows((prev) =>
-        prev.map((t) =>
-          t.issueId === target.issueId
-            ? { ...t, status: 'running', updatedAt: new Date().toISOString().slice(0, 16).replace('T', ' ') }
-            : t,
-        ),
-      )
-    }
-  }, [])
+  /** 健康度 auto：分析完直接修，不再二次确认 */
+  const runAutoApply = useCallback(
+    (target: FixTarget) => {
+      setFixPhase('applying')
+      setFixLogs((l) => [...l, '方案已就绪，开始自动修复', '已调用平台接口，修改已提交'])
+      window.setTimeout(() => {
+        setFixPhase('done')
+        const before = target.currentRaw
+        const bump = target.dimensionKey === 'seo' ? 6 : 3
+        applyScoreBump(target.dimensionKey, bump, target.issueId)
+        const after = Math.min(20, before + bump)
+        pushToast('success', `${target.title.slice(0, 18)}… 已从 ${before} → ${after} 分`)
+        window.setTimeout(() => setFixTarget(null), 600)
+      }, 1000)
+    },
+    [applyScoreBump, pushToast],
+  )
+
+  const beginFix = useCallback(
+    (target: FixTarget) => {
+      setFixTarget(target)
+      setFixPhase('analyzing')
+      setFixLogs([])
+
+      window.setTimeout(() => setFixLogs((l) => [...l, `已发现：${target.title}`]), 400)
+      window.setTimeout(() => {
+        setFixLogs((l) => [
+          ...l,
+          target.fixMode === 'auto' ? '已生成修复方案' : '已生成操作指引',
+        ])
+      }, 900)
+      window.setTimeout(() => {
+        if (target.fixMode === 'auto') {
+          runAutoApply(target)
+        } else {
+          setFixPhase('manual')
+        }
+      }, 1400)
+
+      if (target.issueId) {
+        setTaskRows((prev) =>
+          prev.map((t) =>
+            t.issueId === target.issueId
+              ? {
+                  ...t,
+                  status: 'running',
+                  updatedAt: new Date().toISOString().slice(0, 16).replace('T', ' '),
+                }
+              : t,
+          ),
+        )
+      }
+    },
+    [runAutoApply],
+  )
 
   const startFixIssue = useCallback(
     (issue: IssueItem) => {
@@ -422,142 +706,6 @@ export function WorkbenchProvider({ children }: { children: ReactNode }) {
     },
     [beginFix, issues, startFixIssue],
   )
-
-  const applyScoreBump = useCallback(
-    (dimensionKey: IssueItem['dimensionKey'], bump: number, issueId?: string) => {
-      setHealth((prev) => {
-        const dim = prev.dimensions.find((d) => d.key === dimensionKey)
-        const weightPoints = dim?.weightPoints ?? 20
-        const contrib = Math.round((bump / 20) * weightPoints)
-        const dims = prev.dimensions.map((d) =>
-          d.key === dimensionKey
-            ? { ...d, rawScore: Math.min(d.rawMax, d.rawScore + bump) }
-            : d,
-        )
-        return {
-          ...prev,
-          previousScore: prev.totalScore,
-          totalScore: Math.min(100, prev.totalScore + Math.max(contrib, 1)),
-          dimensions: dims,
-        }
-      })
-      if (issueId) {
-        setIssues((prev) => prev.filter((i) => i.id !== issueId))
-        setTaskRows((prev) =>
-          prev.map((t) =>
-            t.issueId === issueId
-              ? {
-                  ...t,
-                  status: 'done',
-                  scoreAfter: Math.min(20, (t.scoreBefore ?? 0) + bump),
-                  updatedAt: new Date().toISOString().slice(0, 16).replace('T', ' '),
-                }
-              : t,
-          ),
-        )
-      } else {
-        setIssues((prev) =>
-          prev.filter((i) => i.dimensionKey !== dimensionKey || i.priority === 'P2'),
-        )
-      }
-    },
-    [],
-  )
-
-  // 开始自动验证倒计时
-  const startAutoVerify = useCallback((startScore: number) => {
-    const VERIFY_SECONDS = 5 * 60 // 5分钟 = 300秒（演示用，实际是5分钟）
-    let remaining = VERIFY_SECONDS
-
-    setVerifyCountdown(remaining)
-    setVerifyStartScore(startScore)
-    pushToast('info', `修复已应用，${VERIFY_SECONDS / 60}分钟后将自动验证`)
-
-    const timer = window.setInterval(() => {
-      remaining -= 1
-      setVerifyCountdown(remaining)
-
-      if (remaining <= 0) {
-        window.clearInterval(timer)
-        setVerifyCountdown(null)
-        setVerifyTimer(null)
-
-        // 执行增量验证（重新检测）
-        setScanning(true)
-        setScanCompleted(0)
-        setView('scanning')
-
-        let step = 0
-        const total = mockScanStepsData.length
-        const scanTimer = window.setInterval(() => {
-          step += 1
-          setScanCompleted(step)
-          if (step >= total) {
-            window.clearInterval(scanTimer)
-            window.setTimeout(() => {
-              const next = createInitialHealth()
-              next.detectedAt = new Date().toISOString().slice(0, 16).replace('T', ' ')
-              next.detectType = 'verify'
-              setHealth(next)
-              setIssues([...mockIssuesData])
-              setHasDetected(true)
-              setScanning(false)
-
-              // 对比分数变化
-              const scoreChange = next.totalScore - startScore
-              if (scoreChange > 0) {
-                pushToast('success', `✅ 验证通过！健康度提升 ${startScore} → ${next.totalScore} 分`)
-              } else if (scoreChange < 0) {
-                pushToast('warning', `⚠️ 验证完成，分数下降 ${startScore} → ${next.totalScore} 分，建议重新修复`)
-              } else {
-                pushToast('info', `验证完成，分数无变化（${next.totalScore} 分）`)
-              }
-
-              setHistoryRows((prev) => [
-                {
-                  id: `dh-${Date.now()}`,
-                  detectedAt: next.detectedAt,
-                  detectType: 'verify',
-                  totalScore: next.totalScore,
-                  previousScore: next.previousScore,
-                  p0: next.dimensions.filter(d => d.key === 'tech').some(d => d.rawScore < 10) ? 1 : 0,
-                  p1: 2,
-                  p2: 3,
-                  siteId,
-                  operator: '运营 Agent',
-                },
-                ...prev,
-              ])
-              setView('report')
-            }, 400)
-          }
-        }, 380)
-      }
-    }, 1000)
-
-    setVerifyTimer(timer)
-  }, [pushToast, siteId])
-
-  const confirmApply = useCallback(() => {
-    if (!fixTarget) return
-    setFixPhase('applying')
-    setFixLogs((l) => [...l, '已调用平台接口，修改已提交'])
-    window.setTimeout(() => {
-      setFixPhase('done')
-      const before = fixTarget.currentRaw
-      const bump = fixTarget.dimensionKey === 'seo' ? 6 : 3
-      applyScoreBump(fixTarget.dimensionKey, bump, fixTarget.issueId)
-      const after = Math.min(20, before + bump)
-      pushToast('success', `${fixTarget.title.slice(0, 18)}… 已从 ${before} → ${after} 分`)
-
-      // 记录修复后分数，启动自动验证
-      const currentScore = health.totalScore
-      window.setTimeout(() => {
-        setFixTarget(null)
-        startAutoVerify(currentScore)
-      }, 600)
-    }, 1000)
-  }, [applyScoreBump, fixTarget, health.totalScore, pushToast, startAutoVerify])
 
   const confirmManualDone = useCallback(() => {
     if (!fixTarget) return
@@ -705,32 +853,43 @@ export function WorkbenchProvider({ children }: { children: ReactNode }) {
         let handedContentTaskId: string | undefined
         // 内容类确认后交接：创建内容任务，并回写 contentTaskId 供一键跳转
         if (!isHealthFix && targetMeasure && changeRef) {
-          const plan = planContent({ measure: targetMeasure, change: changeRef })
-          handedContentTaskId = `ct-attr-${Date.now()}`
-          const task: ContentTask = {
-            id: handedContentTaskId,
-            title: plan.title,
-            kind: plan.kind,
-            type: plan.type,
-            status: 'ready',
-            priority: plan.priority,
-            theme: plan.theme,
-            audience: plan.audience,
-            userQuestion: plan.userQuestion,
-            channels: plan.channels,
-            dueDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10),
-            reason: targetMeasure.description,
-            outline: [],
-            masterDraft: '',
-            knowledge: [],
-            missingMaterials: [],
-            origin: plan.origin,
-            materialBudget: deriveMaterialBudget(plan.type, plan.theme),
-            quality: { overall: 0, relevance: 0, accuracy: 0, completeness: 0, readability: 0, authenticity: 0, channelFit: 0 },
-            compliance: [],
-            channelVersions: [],
-          }
-          setContentTasks((prev) => [task, ...prev])
+          handedContentTaskId = targetMeasure.contentTaskId ?? `ct-attr-${measureId}`
+          setContentTasks((prev) => {
+            if (prev.some((t) => t.id === handedContentTaskId)) return prev
+            const plan = planContent({ measure: targetMeasure, change: changeRef })
+            const task: ContentTask = {
+              id: handedContentTaskId!,
+              title: plan.title,
+              kind: plan.kind,
+              type: plan.type,
+              status: 'ready',
+              priority: plan.priority,
+              theme: plan.theme,
+              audience: plan.audience,
+              userQuestion: plan.userQuestion,
+              channels: plan.channels,
+              dueDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10),
+              reason: targetMeasure.description,
+              outline: targetMeasure.taskBrief?.length ? [...targetMeasure.taskBrief] : [],
+              masterDraft: '',
+              knowledge: [],
+              missingMaterials: [],
+              origin: plan.origin,
+              materialBudget: deriveMaterialBudget(plan.type, plan.theme),
+              quality: {
+                overall: 0,
+                relevance: 0,
+                accuracy: 0,
+                completeness: 0,
+                readability: 0,
+                authenticity: 0,
+                channelFit: 0,
+              },
+              compliance: [],
+              channelVersions: [],
+            }
+            return [task, ...prev]
+          })
         }
         setAttributionReport((prev) => ({
           ...prev,
@@ -754,9 +913,11 @@ export function WorkbenchProvider({ children }: { children: ReactNode }) {
         if (isHealthFix) {
           setAttributionTasks((prev) =>
             prev.map((t) =>
-              t.module === 'attribution' && t.status === 'running'
+              t.module === 'health_fix' && t.measureId === measureId
                 ? {
                     ...t,
+                    status: 'running',
+                    summary: '已修复 · 待复盘',
                     reviewPending: `待复盘 ${reviewPeriod}`,
                     updatedAt: new Date().toISOString().slice(0, 16).replace('T', ' '),
                   }
@@ -765,6 +926,26 @@ export function WorkbenchProvider({ children }: { children: ReactNode }) {
           )
           pushToast('success', `健康度修复完成，进入复盘周期（${reviewPeriod}）`)
         } else {
+          const now = new Date().toISOString().slice(0, 16).replace('T', ' ')
+          if (handedContentTaskId && targetMeasure && changeRef) {
+            setAttributionTasks((prev) => [
+              {
+                id: `atask-content-${handedContentTaskId}`,
+                module: 'content',
+                title: targetMeasure.description,
+                summary: '已交接待发布',
+                status: 'running',
+                priority: changeRef.severity,
+                createdAt: now,
+                updatedAt: now,
+                attributionReportId: mockAttributionReport.id,
+                changeId,
+                measureId,
+                contentTaskId: handedContentTaskId,
+              },
+              ...prev,
+            ])
+          }
           pushToast('success', '内容运营已接收任务说明。请先发布内容，再进入复盘。')
         }
       }, 2000)
@@ -785,10 +966,11 @@ export function WorkbenchProvider({ children }: { children: ReactNode }) {
           }))
           setAttributionTasks((prev) =>
             prev.map((t) =>
-              t.module === 'attribution' && t.status === 'running'
+              t.module === 'health_fix' && t.measureId === measureId
                 ? {
                     ...t,
                     status: 'done',
+                    summary: '自动修复已复盘',
                     reviewPending: undefined,
                     updatedAt: new Date().toISOString().slice(0, 16).replace('T', ' '),
                   }
@@ -865,16 +1047,26 @@ export function WorkbenchProvider({ children }: { children: ReactNode }) {
       }
 
       setAttributionTasks((prev) =>
-        prev.map((t) =>
-          t.module === 'attribution' && (t.status === 'running' || t.status === 'pending')
-            ? {
-                ...t,
-                status: 'running',
-                reviewPending: `待复盘 ${reviewPeriod}（自发布起算）`,
-                updatedAt: publishedAt,
-              }
-            : t,
-        ),
+        prev.map((t) => {
+          if (t.contentTaskId === taskId || (t.module === 'content' && t.measureId === measureId)) {
+            return {
+              ...t,
+              status: 'running',
+              summary: '已发布 · 待复盘',
+              reviewPending: `待复盘 ${reviewPeriod}（自发布起算）`,
+              updatedAt: publishedAt,
+            }
+          }
+          if (t.module === 'attribution' && (t.status === 'running' || t.status === 'pending')) {
+            return {
+              ...t,
+              status: 'running',
+              reviewPending: `待复盘 ${reviewPeriod}（自发布起算）`,
+              updatedAt: publishedAt,
+            }
+          }
+          return t
+        }),
       )
       pushToast('success', `已模拟发布。观察期 ${reviewPeriod} 起算，到期后再复盘。`)
     },
@@ -917,16 +1109,26 @@ export function WorkbenchProvider({ children }: { children: ReactNode }) {
         ),
       }))
       setAttributionTasks((prev) =>
-        prev.map((t) =>
-          t.module === 'attribution' && t.status === 'running'
-            ? {
-                ...t,
-                status: 'done',
-                reviewPending: undefined,
-                updatedAt: new Date().toISOString().slice(0, 16).replace('T', ' '),
-              }
-            : t,
-        ),
+        prev.map((t) => {
+          if (t.module === 'content' && t.measureId === measureId) {
+            return {
+              ...t,
+              status: 'done',
+              summary: '已复盘',
+              reviewPending: undefined,
+              updatedAt: new Date().toISOString().slice(0, 16).replace('T', ' '),
+            }
+          }
+          if (t.module === 'attribution' && t.status === 'running') {
+            return {
+              ...t,
+              status: 'done',
+              reviewPending: undefined,
+              updatedAt: new Date().toISOString().slice(0, 16).replace('T', ' '),
+            }
+          }
+          return t
+        }),
       )
       pushToast(script.result === 'failed' ? 'warning' : 'success', REVIEW_TOAST[script.result])
     },
@@ -975,9 +1177,23 @@ export function WorkbenchProvider({ children }: { children: ReactNode }) {
   const weakestDimensionKey = health.dimensions.reduce((min, d) =>
     d.rawScore < min.rawScore ? d : min,
   ).key
-  const pendingTaskCount = taskRows.filter(
+  const pendingFixCount = taskRows.filter(
     (t) => t.status === 'pending' || t.status === 'running' || t.status === 'waiting_verify',
   ).length
+  const pendingAgentCount = attributionTasks.filter(
+    (t) => t.status !== 'done' && t.status !== 'failed',
+  ).length
+  const contentPendingConfirmCount = attributionReport.changes.reduce((n, c) => {
+    const count =
+      c.measures?.filter(
+        (m) =>
+          m.suggestedBoundary === 'confirm' &&
+          (!m.execStatus || m.execStatus === 'pending_confirm') &&
+          !attributionTasks.some((t) => t.module === 'content' && t.measureId === m.measureId),
+      ).length ?? 0
+    return n + count
+  }, 0)
+  const pendingTaskCount = pendingFixCount + pendingAgentCount + contentPendingConfirmCount
 
   const filteredHistory = historyRows.filter((r) => r.siteId === siteId)
   const filteredWeekly = weeklyRows.filter((r) => r.siteId === siteId)
@@ -1014,8 +1230,6 @@ export function WorkbenchProvider({ children }: { children: ReactNode }) {
       priorityIssues,
       weakestDimensionKey,
       pendingTaskCount,
-      verifyCountdown,
-      verifyStartScore,
       adsConfigured,
       seoConfigured,
       discoveryActive,
@@ -1026,6 +1240,7 @@ export function WorkbenchProvider({ children }: { children: ReactNode }) {
       startDetect,
       goDashboard,
       goReport,
+      openHealthReport,
       openWeeklyPreview,
       setSiteId,
       pendingSiteId,
@@ -1037,7 +1252,6 @@ export function WorkbenchProvider({ children }: { children: ReactNode }) {
       startFixIssue,
       startFixDimension,
       startFixTask,
-      confirmApply,
       confirmManualDone,
       cancelFix,
       exportPdf,
@@ -1071,6 +1285,7 @@ export function WorkbenchProvider({ children }: { children: ReactNode }) {
       setContentPlanItems,
       addContentTask,
       openContentTaskFromAttribution,
+      openContentConfirmFromTaskCenter,
       pendingContentTaskOpen,
       clearPendingContentTaskOpen,
     }),
@@ -1104,8 +1319,6 @@ export function WorkbenchProvider({ children }: { children: ReactNode }) {
       priorityIssues,
       weakestDimensionKey,
       pendingTaskCount,
-      verifyCountdown,
-      verifyStartScore,
       adsConfigured,
       seoConfigured,
       discoveryActive,
@@ -1116,11 +1329,11 @@ export function WorkbenchProvider({ children }: { children: ReactNode }) {
       startDetect,
       goDashboard,
       goReport,
+      openHealthReport,
       openWeeklyPreview,
       startFixIssue,
       startFixDimension,
       startFixTask,
-      confirmApply,
       confirmManualDone,
       cancelFix,
       exportPdf,
@@ -1148,6 +1361,7 @@ export function WorkbenchProvider({ children }: { children: ReactNode }) {
       contentOpportunities,
       contentPlanItems,
       openContentTaskFromAttribution,
+      openContentConfirmFromTaskCenter,
       pendingContentTaskOpen,
       clearPendingContentTaskOpen,
     ],

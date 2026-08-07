@@ -1,4 +1,12 @@
-import type { AttributionChange, AttributionMeasure, ContentChannel, ContentTaskKind, ContentType, ReviewPeriod } from '../types'
+import type {
+  AttributionChange,
+  AttributionMeasure,
+  AttributionTaskType,
+  ContentChannel,
+  ContentTaskKind,
+  ContentType,
+  ReviewPeriod,
+} from '../types'
 import { resolveIntent } from './knowledge'
 
 /** ═══════════════════════════════════════════════════════════════
@@ -44,9 +52,9 @@ export interface ContentPlanResult {
 
 /** 从措施描述推导内容类型：按关键词归类 */
 function inferType(description: string): ContentType {
-  if (/配件|选型|规格|产品/.test(description)) return 'product'
+  if (/配件|选型|规格|产品|详情/.test(description)) return 'product'
   if (/案例|落地|实施|交付/.test(description)) return 'case'
-  if (/指南|如何|教程|常见问题/.test(description)) return 'guide'
+  if (/指南|如何|教程|常见问题|文章/.test(description)) return 'guide'
   if (/白皮书|行业|洞察/.test(description)) return 'insight'
   if (/FAQ|问答/.test(description)) return 'faq'
   if (/营销页|落地页/.test(description)) return 'solution'
@@ -55,30 +63,63 @@ function inferType(description: string): ContentType {
 
 /** 从措施描述推导任务类型 */
 function inferKind(description: string): ContentTaskKind {
-  if (/重写|优化|重构|更新/.test(description)) return 'optimize'
-  if (/生成|新建|创建|承接/.test(description)) return 'create'
-  if (/扩展|系列/.test(description)) return 'expand'
+  if (/重写|优化|重构|更新|修改/.test(description)) return 'optimize'
+  if (/生成|新建|创建|承接|重做/.test(description)) return 'create'
+  if (/扩展|系列|计划|周更/.test(description)) return 'expand'
   if (/拆解|改编/.test(description)) return 'repurpose'
   return 'create'
 }
 
+function typeFromTaskType(taskType: AttributionTaskType, fallback: string): ContentType {
+  switch (taskType) {
+    case 'edit_product_detail':
+    case 'create_product_detail':
+      return 'product'
+    case 'create_landing_page':
+      return 'solution'
+    case 'edit_page_copy':
+    case 'publish_single_content':
+      return 'guide'
+    case 'publish_plan':
+      return 'insight'
+    default:
+      return inferType(fallback)
+  }
+}
+
+function kindFromTaskType(taskType: AttributionTaskType, fallback: string): ContentTaskKind {
+  switch (taskType) {
+    case 'edit_page_copy':
+    case 'edit_product_detail':
+      return 'optimize'
+    case 'create_product_detail':
+    case 'create_landing_page':
+    case 'publish_single_content':
+      return 'create'
+    case 'publish_plan':
+      return 'expand'
+    default:
+      return inferKind(fallback)
+  }
+}
+
 /** 从归因措施 + 变化推导完整简报 */
 export function planFromAttribution(measure: AttributionMeasure, change: AttributionChange): ContentPlanResult {
-  // ① 意图三层推导 → 访客问题 / 受众 / 主题
   const intent = resolveIntent(change.intentData ?? {})
   const description = measure.description
   const title = measure.deliverable?.title ?? description
   const priority: 'P0' | 'P1' | 'P2' = change.severity ?? 'P1'
-  // 渠道：落地页段 → website；转化/意图 → website；社媒异常 → 社媒渠道
-  const channels: ContentChannel[] = change.funnelSegment === 'channel_arrival' ? ['website', 'linkedin'] : ['website']
+  const channels: ContentChannel[] =
+    change.funnelSegment === 'channel_arrival' ? ['website', 'linkedin'] : ['website']
   const reviewPeriod: ReviewPeriod = measure.reviewPeriod ?? 'T+7'
+  const theme = measure.targetObject || intent.theme
 
   return {
     title,
-    type: inferType(description),
-    kind: inferKind(description),
+    type: typeFromTaskType(measure.taskType, description),
+    kind: kindFromTaskType(measure.taskType, description),
     priority,
-    theme: intent.theme,
+    theme,
     audience: intent.audience,
     userQuestion: intent.userQuestion,
     channels,
@@ -87,7 +128,11 @@ export function planFromAttribution(measure: AttributionMeasure, change: Attribu
       sourceLabel: `归因分析 · ${change.changedMetric ?? '指标异常'}`,
       attributionRef: { changeId: change.id, measureId: measure.measureId, reviewPeriod },
       evidence: measure.evidenceCard
-        ? { currentValue: measure.evidenceCard.currentValue, benchmark: measure.evidenceCard.benchmark, action: measure.evidenceCard.action }
+        ? {
+            currentValue: measure.evidenceCard.currentValue,
+            benchmark: measure.evidenceCard.benchmark,
+            action: measure.evidenceCard.action,
+          }
         : undefined,
     },
   }
@@ -116,7 +161,6 @@ export function planFromOpportunity(input: ContentPlanInput): ContentPlanResult 
 export function planContent(input: ContentPlanInput): ContentPlanResult {
   if (input.measure && input.change) return planFromAttribution(input.measure, input.change)
   if (input.opportunityTitle) return planFromOpportunity(input)
-  // 手动
   return {
     title: input.manual?.title ?? '',
     type: 'guide',

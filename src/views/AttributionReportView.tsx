@@ -6,6 +6,7 @@ import type {
   ExecutionBoundary,
 } from '../types'
 import {
+  ATTRIBUTION_TASK_TYPE_LABELS,
   FUNNEL_SEGMENT_LABELS,
 } from '../types'
 
@@ -19,10 +20,8 @@ const CHANGE_TYPE_META: Record<ChangeType, { label: string; cls: string }> = {
 
 const CONFIDENCE_LABEL = { high: '高', medium: '中', low: '低' } as const
 
-const COST_LABEL = { low: '低', medium: '中', high: '高' } as const
-const TIME_LABEL = { instant: '立即', day: '当天', week: '一周', month: '一月' } as const
 const BOUNDARY_LABEL: Record<ExecutionBoundary, string> = {
-  auto: '可直接修复',
+  auto: '接口自动',
   confirm: '确认后交接',
   advice_only: '仅展示',
 }
@@ -50,8 +49,8 @@ function getExecStatusLabel(
   if (status === 'rejected') return '已忽略'
   if (status === 'failed') return '失败'
   if (boundary === 'auto') {
-    if (status === 'pending_confirm') return '待修复'
-    if (status === 'executing') return '修复中'
+    if (status === 'pending_confirm') return '自动排队中'
+    if (status === 'executing') return '自动修复中'
     if (status === 'success') return changeReviewed ? '已复盘' : '已修复'
   }
   // 内容类：确认后交接 → 发布 → 复盘
@@ -158,9 +157,9 @@ function MeasureCard({
   const status = measure.execStatus ?? 'pending_confirm'
   const statusCls = EXEC_STATUS_CLS[status]
   const statusLabel = getExecStatusLabel(measure, changeReviewed)
-  const actionable = measure.suggestedBoundary !== 'advice_only'
+  const actionable = measure.suggestedBoundary === 'confirm'
   const isHealthFix = measure.suggestedBoundary === 'auto'
-  const confirmLabel = isHealthFix ? '开始修复' : '确认并交给内容运营'
+  const confirmLabel = '确认并交给内容运营'
   const handedOff =
     !isHealthFix && measure.execStatus === 'success' && Boolean(measure.contentTaskId)
   const canSimulatePublish =
@@ -172,8 +171,22 @@ function MeasureCard({
       <div className="attr-measure__head">
         <span className={`badge ${statusCls}`}>{statusLabel}</span>
         <span className="badge badge--neutral">{BOUNDARY_LABEL[measure.suggestedBoundary]}</span>
+        <span className="badge badge--info">{ATTRIBUTION_TASK_TYPE_LABELS[measure.taskType]}</span>
       </div>
       <div className="attr-measure__desc">{measure.description}</div>
+      <div className="attr-measure__target-obj">
+        <span className="attr-measure__field-label">目标对象</span>
+        <span className="attr-measure__target-value">{measure.targetObject}</span>
+      </div>
+
+      <div className="attr-task-brief">
+        <div className="attr-measure__field-label">任务说明</div>
+        <ul>
+          {measure.taskBrief.map((line, i) => (
+            <li key={i}>{line}</li>
+          ))}
+        </ul>
+      </div>
 
       {/* 依据卡片三段式 */}
       <div className="attr-evidence">
@@ -182,7 +195,7 @@ function MeasureCard({
           <span>{measure.evidenceCard.currentValue}</span>
         </div>
         <div className="attr-evidence__row">
-          <span className="attr-evidence__label">对比</span>
+          <span className="attr-evidence__label">对照</span>
           <span>{measure.evidenceCard.benchmark}</span>
         </div>
         <div className="attr-evidence__row">
@@ -192,8 +205,7 @@ function MeasureCard({
       </div>
 
       <div className="attr-measure__meta muted">
-        置信度 {CONFIDENCE_LABEL[measure.rootCauseConfidence]} · 成本 {COST_LABEL[measure.cost]} ·
-        起效 {TIME_LABEL[measure.timeToEffect]} · 风险 {COST_LABEL[measure.risk]}
+        根因置信度 {CONFIDENCE_LABEL[measure.rootCauseConfidence]}
         {measure.reviewPeriod ? ` · 复盘 ${measure.reviewPeriod}` : ''}
         {measure.contentPublishedAt ? ` · 发布于 ${measure.contentPublishedAt}` : ''}
       </div>
@@ -338,7 +350,7 @@ function ChangeDetail({ change }: { change: AttributionChange }) {
 
       {/* ④ 应对产出：按变化类型区分 */}
       {change.changeType === 'down' && change.measures ? (
-        <AgentBubble title="任务说明 / 应对方案">
+        <AgentBubble title="任务说明">
           {change.measures.map((m) => (
             <MeasureCard
               key={m.measureId}
@@ -370,10 +382,23 @@ function ChangeDetail({ change }: { change: AttributionChange }) {
           <p>{change.explainText}</p>
           {change.improveSuggestions?.map((s, i) => (
             <div key={i} className="attr-suggestion">
-              <div>{s.suggestion}</div>
-              <div className="muted attr-suggestion__meta">
-                {s.expectedEffect}（仅建议，不交接）
-              </div>
+              <div className="attr-suggestion__title">{s.suggestion}</div>
+              {s.taskType ? (
+                <div className="attr-suggestion__meta muted">
+                  {ATTRIBUTION_TASK_TYPE_LABELS[s.taskType]}
+                  {s.targetObject ? ` · ${s.targetObject}` : ''}
+                  （仅建议，不进交接）
+                </div>
+              ) : (
+                <div className="muted attr-suggestion__meta">仅建议，不进交接</div>
+              )}
+              {s.taskBrief && s.taskBrief.length > 0 ? (
+                <ul className="attr-task-brief attr-task-brief--nested">
+                  {s.taskBrief.map((line, j) => (
+                    <li key={j}>{line}</li>
+                  ))}
+                </ul>
+              ) : null}
             </div>
           ))}
         </AgentBubble>

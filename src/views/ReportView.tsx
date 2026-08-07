@@ -4,13 +4,26 @@ import { Button } from '../components/Button'
 import { RadarChart } from '../components/RadarChart'
 import { useWorkbench } from '../context/WorkbenchContext'
 import { formatDelta, scoreColor, scoreLevel, scoreLevelBadgeClass, scoreLevelLabel } from '../lib/score'
-import type { IssueItem } from '../types'
+import type { FixMode, IssueItem } from '../types'
 import { AttributionReportView } from './AttributionReportView'
 
 function PriorityBadge({ p }: { p: IssueItem['priority'] }) {
   if (p === 'P0') return <span className="badge badge--danger">P0</span>
   if (p === 'P1') return <span className="badge badge--warning">P1</span>
   return <span className="badge badge--neutral">P2</span>
+}
+
+function healthFixCta(mode: FixMode, weak?: boolean) {
+  if (mode === 'manual' || mode === 'guide') return '查看指引'
+  if (weak) return '优先修复'
+  return '立即修复'
+}
+
+function dimensionFixMode(issues: IssueItem[], dimensionKey: IssueItem['dimensionKey']): FixMode {
+  const related = issues.filter((i) => i.dimensionKey === dimensionKey)
+  if (related.some((i) => i.fixMode === 'manual')) return 'manual'
+  if (related.some((i) => i.fixMode === 'guide')) return 'guide'
+  return 'auto'
 }
 
 /** 圆形分数环 */
@@ -50,6 +63,7 @@ function ScoreRing({ score, color }: { score: number; color: string }) {
 export function ReportView() {
   const {
     health,
+    issues,
     priorityIssues,
     p0Count,
     p1Count,
@@ -174,7 +188,7 @@ export function ReportView() {
                     <p className="muted">{issue.description}</p>
                   </div>
                   <Button size="sm" onClick={() => startFixIssue(issue)}>
-                    立即修复
+                    {healthFixCta(issue.fixMode)}
                   </Button>
                 </div>
               ))}
@@ -200,7 +214,7 @@ export function ReportView() {
                       <p className="muted">{issue.description}</p>
                     </div>
                     <Button size="sm" variant="secondary" onClick={() => startFixIssue(issue)}>
-                      立即修复
+                      {healthFixCta(issue.fixMode)}
                     </Button>
                   </div>
                 ))}
@@ -235,7 +249,7 @@ export function ReportView() {
                   <div className="dim-tile__bar" style={{ width: `${pct}%`, background: color }} />
                 </div>
                 <Button size="sm" variant={weak ? 'primary' : 'secondary'} onClick={() => startFixDimension(d.key)}>
-                  {weak ? '优先修复' : '立即修复'}
+                  {healthFixCta(dimensionFixMode(issues, d.key), weak)}
                 </Button>
               </div>
             )

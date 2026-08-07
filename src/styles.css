@@ -3769,6 +3769,12 @@ a:hover {
   border: 1px solid #bbf7d0;
 }
 
+.badge--module-content {
+  background: #fff7ed;
+  color: #c2410c;
+  border: 1px solid #fed7aa;
+}
+
 /* ── 归因报告布局：左清单 + 右详情 ── */
 .attr-layout {
   display: grid;
@@ -3827,7 +3833,10 @@ a:hover {
   font-size: 12px;
   font-weight: 700;
   color: #0f172a;
-  white-space: nowrap;
+  max-width: 100%;
+  text-align: right;
+  line-height: 1.35;
+  overflow-wrap: anywhere;
 }
 
 .attr-change-item__metric {
@@ -3972,12 +3981,66 @@ a:hover {
   font-size: 14px;
   font-weight: 600;
   color: #1e293b;
+  margin-bottom: 8px;
+}
+
+.attr-measure__field-label {
+  flex-shrink: 0;
+  font-size: 12px;
+  font-weight: 700;
+  color: #64748b;
+  margin-right: 8px;
+}
+
+.attr-measure__target-obj {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 13px;
+  color: #334155;
   margin-bottom: 10px;
+  line-height: 1.45;
+}
+
+.attr-measure__target-obj > span:last-child,
+.attr-measure__target-value {
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+.attr-task-brief {
+  margin-bottom: 10px;
+}
+
+.attr-task-brief ul,
+.attr-task-brief--nested {
+  margin: 6px 0 0;
+  padding-left: 18px;
+  font-size: 13px;
+  color: #334155;
+  line-height: 1.55;
+}
+
+.attr-task-brief li {
+  margin-bottom: 4px;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+.attr-evidence__row > span:last-child {
+  min-width: 0;
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 
 .attr-measure__meta {
   font-size: 12px;
   margin-top: 10px;
+}
+
+.attr-suggestion__title {
+  font-weight: 600;
+  color: #1e293b;
 }
 
 /* ── 依据卡片三段式 ── */

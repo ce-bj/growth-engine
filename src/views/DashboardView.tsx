@@ -594,8 +594,6 @@ export function DashboardView() {
     startDetect,
     goReport,
     navigate,
-    verifyCountdown,
-    verifyStartScore,
     adsConfigured,
     seoConfigured,
     discoveryActive,
@@ -766,17 +764,6 @@ export function DashboardView() {
             <p className="cold-start-panel__tip">💡 完成配置后，系统将自动为您展示网站健康度报告和流量转化数据</p>
           </div>
         </section>
-      )}
-
-      {/* 自动验证倒计时提醒 */}
-      {verifyCountdown !== null && (
-        <div className="admin-callout admin-callout--info">
-          <strong>🔄 修复验证中</strong>
-          <p style={{ margin: '8px 0' }}>
-            修复已应用，预计 {Math.floor(verifyCountdown / 60)}:{String(verifyCountdown % 60).padStart(2, '0')} 后自动验证分数变化
-            （起始分数：{verifyStartScore} 分）
-          </p>
-        </div>
       )}
 
       {/* 留资转化 - 核心关注 */}
