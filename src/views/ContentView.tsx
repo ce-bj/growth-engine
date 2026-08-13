@@ -55,7 +55,6 @@ export function ContentView() {
   const performanceStat = contentPublishStatsData.find((stat) => stat.id === performanceStatId)
 
   const navigate = (next: ContentTab) => { setActiveTaskId(null); setPerformanceStatId(null); setPublishSettingsOpen(false); setTab(next) }
-<<<<<<< HEAD
   const openTask = (id: string, step?: number) => {
     setKnowledgeRiskDetailOpen(false)
     setPerformanceStatId(null)
@@ -72,15 +71,6 @@ export function ContentView() {
     openTask(taskId, step)
     clearPendingContentTaskOpen()
   }, [pendingContentTaskOpen, tasks, clearPendingContentTaskOpen])
-=======
-  const openTask = (id: string, step?: number) => {
-    setKnowledgeRiskDetailOpen(false)
-    setPerformanceStatId(null)
-    setActiveTaskId(id)
-    // 演示样例始终从第一步进入，方便按“下一步”完整讲解流程。
-    setWorkbenchStep(id === 'ct-001' ? 0 : step)
-  }
->>>>>>> 6c73697 (version 0.4 adjust multi agnets)
   const openGlossary = (highlight: string[] = []) => setGlossaryState({ open: true, highlight })
   const openPerformanceDetail = (taskId: string) => {
     const stat = contentPublishStatsData.find((item) => item.taskId === taskId)

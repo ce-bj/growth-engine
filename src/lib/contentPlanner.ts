@@ -1,4 +1,13 @@
-import type { AttributionChange, AttributionMeasure, AttributionTaskType, ContentChannel, ContentKnowledgeScope, ContentTaskKind, ContentType, ReviewPeriod } from '../types'
+import type {
+  AttributionChange,
+  AttributionMeasure,
+  AttributionTaskType,
+  ContentChannel,
+  ContentKnowledgeScope,
+  ContentTaskKind,
+  ContentType,
+  ReviewPeriod,
+} from '../types'
 import { resolveIntent } from './knowledge'
 
 /** ═══════════════════════════════════════════════════════════════

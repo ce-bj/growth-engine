@@ -1,92 +1,86 @@
 import {
   createContext,
-        }))
-        // 更新所有正在运行的归因任务为待复盘状态并更新时间戳
-        setAttributionTasks((prev) =>
-          prev.map((t) =>
-            t.module === 'attribution' && t.status === 'running'
-              ? {
-                  ...t,
-                  reviewPending: `待复盘 ${reviewPeriod}`,
-                  updatedAt: new Date().toISOString().slice(0, 16).replace('T', ' '),
-                }
-              : t,
-          ),
-        )
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type Dispatch,
+  type ReactNode,
+  type SetStateAction,
+} from 'react'
+import {
+  GUIDE_DISMISS_KEY,
+  buildDimensions,
+  mockDetectHistoryData,
+  mockFixTasksData,
+  mockFunnelMonthData,
+  mockFunnelWeekData,
+  mockHealthData,
+  mockIssuesData,
+  mockScanStepsData,
+  mockSitesData,
+  mockWeeklyReportsData,
+} from '../data/mock'
+import {
+  DEFAULT_ATTRIBUTION_CONFIG,
+  mockAttributionHistoryReports,
+  mockAttributionReport,
+  mockAttributionTasks,
+} from '../data/attributionMock'
+import type {
+  AgentTaskRow,
+  AttributionConfig,
+  AttributionReport,
+  ContentOpportunity,
+  ContentPlanItem,
+  ContentTask,
+  DetectHistoryRow,
+  FixTarget,
+  FixTaskRow,
+  FunnelPeriod,
+  HealthSnapshot,
+  IssueItem,
+  ToastItem,
+  ViewId,
+  WeeklyReportRow,
+} from '../types'
+import { contentOpportunitiesData, contentPlanItemsData, contentTasksData } from '../data/contentMock'
+import { deriveMaterialBudget } from '../lib/materialBudget'
+import { planContent } from '../lib/contentPlanner'
 
-        // 健康度修复特殊处理：标记 health_fix 相关任务为 running
-        if (isHealthFix) {
-          setAttributionTasks((prev) =>
-            prev.map((t) =>
-              t.module === 'health_fix' && t.measureId === measureId
-                ? {
-                    ...t,
-                    status: 'running',
-                    summary: '已修复 · 待复盘',
-                    reviewPending: `待复盘 ${reviewPeriod}`,
-                    updatedAt: new Date().toISOString().slice(0, 16).replace('T', ' '),
-                  }
-                : t,
-            ),
-          )
-          pushToast('success', `健康度修复完成，进入复盘周期（${reviewPeriod}）`)
-        }
+type FixPhase = 'analyzing' | 'manual' | 'applying' | 'done'
 
-        // 内容联动：若上游已生成发布任务 id（handedContentTaskId），则创建 content 类型的归因任务用于跟踪
-        const now = new Date().toISOString().slice(0, 16).replace('T', ' ')
-        if (handedContentTaskId && targetMeasure && changeRef) {
-          setAttributionTasks((prev) => [
-            {
-              id: `atask-content-${handedContentTaskId}`,
-              module: 'content',
-              title: targetMeasure.description,
-              summary: '已交接待发布',
-              status: 'running',
-              priority: changeRef.severity,
-              createdAt: now,
-              updatedAt: now,
-              attributionReportId: mockAttributionReport.id,
-              changeId,
-              measureId,
-              contentTaskId: handedContentTaskId,
-            },
-            ...prev,
-          ])
-        }
-
-        // 若措施目标模块为内容引擎，则自动推导内容规划并创建内容任务
-        if (targetMeasure?.targetModule === 'ai_content_engine' && changeRef) {
-          const plan = planContent({ measure: targetMeasure, change: changeRef })
-          const taskId = `ct-attr-${Date.now()}`
-          const task: ContentTask = {
-            id: taskId,
-            title: plan.title,
-            kind: plan.kind,
-            type: plan.type,
-            status: 'ready',
-            priority: plan.priority,
-            theme: plan.theme,
-            contentSubject: plan.contentSubject,
-            knowledgeScopes: plan.knowledgeScopes,
-            businessGoal: plan.businessGoal,
-            audience: plan.audience,
-            userQuestion: plan.userQuestion,
-            channels: plan.channels,
-            dueDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10),
-            reason: targetMeasure.description,
-            outline: [],
-            masterDraft: '',
-            knowledge: [],
-            missingMaterials: [],
-            origin: plan.origin,
-            materialBudget: deriveMaterialBudget(plan.type, plan.theme),
-            quality: { overall: 0, relevance: 0, accuracy: 0, completeness: 0, readability: 0, authenticity: 0, channelFit: 0 },
-            compliance: [],
-            channelVersions: [],
-          }
-          pushToast('success', '内容运营已接收任务说明。请先发布内容，再进入复盘。')
-        }
-      }, 2000)
+interface WorkbenchApi {
+  view: ViewId
+  hasDetected: boolean
+  showGuide: boolean
+  loadingDashboard: boolean
+  scanning: boolean
+  scanCompleted: number
+  siteId: string
+  funnelPeriod: FunnelPeriod
+  health: HealthSnapshot
+  issues: IssueItem[]
+  showP2: boolean
+  fixTarget: FixTarget | null
+  fixPhase: FixPhase
+  fixLogs: string[]
+  exportingPdf: boolean
+  toasts: ToastItem[]
+  trendDays: 7 | 30
+  historyRows: DetectHistoryRow[]
+  taskRows: FixTaskRow[]
+  weeklyRows: WeeklyReportRow[]
+  weeklyPreviewId: string | null
+  sites: typeof mockSitesData
+  currentSite: (typeof mockSitesData)[number]
+  funnel: typeof mockFunnelWeekData
+  p0Count: number
+  p1Count: number
+  p2Issues: IssueItem[]
+  priorityIssues: IssueItem[]
   weakestDimensionKey: string
   pendingTaskCount: number
   // 渠道配置状态
@@ -871,6 +865,9 @@ export function WorkbenchProvider({ children }: { children: ReactNode }) {
               status: 'ready',
               priority: plan.priority,
               theme: plan.theme,
+              contentSubject: plan.contentSubject,
+              knowledgeScopes: plan.knowledgeScopes,
+              businessGoal: plan.businessGoal,
               audience: plan.audience,
               userQuestion: plan.userQuestion,
               channels: plan.channels,
@@ -916,7 +913,6 @@ export function WorkbenchProvider({ children }: { children: ReactNode }) {
                 },
           ),
         }))
-<<<<<<< HEAD
         if (isHealthFix) {
           setAttributionTasks((prev) =>
             prev.map((t) =>
@@ -952,48 +948,6 @@ export function WorkbenchProvider({ children }: { children: ReactNode }) {
               },
               ...prev,
             ])
-=======
-        setAttributionTasks((prev) =>
-          prev.map((t) =>
-            t.module === 'attribution' && t.status === 'running'
-              ? {
-                  ...t,
-                  reviewPending: `待复盘 ${reviewPeriod}`,
-                  updatedAt: new Date().toISOString().slice(0, 16).replace('T', ' '),
-                }
-              : t,
-          ),
-        )
-        // 内容联动：targetModule = ai_content_engine 的措施 → 内容规划 Agent 推导 → 创建内容任务（带诊断证据来源追踪）
-        if (targetMeasure?.targetModule === 'ai_content_engine' && changeRef) {
-          const plan = planContent({ measure: targetMeasure, change: changeRef })
-          const taskId = `ct-attr-${Date.now()}`
-          const task: ContentTask = {
-            id: taskId,
-            title: plan.title,
-            kind: plan.kind,
-            type: plan.type,
-            status: 'ready',
-            priority: plan.priority,
-            theme: plan.theme,
-            contentSubject: plan.contentSubject,
-            knowledgeScopes: plan.knowledgeScopes,
-            businessGoal: plan.businessGoal,
-            audience: plan.audience,
-            userQuestion: plan.userQuestion,
-            channels: plan.channels,
-            dueDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10),
-            reason: targetMeasure.description,
-            outline: [],
-            masterDraft: '',
-            knowledge: [],
-            missingMaterials: [],
-            origin: plan.origin,
-            materialBudget: deriveMaterialBudget(plan.type, plan.theme),
-            quality: { overall: 0, relevance: 0, accuracy: 0, completeness: 0, readability: 0, authenticity: 0, channelFit: 0 },
-            compliance: [],
-            channelVersions: [],
->>>>>>> 6c73697 (version 0.4 adjust multi agnets)
           }
           pushToast('success', '内容运营已接收任务说明。请先发布内容，再进入复盘。')
         }
