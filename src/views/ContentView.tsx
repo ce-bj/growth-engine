@@ -1,10 +1,10 @@
 import { useEffect, useState } from 'react'
 import { useWorkbench } from '../context/WorkbenchContext'
 import { contentAssetsData, contentCalendarData, contentLocalesData, contentPublishStatsData, contentTasksData, glossaryTermsData, knowledgeRiskEventsData, publicationRecordsData, themePerformanceData, weeklyPerformanceData } from '../data/contentMock'
-import type { ChannelProfile, ChannelVersion, ContentAsset, ContentChannel, ContentOpportunity, ContentPlanItem, ContentTab, ContentTask, ContentThemePerformance, GlossaryTerm, KnowledgeRiskEvent, MaterialBudgetItem, PublicationRecord, PublishSettings } from '../types'
+import type { ChannelProfile, ChannelVersion, ContentAsset, ContentChannel, ContentOpportunity, ContentPlanItem, ContentSeriesPlan, ContentTab, ContentTask, ContentThemePerformance, GlossaryTerm, KnowledgeRiskEvent, MaterialBudgetItem, PublicationRecord, PublishSettings } from '../types'
 import { ContentAssets } from './content/ContentAssets'
 import { ContentCalendar } from './content/ContentCalendar'
-import { ContentCreateDrawer, type ContentCreatePayload } from './content/ContentCreateDrawer'
+import { ContentCreateDrawer, type ContentCreateBatchPayload, type ContentCreatePayload } from './content/ContentCreateDrawer'
 import { ContentGlossary } from './content/ContentGlossary'
 import { ContentKnowledgeRiskDetail } from './content/ContentKnowledgeRiskDetail'
 import { ContentLibrary } from './content/ContentLibrary'
@@ -40,6 +40,8 @@ export function ContentView() {
   const opportunities = contentOpportunities
   const planItems = contentPlanItems
   const [publications, setPublications] = useState<PublicationRecord[]>(publicationRecordsData)
+  const [assets, setAssets] = useState<ContentAsset[]>(contentAssetsData)
+  const [seriesPlans, setSeriesPlans] = useState<ContentSeriesPlan[]>([])
   const [knowledgeRisks, setKnowledgeRisks] = useState<KnowledgeRiskEvent[]>(knowledgeRiskEventsData)
   const [glossaryTerms, setGlossaryTerms] = useState<GlossaryTerm[]>(glossaryTermsData)
   const [activeTaskId, setActiveTaskId] = useState<string | null>(null)
@@ -53,7 +55,14 @@ export function ContentView() {
   const performanceStat = contentPublishStatsData.find((stat) => stat.id === performanceStatId)
 
   const navigate = (next: ContentTab) => { setActiveTaskId(null); setPerformanceStatId(null); setPublishSettingsOpen(false); setTab(next) }
-  const openTask = (id: string, step?: number) => { setKnowledgeRiskDetailOpen(false); setPerformanceStatId(null); setActiveTaskId(id); setWorkbenchStep(step) }
+<<<<<<< HEAD
+  const openTask = (id: string, step?: number) => {
+    setKnowledgeRiskDetailOpen(false)
+    setPerformanceStatId(null)
+    setActiveTaskId(id)
+    // 演示样例始终从第一步进入，方便按“下一步”完整讲解流程。
+    setWorkbenchStep(id === 'ct-001' ? 0 : step)
+  }
 
   // 归因措施「在内容运营查看」深链：打开对应任务工作台第 0 步任务说明
   useEffect(() => {
@@ -63,6 +72,15 @@ export function ContentView() {
     openTask(taskId, step)
     clearPendingContentTaskOpen()
   }, [pendingContentTaskOpen, tasks, clearPendingContentTaskOpen])
+=======
+  const openTask = (id: string, step?: number) => {
+    setKnowledgeRiskDetailOpen(false)
+    setPerformanceStatId(null)
+    setActiveTaskId(id)
+    // 演示样例始终从第一步进入，方便按“下一步”完整讲解流程。
+    setWorkbenchStep(id === 'ct-001' ? 0 : step)
+  }
+>>>>>>> 6c73697 (version 0.4 adjust multi agnets)
   const openGlossary = (highlight: string[] = []) => setGlossaryState({ open: true, highlight })
   const openPerformanceDetail = (taskId: string) => {
     const stat = contentPublishStatsData.find((item) => item.taskId === taskId)
@@ -87,9 +105,7 @@ export function ContentView() {
   }
 
 
-  const submitNewTask = (payload: ContentCreatePayload) => {
-    const id = `ct-new-${Date.now()}`
-    const task: ContentTask = {
+  const buildTask = (payload: ContentCreatePayload, id: string, parentPlanId?: string, occurrenceIndex?: number): ContentTask => ({
       id, title: payload.title, kind: payload.kind, type: payload.type, priority: payload.priority,
       status: 'ready',
       theme: payload.theme, contentSubject: payload.contentSubject, knowledgeScopes: payload.knowledgeScopes,
@@ -104,26 +120,45 @@ export function ContentView() {
         sourceLabel: payload.demandSource === 'attribution' ? '诊断报告 · 自动解析建任务' : payload.demandSource === 'opportunity' ? '内容洞察 · 转入生产' : '运营人员手动创建',
         context: payload.sourceContext,
       },
+      parentPlanId, sourceItemIds: payload.sourceItemIds, occurrenceIndex,
       materialBudget: deriveMaterialBudget(payload.type, payload.theme),
       quality: { overall: 0, relevance: 0, accuracy: 0, completeness: 0, readability: 0, authenticity: 0, channelFit: 0 },
       compliance: [], channelVersions: [],
+    })
+
+  const submitNewTask = (payload: ContentCreateBatchPayload) => {
+    const stamp = Date.now()
+    const planId = payload.series ? `csp-${stamp}` : undefined
+    const tasks = payload.tasks.map((item, index) => buildTask(item, `ct-new-${stamp}-${index + 1}`, planId, planId ? index + 1 : undefined))
+    if (payload.series && planId) {
+      setSeriesPlans((current) => [{ ...payload.series!, id: planId, createdTaskIds: tasks.map((item) => item.id) }, ...current])
     }
-    setContentTasks((current) => [task, ...current])
+    setContentTasks((current) => [...tasks, ...current])
     setCreateDrawerOpen(false)
-    pushToast('success', '已创建内容任务', true)
-    openTask(id, 0)
+    pushToast('success', payload.series ? `已接收诊断报告：创建 1 个周期计划和 ${tasks.length} 篇首批任务` : '已创建内容任务', true)
+    if (tasks[0]) openTask(tasks[0].id, 0)
   }
 
   const updateBrief = (taskId: string, patch: Partial<Pick<ContentTask, 'title' | 'type' | 'kind' | 'contentSubject' | 'knowledgeScopes' | 'audience' | 'userQuestion' | 'theme' | 'reason' | 'dueDate' | 'locales' | 'channels' | 'businessGoal' | 'successMetric' | 'journeyStage' | 'coreMessage' | 'desiredAction' | 'mustInclude' | 'mustAvoid' | 'owner'>>) => {
-    setContentTasks((current) => current.map((task) => task.id === taskId ? { ...task, ...patch } : task))
+    const invalidatesGeneration = ['type', 'kind', 'contentSubject', 'knowledgeScopes', 'audience', 'userQuestion', 'theme', 'locales', 'channels', 'businessGoal', 'coreMessage', 'mustInclude', 'mustAvoid'].some((key) => key in patch)
+    setContentTasks((current) => current.map((task) => task.id !== taskId ? task : invalidatesGeneration ? {
+      ...task, ...patch, status: 'ready', masterDraft: '', channelVersions: [], previewConfirmations: [],
+      quality: { overall: 0, relevance: 0, accuracy: 0, completeness: 0, readability: 0, authenticity: 0, channelFit: 0 }, compliance: [],
+    } : { ...task, ...patch }))
   }
 
   const updateOutline = (taskId: string, outline: string[]) => {
-    setContentTasks((current) => current.map((task) => task.id === taskId ? { ...task, outline } : task))
+    setContentTasks((current) => current.map((task) => task.id === taskId ? { ...task, outline, channelVersions: [], previewConfirmations: [], status: 'generating' } : task))
   }
 
   const resolveMaterials = (taskId: string) => {
-    setContentTasks((current) => current.map((task) => task.id === taskId ? { ...task, status: 'ready', missingMaterials: [] } : task))
+    setContentTasks((current) => current.map((task) => task.id === taskId ? {
+      ...task, status: 'generating', missingMaterials: [],
+      knowledge: task.knowledge.length ? task.knowledge : [
+        { id: `kr-auto-${task.id}-1`, category: '企业业务知识', title: `${task.contentSubject || task.theme} · 产品与能力资料`, source: '企业知识库 · 已授权目录', verified: true },
+        { id: `kr-auto-${task.id}-2`, category: '行业知识', title: `${task.contentSubject || task.theme} · 行业方法与采购关注点`, source: '行业知识库', verified: true },
+      ],
+    } : task))
     pushToast('success', '资料已补充完整，可以开始生产', true)
   }
 
@@ -132,8 +167,8 @@ export function ContentView() {
   }
 
   const confirmChannelProfiles = (taskId: string, profiles: ChannelProfile[]) => {
-    setContentTasks((current) => current.map((task) => task.id === taskId ? { ...task, channelProfiles: profiles, status: 'generating' } : task))
-    pushToast('success', '渠道字段已确认，进入内容概览生成', true)
+    setContentTasks((current) => current.map((task) => task.id === taskId ? { ...task, channelProfiles: profiles, status: 'channel_setup', channelVersions: [], previewConfirmations: [] } : task))
+    pushToast('success', '渠道字段已确认，进入资料与素材', true)
   }
 
   const adoptOpportunity = (id: string) => {
@@ -163,7 +198,7 @@ export function ContentView() {
     const task: ContentTask = {
       id, title: item.title, kind: item.kind, type: item.type, priority: item.priority,
       status: 'ready',
-      theme: item.theme, audience: item.audience,
+      theme: item.theme, contentSubject: item.theme, knowledgeScopes: ['product', 'industry'], businessGoal: 'decision', audience: item.audience,
       userQuestion: `${item.audience}在${item.theme}上最关心什么？`, channels: item.channels,
       dueDate: item.dueDate, reason: item.reason, outline: [], masterDraft: '', knowledge: [],
       missingMaterials: [],
@@ -204,7 +239,7 @@ export function ContentView() {
       const multiplier = PRIORITY_MULTIPLIER[task.priority]
       const subScores = Object.fromEntries(Object.entries(QUALITY_MAX).map(([key, max]) => [key, Math.round(max * multiplier)])) as Record<keyof typeof QUALITY_MAX, number>
       const overall = Object.values(subScores).reduce((sum, value) => sum + value, 0)
-      return { ...task, userQuestion, outline, masterDraft, channelVersions, quality: { overall, ...subScores }, status: 'quality_review' }
+      return { ...task, userQuestion, outline, masterDraft, channelVersions, previewConfirmations: [], quality: { overall, ...subScores }, status: 'quality_review' }
     }))
     pushToast('success', '内容概览与渠道内容已生成，进入质量与合规审核', true)
   }
@@ -241,6 +276,8 @@ export function ContentView() {
         account: item.channelProfiles?.find((profile) => profile.channel === channel)?.fields.account || `${CHANNEL_META[channel].label} · 企业官方账号`,
         status: 'ready',
       })),
+      previewConfirmations: [],
+      status: 'quality_review',
     }))
     if (remainingTerms.length || openRisks.length) {
       pushToast('warning', `母稿已重新生成，但仍有 ${openRisks.length} 处知识库未命中、${remainingTerms.length} 个术语缺少译名，已归入物料预算待补充`, true)
@@ -259,6 +296,14 @@ export function ContentView() {
   const ignoreWarningsAndProceed = (taskId: string) => {
     setContentTasks((current) => current.map((task) => task.id === taskId ? { ...task, status: 'channel_adaptation' } : task))
     pushToast('success', '已确认审核结论，进入渠道内容预览', true)
+  }
+
+  const confirmPreview = (taskId: string, channel: ContentChannel) => {
+    setContentTasks((current) => current.map((task) => {
+      if (task.id !== taskId || task.previewConfirmations?.some((item) => item.channel === channel)) return task
+      return { ...task, previewConfirmations: [...(task.previewConfirmations ?? []), { channel, confirmedAt: new Date().toISOString() }] }
+    }))
+    pushToast('success', '已确认当前渠道预览', true)
   }
 
   const submitForApproval = (taskId: string) => {
@@ -280,9 +325,9 @@ export function ContentView() {
 
   const createPerformanceTask = (item: ContentThemePerformance) => {
     const source = tasks.find((task) => task.id === item.taskId) ?? contentTasksData[0]
-    const task: ContentTask = { ...source, id: `ct-next-${Date.now()}`, title: `${item.theme}：${item.action === 'expand' ? '扩展子主题' : item.action === 'optimize' ? '内容重构' : '内容复核'}`, kind: item.action === 'expand' ? 'expand' : item.action === 'optimize' ? 'optimize' : 'refresh', status: 'ready', priority: 'P2', dueDate: '2026-08-12', reason: item.conclusion, channelVersions: [] }
-    setContentTasks((current) => [task, ...current])
-    pushToast('success', '效果建议已加入下一轮内容计划', true)
+    const planItem: ContentPlanItem = { id: `pi-performance-${Date.now()}`, title: `${item.theme}：${item.action === 'expand' ? '扩展子主题' : item.action === 'optimize' ? '内容重构' : '内容复核'}`, type: source.type, kind: item.action === 'expand' ? 'expand' : item.action === 'optimize' ? 'optimize' : 'refresh', theme: item.theme, audience: source.audience, channels: source.channels, priority: 'P2', dueDate: '2026-08-20', reason: item.conclusion, status: 'proposed' }
+    setContentPlanItems((current) => [planItem, ...current])
+    pushToast('success', '效果结论已生成新的计划项，等待确认后再转入生产', true)
     navigate('plan')
   }
 
@@ -303,20 +348,33 @@ export function ContentView() {
     pushToast('success', '失败渠道重试成功', true)
   }
 
+  const publishNow = (id: string) => {
+    const record = publications.find((item) => item.id === id)
+    if (!record) return
+    const task = tasks.find((item) => item.id === record.taskId)
+    const publishedAt = '2026-08-07'
+    setPublications((current) => current.map((item) => item.id === id ? { ...item, status: 'published', channels: item.channels.map((version) => ({ ...version, status: 'published', url: version.url ?? `https://www.example.com/content/${item.taskId}/${version.channel}` })) } : item))
+    setContentTasks((current) => current.map((item) => item.id === record.taskId ? { ...item, status: 'published', channelVersions: item.channelVersions.map((version) => ({ ...version, status: 'published', url: version.url ?? `https://www.example.com/content/${item.id}/${version.channel}` })) } : item))
+    if (task && !assets.some((asset) => asset.taskId === task.id)) {
+      setAssets((current) => [{ id: `ca-${task.id}`, taskId: task.id, title: task.title, type: task.type, language: task.locales?.length ? task.locales.join(' / ').toUpperCase() : '中文', status: 'published', qualityScore: task.quality.overall, compliance: task.compliance.some((issue) => !issue.resolved && (issue.level === 'blocking' || issue.level === 'high')) ? 'high' : 'pass', channels: task.channels, updatedAt: publishedAt, expiresAt: '2027-02-07', uv: 0, effectiveReadRate: 0 }, ...current])
+    }
+    pushToast('success', '发布成功，已生成内容资产并进入效果观察', true)
+  }
+
   const glossaryDrawer = glossaryState.open && <ContentGlossary terms={glossaryTerms} locales={contentLocalesData} highlightTerms={glossaryState.highlight} onClose={() => setGlossaryState({ open: false, highlight: [] })} onUpdateTranslation={updateTranslation} onSyncKnowledge={() => pushToast('success', '术语与译名已同步到企业知识库', true)} />
 
-  if (activeTask) return <div className="content-view"><ContentWorkbench task={activeTask} initialStep={workbenchStep} knowledgeRisks={knowledgeRisks} locales={contentLocalesData} glossaryTerms={glossaryTerms} onBack={() => { setActiveTaskId(null); setWorkbenchStep(undefined) }} onUpdateBrief={updateBrief} onUpdateOutline={updateOutline} onResolveMaterials={resolveMaterials} onConfirmChannelProfiles={confirmChannelProfiles} onUpdateBudget={updateBudget} onGenerateDraft={generateDraft} onRegenerateDraft={regenerateDraft} onToggleComplianceIssue={toggleComplianceIssue} onIgnoreWarnings={ignoreWarningsAndProceed} onSubmitApproval={submitForApproval} onApprove={approveAndSchedule} onOpenGlossary={openGlossary} onOpenKnowledgeRisks={() => { setActiveTaskId(null); setKnowledgeRiskDetailOpen(true) }} />{glossaryDrawer}</div>
+  if (activeTask) return <div className="content-view"><ContentWorkbench task={activeTask} initialStep={workbenchStep} knowledgeRisks={knowledgeRisks} locales={contentLocalesData} glossaryTerms={glossaryTerms} onBack={() => { setActiveTaskId(null); setWorkbenchStep(undefined) }} onUpdateBrief={updateBrief} onUpdateOutline={updateOutline} onResolveMaterials={resolveMaterials} onConfirmChannelProfiles={confirmChannelProfiles} onUpdateBudget={updateBudget} onGenerateDraft={generateDraft} onRegenerateDraft={regenerateDraft} onToggleComplianceIssue={toggleComplianceIssue} onIgnoreWarnings={ignoreWarningsAndProceed} onConfirmPreview={confirmPreview} onSubmitApproval={submitForApproval} onApprove={approveAndSchedule} onOpenGlossary={openGlossary} onOpenKnowledgeRisks={() => { setActiveTaskId(null); setKnowledgeRiskDetailOpen(true) }} />{glossaryDrawer}</div>
 
   if (knowledgeRiskDetailOpen) return <div className="content-view"><ContentKnowledgeRiskDetail risks={knowledgeRisks} onBack={() => setKnowledgeRiskDetailOpen(false)} onOpenTask={openTask} onMarkResolved={markKnowledgeRiskResolved} /></div>
 
   return <div className="content-view"><ContentTabs active={tab} onChange={navigate} />
     {tab === 'overview' && <ContentOverview tasks={tasks} publications={publications} knowledgeRisks={knowledgeRisks} onNavigate={navigate} onOpenTask={openTask} onOpenKnowledgeRiskDetail={() => setKnowledgeRiskDetailOpen(true)} />}
     {tab === 'library' && <ContentLibrary tasks={tasks} onOpenTask={openTask} onNavigate={navigate} onCreate={() => setCreateDrawerOpen(true)} onOpenGlossary={() => openGlossary()} onOpenPerformanceDetail={openPerformanceDetail} />}
-    {tab === 'plan' && <ContentPlan tasks={tasks} opportunities={opportunities} planItems={planItems} onOpenTask={openTask} onCreate={() => setCreateDrawerOpen(true)} onAdoptOpportunity={adoptOpportunity} onDismissOpportunity={dismissOpportunity} onPromoteToTask={promoteToTask} onDropPlanItem={dropPlanItem} />}
+    {tab === 'plan' && <ContentPlan tasks={tasks} seriesPlans={seriesPlans} opportunities={opportunities} planItems={planItems} onOpenTask={openTask} onCreate={() => setCreateDrawerOpen(true)} onAdoptOpportunity={adoptOpportunity} onDismissOpportunity={dismissOpportunity} onPromoteToTask={promoteToTask} onDropPlanItem={dropPlanItem} />}
     {tab === 'review' && <ContentReview tasks={tasks} onOpenTask={openTask} />}
     {tab === 'calendar' && <ContentCalendar items={contentCalendarData} onOpenTask={openTask} />}
-    {tab === 'assets' && <ContentAssets assets={contentAssetsData} onOpenTask={openTask} onRefresh={refreshAsset} />}
-    {tab === 'publishing' && <ContentPublishing records={publications} onApprove={approvePublication} onRetry={retryPublication} onOpenSettings={() => setPublishSettingsOpen(true)} />}
+    {tab === 'assets' && <ContentAssets assets={assets} onOpenTask={openTask} onRefresh={refreshAsset} />}
+    {tab === 'publishing' && <ContentPublishing records={publications} onApprove={approvePublication} onPublish={publishNow} onRetry={retryPublication} onOpenSettings={() => setPublishSettingsOpen(true)} />}
     {tab === 'performance' && (performanceStat
       ? <ContentPerformanceDetail stat={performanceStat} onBack={() => setPerformanceStatId(null)} onOpenTask={openTask} />
       : <ContentPerformance performance={themePerformanceData} weeks={weeklyPerformanceData} publishStats={contentPublishStatsData} onCreateTask={createPerformanceTask} onOpenDetail={setPerformanceStatId} />)}

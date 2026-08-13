@@ -1,12 +1,4 @@
-import type {
-  AttributionChange,
-  AttributionMeasure,
-  AttributionTaskType,
-  ContentChannel,
-  ContentTaskKind,
-  ContentType,
-  ReviewPeriod,
-} from '../types'
+import type { AttributionChange, AttributionMeasure, AttributionTaskType, ContentChannel, ContentKnowledgeScope, ContentTaskKind, ContentType, ReviewPeriod } from '../types'
 import { resolveIntent } from './knowledge'
 
 /** ═══════════════════════════════════════════════════════════════
@@ -38,6 +30,9 @@ export interface ContentPlanResult {
   kind: ContentTaskKind
   priority: 'P0' | 'P1' | 'P2'
   theme: string
+  contentSubject: string
+  knowledgeScopes: ContentKnowledgeScope[]
+  businessGoal: 'awareness' | 'traffic' | 'decision' | 'conversion' | 'success' | 'compliance'
   audience: string
   userQuestion: string
   channels: ContentChannel[]
@@ -120,6 +115,9 @@ export function planFromAttribution(measure: AttributionMeasure, change: Attribu
     kind: kindFromTaskType(measure.taskType, description),
     priority,
     theme,
+    contentSubject: intent.theme,
+    knowledgeScopes: ['product', 'service', 'case', 'industry'],
+    businessGoal: change.funnelSegment === 'channel_arrival' ? 'traffic' : 'conversion',
     audience: intent.audience,
     userQuestion: intent.userQuestion,
     channels,
@@ -146,6 +144,9 @@ export function planFromOpportunity(input: ContentPlanInput): ContentPlanResult 
     kind: 'create',
     priority: input.opportunityPriority ?? 'P1',
     theme: input.opportunityTheme ?? '',
+    contentSubject: input.opportunityTheme ?? '',
+    knowledgeScopes: ['product', 'industry'],
+    businessGoal: 'decision',
     audience: input.opportunityAudience ?? '',
     userQuestion: `${input.opportunityAudience ?? ''}在${input.opportunityTheme ?? ''}上最关心什么？`,
     channels: input.opportunityChannels ?? ['website'],
@@ -167,6 +168,9 @@ export function planContent(input: ContentPlanInput): ContentPlanResult {
     kind: 'create',
     priority: 'P1',
     theme: input.manual?.theme ?? '',
+    contentSubject: input.manual?.theme ?? '',
+    knowledgeScopes: ['product', 'industry'],
+    businessGoal: 'decision',
     audience: input.manual?.audience ?? '',
     userQuestion: `${input.manual?.audience ?? ''}在${input.manual?.theme ?? ''}上最关心什么？`,
     channels: ['website'],

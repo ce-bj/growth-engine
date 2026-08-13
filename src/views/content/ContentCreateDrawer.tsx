@@ -1,7 +1,7 @@
 import { Sparkles, X } from 'lucide-react'
 import { useState } from 'react'
 import { Button } from '../../components/Button'
-import type { ContentChannel, ContentKnowledgeScope, ContentSourceContext, ContentTask, ContentTaskKind, ContentTaskSource, ContentType } from '../../types'
+import type { ContentChannel, ContentKnowledgeScope, ContentSeriesPlan, ContentSourceContext, ContentTask, ContentTaskKind, ContentTaskSource, ContentType } from '../../types'
 import { KIND_LABEL, TYPE_LABEL } from './ContentPrimitives'
 
 export interface ContentCreatePayload {
@@ -28,6 +28,12 @@ export interface ContentCreatePayload {
   reason: string
   locales?: string[]
   sourceContext?: ContentSourceContext
+  sourceItemIds?: string[]
+}
+
+export interface ContentCreateBatchPayload {
+  tasks: ContentCreatePayload[]
+  series?: Omit<ContentSeriesPlan, 'id' | 'createdTaskIds'>
 }
 
 const SOURCE_PRESETS = [
@@ -100,7 +106,7 @@ const DIAGNOSIS_CONTEXT: ContentSourceContext = {
   mappedContractKeys: ['taskKind', 'contentType', 'contentSubject', 'knowledgeScopes', 'businessGoal', 'audience', 'userQuestion'], missingContractKeys: [],
 }
 
-export function ContentCreateDrawer({ onClose, onSubmit }: { onClose: () => void; onSubmit: (payload: ContentCreatePayload) => void }) {
+export function ContentCreateDrawer({ onClose, onSubmit }: { onClose: () => void; onSubmit: (payload: ContentCreateBatchPayload) => void }) {
   const [contentSubject, setContentSubject] = useState('')
   const [type, setType] = useState<ContentType>('guide')
   const [kind, setKind] = useState<ContentTaskKind>('create')
@@ -139,13 +145,46 @@ export function ContentCreateDrawer({ onClose, onSubmit }: { onClose: () => void
     const goalDefaults = GOAL_DEFAULTS[businessGoal]
     const resolvedAudience = audience.trim()
     const recommendedChannels: ContentChannel[] = businessGoal === 'awareness' ? ['website', 'linkedin'] : businessGoal === 'traffic' ? ['website'] : businessGoal === 'conversion' ? ['website', 'linkedin'] : ['website']
-    onSubmit({
+    const baseTask: ContentCreatePayload = {
       demandSource: sourceId, title: workingTitle.trim() || `${subject} · ${TYPE_LABEL[type]}`, type, kind, priority, channels: recommendedChannels, theme: subject,
       contentSubject: subject, knowledgeScopes, audience: resolvedAudience, userQuestion: userQuestion.trim(),
       businessGoal, successMetric: goalDefaults.metric, coreMessage: `围绕“${subject}”回答“${userQuestion.trim()}”，并给出可验证的判断依据、适用边界与下一步建议。`,
       desiredAction: goalDefaults.action, journeyStage: goalDefaults.stage, mustInclude: '', mustAvoid: '', owner: '内容运营组',
       dueDate, reason: reason.trim() || '由用户主动提出内容需求，完整任务简报由主 Agent 自动推导。',
       locales: sourceId === 'attribution' ? ['en'] : [], sourceContext: sourceId === 'attribution' ? DIAGNOSIS_CONTEXT : undefined,
+    }
+    if (sourceId !== 'attribution') {
+      onSubmit({ tasks: [baseTask] })
+      return
+    }
+    const topics = [
+      { id: 'diag-item-aluminum', title: 'Aluminum CNC 加工：海外采购需要确认的 6 个工艺条件', keyword: 'aluminum CNC', status: 'created' as const },
+      { id: 'diag-item-small-batch', title: '小批量 CNC 打样与量产衔接指南', keyword: 'small batch CNC', status: 'created' as const },
+      { id: 'diag-item-supplier', title: '如何评估中国 CNC 加工供应商', keyword: 'CNC machining China', status: 'created' as const },
+      { id: 'diag-item-prototype', title: 'CNC prototyping：从图纸到首件确认', keyword: 'CNC prototyping', status: 'queued' as const },
+      { id: 'diag-item-oem', title: 'OEM machining 采购中的质量与交付边界', keyword: 'OEM machining', status: 'queued' as const },
+      { id: 'diag-item-enclosure', title: 'CNC enclosure machining 的材料与表面处理选择', keyword: 'CNC enclosure machining', status: 'queued' as const },
+    ]
+    const taskQuestions = [
+      '海外采购在铝合金 CNC 加工前，需要确认哪些材料、精度、表面处理和验收条件？',
+      '小批量 CNC 项目如何从快速打样平稳过渡到稳定量产？',
+      '海外采购应如何验证中国 CNC 供应商的工艺能力、质量体系和交付可靠性？',
+    ]
+    onSubmit({
+      series: {
+        title: 'CNC 海外采购关键词周更计划', sourceRef: DIAGNOSIS_CONTEXT.sourceRef,
+        sourceLabel: '诊断报告 · 自然搜索连续下降', objective: '围绕下降关键词建立持续内容供给，恢复自然搜索承接能力。',
+        cadenceLabel: '每 7 天 1 篇', channels: ['website'], topicPool: topics, status: 'active', nextRunAt: '2026-08-12',
+      },
+      tasks: topics.filter((item) => item.status === 'created').map((item, index) => ({
+        ...baseTask,
+        title: item.title,
+        theme: item.keyword,
+        contentSubject: item.keyword,
+        userQuestion: taskQuestions[index],
+        dueDate: `2026-08-${String(12 + index * 7).padStart(2, '0')}`,
+        sourceItemIds: [item.id],
+      })),
     })
   }
 
@@ -166,7 +205,8 @@ export function ContentCreateDrawer({ onClose, onSubmit }: { onClose: () => void
         {sourceId === 'attribution' && <section className="content-diagnosis-import">
           <div className="content-diagnosis-import__head"><div><Sparkles size={16} /><span><b>诊断报告已解析</b><small>自然搜索下降 · 渠道到达 · 中等置信度</small></span></div><em>检索契约 7/7</em></div>
           <div className="content-diagnosis-summary"><div><span>任务</span><b>持续内容发布计划</b></div><div><span>范围</span><b>8 个 CNC 关键词</b></div><div><span>节奏</span><b>每 7 天 1 篇</b></div><div><span>渠道</span><b>英文主站</b></div></div>
-          <p>系统已从诊断 JSON 映射内容对象、受众、核心问题、知识范围和目标。创建时只展示摘要；完整原始 JSON 与可变字段会随任务传给后续 Agent。</p>
+          <p>系统已识别为周期内容计划：先创建 1 个父计划，并实例化前 3 篇单篇任务；其余主题进入滚动队列。每篇任务拥有独立的核心问题和检索契约。</p>
+          <div className="content-diagnosis-intake-result"><span><b>1</b> 个周期父计划</span><span><b>3</b> 篇首批任务</span><span><b>3</b> 个滚动主题</span><span><b>0</b> 个字段冲突</span></div>
           <details><summary>查看解析结果 <span>共 {DIAGNOSIS_CONTEXT.sections.reduce((sum, section) => sum + section.items.length, 0)} 个动态字段</span></summary><div>{DIAGNOSIS_CONTEXT.sections.map((section) => <section key={section.key}><b>{section.label}</b><div>{section.items.map((item) => <span key={item.key}>{item.label}<em>{Array.isArray(item.value) ? `${item.value.length} 项` : typeof item.value === 'object' ? '结构化配置' : String(item.value)}</em></span>)}</div></section>)}</div></details>
         </section>}
 
@@ -189,7 +229,7 @@ export function ContentCreateDrawer({ onClose, onSubmit }: { onClose: () => void
       </div>
 
       <div className="drawer-footer">
-        <Button disabled={!valid} onClick={submit}><Sparkles size={14} />{sourceId === 'attribution' ? '接收并创建诊断任务' : '生成任务简报'}</Button>
+        <Button disabled={!valid} onClick={submit}><Sparkles size={14} />{sourceId === 'attribution' ? '确认接收并创建计划' : '生成任务简报'}</Button>
         <Button variant="secondary" onClick={onClose}>取消</Button>
       </div>
     </aside>

@@ -1,7 +1,7 @@
 import { Filter, Lightbulb, Plus, X } from 'lucide-react'
 import { useState } from 'react'
 import { Button } from '../../components/Button'
-import type { ContentChannel, ContentOpportunity, ContentPlanItem, ContentTask, PlanItemStatus } from '../../types'
+import type { ContentChannel, ContentOpportunity, ContentPlanItem, ContentSeriesPlan, ContentTask, PlanItemStatus } from '../../types'
 import { OPPORTUNITY_SOURCE_LABELS } from '../../types'
 import { ChannelBadge, KIND_LABEL, OriginBadge, StatusBadge, TYPE_LABEL } from './ContentPrimitives'
 
@@ -9,8 +9,9 @@ const PLAN_ITEM_STATUS_LABEL: Record<PlanItemStatus, string> = {
   proposed: '待确认', accepted: '待转入生产', promoted: '已转入生产', dropped: '已放弃',
 }
 
-export function ContentPlan({ tasks, opportunities, planItems, onOpenTask, onCreate, onAdoptOpportunity, onDismissOpportunity, onPromoteToTask, onDropPlanItem }: {
+export function ContentPlan({ tasks, seriesPlans, opportunities, planItems, onOpenTask, onCreate, onAdoptOpportunity, onDismissOpportunity, onPromoteToTask, onDropPlanItem }: {
   tasks: ContentTask[]
+  seriesPlans: ContentSeriesPlan[]
   opportunities: ContentOpportunity[]
   planItems: ContentPlanItem[]
   onOpenTask: (id: string) => void
@@ -32,6 +33,13 @@ export function ContentPlan({ tasks, opportunities, planItems, onOpenTask, onCre
   const activePlanItems = planItems.filter((item) => item.status === 'proposed' || item.status === 'accepted')
 
   return <div className="content-page-stack">
+    {seriesPlans.length > 0 && <section className="content-plan-stage content-series-stage">
+      <div className="content-plan-stage__head"><div><span className="content-eyebrow">DIAGNOSIS INTAKE</span><h3>诊断接入 · 周期内容计划</h3><p>诊断报告中的一串内容先形成父计划，再按期实例化单篇任务；不会把多个主题压进同一篇内容。</p></div><strong>{seriesPlans.length} 个</strong></div>
+      <div className="content-series-list">{seriesPlans.map((plan) => {
+        const created = plan.topicPool.filter((item) => item.status === 'created').length
+        return <article key={plan.id} className="content-series-card"><header><div><OriginBadge source="attribution" /><span className="content-planitem-status is-accepted">滚动执行中</span></div><b>{plan.title}</b><p>{plan.objective}</p></header><div className="content-series-metrics"><span><small>发布节奏</small><b>{plan.cadenceLabel}</b></span><span><small>主题池</small><b>{plan.topicPool.length} 个</b></span><span><small>已实例化</small><b>{created} 篇</b></span><span><small>下次运行</small><b>{plan.nextRunAt}</b></span></div><div className="content-series-topics">{plan.topicPool.map((topic) => <span key={topic.id} className={topic.status === 'created' ? 'is-created' : ''}>{topic.keyword}<small>{topic.status === 'created' ? '已建任务' : '滚动队列'}</small></span>)}</div><footer><span>来源：{plan.sourceLabel}</span><div>{plan.createdTaskIds.slice(0, 3).map((taskId, index) => <Button key={taskId} size="sm" variant="secondary" onClick={() => onOpenTask(taskId)}>查看第 {index + 1} 篇</Button>)}</div></footer></article>
+      })}</div>
+    </section>}
     <section className="content-plan-stage content-insight-stage">
       <div className="content-plan-stage__head"><div><span className="content-eyebrow">CONTENT INSIGHT</span><h3>内容洞察</h3><p>来自内容盘点、阅读/社媒表现、业务重点等信号，尚未采纳前不占用生产资源。</p></div><strong>{openOpportunities.length} 条</strong></div>
       {openOpportunities.length ? <div className="content-opportunity-list">{openOpportunities.map((item) => <article key={item.id} className="content-opportunity-card"><div className="content-opportunity-card__top"><Lightbulb size={15} /><span className="content-opportunity-source">{OPPORTUNITY_SOURCE_LABELS[item.source]}</span><span className={`content-priority is-${item.suggestedPriority.toLowerCase()}`}>{item.suggestedPriority}</span></div><h4>{item.suggestedTitle}</h4><p className="content-plan-item__reason">{item.evidence}</p><div className="content-plan-item__channels">{item.suggestedChannels.map((ch) => <ChannelBadge key={ch} channel={ch} />)}</div><div className="content-plan-item__foot"><span>主题：{item.suggestedTheme}</span><div><Button size="sm" variant="secondary" onClick={() => onDismissOpportunity(item.id)}><X size={13} />忽略</Button><Button size="sm" onClick={() => onAdoptOpportunity(item.id)}>采纳为计划项</Button></div></div></article>)}</div> : <p className="muted">暂无新的内容洞察。</p>}

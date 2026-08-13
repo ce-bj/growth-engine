@@ -398,7 +398,7 @@ export interface ContentQualityScore {
 export interface ComplianceIssue {
   id: string
   level: ComplianceLevel
-  category: 'fact' | 'brand' | 'copyright' | 'privacy' | 'industry' | 'advertising' | 'platform' | 'localization'
+  category: 'fact' | 'brand' | 'copyright' | 'privacy' | 'industry' | 'advertising' | 'platform' | 'localization' | 'ai_disclosure'
   title: string
   detail: string
   resolved: boolean
@@ -504,6 +504,29 @@ export interface ContentTask {
   origin?: ContentTaskOrigin
   /** 一次性物料预算：进入生成前按内容类型模板推导的完整素材需求清单 */
   materialBudget?: MaterialBudgetItem[]
+  /** 周期计划产生的单篇任务回链；普通单篇任务为空 */
+  parentPlanId?: string
+  /** 本任务承接的上游诊断条目，用于从批次追溯到具体建议 */
+  sourceItemIds?: string[]
+  /** 周期计划中的序号 */
+  occurrenceIndex?: number
+  /** 渠道预览必须逐个确认，不能以“已有版本”代替人工确认 */
+  previewConfirmations?: Array<{ channel: ContentChannel; confirmedAt: string }>
+}
+
+/** 诊断报告中的一串内容先落为周期父计划，再按期实例化单篇任务 */
+export interface ContentSeriesPlan {
+  id: string
+  title: string
+  sourceRef: string
+  sourceLabel: string
+  objective: string
+  cadenceLabel: string
+  channels: ContentChannel[]
+  topicPool: Array<{ id: string; title: string; keyword: string; status: 'created' | 'queued' }>
+  createdTaskIds: string[]
+  status: 'active' | 'paused' | 'completed'
+  nextRunAt: string
 }
 
 /** 任务来源类型：归因诊断 / 内容洞察 / 手动创建 */
@@ -574,6 +597,17 @@ export interface MaterialBudgetItem {
   note?: string
   /** 生成过程中 RAG no-hit 追加标记 */
   addedDuringGeneration?: boolean
+  /** 缺失资料在知识库中的精确补充位置与回查条件 */
+  knowledgeTarget?: {
+    directoryId: string
+    directoryName: string
+    knowledgeBaseType: string
+    primaryCategory: string
+    secondaryCategory?: string
+    query: string
+  }
+  /** 最近一次从内容任务发起检查的时间 */
+  lastCheckedAt?: string
 }
 
 /** 内容洞察产出：可能需要做点什么，尚未被采纳，不属于计划 */

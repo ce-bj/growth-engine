@@ -1,15 +1,16 @@
-import { AlertTriangle, ArrowLeft, Check, ChevronDown, ChevronRight, ChevronUp, CircleAlert, FileCheck2, Globe, Languages, Library, Plus, RefreshCw, Send, ShieldAlert, Sparkles, Trash2 } from 'lucide-react'
+import { AlertTriangle, ArrowLeft, Check, ChevronDown, ChevronRight, ChevronUp, CircleAlert, ExternalLink, FileCheck2, Globe, Languages, Library, Plus, RefreshCw, Send, ShieldAlert, Sparkles, Trash2 } from 'lucide-react'
 import { useState } from 'react'
 import { Button } from '../../components/Button'
+import { resolveMaterialKnowledgeTarget } from '../../lib/materialBudget'
 import type { ChannelProfile, ContentChannel, ContentKnowledgeScope, ContentLocale, ContentTask, GlossaryTerm, KnowledgeRiskEvent, MaterialBudgetItem } from '../../types'
-import { ContentAssistantPanel, type AssistantQuickAction } from './ContentAssistantPanel'
+import { ContentAssistantPanel, type AgentArtifactItem, type AgentRunItem, type AssistantQuickAction } from './ContentAssistantPanel'
 import { CHANNEL_FIELD_DEFS, ChannelBadge, CHANNEL_META, CONTENT_STEPS, getGlossaryStatus, getReviewVerdict, getTaskStep, KIND_LABEL, KNOWLEDGE_RISK_SOURCE_LABEL, KnowledgeRiskBadge, KNOWLEDGE_RISK_STATUS_LABEL, MATERIAL_BUDGET_TEMPLATES, MaterialBudgetStatusBadge, OriginBadge, QualityRing, ReviewVerdictBadge, StatusBadge, TYPE_LABEL } from './ContentPrimitives'
 
 const KNOWLEDGE_SCOPE_LABELS: Record<ContentKnowledgeScope, string> = {
   company: '企业资料', product: '产品资料', service: '服务与方案', case: '案例证据', industry: '行业知识',
 }
 
-export function ContentWorkbench({ task, initialStep, knowledgeRisks, locales, glossaryTerms, onBack, onUpdateBrief, onUpdateOutline, onResolveMaterials, onConfirmChannelProfiles, onUpdateBudget, onGenerateDraft, onRegenerateDraft, onToggleComplianceIssue, onIgnoreWarnings, onSubmitApproval, onApprove, onOpenGlossary, onOpenKnowledgeRisks }: {
+export function ContentWorkbench({ task, initialStep, knowledgeRisks, locales, glossaryTerms, onBack, onUpdateBrief, onUpdateOutline, onResolveMaterials, onConfirmChannelProfiles, onUpdateBudget, onGenerateDraft, onRegenerateDraft, onToggleComplianceIssue, onIgnoreWarnings, onConfirmPreview, onSubmitApproval, onApprove, onOpenGlossary, onOpenKnowledgeRisks }: {
   task: ContentTask
   initialStep?: number
   knowledgeRisks: KnowledgeRiskEvent[]
@@ -25,15 +26,19 @@ export function ContentWorkbench({ task, initialStep, knowledgeRisks, locales, g
   onRegenerateDraft: (taskId: string) => void
   onToggleComplianceIssue: (taskId: string, issueId: string) => void
   onIgnoreWarnings: (taskId: string) => void
+  onConfirmPreview: (taskId: string, channel: ContentChannel) => void
   onSubmitApproval: (taskId: string) => void
   onApprove: (taskId: string, scheduledAt: string) => void
   onOpenGlossary: (terms: string[]) => void
   onOpenKnowledgeRisks: () => void
 }) {
-  const [step, setStep] = useState(initialStep ?? (task.origin ? 0 : Math.min(getTaskStep(task.status), CONTENT_STEPS.length - 1)))
+  const isShowcaseTask = task.id === 'ct-001'
+  const [step, setStep] = useState(initialStep ?? (!task.channelProfiles && !task.masterDraft ? 0 : Math.min(getTaskStep(task.status), CONTENT_STEPS.length - 1)))
   const [channel, setChannel] = useState<ContentChannel>(task.channelVersions[0]?.channel ?? task.channels[0] ?? 'website')
   const [scheduledAt, setScheduledAt] = useState('2026-08-03T10:00')
   const [failStrategy, setFailStrategy] = useState<'continue' | 'stop'>('continue')
+  const [knowledgeModalItem, setKnowledgeModalItem] = useState<MaterialBudgetItem | null>(null)
+  const [preparedMaterialIds, setPreparedMaterialIds] = useState<string[]>([])
   const [fieldValues, setFieldValues] = useState<Record<string, Record<string, string>>>(() => {
     const initial: Record<string, Record<string, string>> = {}
     task.channels.forEach((ch) => {
@@ -48,6 +53,8 @@ export function ContentWorkbench({ task, initialStep, knowledgeRisks, locales, g
   const verdict = getReviewVerdict(task)
   const version = task.channelVersions.find((item) => item.channel === channel)
   const allChannelsVersioned = task.channels.every((item) => task.channelVersions.some((version) => version.channel === item))
+  const confirmedChannels = task.previewConfirmations?.map((item) => item.channel) ?? []
+  const allPreviewsConfirmed = task.channels.every((item) => confirmedChannels.includes(item))
   const allFieldsFilled = task.channels.every((ch) => CHANNEL_FIELD_DEFS[ch].every((field) => fieldValues[ch]?.[field.key]?.trim()))
   const taskKnowledgeRisks = knowledgeRisks.filter((item) => item.taskId === task.id)
   const openKnowledgeRisks = taskKnowledgeRisks.filter((item) => item.status !== 'resolved')
@@ -89,7 +96,8 @@ export function ContentWorkbench({ task, initialStep, knowledgeRisks, locales, g
   }
 
   /** 一次性物料预算：有显式预算则用，否则按内容类型模板推导初始清单 */
-  const budget: MaterialBudgetItem[] = task.materialBudget ?? MATERIAL_BUDGET_TEMPLATES[task.type].map((tpl, i) => ({ id: `mb-tpl-${i}`, templateKey: tpl.templateKey, name: tpl.name, status: tpl.defaultStatus, note: tpl.note, addedDuringGeneration: false }))
+  const initialBudget: MaterialBudgetItem[] = task.materialBudget ?? MATERIAL_BUDGET_TEMPLATES[task.type].map((tpl, i) => ({ id: `mb-tpl-${i}`, templateKey: tpl.templateKey, name: tpl.name, status: tpl.defaultStatus, note: tpl.note, addedDuringGeneration: false }))
+  const budget: MaterialBudgetItem[] = initialBudget.map((item) => ({ ...item, knowledgeTarget: item.knowledgeTarget ?? resolveMaterialKnowledgeTarget(task.type, task.contentSubject || task.theme, item.templateKey, item.name) }))
   const budgetReady = budget.every((item) => item.status === 'ready')
   const budgetMissing = budget.filter((item) => item.status !== 'ready')
   const retrievalContract = [
@@ -106,9 +114,10 @@ export function ContentWorkbench({ task, initialStep, knowledgeRisks, locales, g
     { label: '任务简报已确认', pass: briefMissing === 0 },
     { label: '渠道定义字段完整', pass: allFieldsFilled },
     { label: '资料与素材全部就绪', pass: budgetReady },
-    { label: '知识来源可验证', pass: verifiedKnowledge.length > 0 || task.knowledge.length === 0 },
+    { label: '知识来源可验证', pass: verifiedKnowledge.length > 0 },
     { label: '目标语言术语完整', pass: termGaps.length === 0 },
   ]
+  const canRunResearch = briefMissing === 0 && allFieldsFilled && budgetReady && termGaps.length === 0
   const qualityAudit = [
     { label: '需求匹配', value: task.quality.relevance, max: 20, evidence: `围绕“${task.userQuestion || task.theme}”检查目标问题覆盖`, suggestion: '补齐受众决策点，并让结论直接回答核心问题' },
     { label: '专业准确', value: task.quality.accuracy, max: 20, evidence: `${verifiedKnowledge.length} 条已验证知识来源可追溯`, suggestion: '为参数、数字和专业判断补充有效来源' },
@@ -118,12 +127,6 @@ export function ContentWorkbench({ task, initialStep, knowledgeRisks, locales, g
     { label: '渠道适配', value: task.quality.channelFit, max: 10, evidence: `${task.channels.length} 个目标渠道的结构与素材需求已纳入`, suggestion: '补齐渠道字段与素材，不直接复制同一正文' },
   ]
 
-  /** 步骤③：把某项素材标记为已就绪（一次性补齐，用户确认） */
-  function markBudgetReady(itemId: string) {
-    const next = budget.map((item) => item.id === itemId ? { ...item, status: 'ready' as const } : item)
-    onUpdateBudget(task.id, next)
-  }
-
   function updateField(ch: ContentChannel, key: string, value: string) {
     setFieldValues((prev) => ({ ...prev, [ch]: { ...prev[ch], [key]: value } }))
   }
@@ -131,7 +134,33 @@ export function ContentWorkbench({ task, initialStep, knowledgeRisks, locales, g
   function confirmChannelProfiles() {
     const profiles: ChannelProfile[] = task.channels.map((ch) => ({ channel: ch, fields: fieldValues[ch] ?? {} }))
     onConfirmChannelProfiles(task.id, profiles)
+    setStep(2)
+  }
+
+  function resolveMaterialsAndContinue() {
+    if (!canRunResearch) return
+    onResolveMaterials(task.id)
     setStep(3)
+  }
+
+  function completeKnowledgeModal() {
+    if (!knowledgeModalItem) return
+    setPreparedMaterialIds((current) => current.includes(knowledgeModalItem.id) ? current : [...current, knowledgeModalItem.id])
+    setKnowledgeModalItem(null)
+  }
+
+  function markMaterialsChecked(itemIds: string[]) {
+    const checkedIds = new Set(itemIds)
+    if (checkedIds.size === 0) return
+    const checkedAt = new Date().toISOString()
+    onUpdateBudget(task.id, budget.map((item) => checkedIds.has(item.id) ? {
+      ...item,
+      status: 'ready',
+      source: item.knowledgeTarget?.directoryName ?? '企业知识库',
+      note: '重新检查通过：资料已完善并位于授权目录',
+      lastCheckedAt: checkedAt,
+    } : item))
+    setPreparedMaterialIds((current) => current.filter((id) => !checkedIds.has(id)))
   }
 
   function moveOutlineItem(index: number, direction: -1 | 1) {
@@ -191,10 +220,10 @@ export function ContentWorkbench({ task, initialStep, knowledgeRisks, locales, g
       // 步骤③ 资料与素材：一次性物料预算
       if (budgetMissing.length) {
         assistantMessage = `物料预算已列出本篇内容共需 ${budget.length} 项素材，其中 ${budgetMissing.length} 项待补充/授权。逐项补齐并标记为已就绪后，一次性进入生成。`
-        assistantQuickActions.push({ label: budgetMissing.length ? '全部补齐后进入生成' : '进入生成', onClick: () => onResolveMaterials(task.id), disabled: !budgetReady })
+        assistantQuickActions.push({ label: budgetMissing.length ? '全部补齐后进入生成' : '执行资料检索并进入生成', onClick: resolveMaterialsAndContinue, disabled: !canRunResearch })
       } else {
         assistantMessage = '物料预算已全部就绪，可以进入内容概览生成。'
-        assistantQuickActions.push({ label: '进入内容概览生成', onClick: () => onResolveMaterials(task.id) })
+        assistantQuickActions.push({ label: '执行资料检索并进入生成', onClick: resolveMaterialsAndContinue, disabled: !canRunResearch })
       }
       if (taskLocales.length > 0 && termGaps.length > 0) {
         assistantMessage += ` 另外有 ${termGaps.length} 个专业名词还缺目标语言译名。`
@@ -205,7 +234,7 @@ export function ContentWorkbench({ task, initialStep, knowledgeRisks, locales, g
     case 3:
       if (!task.masterDraft) {
         assistantMessage = '大纲已经可以编辑，确认后一次生成内容概览和所有目标渠道内容。'
-        assistantQuickActions.push({ label: '生成内容概览与渠道内容', onClick: () => onGenerateDraft(task.id) })
+        assistantQuickActions.push({ label: '生成内容概览与渠道内容', onClick: () => onGenerateDraft(task.id), disabled: !preGenerationChecks.every((item) => item.pass) })
       } else if (hasDraftGap) {
         assistantMessage = `内容概览已生成，但还有 ${openKnowledgeRisks.length} 处知识库未命中、${termGaps.length} 个术语缺译名，建议先补全再重新生成。`
         assistantQuickActions.push({ label: '补全后重新生成概览', onClick: () => onRegenerateDraft(task.id) })
@@ -232,9 +261,11 @@ export function ContentWorkbench({ task, initialStep, knowledgeRisks, locales, g
       } else {
         assistantMessage = `${CHANNEL_META[channel].label} 内容已通过审核，请检查最终呈现、账号与正文。`
       }
-      if (allChannelsVersioned && task.status === 'channel_adaptation') {
-        assistantMessage += ' 所有渠道预览均已就绪，可以提交审批。'
-        assistantQuickActions.push({ label: '预览无误，提交审批', onClick: () => onSubmitApproval(task.id) })
+      if (allChannelsVersioned && allPreviewsConfirmed && task.status === 'channel_adaptation') {
+        assistantMessage += ' 所有渠道均已逐一确认，可以提交审批。'
+        assistantQuickActions.push({ label: '提交审批', onClick: () => onSubmitApproval(task.id) })
+      } else if (version && !confirmedChannels.includes(channel)) {
+        assistantQuickActions.push({ label: `确认 ${CHANNEL_META[channel].label} 预览`, onClick: () => onConfirmPreview(task.id, channel) })
       }
       break
     case 6:
@@ -254,6 +285,39 @@ export function ContentWorkbench({ task, initialStep, knowledgeRisks, locales, g
     return { name: '发布规则引擎 + 人工审批', role: '逻辑门禁、排期与 MCP 发布', gate: blockers.length ? 'blocked' : 'waiting' }
   })() as { name: string; role: string; gate: 'working' | 'waiting' | 'passed' | 'blocked' }
 
+  const maxReachableStep = (() => {
+    if (isShowcaseTask) return CONTENT_STEPS.length - 1
+    if (briefMissing > 0) return 0
+    if (!task.channelProfiles?.length || !allFieldsFilled) return 1
+    if (!preGenerationChecks.every((item) => item.pass)) return 2
+    if (!task.masterDraft || !allChannelsVersioned || hasDraftGap) return 3
+    if (verdict === 'block' || task.quality.overall < 60) return 4
+    if (!allPreviewsConfirmed) return 5
+    return 6
+  })()
+
+  const agentRuns: AgentRunItem[] = [
+    { name: 'ContentOrchestratorAgent', action: '读取任务状态、校验检索契约并选择下一执行节点', state: briefMissing ? 'blocked' : 'completed', output: briefMissing ? undefined : 'OrchestrationDecision' },
+    { name: 'ResearchAgent', action: '按知识范围制定检索计划并形成证据包', state: step < 2 ? 'waiting' : verifiedKnowledge.length ? 'completed' : step === 2 ? 'blocked' : 'waiting', output: verifiedKnowledge.length ? `EvidenceBundle · ${verifiedKnowledge.length} 条来源` : undefined },
+    { name: 'CompletenessAgent', action: '执行生成前与生成后完整性门禁', state: step < 2 ? 'waiting' : hasDraftGap || (step === 2 && !preGenerationChecks.every((item) => item.pass)) ? 'blocked' : step >= 3 ? 'completed' : 'running', output: step >= 3 && !hasDraftGap ? 'CompletenessReport' : undefined },
+    { name: 'GenerationAgent', action: '一次生成内容概览和全部目标渠道版本', state: step < 3 ? 'waiting' : task.masterDraft && allChannelsVersioned ? 'completed' : step === 3 ? 'running' : 'waiting', output: task.masterDraft ? `OverviewVersion + ${task.channelVersions.length} 个 ChannelVersion` : undefined },
+    { name: 'QualityComplianceAgent', action: '独立执行六维质量与九类合规检查', state: step < 4 ? 'waiting' : verdict === 'block' || task.quality.overall < 60 ? 'blocked' : task.quality.overall > 0 ? 'completed' : 'running', output: task.quality.overall > 0 ? `QualityReport · ${task.quality.overall} 分` : undefined },
+  ]
+  const agentArtifacts: AgentArtifactItem[] = [
+    { name: 'ContentBrief', version: briefMissing ? `缺 ${briefMissing} 项` : 'v1 · 已确认', state: briefMissing ? 'invalid' : 'ready' },
+    { name: 'EvidenceBundle', version: verifiedKnowledge.length ? `v1 · ${verifiedKnowledge.length} 条` : '待生成', state: verifiedKnowledge.length ? 'ready' : 'pending' },
+    { name: 'MaterialBudget', version: budgetReady ? 'v1 · 已就绪' : `${budgetMissing.length} 项待补`, state: budgetReady ? 'ready' : 'invalid' },
+    { name: 'OverviewVersion', version: task.masterDraft ? 'v1' : '待生成', state: task.masterDraft ? 'ready' : 'pending' },
+    { name: 'ChannelVersion', version: allChannelsVersioned ? `${task.channelVersions.length} 个版本` : '待生成', state: allChannelsVersioned ? 'ready' : 'pending' },
+  ]
+  const consoleBlockers = [
+    ...retrievalContract.filter((item) => !item.pass).map((item) => `任务简报缺少：${item.label}`),
+    ...budgetMissing.map((item) => `资料待补：${item.name}`),
+    ...(step >= 2 && verifiedKnowledge.length === 0 ? ['尚无可验证的知识来源'] : []),
+    ...termGaps.map((item) => `术语缺译名：${item}`),
+    ...blockers.map((item) => `合规风险：${item.title}`),
+  ].slice(0, 5)
+
   const retrievalContractForm = <div className="content-brief-form content-brief-essential">
     <div className="content-form-row"><label className="content-form-field"><span>内容类型 *</span><select value={task.type} onChange={(e) => onUpdateBrief(task.id, { type: e.target.value as ContentTask['type'] })}>{Object.entries(TYPE_LABEL).map(([key, label]) => <option key={key} value={key}>{label}</option>)}</select><small>决定资料模板与内容结构</small></label><label className="content-form-field"><span>任务类型 *</span><select value={task.kind} onChange={(e) => onUpdateBrief(task.id, { kind: e.target.value as ContentTask['kind'] })}>{Object.entries(KIND_LABEL).map(([key, label]) => <option key={key} value={key}>{label}</option>)}</select><small>决定是否先检索已有内容资产</small></label></div>
     <label className="content-form-field"><span>内容对象 *</span><input className="form-input" value={task.contentSubject ?? task.theme} onChange={(e) => onUpdateBrief(task.id, { contentSubject: e.target.value, theme: e.target.value })} placeholder="具体产品、服务、方案、场景或主题" /><small>作为知识库实体、关键词与资产归类依据</small></label>
@@ -265,7 +329,8 @@ export function ContentWorkbench({ task, initialStep, knowledgeRisks, locales, g
   return <div className="content-workbench">
     <div className="content-workbench__top"><button onClick={onBack}><ArrowLeft size={16} />返回内容计划</button><div><span className={`content-priority is-${task.priority.toLowerCase()}`}>{task.priority}</span><h2>{task.title}</h2><StatusBadge status={task.status} /></div></div>
     <div className="content-workbench__main"><div className="content-workbench__primary">
-    <div className="content-stepper">{CONTENT_STEPS.map((label, index) => <button key={label} className={`${step === index ? 'is-active' : ''} ${index < step ? 'is-done' : ''}`} onClick={() => setStep(index)}><span>{index < step ? <Check size={13} /> : index + 1}</span><b>{label}</b>{index < CONTENT_STEPS.length - 1 && <ChevronRight size={14} />}</button>)}</div>
+    {isShowcaseTask && <div className="content-showcase-banner"><Sparkles size={15} /><div><b>演示浏览模式</b><span>可连续点击“下一步”查看完整流程；演示跳转不会绕过其他任务的真实门禁。</span></div><em>{step + 1} / {CONTENT_STEPS.length}</em></div>}
+    <div className="content-stepper">{CONTENT_STEPS.map((label, index) => <button key={label} disabled={index > maxReachableStep} title={index > maxReachableStep ? '需先通过前置门禁' : undefined} className={`${step === index ? 'is-active' : ''} ${index < step ? 'is-done' : ''}`} onClick={() => setStep(index)}><span>{index < step ? <Check size={13} /> : index + 1}</span><b>{label}</b>{index < CONTENT_STEPS.length - 1 && <ChevronRight size={14} />}</button>)}</div>
 
     <section className="content-workbench__body">
       {step === 0 && <div className="content-brief-layout"><section className="content-panel content-brief-panel"><div className="content-brief-title"><div><span className="content-eyebrow">CONTENT BRIEF · STEP 1</span><h3>确认任务简报</h3><p className="content-panel__desc">先确认知识检索所需的信息；资料检索会在七项契约完整后启动。</p></div><Button size="sm" disabled={briefMissing > 0} onClick={() => setStep(1)}>{briefMissing ? `还差 ${briefMissing} 项` : '进入渠道设置'}<ChevronRight size={14} /></Button></div>{task.origin && <div className="content-origin-card"><div className="content-origin-card__head"><OriginBadge source={task.origin.source} /><b>{task.origin.sourceLabel}</b></div>{task.origin.evidence && <div className="content-origin-evidence"><span>{task.origin.evidence.currentValue}</span><i>→</i><span>{task.origin.evidence.action}</span></div>}{task.origin.attributionRef && <small>复盘周期 {task.origin.attributionRef.reviewPeriod} · 关联归因分析</small>}</div>}
@@ -292,7 +357,7 @@ export function ContentWorkbench({ task, initialStep, knowledgeRisks, locales, g
           <Button block disabled={!allFieldsFilled} onClick={confirmChannelProfiles}>确认渠道与发布目标，进入资料与素材</Button>
         </div></div>}
 
-      {step === 2 && <div className="content-workbench-grid"><div className="content-panel"><div className="content-panel__head"><div><span className="content-eyebrow">MATERIAL BUDGET</span><h3>一次性物料预算</h3></div><span className={`content-material-count ${budgetReady ? 'is-ready' : ''}`}>{budgetReady ? '全部就绪' : `${budgetMissing.length}/${budget.length} 待补充`}</span></div><p className="content-panel__desc">ResearchAgent 已按内容类型「{TYPE_LABEL[task.type]}」与目标站点制定检索计划；CompletenessAgent 会在生成前独立检查前置条件。每一项可追溯到模板来源，生成过程暴露的新缺口也统一归入此处。</p><div className="content-gate-block"><div className="content-gate-block__head"><div><span className="content-eyebrow">PRE-GENERATION GATE</span><h3>CompletenessAgent · 生成前门禁</h3></div><ReviewVerdictBadge verdict={preGenerationChecks.every((item) => item.pass) ? 'pass' : 'block'} /></div><div className="content-gate-checklist">{preGenerationChecks.map((item) => <span key={item.label} className={item.pass ? 'is-pass' : 'is-block'}>{item.pass ? <Check size={12} /> : <CircleAlert size={12} />}{item.label}</span>)}</div></div><div className="content-material-list">{budget.map((item) => <article key={item.id} className={`is-${item.status} ${item.addedDuringGeneration ? 'is-added' : ''}`}><span className="content-material-state">{item.status === 'ready' ? <Check size={13} /> : item.status === 'pending_auth' ? <ShieldAlert size={13} /> : <CircleAlert size={13} />}</span><div><b>{item.name}</b><small>{item.note}</small></div><MaterialBudgetStatusBadge status={item.status} />{item.status !== 'ready' && <Button size="sm" variant="secondary" onClick={() => markBudgetReady(item.id)}>已补充/已授权</Button>}</article>)}</div><Button block disabled={!budgetReady || termGaps.length > 0} onClick={() => onResolveMaterials(task.id)}>{budgetReady && termGaps.length === 0 ? '完整性门禁通过，进入内容概览生成' : `还有 ${budgetMissing.length + termGaps.length} 项前置条件待处理`}</Button></div><div className="content-panel"><span className="content-eyebrow">KNOWLEDGE REFERENCES</span><h3>知识库调用结果</h3><div className="content-reference-list">{task.knowledge.length ? task.knowledge.map((ref) => <div key={ref.id}><span className={ref.verified ? 'is-verified' : ''}>{ref.verified ? <Check size={12} /> : '!'}</span><p><b>{ref.title}</b><small>{ref.category} · {ref.source}</small></p></div>) : <p className="muted">ResearchAgent 将先定位知识库目录，再调用检索 Tool；无命中时会给出缺少的知识类型与建议位置。</p>}</div>
+      {step === 2 && <div className="content-workbench-grid"><div className="content-panel"><div className="content-panel__head"><div><span className="content-eyebrow">MATERIAL BUDGET</span><h3>一次性物料预算</h3></div><span className={`content-material-count ${budgetReady ? 'is-ready' : ''}`}>{budgetReady ? '全部就绪' : `${budgetMissing.length}/${budget.length} 待补充`}</span></div><p className="content-panel__desc">ResearchAgent 已按内容类型「{TYPE_LABEL[task.type]}」与目标站点制定检索计划；CompletenessAgent 会在生成前独立检查前置条件。每一项可追溯到模板来源，生成过程暴露的新缺口也统一归入此处。</p><div className="content-gate-block"><div className="content-gate-block__head"><div><span className="content-eyebrow">PRE-GENERATION GATE</span><h3>CompletenessAgent · 生成前门禁</h3></div><ReviewVerdictBadge verdict={preGenerationChecks.every((item) => item.pass) ? 'pass' : 'block'} /></div><div className="content-gate-checklist">{preGenerationChecks.map((item) => <span key={item.label} className={item.pass ? 'is-pass' : 'is-block'}>{item.pass ? <Check size={12} /> : <CircleAlert size={12} />}{item.label}</span>)}</div></div><div className="content-material-list">{budget.map((item) => { const prepared = preparedMaterialIds.includes(item.id); return <article key={item.id} className={`is-${item.status} ${item.addedDuringGeneration ? 'is-added' : ''} ${prepared ? 'is-prepared' : ''}`}><span className="content-material-state">{item.status === 'ready' ? <Check size={13} /> : item.status === 'pending_auth' ? <ShieldAlert size={13} /> : <CircleAlert size={13} />}</span><div><b>{item.name}</b><small>{prepared ? '已从知识库返回，等待重新检查' : item.note}</small>{item.knowledgeTarget && <em className="content-material-target">{item.knowledgeTarget.knowledgeBaseType} / {item.knowledgeTarget.primaryCategory} / {item.knowledgeTarget.secondaryCategory}</em>}</div><MaterialBudgetStatusBadge status={item.status} />{item.status !== 'ready' && <div className="content-material-actions"><Button size="sm" variant="secondary" onClick={() => setKnowledgeModalItem(item)}><ExternalLink size={12} />去知识库完善</Button><Button size="sm" disabled={!prepared} onClick={() => markMaterialsChecked([item.id])}><RefreshCw size={12} />重新检查</Button></div>}</article> })}</div>{budgetMissing.length > 0 && <Button block variant="secondary" disabled={preparedMaterialIds.length === 0} onClick={() => markMaterialsChecked(preparedMaterialIds)}><RefreshCw size={14} />重新检查已完善资料</Button>}<Button block disabled={!canRunResearch} onClick={resolveMaterialsAndContinue}>{canRunResearch ? '执行资料检索，通过后进入内容概览生成' : `还有 ${preGenerationChecks.filter((item) => !item.pass && item.label !== '知识来源可验证').length} 项前置条件待处理`}</Button></div><div className="content-panel"><span className="content-eyebrow">KNOWLEDGE REFERENCES</span><h3>知识库调用结果</h3><div className="content-reference-list">{task.knowledge.length ? task.knowledge.map((ref) => <div key={ref.id}><span className={ref.verified ? 'is-verified' : ''}>{ref.verified ? <Check size={12} /> : '!'}</span><p><b>{ref.title}</b><small>{ref.category} · {ref.source}</small></p></div>) : <p className="muted">ResearchAgent 将先定位知识库目录，再调用检索 Tool；无命中时会给出缺少的知识类型与建议位置。</p>}</div>
         {taskKnowledgeRisks.length > 0 && <div className="content-knowledge-risk-panel"><div className="content-panel__head"><div><span className="content-eyebrow">RAG RISK TRACE</span><h3>知识库调用风险</h3></div><span className="content-risk-summary has-risk">{taskKnowledgeRisks.length} 条</span></div><div className="content-knowledge-risk-list">{taskKnowledgeRisks.map((risk) => <article key={risk.id} className={`is-${risk.level}`}><div className="content-knowledge-risk-list__head"><KnowledgeRiskBadge level={risk.level} /><span className={`content-knowledge-risk-status is-${risk.status}`}>{KNOWLEDGE_RISK_STATUS_LABEL[risk.status]}</span></div><b>{risk.issueType}</b><p>{risk.diagnosis}</p><small>{KNOWLEDGE_RISK_SOURCE_LABEL} · {risk.occurredAt}</small></article>)}</div></div>}
       </div><div className="content-panel"><span className="content-eyebrow">TERM & LOCALE</span><h3>术语与多语言</h3>{taskLocales.length > 0 ? <div className={`content-locale-notice ${termGaps.length ? 'is-warning' : 'is-ready'}`}>
           <div className="content-locale-notice__head"><Globe size={16} /><b>本内容将发布到多语言站点</b></div>
@@ -309,7 +374,7 @@ export function ContentWorkbench({ task, initialStep, knowledgeRisks, locales, g
       </div></div>}
 
       {step === 3 && <div className="content-draft-layout"><aside className="content-outline"><span className="content-eyebrow">OUTLINE</span><h3>内容大纲</h3><div className="content-outline-list">{task.outline.map((item, index) => <div key={index} className="content-outline-item"><span>{String(index + 1).padStart(2, '0')}</span><input value={item} placeholder="大纲内容" onChange={(e) => updateOutlineItem(index, e.target.value)} /><div className="content-outline-item__actions"><button title="上移" disabled={index === 0} onClick={() => moveOutlineItem(index, -1)}><ChevronUp size={13} /></button><button title="下移" disabled={index === task.outline.length - 1} onClick={() => moveOutlineItem(index, 1)}><ChevronDown size={13} /></button><button title="删除" onClick={() => removeOutlineItem(index)}><Trash2 size={13} /></button></div></div>)}</div><button className="content-outline-add" onClick={addOutlineItem}><Plus size={13} />新增大纲项</button></aside><div className="content-editor"><div className="content-editor__head"><div><span className="content-eyebrow">CONTENT OVERVIEW</span><h3>内容概览</h3></div><div><Button size="sm" variant="secondary">调整语气</Button><Button size="sm" onClick={() => onRegenerateDraft(task.id)}><Sparkles size={14} />重新生成整组内容</Button></div></div>
-        <div className="content-editor__canvas"><h1>{task.title}</h1>{task.masterDraft ? task.masterDraft.split('\n\n').map((p) => <p key={p}>{p}</p>) : <div className="content-generating-state"><Sparkles size={30} /><b>等待生成内容概览</b><span>将基于已确认大纲、知识资料、渠道字段与对应渠道 Skill，一次生成概览和各渠道内容</span><Button onClick={() => onGenerateDraft(task.id)}>生成内容概览与渠道内容</Button></div>}</div></div>
+        <div className="content-editor__canvas"><h1>{task.title}</h1>{task.masterDraft ? task.masterDraft.split('\n\n').map((p) => <p key={p}>{p}</p>) : <div className="content-generating-state"><Sparkles size={30} /><b>等待生成内容概览</b><span>将基于已确认大纲、知识资料、渠道字段与对应渠道 Skill，一次生成概览和各渠道内容</span><Button disabled={!preGenerationChecks.every((item) => item.pass)} onClick={() => onGenerateDraft(task.id)}>生成内容概览与渠道内容</Button></div>}</div></div>
         <aside className="content-knowledge-sidebar">
           <div className="content-knowledge-sidebar__section"><span className="content-eyebrow">USED KNOWLEDGE</span><h3>已采用知识依据</h3>{verifiedKnowledge.length ? <div className="content-reference-list">{verifiedKnowledge.map((ref) => <div key={ref.id}><span className="is-verified"><Check size={12} /></span><p><b>{ref.title}</b><small>{ref.category} · {ref.source}</small></p></div>)}</div> : <p className="muted">暂无知识库引用。</p>}</div>
           <div className="content-knowledge-sidebar__section">
@@ -335,12 +400,28 @@ export function ContentWorkbench({ task, initialStep, knowledgeRisks, locales, g
 
       {step === 4 && <div className="content-review-grid"><section className="content-panel content-score-panel"><div><span className="content-eyebrow">QUALITY SCORE</span><h3>内容质量 · 有证据的六维评分</h3><p className="content-panel__desc">审查对象包含内容概览及第 4 步生成的所有渠道内容。每个维度同时返回得分、检查依据和可执行修改建议。</p></div><QualityRing score={task.quality.overall} /><div className="content-quality-audit">{qualityAudit.map((item) => { const rate = item.max ? item.value / item.max : 0; return <article key={item.label} className={rate >= .8 ? 'is-good' : rate >= .6 ? 'is-warning' : 'is-danger'}><div><b>{item.label}</b><strong>{item.value}<small>/{item.max}</small></strong></div><i><span style={{ width: `${rate * 100}%` }} /></i><p><em>检查依据</em>{item.evidence}</p>{rate < .8 && <p><em>修改建议</em>{item.suggestion}</p>}</article> })}</div><div className={`content-review-decision ${task.quality.overall >= 80 && verdict === 'pass' ? 'is-pass' : task.quality.overall < 60 || verdict === 'block' ? 'is-block' : 'is-revise'}`}><b>{task.quality.overall >= 80 && verdict === 'pass' ? 'PASS · 可进入渠道预览' : task.quality.overall < 60 || verdict === 'block' ? 'BLOCK · 必须回退处理' : 'REVISE · 修改后人工确认'}</b><span>阈值：80+ 通过；60–79 修改；&lt;60 阻断。专业准确或企业真实过低也单独阻断。</span></div>{task.quality.overall < 80 && <div className="content-quality-hint"><AlertTriangle size={15} /><p>质量尚未达到自动通过标准，建议按上方修改建议返回第 4 步重新生成并重新审查。</p><Button size="sm" variant="secondary" onClick={() => setStep(3)}>返回内容概览重新生成</Button></div>}</section><section className="content-panel"><div className="content-panel__head"><div><span className="content-eyebrow">COMPLIANCE REVIEW</span><h3>九类合规检查</h3><p className="content-panel__desc">事实、品牌、版权、客户隐私、行业、广告、平台、地区语言与 AI 标识独立于质量分执行门禁。</p></div><ReviewVerdictBadge verdict={verdict} /></div><div className="content-compliance-list">{task.compliance.length ? task.compliance.map((issue) => { const action = getComplianceAction(issue.category); return <article key={issue.id} className={`is-${issue.level} ${issue.resolved ? 'is-resolved' : ''}`}><span>{issue.resolved ? <Check size={14} /> : '!'}</span><div><b>{issue.title}</b><p>{issue.detail}</p><small>{issue.category} · {issue.level}</small><div className="content-compliance-list__actions">{issue.resolved ? <button className="content-compliance-list__undo" onClick={() => onToggleComplianceIssue(task.id, issue.id)}>撤销</button> : <><Button size="sm" variant="secondary" onClick={action.onClick}>{action.label}</Button><Button size="sm" onClick={() => onToggleComplianceIssue(task.id, issue.id)}>标记为已处理</Button></>}</div></div></article> }) : <div className="content-empty-success"><FileCheck2 size={28} /><b>未发现合规风险</b><span>可进入渠道内容预览与发布流程</span></div>}</div>{verdict === 'block' || task.quality.overall < 60 ? <Button block disabled>质量或合规门禁未通过，请按问题类型回退处理</Button> : <Button block variant={verdict === 'warning' || task.quality.overall < 80 ? 'secondary' : 'primary'} onClick={() => onIgnoreWarnings(task.id)}>{verdict === 'warning' || task.quality.overall < 80 ? '人工确认修改结论，进入渠道内容预览' : '质量与合规通过，进入渠道内容预览'}</Button>}</section></div>}
 
-      {step === 5 && <div className="content-channel-editor"><div className="content-channel-editor__tabs">{task.channels.map((item) => <button key={item} className={channel === item ? 'is-active' : ''} onClick={() => setChannel(item)}><ChannelBadge channel={item} /></button>)}</div><div className="content-channel-preview"><div className="content-channel-preview__meta"><span style={{ background: CHANNEL_META[channel].color }}>{CHANNEL_META[channel].short}</span><div><b>{CHANNEL_META[channel].label}</b><small>{version?.account ?? '缺少发布账号'}</small></div><em>{version ? '审核通过 · 待确认' : '预览不可用'}</em></div>{version ? <div className="content-channel-preview__result"><h2>{version.title}</h2><div className="content-channel-preview__body">{version.body.split('\n').map((line, index) => line ? <p key={`${line}-${index}`}>{line}</p> : null)}</div><div className="content-preview-placeholder">视觉素材与最终渠道呈现预览</div></div> : <div className="content-generating-state"><CircleAlert size={30} /><b>第 4 步未产出该渠道内容</b><span>请返回内容概览，重新执行整组内容生成。</span><Button onClick={() => setStep(3)}>返回内容概览重新生成</Button></div>}</div><div className="content-preview-actions"><Button variant="secondary" onClick={() => setStep(3)}>预览有问题，返回重新生成</Button>{allChannelsVersioned && task.status === 'channel_adaptation' && <Button onClick={() => onSubmitApproval(task.id)}><Send size={15} />预览无误，提交审批</Button>}</div></div>}
+      {step === 5 && <div className="content-channel-editor"><div className="content-channel-editor__tabs">{task.channels.map((item) => <button key={item} className={`${channel === item ? 'is-active' : ''} ${confirmedChannels.includes(item) ? 'is-confirmed' : ''}`} onClick={() => setChannel(item)}><ChannelBadge channel={item} />{confirmedChannels.includes(item) && <Check size={12} />}</button>)}</div><div className="content-channel-preview"><div className="content-channel-preview__meta"><span style={{ background: CHANNEL_META[channel].color }}>{CHANNEL_META[channel].short}</span><div><b>{CHANNEL_META[channel].label}</b><small>{version?.account ?? '缺少发布账号'}</small></div><em>{version ? confirmedChannels.includes(channel) ? '已人工确认' : '审核通过 · 待确认' : '预览不可用'}</em></div>{version ? <div className="content-channel-preview__result"><h2>{version.title}</h2><div className="content-channel-preview__body">{version.body.split('\n').map((line, index) => line ? <p key={`${line}-${index}`}>{line}</p> : null)}</div><div className="content-preview-placeholder">视觉素材与最终渠道呈现预览</div></div> : <div className="content-generating-state"><CircleAlert size={30} /><b>第 4 步未产出该渠道内容</b><span>请返回内容概览，重新执行整组内容生成。</span><Button onClick={() => setStep(3)}>返回内容概览重新生成</Button></div>}</div><div className="content-preview-actions"><Button variant="secondary" onClick={() => setStep(3)}>预览有问题，返回重新生成</Button>{version && !confirmedChannels.includes(channel) && <Button onClick={() => onConfirmPreview(task.id, channel)}><Check size={15} />确认当前渠道</Button>}{allChannelsVersioned && allPreviewsConfirmed && task.status === 'channel_adaptation' && <Button onClick={() => onSubmitApproval(task.id)}><Send size={15} />全部确认，提交审批</Button>}</div></div>}
 
       {step === 6 && <div className="content-approval-layout"><section className="content-panel"><span className="content-eyebrow">APPROVAL</span><h3>审批状态</h3><div className="content-approval-card"><span className={blockers.length ? 'is-blocked' : 'is-ready'}>{blockers.length ? '!' : <Check size={18} />}</span><div><b>{blockers.length ? '尚未满足发布条件' : '内容已满足审批条件'}</b><p>{blockers.length ? '请先处理高风险合规问题。' : '内容概览、渠道版本和合规检查均已完成。'}</p>{blockers.length > 0 && <Button size="sm" variant="secondary" onClick={() => setStep(4)}>去处理合规问题</Button>}</div></div><dl className="content-detail-list"><div><dt>审批人</dt><dd>张敏 · 市场运营</dd></div><div><dt>发布模式</dt><dd>人工审核</dd></div><div><dt>发布渠道</dt><dd>{task.channels.length} 个</dd></div></dl></section><section className="content-panel"><span className="content-eyebrow">SCHEDULE</span><h3>发布配置</h3><label className="content-form-field"><span>发布时间</span><input type="datetime-local" value={scheduledAt} onChange={(e) => setScheduledAt(e.target.value)} /></label><label className="content-form-field"><span>失败策略</span><select value={failStrategy} onChange={(e) => setFailStrategy(e.target.value as 'continue' | 'stop')}><option value="continue">其他渠道继续发布</option><option value="stop">任一失败则停止整组</option></select></label><Button block disabled={blockers.length > 0} onClick={() => onApprove(task.id, scheduledAt)}><Send size={15} />审批通过并加入排期</Button></section></div>}
+      {isShowcaseTask && <div className="content-showcase-navigation"><div><span>演示步骤</span><b>{step + 1}. {CONTENT_STEPS[step]}</b></div><div><Button variant="secondary" disabled={step === 0} onClick={() => setStep((current) => Math.max(0, current - 1))}><ArrowLeft size={14} />上一步</Button><Button onClick={() => step < CONTENT_STEPS.length - 1 ? setStep((current) => current + 1) : onBack()}>{step < CONTENT_STEPS.length - 1 ? <>下一步<ChevronRight size={14} /></> : <>完成演示<Check size={14} /></>}</Button></div></div>}
     </section>
     </div>
-    <ContentAssistantPanel step={step} message={assistantMessage} quickActions={assistantQuickActions} agentName={agentMeta.name} agentRole={agentMeta.role} gateState={agentMeta.gate} />
+    <ContentAssistantPanel step={step} message={assistantMessage} quickActions={assistantQuickActions} agentName={agentMeta.name} agentRole={agentMeta.role} gateState={agentMeta.gate} runs={agentRuns} artifacts={agentArtifacts} blockers={consoleBlockers} />
     </div>
+    {knowledgeModalItem && <div className="content-knowledge-modal-root" role="dialog" aria-modal="true" aria-labelledby="content-knowledge-modal-title">
+      <button className="content-knowledge-modal-mask" aria-label="关闭弹窗" onClick={() => setKnowledgeModalItem(null)} />
+      <section className="content-knowledge-modal">
+        <div className="content-knowledge-modal__head"><div><span className="content-eyebrow">KNOWLEDGE DESTINATION</span><h3 id="content-knowledge-modal-title">前往知识库完善资料</h3></div><button aria-label="关闭" onClick={() => setKnowledgeModalItem(null)}>×</button></div>
+        <div className="content-knowledge-modal__material"><Library size={18} /><div><b>{knowledgeModalItem.name}</b><small>请在下方指定位置补充可验证、已授权的资料</small></div></div>
+        {knowledgeModalItem.knowledgeTarget && <div className="content-knowledge-modal__route">
+          <span><small>知识库</small><b>{knowledgeModalItem.knowledgeTarget.directoryName}</b></span><ChevronRight size={15} />
+          <span><small>资料类型</small><b>{knowledgeModalItem.knowledgeTarget.knowledgeBaseType}</b></span><ChevronRight size={15} />
+          <span><small>分类</small><b>{knowledgeModalItem.knowledgeTarget.primaryCategory}{knowledgeModalItem.knowledgeTarget.secondaryCategory ? ` / ${knowledgeModalItem.knowledgeTarget.secondaryCategory}` : ''}</b></span>
+        </div>}
+        <div className="content-knowledge-modal__query"><span>建议检索 / 新建标题</span><code>{knowledgeModalItem.knowledgeTarget?.query ?? knowledgeModalItem.name}</code></div>
+        <p className="content-knowledge-modal__hint">当前原型不实现知识库页面。点击“完成并返回”仅模拟资料已在指定位置完善；返回后仍需点击“重新检查”，检查通过后才会解除生成门禁。</p>
+        <div className="content-knowledge-modal__foot"><Button variant="secondary" onClick={() => setKnowledgeModalItem(null)}>取消</Button><Button onClick={completeKnowledgeModal}>完成并返回</Button></div>
+      </section>
+    </div>}
   </div>
 }

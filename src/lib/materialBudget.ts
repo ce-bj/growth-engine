@@ -60,6 +60,37 @@ const TEMPLATES: Record<ContentType, TemplateItem[]> = {
   ],
 }
 
+const TARGET_CATEGORY: Record<string, { knowledgeBaseType: string; primaryCategory: string; secondaryCategory?: string }> = {
+  spec: { knowledgeBaseType: '企业业务知识库', primaryCategory: '产品资料', secondaryCategory: '规格与型号' },
+  scene: { knowledgeBaseType: '企业业务知识库', primaryCategory: '产品资料', secondaryCategory: '应用场景' },
+  limit: { knowledgeBaseType: '企业业务知识库', primaryCategory: '产品资料', secondaryCategory: '适用边界' },
+  diff: { knowledgeBaseType: '企业业务知识库', primaryCategory: '产品资料', secondaryCategory: '型号对比' },
+  pain: { knowledgeBaseType: '行业知识库', primaryCategory: '行业研究', secondaryCategory: '痛点与趋势' },
+  fit: { knowledgeBaseType: '企业业务知识库', primaryCategory: '服务与方案', secondaryCategory: '适用边界' },
+  roi: { knowledgeBaseType: '企业业务知识库', primaryCategory: '服务与方案', secondaryCategory: '投资回报' },
+  step: { knowledgeBaseType: '企业业务知识库', primaryCategory: '工艺资料', secondaryCategory: '作业流程' },
+  param: { knowledgeBaseType: '企业业务知识库', primaryCategory: '产品资料', secondaryCategory: '参数与规格' },
+  env: { knowledgeBaseType: '企业业务知识库', primaryCategory: '工艺资料', secondaryCategory: '现场条件' },
+  auth: { knowledgeBaseType: '企业业务知识库', primaryCategory: '客户案例', secondaryCategory: '公开授权' },
+  before_after: { knowledgeBaseType: '企业业务知识库', primaryCategory: '客户案例', secondaryCategory: '实施结果' },
+  quote: { knowledgeBaseType: '企业业务知识库', primaryCategory: '客户案例', secondaryCategory: '客户证言' },
+  photo: { knowledgeBaseType: '企业业务知识库', primaryCategory: '客户案例', secondaryCategory: '图片授权' },
+  benchmark: { knowledgeBaseType: '行业知识库', primaryCategory: '行业研究', secondaryCategory: '基准数据' },
+  term: { knowledgeBaseType: '企业公共知识库', primaryCategory: '术语规范', secondaryCategory: '标准术语' },
+  checklist: { knowledgeBaseType: '企业业务知识库', primaryCategory: '内容素材', secondaryCategory: '检查清单' },
+  ticket: { knowledgeBaseType: '企业业务知识库', primaryCategory: '客户服务', secondaryCategory: '客服工单' },
+  clause: { knowledgeBaseType: '企业业务知识库', primaryCategory: '服务与方案', secondaryCategory: '条款与维护' },
+  report: { knowledgeBaseType: '行业知识库', primaryCategory: '行业研究', secondaryCategory: '报告与白皮书' },
+  data_auth: { knowledgeBaseType: '企业公共知识库', primaryCategory: '授权与合规', secondaryCategory: '数据引用授权' },
+  rag: { knowledgeBaseType: '企业业务知识库', primaryCategory: '待补知识', secondaryCategory: '生成期缺口' },
+}
+
+export function resolveMaterialKnowledgeTarget(type: ContentType, theme: string, templateKey: string, name: string): NonNullable<MaterialBudgetItem['knowledgeTarget']> {
+  const category = TARGET_CATEGORY[templateKey] ?? { knowledgeBaseType: '企业业务知识库', primaryCategory: '待补知识', secondaryCategory: '其他资料' }
+  const directoryId = category.knowledgeBaseType === '行业知识库' ? 'n3-industry-authorized' : category.knowledgeBaseType === '企业公共知识库' ? 'n3-company-public' : 'n3-business-content'
+  return { directoryId, directoryName: category.knowledgeBaseType === '行业知识库' ? '内容智能体 · 已授权行业目录' : '内容智能体 · 企业知识目录', ...category, query: `${theme} ${name}` }
+}
+
 /**
  * 推导物料预算：对模板每一项，用「主题 + 关键词」构造 query 检索知识库，
  * 命中已验证 → ready；命中未授权 → pending_auth；未命中 → missing。
@@ -97,6 +128,7 @@ export function deriveMaterialBudget(type: ContentType, theme: string, seed: Mat
       source,
       note,
       addedDuringGeneration: false,
+      knowledgeTarget: resolveMaterialKnowledgeTarget(type, theme, tpl.templateKey, tpl.name),
     }
   })
 
