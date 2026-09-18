@@ -1,0 +1,172 @@
+import { useMemo, useState } from "react";
+import Funnel, { FunnelLegend } from "./Funnel.jsx";
+import DrillPanel from "./DrillPanel.jsx";
+import VisitorModule from "./VisitorModule.jsx";
+import {
+  CHANNELS,
+  SITE,
+  STUCK_LABEL,
+  bottleneck,
+  fmtInt,
+  getLeadCount,
+  getStages,
+  pct,
+  rate,
+  stateOfThrough,
+  through,
+} from "./data.js";
+
+const MODULES = [
+  { id: "funnel", label: "漏斗体检" },
+  { id: "path", label: "访客路径" },
+];
+
+export default function App({ variant = "full" }) {
+  const [mod, setMod] = useState("funnel");
+  const [channel, setChannel] = useState("site");
+  const [lossId, setLossId] = useState("l1");
+  const [visitorId, setVisitorId] = useState(null);
+  const hideChrome = variant !== "full";
+  const showPath = variant === "path" || (variant === "full" && mod === "path");
+
+  const stages = useMemo(() => getStages(channel), [channel]);
+  const gates = useMemo(() => through(stages), [stages]);
+  const leads = getLeadCount(channel);
+  const viewRate = rate(stages[1].cur, stages[0].cur);
+  const viewPrev = rate(stages[1].prev, stages[0].prev);
+  const l1 = gates[0];
+  const l1State = stateOfThrough(l1.pass, l1.passPrev);
+  const stuck = bottleneck(gates);
+  const gate = gates.find((g) => g.lossId === lossId);
+
+  function switchChannel(id) {
+    setChannel(id);
+    setVisitorId(null);
+  }
+
+  function selectLoss(id) {
+    setLossId(id);
+  }
+
+  return (
+    <div className={hideChrome ? "page is-embed" : "page"}>
+      {hideChrome ? null : (
+      <>
+      <header className="mast">
+        <div>
+          <p className="eyebrow">AI 访客行为分析 · 只读评审原型</p>
+          <h1>访客行为分析</h1>
+          <p className="site">
+            {SITE.name}
+            <span> · {SITE.origin}</span>
+          </p>
+        </div>
+        <div className="mast-meta">
+          <p>{SITE.period}</p>
+          <p>{SITE.baseline}</p>
+          <p className="watermark">样例数，非现网</p>
+        </div>
+      </header>
+
+      <nav className="mod-tabs" role="tablist" aria-label="分析模块">
+        {MODULES.map((m) => (
+          <button
+            key={m.id}
+            type="button"
+            role="tab"
+            aria-selected={mod === m.id}
+            className={mod === m.id ? "is-on" : ""}
+            onClick={() => setMod(m.id)}
+          >
+            {m.label}
+          </button>
+        ))}
+      </nav>
+      </>
+      )}
+
+      {showPath ? (
+        <VisitorModule
+          embedded={hideChrome}
+          channelId={channel}
+          onChannel={switchChannel}
+          visitorId={visitorId}
+          onPick={setVisitorId}
+        />
+      ) : (
+        <>
+          {hideChrome ? null : (
+          <section
+            className={`headline${channel === "site" ? "" : " is-channel"}`}
+            aria-label="本期结论"
+          >
+            <div>
+              <span className="hl-k">询盘条数</span>
+              <strong className="num">{fmtInt(leads.cur)}</strong>
+              <span className="hl-sub">
+                {leads.cur === leads.prev
+                  ? "与上期持平"
+                  : `上期 ${fmtInt(leads.prev)} · ${leads.cur < leads.prev ? "少" : "多"} ${fmtInt(Math.abs(leads.prev - leads.cur))} 条`}
+              </span>
+            </div>
+            <div>
+              <span className="hl-k">有效浏览率</span>
+              <strong className="num">{pct(viewRate)}</strong>
+              <span className="hl-sub">
+                上期 {pct(viewPrev)} · {l1State}
+              </span>
+            </div>
+            {channel === "site" ? (
+              <div>
+                <span className="hl-k">卡在哪</span>
+                <strong>{stuck ? STUCK_LABEL[stuck.lossId] : "没有明显卡层"}</strong>
+                <span className="hl-sub">
+                  {stuck
+                    ? `流失点 ${stuck.loss.seq} · 掉 ${fmtInt(stuck.dropped)} 人`
+                    : "三层通过率相对上期都持平"}
+                </span>
+              </div>
+            ) : null}
+            <div>
+              <span className="hl-k">漏斗人数</span>
+              <strong className="num">{fmtInt(stages[3].cur)}</strong>
+              <span className="hl-sub">留资访客 · 条数见左，不拿来当层高</span>
+            </div>
+          </section>
+          )}
+
+          <div className="channel-bar" role="tablist" aria-label="漏斗视角">
+            {CHANNELS.map((c) => (
+              <button
+                key={c.id}
+                type="button"
+                role="tab"
+                aria-selected={channel === c.id}
+                className={channel === c.id ? "is-on" : ""}
+                onClick={() => switchChannel(c.id)}
+              >
+                {c.label}
+              </button>
+            ))}
+          </div>
+
+          <FunnelLegend />
+
+          <div className="workspace">
+            <Funnel
+              stages={stages}
+              gates={gates}
+              selectedLoss={lossId}
+              onSelectLoss={selectLoss}
+            />
+            {lossId ? (
+              <DrillPanel lossId={lossId} channelId={channel} gate={gate} />
+            ) : (
+              <p className="hint drill-placeholder">点左侧流失点，右侧看这一层拆到哪些页。</p>
+            )}
+          </div>
+        </>
+      )}
+    </div>
+  );
+}

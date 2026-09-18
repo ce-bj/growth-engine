@@ -9,6 +9,7 @@
     "preview": "vite preview --port 4176"
   },
   "dependencies": {
+    "@ant-design/icons": "^6.3.4",
     "antd": "^6.6.4",
     "lucide-react": "^0.525.0",
     "react": "^19.1.0",
