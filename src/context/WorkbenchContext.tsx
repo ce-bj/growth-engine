@@ -99,9 +99,6 @@ interface WorkbenchApi {
   openHealthReport: () => void
   openWeeklyPreview: (id: string | null) => void
   setSiteId: (id: string) => void
-  pendingSiteId: string | null
-  confirmSiteSwitch: () => void
-  cancelSiteSwitch: () => void
   setFunnelPeriod: (p: FunnelPeriod) => void
   setTrendDays: (d: 7 | 30) => void
   setShowP2: (v: boolean) => void
@@ -178,14 +175,13 @@ let toastSeq = 0
 export function WorkbenchProvider({ children }: { children: ReactNode }) {
   const [view, setView] = useState<ViewId>('dashboard')
   const [hasDetected, setHasDetected] = useState(true)
-  const [showGuide, setShowGuide] = useState(true) // TODO: 改回 () => !readGuideDismissed()
+  const [showGuide, setShowGuide] = useState(false)
   const [loadingDashboard, setLoadingDashboard] = useState(false)
   const [scanning, setScanning] = useState(false)
   const [scanCompleted, setScanCompleted] = useState(0)
   const [siteId, setSiteIdState] = useState(
     mockSitesData.find((s) => s.isPrimary)?.id ?? mockSitesData[0].id,
   )
-  const [pendingSiteId, setPendingSiteId] = useState<string | null>(null)
   const [funnelPeriod, setFunnelPeriod] = useState<FunnelPeriod>('week')
   const [health, setHealth] = useState<HealthSnapshot>(createInitialHealth)
   const [issues, setIssues] = useState<IssueItem[]>(mockIssuesData)
@@ -521,8 +517,8 @@ export function WorkbenchProvider({ children }: { children: ReactNode }) {
             },
             ...prev,
           ])
-          setView('report')
-          pushToast('success', '检测完成，报告已生成')
+          setView('dashboard')
+          pushToast('success', '检测完成，已返回智能体概览')
         }, 400)
       }
     }, 380)
@@ -742,21 +738,8 @@ export function WorkbenchProvider({ children }: { children: ReactNode }) {
     }, 1200)
   }, [pushToast])
 
-  // 切换站点弹窗逻辑
   const setSiteId = useCallback((id: string) => {
-    setPendingSiteId(id)
-  }, [])
-
-  const confirmSiteSwitch = useCallback(() => {
-    if (!pendingSiteId) return
-    setSiteIdState(pendingSiteId)
-    setPendingSiteId(null)
-    setHasDetected(false)
-    startDetect()
-  }, [pendingSiteId, startDetect])
-
-  const cancelSiteSwitch = useCallback(() => {
-    setPendingSiteId(null)
+    setSiteIdState(id)
   }, [])
 
   const openHistoryReport = useCallback(
@@ -1246,9 +1229,6 @@ export function WorkbenchProvider({ children }: { children: ReactNode }) {
       openHealthReport,
       openWeeklyPreview,
       setSiteId,
-      pendingSiteId,
-      confirmSiteSwitch,
-      cancelSiteSwitch,
       setFunnelPeriod,
       setTrendDays,
       setShowP2,

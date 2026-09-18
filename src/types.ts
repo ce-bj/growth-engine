@@ -38,12 +38,14 @@ export const DIMENSION_META: Array<{
 /** 侧栏可进入的业务页（scanning / fix 为覆盖层，不占导航） */
 export type ViewId =
   | 'dashboard'
+  | 'visitor'
+  | 'marketing'
+  | 'settings'
+  | 'scanning'
   | 'report'
   | 'history'
   | 'tasks'
   | 'weekly'
-  | 'settings'
-  | 'scanning'
   | 'content'
   | 'leads'
 

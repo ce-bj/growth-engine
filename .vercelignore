@@ -1,0 +1,7 @@
+与本项目原型代码无关
+.git
+node_modules
+dist
+*.local
+.env
+.env.*

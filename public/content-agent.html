@@ -1,0 +1,826 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>AI内容运营智能体 · 数字门户控制台</title>
+<style>
+:root{
+  --brand-600:#2563eb; --brand-500:#3b82f6; --brand-400:#60a5fa; --brand-50:#eff6ff;
+  --ai-1:#6366f1; --ai-2:#8b5cf6; --ai-3:#06b6d4;
+  --ai-grad:linear-gradient(135deg,#6366f1 0%,#8b5cf6 50%,#06b6d4 100%);
+  --bg:#f5f7fb; --panel:#ffffff; --panel-2:#fbfcfe;
+  --line:#e7ebf3; --line-2:#eef2f8;
+  --txt:#0f172a; --txt-2:#475569; --txt-3:#94a3b8;
+  --ok:#10b981; --ok-bg:#ecfdf5;
+  --warn:#f59e0b; --warn-bg:#fffbeb;
+  --danger:#ef4444; --danger-bg:#fef2f2;
+  --info:#3b82f6;
+  --sh-sm:0 1px 2px rgba(15,23,42,.05);
+  --sh-md:0 6px 18px -6px rgba(15,23,42,.12);
+  --sh-lg:0 18px 40px -16px rgba(37,99,235,.22);
+  --sh-ai:0 10px 30px -10px rgba(99,102,241,.45);
+  --r-sm:8px; --r-md:12px; --r-lg:16px; --r-xl:22px;
+  --ease:cubic-bezier(.4,0,.2,1);
+  --font:'Inter','PingFang SC','Microsoft YaHei',system-ui,sans-serif;
+  --mono:'JetBrains Mono','SFMono-Regular',Consolas,monospace;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{font-family:var(--font);background:var(--bg);color:var(--txt);font-size:14px;line-height:1.6;-webkit-font-smoothing:antialiased;overflow:hidden}
+button{font-family:inherit;cursor:pointer;border:none;background:none}
+::-webkit-scrollbar{width:8px;height:8px}
+::-webkit-scrollbar-thumb{background:#cbd5e1;border-radius:8px}
+::-webkit-scrollbar-track{background:transparent}
+
+/* ===== 外壳 ===== */
+.shell{display:flex;height:100vh}
+.sidenav{width:210px;flex:0 0 210px;background:#0f1729;color:#cbd5e1;display:flex;flex-direction:column;padding:18px 12px}
+.sidenav .logo{display:flex;align-items:center;gap:9px;color:#fff;font-weight:700;font-size:15px;padding:4px 8px 16px}
+.sidenav .logo .d{width:26px;height:26px;border-radius:8px;background:linear-gradient(135deg,#3b82f6,#8b5cf6);display:grid;place-items:center;font-size:14px}
+.navgroup{font-size:11px;letter-spacing:.08em;color:#64748b;padding:14px 10px 6px}
+.navitem{display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:9px;color:#cbd5e1;font-size:13.5px;margin-bottom:2px;transition:.18s}
+.navitem:hover{background:rgba(255,255,255,.06);color:#fff}
+.navitem.active{background:linear-gradient(90deg,rgba(99,102,241,.28),rgba(99,102,241,.05));color:#fff;box-shadow:inset 2px 0 0 var(--ai-1)}
+.navitem .ic{width:18px;text-align:center;opacity:.85}
+.navitem.badge::after{content:attr(data-badge);margin-left:auto;background:var(--ai-2);color:#fff;font-size:11px;font-weight:700;padding:1px 7px;border-radius:9px}
+
+.main{flex:1;display:flex;flex-direction:column;min-width:0}
+.topbar{height:58px;flex:0 0 58px;background:var(--panel);border-bottom:1px solid var(--line);display:flex;align-items:center;padding:0 22px;gap:14px}
+.crumbs{font-size:13px;color:var(--txt-3)}
+.crumbs b{color:var(--txt-2)}
+.crumbs .ai{color:var(--ai-1);font-weight:600}
+.topbar .sp{flex:1}
+.langs{display:flex;gap:4px;background:#f1f5f9;border-radius:9px;padding:3px}
+.langs span{padding:4px 9px;border-radius:7px;font-size:12px;color:var(--txt-2);cursor:pointer}
+.langs span.on{background:#fff;color:var(--brand-600);font-weight:600;box-shadow:var(--sh-sm)}
+.agent-switch{display:flex;align-items:center;gap:9px;background:linear-gradient(135deg,rgba(99,102,241,.10),rgba(6,182,212,.08));border:1px solid rgba(99,102,241,.25);padding:6px 12px;border-radius:30px}
+.agent-switch .dot{width:9px;height:9px;border-radius:50%;background:var(--ok);box-shadow:0 0 0 4px rgba(16,185,129,.18);animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{box-shadow:0 0 0 4px rgba(16,185,129,.18)}50%{box-shadow:0 0 0 7px rgba(16,185,129,.04)}}
+.agent-switch .lab{font-size:12.5px;color:var(--txt-2);font-weight:600}
+.toggle{width:42px;height:23px;border-radius:20px;background:var(--ai-grad);position:relative;transition:.25s;flex:0 0 auto}
+.toggle::after{content:"";position:absolute;top:2.5px;left:21px;width:18px;height:18px;border-radius:50%;background:#fff;box-shadow:var(--sh-sm);transition:.25s}
+.toggle.off{background:#cbd5e1}
+.toggle.off::after{left:3px}
+
+/* ===== 智能体子导航 ===== */
+.subnav{display:flex;gap:4px;padding:14px 30px 0;background:var(--bg)}
+.subnav .tab{padding:9px 16px;font-size:13.5px;font-weight:600;color:var(--txt-2);border-radius:10px 10px 0 0;position:relative;cursor:pointer;transition:.18s}
+.subnav .tab:hover{color:var(--txt)}
+.subnav .tab.on{color:var(--ai-1);background:var(--panel)}
+.subnav .tab.on::after{content:"";position:absolute;left:16px;right:16px;bottom:-1px;height:2px;background:var(--ai-1);border-radius:2px}
+.subnav .tab .bd{background:var(--warn);color:#fff;font-size:10px;padding:0 6px;border-radius:8px;margin-left:6px;vertical-align:middle}
+
+.content{flex:1;overflow-y:auto;padding:0 30px 40px;background:var(--bg)}
+.view{display:none;max-width:1120px;margin:0 auto;padding-top:22px;animation:fade .35s var(--ease)}
+.view.on{display:block}
+@keyframes fade{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+.sheet{background:transparent}
+
+/* ===== 今天 ===== */
+.voice{display:flex;align-items:flex-start;gap:14px;background:linear-gradient(135deg,rgba(99,102,241,.07),rgba(6,182,212,.05));border:1px solid rgba(99,102,241,.18);border-radius:var(--r-lg);padding:18px 20px;margin-bottom:22px;position:relative;overflow:hidden;transition:transform .2s}
+.voice::before{content:"";position:absolute;right:-40px;top:-40px;width:160px;height:160px;background:radial-gradient(circle,rgba(99,102,241,.12),transparent 70%)}
+.voice .av{width:44px;height:44px;border-radius:13px;background:var(--ai-grad);display:grid;place-items:center;color:#fff;font-size:20px;flex:0 0 auto;box-shadow:var(--sh-ai)}
+.voice .bubble{flex:1;min-width:0}
+.voice .who{font-size:12px;color:var(--ai-1);font-weight:700;letter-spacing:.03em;margin-bottom:3px}
+.voice .msg{font-size:15px;color:var(--txt);font-weight:500}
+.voice .msg b{color:var(--ai-1)}
+
+.kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:26px}
+.kpi{background:var(--panel);border:1px solid var(--line);border-radius:var(--r-lg);padding:18px 20px;box-shadow:var(--sh-sm);transition:.2s}
+.kpi:hover{box-shadow:var(--sh-md);transform:translateY(-2px)}
+.kpi .n{font-size:30px;font-weight:700;font-family:var(--mono);line-height:1;letter-spacing:-.02em}
+.kpi .n.warn{color:var(--warn)} .kpi .n.ok{color:var(--ok)} .kpi .n.ai{color:var(--ai-1)}
+.kpi .l{font-size:12.5px;color:var(--txt-2);margin-top:8px}
+.kpi .s{font-size:11.5px;color:var(--txt-3);margin-top:3px}
+
+.section-h{display:flex;align-items:center;gap:10px;margin:4px 0 14px}
+.section-h .t{font-size:15px;font-weight:700}
+.section-h .cnt{background:var(--warn-bg);color:var(--warn);font-size:12px;font-weight:700;padding:2px 9px;border-radius:9px}
+.section-h .hint{font-size:12px;color:var(--txt-3);margin-left:auto}
+.review{display:flex;flex-direction:column;gap:12px}
+.rv{display:flex;align-items:center;gap:14px;background:var(--panel);border:1px solid var(--line);border-left:4px solid var(--warn);border-radius:var(--r-md);padding:14px 18px;box-shadow:var(--sh-sm);transition:.2s}
+.rv:hover{box-shadow:var(--sh-md)}
+.rv .meta{flex:1;min-width:0}
+.rv .ti{font-size:14.5px;font-weight:600}
+.rv .sub{font-size:12px;color:var(--txt-2);margin-top:3px}
+.rv .score{font-family:var(--mono);font-weight:700;color:var(--ok);font-size:15px;background:var(--ok-bg);padding:3px 10px;border-radius:8px;white-space:nowrap}
+.rv .acts{display:flex;gap:8px;flex:0 0 auto}
+.btn{border-radius:10px;padding:9px 15px;font-size:13px;font-weight:600;transition:.18s}
+.btn.ghost{background:#f1f5f9;color:var(--txt-2)} .btn.ghost:hover{background:#e8edf5;color:var(--txt)}
+.btn.approve{background:var(--ai-grad);color:#fff;box-shadow:var(--sh-ai)} .btn.approve:hover{transform:translateY(-1px)}
+.btn.reject{background:var(--danger-bg);color:var(--danger)} .btn.reject:hover{background:#fee2e2}
+.btn.line{background:#fff;border:1px solid var(--line);color:var(--txt-2)} .btn.line:hover{border-color:var(--brand-400);color:var(--brand-600)}
+
+.collapse{margin-top:28px;border:1px solid var(--line);border-radius:var(--r-md);background:var(--panel);overflow:hidden}
+.collapse > summary{list-style:none;cursor:pointer;padding:14px 18px;display:flex;align-items:center;gap:10px;font-size:13.5px;font-weight:600;color:var(--txt-2)}
+.collapse > summary::-webkit-details-marker{display:none}
+.collapse > summary .ar{margin-left:auto;color:var(--txt-3);transition:.2s}
+.collapse[open] > summary .ar{transform:rotate(90deg)}
+.tl{padding:4px 18px 16px}
+.tl .row{display:flex;gap:12px;padding:9px 0;border-bottom:1px dashed var(--line-2)}
+.tl .row:last-child{border-bottom:none}
+.tl .tk{width:8px;height:8px;border-radius:50%;background:var(--ai-1);margin-top:7px;flex:0 0 auto}
+.tl .tk.ok{background:var(--ok)} .tl .tk.ai{background:var(--ai-3)}
+.tl .tx{font-size:13px;color:var(--txt-2)}
+.tl .tx b{color:var(--txt)}
+.tl .tm{font-size:11px;color:var(--txt-3);font-family:var(--mono);margin-top:2px}
+.foot-hint{margin-top:22px;text-align:center;font-size:12px;color:var(--txt-3)}
+
+/* ===== 内容 ===== */
+.subbar{font-size:13px;color:var(--txt-2);margin-bottom:16px}
+.clist{display:grid;grid-template-columns:repeat(2,1fr);gap:14px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:var(--r-md);padding:16px 18px;box-shadow:var(--sh-sm);transition:.2s}
+.card:hover{box-shadow:var(--sh-md);transform:translateY(-2px);border-color:rgba(99,102,241,.35)}
+.card .top{display:flex;align-items:center;gap:8px;margin-bottom:6px}
+.card .st{font-size:11px;font-weight:700;padding:2px 8px;border-radius:7px}
+.st.pub{background:var(--ok-bg);color:var(--ok)} .st.rev{background:var(--warn-bg);color:var(--warn)}
+.st.auto{background:var(--ai-grad);color:#fff} .st.run{background:#eef2ff;color:var(--brand-600)}
+.card .ti{font-size:14.5px;font-weight:600;line-height:1.4}
+.card .desc{font-size:12.5px;color:var(--txt-2);margin-top:7px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.card .ft{display:flex;align-items:center;gap:14px;margin-top:11px;font-size:12px;color:var(--txt-3);border-top:1px solid var(--line-2);padding-top:9px}
+.card .ft b{color:var(--txt-2);font-family:var(--mono)}
+.card .acts2{display:flex;gap:8px;margin-top:12px}
+
+/* ===== 任务（日历） ===== */
+.plan-intro{font-size:13px;color:var(--txt-2);margin-bottom:14px}
+.plan-intro b{color:var(--ai-1)}
+.plan-head{display:flex;align-items:center;gap:12px;margin-bottom:6px}
+.plan-head .h1{font-size:18px;font-weight:700}
+.plan-head .h1 small{font-size:12.5px;font-weight:400;color:var(--txt-3);margin-left:8px}
+.btn-new{margin-left:auto;background:var(--ai-grad);color:#fff;font-weight:600;padding:10px 16px;border-radius:11px;box-shadow:var(--sh-ai);font-size:13px;transition:.18s}
+.btn-new:hover{transform:translateY(-1px)}
+.chip-task.man{background:#dcfce7;color:#16a34a}
+.plan-bar{display:flex;align-items:center;gap:12px;margin-bottom:14px;flex-wrap:wrap}
+.seg{display:flex;background:#f1f5f9;border-radius:10px;padding:3px}
+.seg span{padding:6px 13px;border-radius:8px;font-size:12.5px;color:var(--txt-2);cursor:pointer;transition:.15s}
+.seg span.on{background:#fff;color:var(--ai-1);font-weight:600;box-shadow:var(--sh-sm)}
+.legend{display:flex;gap:14px;font-size:12px;color:var(--txt-2);margin-left:auto}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:5px;vertical-align:middle}
+.week{display:grid;grid-template-columns:repeat(7,1fr);gap:10px}
+.day{background:var(--panel);border:1px solid var(--line);border-radius:var(--r-md);padding:10px;min-height:190px;display:flex;flex-direction:column}
+.day.today{border-color:var(--ai-1);box-shadow:var(--sh-ai)}
+.day .dh{font-size:12px;color:var(--txt-2);font-weight:700;margin-bottom:8px;display:flex;justify-content:space-between;align-items:center}
+.day .dh .dt{font-family:var(--mono);font-size:11px;color:var(--txt-3);font-weight:400}
+.day.today .dh .dname{color:var(--ai-1)}
+.chip-task{padding:6px 8px;border-radius:8px;font-size:11.5px;margin-bottom:6px;line-height:1.35;transition:.15s}
+.chip-task.auto{background:#eef2ff;color:var(--brand-600)}
+.chip-task.sch{background:#f3e8ff;color:#8b5cf6}
+.chip-task.rev{background:var(--warn-bg);color:var(--warn)}
+.chip-task .nt{display:block;font-size:10.5px;opacity:.8;margin-top:2px}
+.plan-foot{margin-top:16px;font-size:12px;color:var(--txt-3);background:var(--panel);border:1px dashed var(--line);border-radius:var(--r-md);padding:13px 16px}
+.plan-foot b{color:var(--txt-2)}
+
+/* ===== 设置（政策级） ===== */
+.setup{display:flex;flex-direction:column;gap:18px;max-width:780px;margin:0 auto}
+.set-card{background:var(--panel);border:1px solid var(--line);border-radius:var(--r-lg);padding:20px 22px;box-shadow:var(--sh-sm)}
+.set-card > .h{font-size:15px;font-weight:700;margin-bottom:4px}
+.set-card > .d{font-size:12.5px;color:var(--txt-2);margin-bottom:16px}
+.field{display:flex;align-items:flex-start;gap:12px;padding:9px 0;border-bottom:1px solid var(--line-2)}
+.field:last-child{border-bottom:none}
+.field .k{width:120px;flex:0 0 120px;font-size:13px;font-weight:600;color:var(--txt-2);padding-top:2px}
+.field .v{font-size:13px;color:var(--txt);flex:1}
+.tag{display:inline-block;background:#eef2ff;color:var(--brand-600);font-size:11.5px;padding:2px 9px;border-radius:7px;margin:2px 4px 2px 0}
+.redline{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--danger);padding:4px 0}
+.redline::before{content:"⛔";font-size:13px}
+.baseline{display:flex;align-items:center;gap:10px;font-size:13px;color:var(--txt-2);margin-top:4px;flex-wrap:wrap}
+.baseline input{width:74px;padding:7px 10px;border:1px solid var(--line);border-radius:8px;font-family:var(--mono);font-size:13px}
+.src-row{display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--line-2);font-size:13px}
+.src-row:last-child{border-bottom:none}
+.src-row .nm{flex:1} .src-row .stat{font-size:11.5px;font-weight:700;padding:2px 9px;border-radius:8px}
+.stat.s-ok{background:var(--ok-bg);color:var(--ok)} .stat.s-build{background:var(--warn-bg);color:var(--warn)} .stat.s-wait{background:#f1f5f9;color:var(--txt-3)}
+.memory-note{background:linear-gradient(135deg,rgba(99,102,241,.06),rgba(6,182,212,.05));border:1px solid rgba(99,102,241,.18);border-radius:var(--r-md);padding:14px 16px;font-size:12.5px;color:var(--txt-2);margin-top:12px}
+.memory-note b{color:var(--ai-1)}
+
+/* ===== 通用抽屉（右滑） ===== */
+.drawer-mask{position:fixed;inset:0;background:rgba(15,23,42,.36);opacity:0;pointer-events:none;transition:.25s;z-index:40}
+.drawer-mask.on{opacity:1;pointer-events:auto}
+.drawer{position:fixed;top:0;right:0;height:100vh;width:640px;max-width:94vw;background:var(--panel);box-shadow:-20px 0 60px -20px rgba(15,23,42,.4);transform:translateX(100%);transition:.3s var(--ease);z-index:41;display:flex;flex-direction:column}
+.drawer.on{transform:none}
+.drawer .dh{display:flex;align-items:flex-start;gap:12px;padding:18px 22px;border-bottom:1px solid var(--line)}
+.drawer .dh .ti{font-size:16px;font-weight:700;flex:1}
+.drawer .dh .x{font-size:22px;color:var(--txt-3);cursor:pointer;line-height:1}
+.drawer .db{padding:18px 22px;overflow-y:auto;flex:1}
+
+/* 生命周期/正文 Tab */
+.dtabs{display:flex;gap:4px;border-bottom:1px solid var(--line);margin:-6px 0 16px}
+.dtabs .dt{padding:9px 14px;font-size:13px;font-weight:600;color:var(--txt-2);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px}
+.dtabs .dt.on{color:var(--ai-1);border-color:var(--ai-1)}
+.lc-step{padding:13px 0;border-bottom:1px dashed var(--line-2)}
+.lc-step .h{display:flex;align-items:center;gap:9px;font-size:13.5px;font-weight:700}
+.lc-step .h .ix{width:22px;height:22px;border-radius:7px;background:var(--ai-grad);color:#fff;display:grid;place-items:center;font-size:12px;font-family:var(--mono)}
+.lc-step .b{font-size:13px;color:var(--txt-2);margin-top:7px;padding-left:31px;line-height:1.65}
+.lc-step .b .chip{display:inline-block;background:#eef2ff;color:var(--brand-600);font-size:11.5px;padding:1px 8px;border-radius:6px;margin:2px 4px 2px 0;font-family:var(--mono)}
+
+/* 内容正文预览 */
+.art-head{margin-bottom:14px}
+.art-head .art-ti{font-size:20px;font-weight:700;line-height:1.4;margin-bottom:8px}
+.art-head .art-meta{display:flex;flex-wrap:wrap;gap:12px;font-size:12px;color:var(--txt-3)}
+.art-cover{width:100%;height:180px;border-radius:var(--r-md);background:linear-gradient(135deg,#eef2ff,#f0f9ff);border:1px dashed var(--line);display:grid;place-items:center;color:var(--txt-3);font-size:13px;margin-bottom:16px}
+.art-body{font-size:13.5px;color:var(--txt-2);line-height:1.8}
+.art-body h3{font-size:14px;color:var(--txt);margin:16px 0 8px}
+.art-body p{margin-bottom:10px}
+.art-body ul{margin:8px 0 12px 18px}
+.art-body li{margin-bottom:4px}
+.art-kws{margin-top:16px;padding-top:12px;border-top:1px solid var(--line-2)}
+.art-kws .kw{display:inline-block;background:#f1f5f9;color:var(--txt-2);font-size:11.5px;padding:2px 9px;border-radius:7px;margin:2px 4px 2px 0}
+
+/* ===== 新建发布任务抽屉：表单 ===== */
+.form-sect{margin-bottom:22px;padding-bottom:18px;border-bottom:1px solid var(--line-2)}
+.form-sect:last-child{border-bottom:none;margin-bottom:0;padding-bottom:0}
+.form-sect .fs-h{font-size:14px;font-weight:700;color:var(--txt);margin-bottom:14px;display:flex;align-items:center;gap:8px}
+.form-sect .fs-h::before{content:"";width:4px;height:14px;border-radius:2px;background:var(--ai-grad)}
+.form-row{margin-bottom:13px}
+.form-row label{display:block;font-size:12px;font-weight:600;color:var(--txt-2);margin-bottom:6px}
+.form-row label .req{color:var(--danger);margin-right:3px}
+.form-row input,.form-row select,.form-row textarea{width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:9px;font-family:inherit;font-size:13.5px;color:var(--txt);background:#fff}
+.form-row input:focus,.form-row select:focus,.form-row textarea:focus{outline:none;border-color:var(--brand-400);box-shadow:0 0 0 3px rgba(59,130,246,.08)}
+.form-row textarea{resize:vertical;min-height:64px}
+.form-row .hint{font-size:11.5px;color:var(--txt-3);margin-top:5px}
+.form-row.inline{display:flex;gap:12px}
+.form-row.inline > div{flex:1}
+
+/* 标签输入 */
+.tag-box{display:flex;flex-wrap:wrap;gap:6px;padding:8px 10px;border:1px solid var(--line);border-radius:9px;background:#fff;min-height:42px;align-items:center}
+.tag-box:focus-within{border-color:var(--brand-400);box-shadow:0 0 0 3px rgba(59,130,246,.08)}
+.tag-box .t{display:inline-flex;align-items:center;gap:5px;background:#eef2ff;color:var(--brand-600);font-size:12px;padding:3px 9px;border-radius:6px}
+.tag-box .t .x{cursor:pointer;font-size:14px;line-height:1;color:var(--brand-600);opacity:.7}
+.tag-box .t .x:hover{opacity:1}
+.tag-box input{flex:1;min-width:80px;border:none;padding:4px 2px;font-size:13px;background:transparent}
+.tag-box input:focus{outline:none;box-shadow:none}
+.rec{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.rec span{font-size:12px;padding:4px 10px;border-radius:14px;background:#f1f5f9;color:var(--txt-2);cursor:pointer;transition:.15s}
+.rec span:hover{background:#e8edf5;color:var(--brand-600)}
+
+/* 开关 */
+.sw-row{display:flex;align-items:center;gap:12px;margin-bottom:6px}
+.sw-row .sw-lab{flex:1;font-size:13px;font-weight:600;color:var(--txt)}
+.sw-row .sw-hint{font-size:12px;color:var(--txt-3);margin-top:2px}
+.sw{position:relative;width:46px;height:24px;border-radius:20px;background:#cbd5e1;transition:.25s;cursor:pointer;flex:0 0 auto}
+.sw.on{background:var(--ai-grad)}
+.sw::after{content:"";position:absolute;top:2.5px;left:2.5px;width:19px;height:19px;border-radius:50%;background:#fff;box-shadow:var(--sh-sm);transition:.25s}
+.sw.on::after{left:24px}
+
+/* 映射表 */
+.map-table{width:100%;border-collapse:collapse;font-size:13px;margin-top:6px}
+.map-table th{text-align:left;font-weight:600;color:var(--txt-2);padding:9px 10px;background:#f8fafc;border-bottom:1px solid var(--line)}
+.map-table td{padding:9px 10px;border-bottom:1px solid var(--line-2);color:var(--txt-2)}
+.map-table td.arr{width:34px;text-align:center;color:var(--txt-3)}
+.map-table select{width:100%;padding:7px 9px;border:1px solid var(--line);border-radius:7px;font-size:13px;background:#fff}
+.map-note{font-size:11.5px;color:var(--txt-3);margin-top:8px}
+
+/* 规则行 */
+.rule-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.rule-row.third{grid-template-columns:1fr 1fr 1fr}
+
+/* 抽屉底部 */
+.dw-foot{padding:14px 22px;border-top:1px solid var(--line);display:flex;justify-content:flex-end;gap:10px;background:#fff}
+
+/* 嵌进增长工作台时去掉数字门户侧栏与重复面包屑 */
+html.embed,html.embed body{height:100%;overflow:hidden}
+html.embed .sidenav{display:none}
+html.embed .shell{height:100%}
+html.embed .topbar{display:none}
+html.embed .main{min-width:0}
+html.embed .content{padding-left:22px;padding-right:22px}
+html.embed .subnav{align-items:center;padding:12px 22px 0}
+html.embed .subnav .langs{margin-left:auto}
+html.embed .subnav .agent-switch{margin-left:8px}
+</style>
+<script>
+if (new URLSearchParams(location.search).has('embed')) {
+  document.documentElement.classList.add('embed');
+  document.addEventListener('DOMContentLoaded', function () {
+    var subnav = document.querySelector('.subnav');
+    var langs = document.querySelector('.langs');
+    var sw = document.querySelector('.agent-switch');
+    if (subnav && langs) subnav.appendChild(langs);
+    if (subnav && sw) subnav.appendChild(sw);
+  });
+}
+</script>
+</head>
+<body>
+<div class="shell">
+  <aside class="sidenav">
+    <div class="logo"><span class="d">数</span>数字门户</div>
+    <div class="navgroup">内容运营</div>
+    <div class="navitem"><span class="ic">▦</span>产品管理</div>
+    <div class="navitem"><span class="ic">✎</span>内容管理</div>
+    <div class="navitem"><span class="ic">⚲</span>SEO 优化</div>
+    <div class="navitem active badge" data-badge="2"><span class="ic">✦</span>AI 内容发布</div>
+    <div class="navgroup">系统</div>
+    <div class="navitem"><span class="ic">⚙</span>站点设置</div>
+    <div class="navitem"><span class="ic">↗</span>数据中心</div>
+  </aside>
+
+  <div class="main">
+    <div class="topbar">
+      <div class="crumbs">数字门户 / <b>AI 内容发布</b> / <span class="ai">智能体控制台</span></div>
+      <div class="sp"></div>
+      <div class="langs"><span>RU</span><span class="on">ZH</span><span>EN</span><span>JP</span></div>
+      <div class="agent-switch">
+        <span class="dot" id="swDot"></span>
+        <span class="lab">智能体</span>
+        <div class="toggle" id="agentToggle" title="总开关：开启即自主运行"></div>
+      </div>
+    </div>
+
+    <div class="subnav">
+      <div class="tab on" onclick="go('today',this)">今天</div>
+      <div class="tab" onclick="go('content',this)">内容</div>
+      <div class="tab" onclick="go('plan',this)">任务</div>
+      <div class="tab" onclick="go('settings',this)">设置</div>
+    </div>
+
+    <div class="content">
+      <!-- 今天 -->
+      <section class="view on sheet" id="view-today">
+        <div class="voice">
+          <div class="av">✦</div>
+          <div class="bubble">
+            <div class="who">内容运营智能体 · 自主运行中</div>
+            <div class="msg" id="voiceMsg">本周已自主生成并自检 <b>12 篇</b> 内容，其中 <b>6 篇</b> 已发布上线；目前有 <b>2 篇</b> 通过质检、正在等你确认发布。其余内容我按节奏继续推进，你只需在发布这一步把关。</div>
+          </div>
+        </div>
+
+        <div class="kpis">
+          <div class="kpi"><div class="n warn" id="kN">2</div><div class="l">待你审核发布</div><div class="s">这是今天唯一需要你做的事</div></div>
+          <div class="kpi"><div class="n ok">6</div><div class="l">本周已发布</div><div class="s">全部通过 EEAT/GEO 门禁</div></div>
+          <div class="kpi"><div class="n ai">12</div><div class="l">本周自主产出</div><div class="s">无需你介入的生产</div></div>
+        </div>
+
+        <div class="section-h">
+          <span class="t">待审核发布</span>
+          <span class="cnt" id="revCnt">2</span>
+          <span class="hint">智能体已完成写作与自检，发布前需你拍板</span>
+        </div>
+        <div class="review" id="reviewList"></div>
+
+        <details class="collapse">
+          <summary>查看智能体近期自主做了什么 <span class="ar">›</span></summary>
+          <div class="tl">
+            <div class="row"><span class="tk ok"></span><div><div class="tx"><b>自检通过并发布</b> —《SDPH 系列全国产大电流型产品介绍》EEAT 96 分</div><div class="tm">09-15 11:20</div></div></div>
+            <div class="row"><span class="tk"></span><div><div class="tx"><b>主动补强</b> — PT100 温度指南 402 天未更新，已重写并比对品牌词库</div><div class="tm">09-15 09:05</div></div></div>
+            <div class="row"><span class="tk ai"></span><div><div class="tx"><b>环境感知</b> — 监测到行业新标准发布，已加入选题候选</div><div class="tm">09-14 22:40</div></div></div>
+            <div class="row"><span class="tk ai"></span><div><div class="tx"><b>自我进化</b> — 深度阅读率周环比 +6%，将"参数实测"写法置信度上调至 0.82（全自动，无需你操作）</div><div class="tm">09-14 06:00 · M7 复盘</div></div></div>
+          </div>
+        </details>
+
+        <div class="foot-hint">智能体在后台自主运行，你只需在发布时把关。需要时可随时查看 <a style="color:var(--brand-500);cursor:pointer" onclick="go('content',document.querySelector('.tab:nth-child(2)'))">全部内容</a> 或 <a style="color:var(--brand-500);cursor:pointer" onclick="go('plan',document.querySelector('.tab:nth-child(3)'))">本周计划</a>。</div>
+      </section>
+
+      <!-- 内容 -->
+      <section class="view sheet" id="view-content">
+        <div class="subbar">以内容为主维度 — 每篇可查看完整正文与生产逻辑。点击卡片展开详情。</div>
+        <div class="clist" id="contentList"></div>
+      </section>
+
+      <!-- 任务 -->
+      <section class="view sheet" id="view-plan">
+        <div class="plan-head">
+          <div class="h1">发布任务 <small>自主发布任务统一管理：自动 / 排期 / 手动</small></div>
+          <button class="btn-new" onclick="openTask()">＋ 新建发布任务</button>
+        </div>
+        <div class="plan-intro">智能体以 <b>三种模式</b> 自主运转：<b>① 自动</b>（监控/环境触发）· <b>② 排期</b>（按固定节奏生成）· <b>③ 手动</b>（你下指令即时发起）。下方为本周计划，让你清楚"不在时它在干什么"。</div>
+        <div class="plan-bar">
+          <div class="seg" id="planSeg">
+            <span class="on" data-f="all" onclick="planFilter('all',this)">全部</span>
+            <span data-f="auto" onclick="planFilter('auto',this)">自动</span>
+            <span data-f="sch" onclick="planFilter('sch',this)">排期</span>
+            <span data-f="man" onclick="planFilter('man',this)">手动</span>
+            <span data-f="rev" onclick="planFilter('rev',this)">待审核</span>
+          </div>
+          <div class="legend">
+            <span><i style="background:#3b82f6"></i>自动</span>
+            <span><i style="background:#8b5cf6"></i>排期</span>
+            <span><i style="background:#16a34a"></i>手动</span>
+            <span><i style="background:#f59e0b"></i>待审核</span>
+          </div>
+        </div>
+        <div class="week" id="weekGrid"></div>
+        <div class="plan-foot">说明：<b>自动</b>任务在触发条件满足时由智能体自行发起（如某篇深度阅读率跌破基线即补强）；<b>排期</b>任务按你设定的节奏运行；<b>待审核</b>是已写好、等你确认发布的队列。三者均由智能体调度，<b>无需你每天操作</b>。</div>
+      </section>
+
+      <!-- 设置 -->
+      <section class="view sheet" id="view-settings">
+        <div class="setup">
+          <div class="set-card">
+            <div class="h">目标与范围（你定一次，长期生效）</div>
+            <div class="d">这是你对智能体的"交待"，之后它在此框架内自主运行。</div>
+            <div class="field"><div class="k">目标站点</div><div class="v">termoline.com · 中文站 / 英文站 / 日文站（共 3 站）</div></div>
+            <div class="field"><div class="k">内容目标</div><div class="v">增信为主——让浏览者觉得专业、可信、有据可查；<b style="color:var(--txt-2)">不承诺收录与排名</b></div></div>
+            <div class="field"><div class="k">默认语言</div><div class="v"><span class="tag">中文</span><span class="tag">English</span><span class="tag">日本語</span></div></div>
+          </div>
+          <div class="set-card">
+            <div class="h">品牌语气与红线</div>
+            <div class="d">语气由你定义；红线是智能体不可逾越的硬边界（命中即退回重写，任何策略下不破例）。</div>
+            <div class="field"><div class="k">品牌语气</div><div class="v"><span class="tag">专业克制</span><span class="tag">数据说话</span><span class="tag">有出处</span><span class="tag">不夸大</span></div></div>
+            <div class="redline">虚构客户案例或应用故事</div>
+            <div class="redline">虚构资质、认证或奖项</div>
+            <div class="redline">承诺"保证收录 / 保证排名"</div>
+          </div>
+          <div class="set-card">
+            <div class="h">质量基线（按站点独立配置）</div>
+            <div class="d">深度阅读率低于基线即触发补强；基线由本站点过去 90 天滚动数据自动校准。</div>
+            <div class="baseline">深度阅读率基线 <input value="40" /> % &nbsp;·&nbsp; 跳出率上限 <input value="65" /> % &nbsp;·&nbsp; 环比下滑预警 <input value="15" /> %</div>
+          </div>
+          <div class="set-card">
+            <div class="h">信源与接口状态</div>
+            <div class="d">内容引用与监控依赖的外部接口。带「待建」项接入后智能体才能自动调用。</div>
+            <div class="src-row"><span class="nm">知识库产品（只读调用）</span><span class="stat s-ok">✅ 已接入</span></div>
+            <div class="src-row"><span class="nm">站长平台 / GSC 数据</span><span class="stat s-ok">✅ 已接入</span></div>
+            <div class="src-row"><span class="nm">GEO 引用率探针（商业 API）</span><span class="stat s-wait">⚪ 暂未接入</span></div>
+            <div class="src-row"><span class="nm">竞品 sitemap / RSS</span><span class="stat s-wait">⚪ 暂未接入</span></div>
+            <div class="src-row"><span class="nm">媒体权威度库</span><span class="stat s-build">🟡 待自建</span></div>
+            <div class="memory-note">⚠️ <b>GEO 探针与竞品源暂未接入</b>：接入前，GEO 引用率改以"结构合规 + 人工抽检"判定，竞品比对任务暂缓；其余能力不受影响，接口就绪后自动恢复。</div>
+            <div class="memory-note">🧠 <b>工作记忆（智能体自沉淀，全自动）</b>：已积累 <b>18 条</b>有效规律，置信度均值 <b>0.79</b>，本周新增 <b>3 条</b>。由 M7 每周复盘自动更新，<b>无需你操作</b>——这正是智能体越用越准的方式。</div>
+          </div>
+        </div>
+      </section>
+    </div>
+  </div>
+</div>
+
+<!-- 通用抽屉：生命周期 / 正文预览 -->
+<div class="drawer-mask" id="mask" onclick="closeDrawer()"></div>
+<div class="drawer" id="drawer">
+  <div class="dh"><div class="ti" id="drTitle"></div><div class="x" onclick="closeDrawer()">×</div></div>
+  <div class="db">
+    <div class="dtabs">
+      <div class="dt on" data-tab="logic" onclick="tabDrawer('logic')">生产逻辑</div>
+      <div class="dt" data-tab="article" onclick="tabDrawer('article')">内容正文</div>
+    </div>
+    <div id="drLogic"></div>
+    <div id="drArticle" style="display:none"></div>
+  </div>
+</div>
+
+<!-- 新建发布任务抽屉 -->
+<div class="drawer-mask" id="taskMask" onclick="if(event.target===this)closeTask()"></div>
+<div class="drawer" id="taskDrawer" style="width:680px">
+  <div class="dh"><div class="ti">新建发布任务</div><div class="x" onclick="closeTask()">×</div></div>
+  <div class="db" id="taskBody">
+
+    <div class="form-sect">
+      <div class="fs-h">基本信息</div>
+      <div class="form-row">
+        <label><span class="req">*</span>任务标题</label>
+        <input id="fTitle" placeholder="例如：9月工业传感器内容包" />
+      </div>
+      <div class="form-row">
+        <label><span class="req">*</span>任务主题</label>
+        <div class="tag-box" id="topicBox" onclick="document.getElementById('topicInput').focus()">
+          <input id="topicInput" placeholder="输入主题回车添加" onkeydown="addTag(event,'topic')" />
+        </div>
+        <div class="hint">推荐主题（点击添加）：</div>
+        <div class="rec" id="topicRec">
+          <span onclick="pickTag('行业方案','topic')">行业方案</span>
+          <span onclick="pickTag('行业动态','topic')">行业动态</span>
+          <span onclick="pickTag('新闻资讯','topic')">新闻资讯</span>
+          <span onclick="pickTag('应用场景','topic')">应用场景</span>
+          <span onclick="pickTag('注意事项','topic')">注意事项</span>
+          <span onclick="pickTag('常见问题','topic')">常见问题</span>
+          <span onclick="pickTag('工作原理','topic')">工作原理</span>
+          <span onclick="pickTag('知识百科','topic')">知识百科</span>
+          <span onclick="pickTag('产品介绍','topic')">产品介绍</span>
+          <span onclick="pickTag('行业案例','topic')">行业案例</span>
+        </div>
+      </div>
+      <div class="form-row">
+        <label><span class="req">*</span>关键词</label>
+        <div class="tag-box" id="kwBox" onclick="document.getElementById('kwInput').focus()">
+          <input id="kwInput" placeholder="输入关键词回车添加" onkeydown="addTag(event,'kw')" />
+        </div>
+        <div class="hint">推荐关键词（点击添加）：</div>
+        <div class="rec" id="kwRec">
+          <span onclick="pickTag('渣浆泵','kw')">渣浆泵</span>
+          <span onclick="pickTag('污水泵','kw')">污水泵</span>
+          <span onclick="pickTag('离心泵厂家','kw')">离心泵厂家</span>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="sw-row">
+          <div><div class="sw-lab">开启配图</div><div class="sw-hint">文章生成时会插入一张关键词相关配图；配图需人工审核后再发布使用。</div></div>
+          <div class="sw" id="imgSwitch" onclick="toggleImg()"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="form-sect">
+      <div class="fs-h">推送设置</div>
+      <div class="form-row inline">
+        <div>
+          <label>推送应用</label>
+          <select id="fApp"><option>新闻资讯</option><option>产品中心</option><option>博客文章</option><option>技术白皮书</option></select>
+        </div>
+        <div>
+          <label>推送栏目</label>
+          <select id="fCol"><option>新闻资讯</option><option>公司动态</option><option>技术解读</option><option>产品速递</option></select>
+        </div>
+      </div>
+      <div class="form-row">
+        <label>数据映射</label>
+        <table class="map-table">
+          <thead><tr><th>AI 文章字段</th><th class="arr">»</th><th>系统中字段</th></tr></thead>
+          <tbody>
+            <tr><td>标题</td><td class="arr">»</td><td><select><option>资讯标题</option><option>产品标题</option><option>文章标题</option></select></td></tr>
+            <tr><td>关键词</td><td class="arr">»</td><td><select><option>副标题</option><option>标签</option><option>SEO 关键词</option></select></td></tr>
+            <tr><td>正文</td><td class="arr">»</td><td><select><option>资讯详情</option><option>产品详情</option><option>正文内容</option></select></td></tr>
+            <tr><td>概要</td><td class="arr">»</td><td><select><option>资讯概要</option><option>摘要</option><option>描述</option></select></td></tr>
+            <tr><td>图片</td><td class="arr">»</td><td><select><option>封面图</option><option>缩略图</option><option>正文配图</option></select></td></tr>
+          </tbody>
+        </table>
+        <div class="map-note">* 映射在发布后生效，确保 AI 生成内容自动写入对应系统字段。</div>
+      </div>
+    </div>
+
+    <div class="form-sect">
+      <div class="fs-h">推送规则</div>
+      <div class="form-row inline">
+        <div>
+          <label>推送频率</label>
+          <select id="fFreq"><option value="once">仅一次</option><option value="daily" selected>每天</option><option value="weekly">每周</option><option value="monthly">每月</option></select>
+        </div>
+        <div>
+          <label>推送数量</label>
+          <select id="fCount"><option>1 篇</option><option selected>2 篇</option><option>3 篇</option><option>5 篇</option></select>
+        </div>
+        <div>
+          <label>推送开始时间</label>
+          <input type="date" id="fStart" value="2026-09-15" />
+        </div>
+      </div>
+      <div class="form-row">
+        <label>推送内容状态</label>
+        <select id="fStatus">
+          <option value="review">待审核（推荐：生成后先由你确认再发布）</option>
+          <option value="publish">立即发布（适合低风险的常规内容）</option>
+        </select>
+      </div>
+      <div class="form-row">
+        <label>任务说明（可选）</label>
+        <textarea id="fNote" placeholder="补充说明：语气倾向、必须包含的信息、需要避让的表述等"></textarea>
+      </div>
+    </div>
+
+  </div>
+  <div class="dw-foot">
+    <button class="btn ghost" onclick="closeTask()">取消</button>
+    <button class="btn approve" onclick="createTask()">创建并加入计划</button>
+  </div>
+</div>
+
+<script>
+/* ===================== 数据（mock） ===================== */
+const REVIEW = [
+  {id:'r1', title:'SDPH 系列全国产大电流型 — 产品介绍', sub:'自动补强 · 来源：产品详情页 71', score:96, why:'用户指令触发：按 sunwaycontrols.com 真实参数撰写，零虚构', ref:['官网参数表','高新技术企业自述'], self:['经验23 专业25 权威23 可信25','连续50A/峰值125A 已区分','红线0命中'], now:'待你确认发布'},
+  {id:'r2', title:'PT100 温度传感器选型指南（英文站）', sub:'主动补强 · 402 天未更新', score:88, why:'监控触发：深度阅读率低于基线 12 个百分点', ref:['旧文比对','品牌词库 EN'], self:['EEAT 88 分','补入实测偏差 0.3°C','GEO 5 项全过'], now:'待你确认发布'}
+];
+const CONTENTS = [
+  {id:'c1', title:'SDPH 系列全国产大电流型 — 产品介绍', st:'rev', stT:'待审核', desc:'基于官网真实参数撰写，连续50A/峰值125A，全国产自主可控，附生产逻辑卡。', pv:'1.2k', dr:'—', src:'指令', body:`<h3>产品定位</h3><p>SDPH 系列是南京三慧控制技术有限公司推出的全国产大电流伺服驱动器，面向精密运动控制场景，强调“全链国产、自主可控”。</p><h3>核心技术参数</h3><ul><li>供电电压：24 ~ 72 VDC</li><li>额定连续电流：50 A（SDPH-4850）</li><li>峰值电流：125 A</li><li>适配功率：3000 W</li><li>电机类型：有刷 / 无刷 / 力矩 / 伺服电机</li><li>反馈接口：旋变、增量编码器、绝对值编码器</li><li>通讯协议：EtherCAT、CANopen、RS485</li><li>工作温度：-40 ~ +55 ℃</li></ul><h3>全国产自主可控</h3><p>该系列在软硬件架构、底层算法及配置工具层面全自主研发，关键元器件实现国产化替代，彻底摆脱海外技术与供应链依赖。</p><h3>典型应用场景</h3><p>可应用于航空航天、船舶、半导体设备、机器人、精密机床等对可靠性要求较高的领域。</p>`},
+  {id:'c2', title:'PT100 温度传感器选型指南（英文站）', st:'rev', stT:'待审核', desc:'主动补强旧文，补齐实测偏差与选型对照，对标品牌词库。', pv:'860', dr:'—', src:'自动', body:`<h3>选型核心指标</h3><p>PT100 铂电阻是工业温度测量中最常用的元件之一。选型时应重点关注温度范围、精度等级、响应时间及安装方式。</p><h3>关键参数对照</h3><ul><li>测温范围：-200 ~ +850 ℃</li><li>精度等级：A 级 ±0.15 ℃ / B 级 ±0.30 ℃</li><li>实测偏差：在 -50 ℃ 典型工况下偏差可控制在 0.3 ℃ 以内</li></ul><h3>安装建议</h3><p>根据被测介质选择铠装式、插入式或表面贴装结构，并确保热传导路径最短。</p>`},
+  {id:'c3', title:'工业温度传感器校准白皮书解读', st:'pub', stT:'已发布', desc:'环境感知触发：行业新标准发布，转化为科普增信内容。', pv:'3.4k', dr:'52%', src:'自动', body:`<h3>新标准要点</h3><p>2026 版校准规范对工业温度传感器的溯源链、不确定度评定和现场校准提出了更高要求。</p><h3>对企业的实际影响</h3><p>制造企业需要在出厂检验环节增加至少一个温度点的溯源记录，并保留至少 5 年。</p>`},
+  {id:'c4', title:'servo 驱动器散热设计要点', st:'pub', stT:'已发布', desc:'周排程生成，EEAT 91 分，已发布 6 天。', pv:'2.1k', dr:'47%', src:'排程', body:`<h3>为什么散热决定伺服寿命</h3><p>大电流伺服驱动器在峰值输出时会产生显著热量，散热设计直接影响连续工作能力和长期可靠性。</p><h3>设计三原则</h3><ul><li>保证足够散热面积</li><li>避免热区集中</li><li>预留 20% 以上余量</li></ul>`},
+  {id:'c5', title:'全国产运动控制方案（半导体场景）', st:'auto', stT:'自主生成', desc:'监控驱动选题，起草中，预计今日完成自检。', pv:'—', dr:'—', src:'自动', body:'<p>内容正在由智能体生成中，完成后将显示完整正文。</p>'},
+  {id:'c6', title:'SDM 系列调试软件使用说明', st:'run', stT:'起草中', desc:'依据知识库只读资料组装，四维起草阶段。', pv:'—', dr:'—', src:'排程', body:'<p>内容正在由智能体生成中，完成后将显示完整正文。</p>'}
+];
+const WEEK = [
+  {d:'周一', dt:'9/15', today:true, tasks:[
+    {t:'趋势解读 ×3', type:'sch'},
+    {t:'PT100 指南补强', type:'auto', nt:'深度阅读率<基线时触发'},
+    {t:'SDPH 产品介绍', type:'rev', nt:'待你审核'}
+  ]},
+  {d:'周二', dt:'9/16', tasks:[
+    {t:'servo 散热设计', type:'sch'},
+    {t:'行业 RSS 监测', type:'auto', nt:'每日自动'}
+  ]},
+  {d:'周三', dt:'9/17', tasks:[
+    {t:'白皮书解读', type:'sch'},
+    {t:'竞品 sitemap 比对', type:'auto', nt:'接口暂未接入·暂缓'}
+  ]},
+  {d:'周四', dt:'9/18', tasks:[
+    {t:'半导体场景方案', type:'auto', nt:'监控触发补强'}
+  ]},
+  {d:'周五', dt:'9/19', tasks:[
+    {t:'周报复盘 M7', type:'auto', nt:'每周五自动进化'},
+    {t:'趋势解读 ×2', type:'sch'}
+  ]},
+  {d:'周六', dt:'9/20', tasks:[
+    {t:'轻量维护', type:'auto', nt:'基线巡检'}
+  ]},
+  {d:'周日', dt:'9/21', tasks:[]}
+];
+
+/* ===================== 渲染 ===================== */
+function go(v, el){
+  document.querySelectorAll('.view').forEach(x=>x.classList.remove('on'));
+  document.getElementById('view-'+v).classList.add('on');
+  document.querySelectorAll('.subnav .tab').forEach(t=>t.classList.remove('on'));
+  (el||document.querySelector('.subnav .tab')).classList.add('on');
+}
+function renderReview(){
+  document.getElementById('reviewList').innerHTML = REVIEW.map(r=>`
+    <div class="rv">
+      <div class="meta"><div class="ti">${r.title}</div><div class="sub">${r.sub}</div></div>
+      <div class="score">${r.score}分</div>
+      <div class="acts">
+        <button class="btn ghost" onclick="openDrawer('${r.id}')">看生产逻辑</button>
+        <button class="btn line" onclick="viewArticle('${r.id}')">查看内容</button>
+        <button class="btn reject" onclick="reject('${r.id}')">打回重写</button>
+        <button class="btn approve" onclick="approve('${r.id}')">批准发布</button>
+      </div>
+    </div>`).join('');
+  document.getElementById('revCnt').textContent=REVIEW.length;
+  document.getElementById('kN').textContent=REVIEW.length;
+}
+function renderContent(){
+  document.getElementById('contentList').innerHTML = CONTENTS.map(c=>`
+    <div class="card">
+      <div class="top"><span class="st ${c.st}">${c.stT}</span><span style="font-size:11px;color:var(--txt-3)">· ${c.src}</span></div>
+      <div class="ti">${c.title}</div>
+      <div class="desc">${c.desc}</div>
+      <div class="ft"><span>PV <b>${c.pv}</b></span><span>深度阅读率 <b>${c.dr}</b></span></div>
+      <div class="acts2">
+        <button class="btn ghost" onclick="openDrawer('${c.id}')">生产逻辑</button>
+        <button class="btn line" onclick="viewArticle('${c.id}')">查看内容</button>
+      </div>
+    </div>`).join('');
+}
+function renderWeek(){
+  const cls={auto:'auto',sch:'sch',rev:'rev',man:'man'};
+  document.getElementById('weekGrid').innerHTML = WEEK.map(d=>`
+    <div class="day ${d.today?'today':''}">
+      <div class="dh"><span class="dname">${d.d}</span><span class="dt">${d.dt}</span></div>
+      ${(d.tasks||[]).map(t=>`<div class="chip-task ${cls[t.type]}" data-type="${t.type}">${t.t}${t.nt?`<span class="nt">${t.nt}</span>`:''}</div>`).join('') || '<div style="font-size:11px;color:var(--txt-3);margin-top:8px">— 无排程 —</div>'}
+    </div>`).join('');
+}
+function planFilter(f, el){
+  document.querySelectorAll('#planSeg span').forEach(s=>s.classList.remove('on'));
+  el.classList.add('on');
+  document.querySelectorAll('.chip-task').forEach(c=>{
+    c.style.display = (f==='all'||c.dataset.type===f)?'block':'none';
+  });
+}
+
+/* ===================== 抽屉：生产逻辑 / 正文 ===================== */
+let curId=null, curTab='logic';
+function openDrawer(id){
+  curId=id; curTab='logic';
+  const o=findById(id); if(!o) return;
+  document.getElementById('drTitle').textContent=o.title;
+  renderLogic(id);
+  switchTab('logic');
+  document.getElementById('mask').classList.add('on');
+  document.getElementById('drawer').classList.add('on');
+}
+function viewArticle(id){
+  curId=id; curTab='article';
+  const o=findById(id); if(!o) return;
+  document.getElementById('drTitle').textContent=o.title;
+  renderArticle(id);
+  switchTab('article');
+  document.getElementById('mask').classList.add('on');
+  document.getElementById('drawer').classList.add('on');
+}
+function findById(id){ return REVIEW.find(x=>x.id===id) || CONTENTS.find(x=>x.id===id); }
+function switchTab(t){
+  curTab=t;
+  document.querySelectorAll('.dtabs .dt').forEach(d=>d.classList.toggle('on',d.dataset.tab===t));
+  document.getElementById('drLogic').style.display = t==='logic'?'block':'none';
+  document.getElementById('drArticle').style.display = t==='article'?'block':'none';
+}
+function tabDrawer(t){ if(t==='logic') renderLogic(curId); else renderArticle(curId); switchTab(t); }
+function renderLogic(id){
+  const r=REVIEW.find(x=>x.id===id), c=CONTENTS.find(x=>x.id===id);
+  const o=r||c; if(!o) return;
+  const why=r?r.why:'监控/排程触发，按站点基线与策略自动生成';
+  const ref=r?r.ref:['知识库只读','品牌词库','站点基线'];
+  const self=r?r.self:['EEAT 进行中','四维起草','风险红线实时查'];
+  const now=r?r.now:(o.stT||'进行中');
+  const steps=[
+    {h:'为什么写', b:why},
+    {h:'依据什么', b:`<span class="chip">${ref.join('</span><span class="chip">')}</span>`},
+    {h:'怎么写', b:'调取资料（只读）→ 四维起草（经验/专业/权威/可信）→ GEO 5 项结构 → 成稿'},
+    {h:'自检了什么', b:`<span class="chip">${self.join('</span><span class="chip">')}</span>`},
+    {h:'现在怎样', b:now}
+  ];
+  document.getElementById('drLogic').innerHTML = steps.map((s,i)=>`
+    <div class="lc-step"><div class="h"><span class="ix">${i+1}</span>${s.h}</div><div class="b">${s.b}</div></div>`).join('');
+}
+function renderArticle(id){
+  const o=findById(id); if(!o) return;
+  const meta=`创建：${o.src} · 状态：${o.stT} · PV ${o.pv} · 深度阅读率 ${o.dr}`;
+  document.getElementById('drArticle').innerHTML = `
+    <div class="art-head">
+      <div class="art-ti">${o.title}</div>
+      <div class="art-meta">${meta}</div>
+    </div>
+    <div class="art-cover">配图占位 · 开启配图后自动生成</div>
+    <div class="art-body">${o.body}</div>
+    <div class="art-kws"><span style="font-size:12px;color:var(--txt-2);font-weight:600">关键词：</span><span class="kw">工业传感器</span><span class="kw">全国产</span><span class="kw">伺服驱动器</span></div>`;
+}
+function closeDrawer(){ document.getElementById('mask').classList.remove('on'); document.getElementById('drawer').classList.remove('on'); }
+
+/* ===================== 新建发布任务抽屉 ===================== */
+let taskType='man', imgOn=false;
+const STATE={topic:[],kw:[]};
+function openTask(){
+  resetTaskForm();
+  document.getElementById('taskMask').classList.add('on');
+  document.getElementById('taskDrawer').classList.add('on');
+}
+function closeTask(){
+  document.getElementById('taskMask').classList.remove('on');
+  document.getElementById('taskDrawer').classList.remove('on');
+}
+function resetTaskForm(){
+  document.getElementById('fTitle').value='';
+  document.getElementById('fApp').selectedIndex=0;
+  document.getElementById('fCol').selectedIndex=0;
+  document.getElementById('fFreq').selectedIndex=1;
+  document.getElementById('fCount').selectedIndex=1;
+  document.getElementById('fStart').value='2026-09-15';
+  document.getElementById('fStatus').selectedIndex=0;
+  document.getElementById('fNote').value='';
+  STATE.topic=[]; STATE.kw=[];
+  renderTags('topic'); renderTags('kw');
+  imgOn=false; document.getElementById('imgSwitch').classList.remove('on');
+}
+function toggleImg(){ imgOn=!imgOn; document.getElementById('imgSwitch').classList.toggle('on',imgOn); }
+function addTag(e, kind){
+  if(e.key!=='Enter') return;
+  e.preventDefault();
+  const v=e.target.value.trim();
+  if(v && !STATE[kind].includes(v)){ STATE[kind].push(v); renderTags(kind); }
+  e.target.value='';
+}
+function pickTag(v, kind){ if(!STATE[kind].includes(v)){ STATE[kind].push(v); renderTags(kind); } }
+function renderTags(kind){
+  const box=document.getElementById(kind+'Box');
+  const tags=STATE[kind].map(t=>`<span class="t">${t}<span class="x" onclick="removeTag('${kind}','${t}')">×</span></span>`).join('');
+  box.innerHTML=tags+`<input id="${kind}Input" placeholder="输入${kind==='topic'?'主题':'关键词'}回车添加" onkeydown="addTag(event,'${kind}')" />`;
+  setTimeout(()=>document.getElementById(kind+'Input').focus(),0);
+}
+function removeTag(kind,v){ STATE[kind]=STATE[kind].filter(x=>x!==v); renderTags(kind); }
+function createTask(){
+  const title=document.getElementById('fTitle').value.trim();
+  if(!title){ flashVoice('请填写任务标题'); return; }
+  if(STATE.topic.length===0){ flashVoice('请至少选择一个任务主题'); return; }
+  if(STATE.kw.length===0){ flashVoice('请至少添加一个关键词'); return; }
+  const freqText=document.getElementById('fFreq').options[document.getElementById('fFreq').selectedIndex].text;
+  const countText=document.getElementById('fCount').options[document.getElementById('fCount').selectedIndex].text;
+  const status=document.getElementById('fStatus').value;
+  const isSch=freqText!=='仅一次';
+  const topicList=STATE.topic.join(' / ');
+
+  WEEK[0].tasks.push({t:title, type:'man', nt:`${freqText} · ${countText}${isSch?'':' · 立即执行'}`});
+  const newId='c'+Date.now();
+  CONTENTS.unshift({
+    id:newId, title:`${topicList} · ${STATE.kw[0]}`, st:'run', stT:'起草中',
+    desc:`手动任务：${title}。关键词：${STATE.kw.join(' / ')}。${imgOn?'已开启配图；':''}推送至 ${document.getElementById('fApp').value} · ${document.getElementById('fCol').value}。`,
+    pv:'—', dr:'—', src:'手动',
+    body:'<p>智能体已接收任务，正在按主题、关键词与推送规则起草正文，完成后将进入'+ (status==='review'?'待审核队列。':'立即发布。') +'</p>'
+  });
+  renderWeek(); renderContent();
+  closeTask();
+  flashVoice('已创建发布任务《'+title+'》，主题：'+topicList+'，智能体将按规则起草'+(status==='review'?'，完成后由你把关发布。':'，校验通过后直接发布。'));
+}
+function approve(id){
+  const i=REVIEW.findIndex(x=>x.id===id); if(i<0) return;
+  REVIEW.splice(i,1);
+  const c=CONTENTS.find(x=>x.id===id); if(c){c.st='pub';c.stT='已发布';c.dr='待采集';}
+  renderReview(); renderContent();
+  flashVoice('已批准发布，内容已上线。智能体将继续推进其余选题，有新的待审核再提醒你。');
+  syncBadge();
+}
+function reject(id){
+  const i=REVIEW.findIndex(x=>x.id===id); if(i<0) return;
+  const t=REVIEW[i].title; REVIEW.splice(i,1);
+  renderReview(); syncBadge();
+  flashVoice('已打回《'+t.slice(0,12)+'…》重写，智能体会按你的反馈调整后再提交。');
+}
+function flashVoice(msg){
+  document.getElementById('voiceMsg').innerHTML=msg;
+  const v=document.querySelector('.voice'); v.style.transform='scale(1.01)';
+  setTimeout(()=>v.style.transform='none',200);
+}
+function syncBadge(){
+  const n=REVIEW.length;
+  const item=document.querySelector('.sidenav .navitem.badge');
+  if(n>0){ item.dataset.badge=n; item.classList.add('badge'); }
+  else { item.classList.remove('badge'); item.removeAttribute('data-badge'); }
+}
+document.getElementById('agentToggle').addEventListener('click',function(){
+  const off=this.classList.toggle('off');
+  const d=document.getElementById('swDot');
+  d.style.background=off?'#94a3b8':'var(--ok)';
+  d.style.boxShadow=off?'none':'0 0 0 4px rgba(16,185,129,.18)';
+  flashVoice(off?'智能体已暂停，所有自主任务待命中；需要时可随时重新开启。':'智能体已恢复自主运行，将继续按配置推进内容生产与发布流程。');
+});
+
+/* 初始化 */
+renderReview(); renderContent(); renderWeek();
+</script>
+</body>
+</html>

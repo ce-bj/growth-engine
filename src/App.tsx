@@ -1,63 +1,40 @@
-import { useState } from 'react'
+import { ConfigProvider } from 'antd'
+import zhCN from 'antd/locale/zh_CN'
 import { AdminShell } from './components/AdminShell'
+import {
+  CONTENT_AGENT_URL,
+  EmbedFrame,
+  MARKETING_AGENT_URL,
+  VISITOR_ANALYSIS_URL,
+} from './components/EmbedFrame'
 import { FixDrawer } from './components/FixDrawer'
-import { GuideModal } from './components/GuideModal'
-import { SiteSwitchModal } from './components/SiteSwitchModal'
 import { ToastStack } from './components/ToastStack'
 import { WorkbenchProvider, useWorkbench } from './context/WorkbenchContext'
-import { ContentView } from './views/ContentView'
-import { DashboardView } from './views/DashboardView'
-import { HistoryView, TasksView } from './views/HistoryTasksViews'
-import { LeadsView, LeadDetailView } from './views/LeadsView'
-import { ReportView } from './views/ReportView'
-import { mockLeadsData } from './data/mock'
-import type { Lead } from './types'
+import { iceTheme } from './theme'
+import { AgentOverviewView } from './views/AgentOverviewView'
 import { ScanProgressView } from './views/ScanProgressView'
-import { SettingsView, WeeklyView } from './views/WeeklySettingsViews'
+import { SettingsView } from './views/WeeklySettingsViews'
+import 'antd/dist/reset.css'
 import './styles.css'
 
 function Pages() {
-  const { view, toasts, dismissToast, sites, startDetect } = useWorkbench()
-
-  // 线索数据：列表与详情页共享，避免详情页修改后列表不回显
-  const [leads, setLeads] = useState<Lead[]>(mockLeadsData)
-
-  // 线索详情路由：独立页面，不走 view 状态
-  const [leadsDetailId, setLeadsDetailId] = useState<string | null>(null)
+  const { view, toasts, dismissToast } = useWorkbench()
 
   return (
     <AdminShell>
-      {leadsDetailId ? (
-        // 线索详情独立页面
-        <LeadDetailView
-          leadId={leadsDetailId}
-          leads={leads}
-          setLeads={setLeads}
-          onBack={() => setLeadsDetailId(null)}
-        />
-      ) : (
-        // 常规业务页
-        <>
-          {view === 'dashboard' && <DashboardView />}
-          {view === 'scanning' && <ScanProgressView />}
-          {view === 'report' && <ReportView />}
-          {view === 'tasks' && <TasksView />}
-          {view === 'history' && <HistoryView />}
-          {view === 'weekly' && <WeeklyView />}
-          {view === 'settings' && <SettingsView />}
-          {view === 'content' && <ContentView />}
-          {view === 'leads' && (
-            <LeadsView
-              leads={leads}
-              setLeads={setLeads}
-              onOpenDetail={setLeadsDetailId}
-            />
-          )}
-        </>
+      {view === 'dashboard' && <AgentOverviewView />}
+      {view === 'scanning' && <ScanProgressView />}
+      {view === 'visitor' && (
+        <EmbedFrame src={VISITOR_ANALYSIS_URL} title="访客行为分析智能体" />
       )}
+      {view === 'marketing' && (
+        <EmbedFrame src={MARKETING_AGENT_URL} title="智能营销页智能体" />
+      )}
+      {view === 'content' && (
+        <EmbedFrame src={CONTENT_AGENT_URL} title="内容发布智能体" />
+      )}
+      {view === 'settings' && <SettingsView />}
       <FixDrawer />
-      <GuideModal />
-      <SiteSwitchModal />
       <ToastStack toasts={toasts} onDismiss={dismissToast} />
     </AdminShell>
   )
@@ -65,8 +42,10 @@ function Pages() {
 
 export default function App() {
   return (
-    <WorkbenchProvider>
-      <Pages />
-    </WorkbenchProvider>
+    <ConfigProvider locale={zhCN} theme={iceTheme}>
+      <WorkbenchProvider>
+        <Pages />
+      </WorkbenchProvider>
+    </ConfigProvider>
   )
 }
