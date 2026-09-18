@@ -1,10 +1,14 @@
 import { X } from 'lucide-react'
 
-const OPS_ASSISTANT_URL =
-  (import.meta.env.VITE_OPS_ASSISTANT_URL as string | undefined) || 'http://127.0.0.1:5174/'
-
 function assistantEmbedUrl() {
-  const url = new URL(OPS_ASSISTANT_URL, window.location.origin)
+  const explicit = import.meta.env.VITE_OPS_ASSISTANT_URL as string | undefined
+  const host = window.location.hostname || '127.0.0.1'
+  const url = new URL(explicit || `http://${host}:5174/`, window.location.origin)
+  if (!explicit && (url.hostname === '127.0.0.1' || url.hostname === 'localhost')) {
+    url.hostname = host
+  } else if (explicit && (url.hostname === '127.0.0.1' || url.hostname === 'localhost')) {
+    url.hostname = host
+  }
   url.searchParams.set('embed', 'assistant')
   return url.toString()
 }

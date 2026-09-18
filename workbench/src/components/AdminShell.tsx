@@ -19,11 +19,14 @@ import { iceSelectTheme } from '../theme'
 
 const { Sider, Header, Content } = Layout
 
-const PORTAL_URL =
-  import.meta.env.VITE_PORTAL_URL || 'http://127.0.0.1:5174/#数据分析-新'
-
 function portalHref() {
-  return new URL(PORTAL_URL, window.location.origin).toString()
+  const explicit = import.meta.env.VITE_PORTAL_URL as string | undefined
+  const host = window.location.hostname || '127.0.0.1'
+  const url = new URL(explicit || `http://${host}:5174/#数据分析-新`, window.location.origin)
+  if (url.hostname === '127.0.0.1' || url.hostname === 'localhost') {
+    url.hostname = host
+  }
+  return url.toString()
 }
 
 const NAV: { id: ViewId; label: string; icon: typeof LayoutDashboard }[] = [

@@ -214,6 +214,15 @@ def apply_runtime_env() -> None:
     os.environ.setdefault("CHAT_SERVER_PORT", str(CHAT_PORT))
     os.environ.setdefault("PYTHON_AGENT_MODULE", "ai_ops_assistant")
     os.environ.setdefault("PYTHONUNBUFFERED", "1")
+    public = (os.environ.get("INTRANET_PUBLIC_HOST") or "").strip()
+    if public:
+        host = public.split("://")[-1].split("/")[0].split(":")[0]
+        origin = f"http://{host}"
+        os.environ.setdefault("VITE_VISITOR_ANALYSIS_URL", f"{origin}:5177/")
+        os.environ.setdefault("VITE_MARKETING_AGENT_URL", f"{origin}:5186/")
+        os.environ.setdefault("VITE_CONTENT_AGENT_URL", f"{origin}:5178/?embed=1")
+        os.environ.setdefault("VITE_OPS_ASSISTANT_URL", f"{origin}:5174/")
+        os.environ.setdefault("VITE_PORTAL_URL", f"{origin}:5174/")
 
 
 def spawn(name: str, argv: list[str], cwd: Path) -> subprocess.Popen:
@@ -221,7 +230,7 @@ def spawn(name: str, argv: list[str], cwd: Path) -> subprocess.Popen:
     kwargs: dict = {"cwd": str(cwd), "env": env}
     if os.name == "nt":
         kwargs["creationflags"] = subprocess.CREATE_NEW_PROCESS_GROUP
-    else:
+    elif os.environ.get("GROWTH_SAME_SESSION") != "1":
         kwargs["start_new_session"] = True
     proc = subprocess.Popen(argv, **kwargs)
     print(f"[growth] {name} pid={proc.pid}  {' '.join(argv)}", flush=True)
