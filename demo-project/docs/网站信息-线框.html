@@ -1,0 +1,538 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>网站信息 · 线框示意</title>
+  <style>
+    :root {
+      --line: #1a1a1a;
+      --muted: #5c5c5c;
+      --dash: #9a9a9a;
+      --fill: #f3f3f3;
+      --paper: #fff;
+      --note: #6b6b6b;
+      --accent: #111;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: "Microsoft YaHei", "PingFang SC", sans-serif;
+      background: #ececec;
+      color: var(--line);
+    }
+    header.page-head {
+      position: sticky;
+      top: 0;
+      z-index: 5;
+      background: #fff;
+      border-bottom: 1px solid #ddd;
+      padding: 12px 20px 8px;
+    }
+    header.page-head h1 { margin: 0 0 4px; font-size: 16px; font-weight: 700; }
+    header.page-head p { margin: 0 0 10px; font-size: 12px; color: var(--note); }
+    nav { display: flex; flex-wrap: wrap; gap: 6px; }
+    nav a {
+      display: inline-block;
+      padding: 4px 8px;
+      border: 1px solid #ccc;
+      background: #fff;
+      color: #333;
+      text-decoration: none;
+      font-size: 12px;
+    }
+    nav a:hover, nav a.on { border-color: #111; background: #111; color: #fff; }
+    main { padding: 20px; max-width: 1180px; margin: 0 auto; }
+    .block { margin-bottom: 40px; }
+    .meta {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      gap: 12px;
+      margin-bottom: 8px;
+    }
+    .meta h2 { margin: 0; font-size: 15px; }
+    .meta span { font-size: 12px; color: var(--note); }
+    .callout {
+      font-size: 12px;
+      color: var(--note);
+      border-left: 3px solid #111;
+      padding: 6px 10px;
+      margin: 0 0 10px;
+      background: #fafafa;
+    }
+    .frame {
+      background: var(--paper);
+      border: 2px solid var(--line);
+      min-height: 560px;
+      display: flex;
+      flex-direction: column;
+    }
+    .topbar {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      padding: 8px 12px;
+      border-bottom: 2px solid var(--line);
+      font-size: 12px;
+      background: #1a1a1a;
+      color: #fff;
+    }
+    .topbar .brand { font-weight: 700; }
+    .topbar nav.portal { display: flex; gap: 12px; flex: 1; opacity: 0.85; }
+    .topbar nav.portal b { opacity: 1; font-weight: 700; text-decoration: underline; }
+    .shell { display: flex; flex: 1; min-height: 0; }
+    .sessions {
+      width: 176px;
+      flex-shrink: 0;
+      border-right: 1px solid var(--line);
+      padding: 10px;
+      font-size: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .sessions .sess-title { font-weight: 700; margin-bottom: 2px; }
+    .sessions .new {
+      border: 1px solid var(--line);
+      padding: 6px;
+      text-align: center;
+    }
+    .sessions .new.auto { font-weight: 700; }
+    .sessions .new.auto.on { background: #111; color: #fff; }
+    .sessions .sess-tabs {
+      display: flex;
+      border: 1px solid var(--line);
+      font-size: 11px;
+    }
+    .sessions .sess-tabs span {
+      flex: 1;
+      padding: 5px 2px;
+      text-align: center;
+      color: var(--muted);
+    }
+    .sessions .sess-tabs span.on {
+      background: #111;
+      color: #fff;
+      font-weight: 600;
+    }
+    .sessions .item {
+      border: 1px solid #ccc;
+      padding: 6px 8px;
+      color: var(--muted);
+    }
+    .sessions .item.on { border-color: var(--line); color: var(--line); font-weight: 600; }
+    .chat {
+      flex: 1;
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+    }
+    .chat-head {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 12px;
+      border-bottom: 1px solid var(--line);
+      font-size: 13px;
+    }
+    .chat-head .name { font-weight: 700; }
+    .chat-head .sub { font-size: 11px; color: var(--muted); }
+    .mark {
+      margin-left: auto;
+      border: 2px solid var(--line);
+      padding: 4px 10px;
+      font-size: 12px;
+      font-weight: 700;
+      background: #fff;
+    }
+    .mark.ghost {
+      border-style: dashed;
+      color: var(--muted);
+      font-weight: 400;
+    }
+    .online { font-size: 11px; color: var(--muted); }
+    .msgs {
+      flex: 1;
+      padding: 12px 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      font-size: 13px;
+    }
+    .bubble {
+      border: 1px solid var(--line);
+      padding: 8px 10px;
+      max-width: 92%;
+      line-height: 1.45;
+    }
+    .bubble.user {
+      align-self: flex-end;
+      background: var(--fill);
+    }
+    .chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
+    .chip {
+      border: 1px solid var(--line);
+      padding: 4px 8px;
+      font-size: 11px;
+    }
+    .chip.muted { border-style: dashed; color: var(--muted); }
+    .input {
+      margin: 0 12px 12px;
+      border: 1px solid var(--line);
+      min-height: 44px;
+      padding: 8px 10px;
+      color: var(--muted);
+      font-size: 12px;
+    }
+    .side {
+      width: 340px;
+      flex-shrink: 0;
+      border-left: 2px solid var(--line);
+      display: flex;
+      flex-direction: column;
+      background: #fafafa;
+    }
+    .side-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 12px;
+      border-bottom: 1px solid var(--line);
+      font-size: 13px;
+      font-weight: 700;
+      background: #fff;
+    }
+    .side-body { padding: 10px 12px; font-size: 12px; display: flex; flex-direction: column; gap: 8px; overflow: auto; }
+    .site-row {
+      border: 1px solid var(--line);
+      padding: 8px;
+      background: #fff;
+    }
+    .site-row.on { border-width: 2px; }
+    .site-row b { display: block; margin-bottom: 2px; }
+    .tiny { font-size: 11px; color: var(--muted); }
+    .field {
+      border: 1px solid #ccc;
+      padding: 6px 8px;
+      background: #fff;
+    }
+    .field b { display: block; font-size: 11px; color: var(--muted); margin-bottom: 2px; font-weight: 600; }
+    .anno {
+      position: relative;
+    }
+    .flag {
+      font-size: 11px;
+      border: 1px dashed var(--dash);
+      color: var(--muted);
+      padding: 4px 6px;
+      background: #fff;
+    }
+    .card {
+      border: 1px solid var(--line);
+      padding: 10px;
+      background: #fff;
+    }
+    .checks { display: flex; flex-direction: column; gap: 6px; margin: 8px 0; }
+    .checks label { display: flex; gap: 6px; align-items: center; }
+    .btns { display: flex; gap: 8px; }
+    .btns span {
+      border: 1px solid var(--line);
+      padding: 4px 10px;
+      font-size: 12px;
+    }
+    .btns .pri { background: #111; color: #fff; }
+    .x { font-size: 11px; color: var(--muted); font-weight: 400; cursor: default; }
+    .tag { font-size: 10px; border: 1px solid var(--line); padding: 1px 4px; margin-left: 4px; }
+  </style>
+</head>
+<body>
+  <header class="page-head">
+    <h1>网站信息 · Demo 线框</h1>
+    <p>对照最新 demo-project 左侧栏：自动化任务 + 历史会话 / 定时任务会话。网站信息加在聊天头，不进左侧。</p>
+    <nav>
+      <a href="#p1">1 进助手</a>
+      <a href="#p1b">1b 自动化任务</a>
+      <a href="#p2">2 网站列表</a>
+      <a href="#p3">3 改某一站档案</a>
+      <a href="#p4">4 任务末尾多选站</a>
+      <a href="#p5">5 不要做成这样</a>
+    </nav>
+  </header>
+
+  <main>
+    <section class="block" id="p1">
+      <div class="meta">
+        <h2>1 · 刚进入运营助手</h2>
+        <span>不锁当前站 · 不增加第 13 条快捷能力</span>
+      </div>
+      <p class="callout">对照最新 SessionPanel：左栏已有「自动化任务」「+ 新会话」、以及「历史会话 / 定时任务会话」。「网站信息」只出现在右侧聊天头，不进左栏、不加进快捷能力。</p>
+      <div class="frame">
+        <div class="topbar">
+          <span class="brand">数字门户</span>
+          <nav class="portal">概况 网站管理 营销管理 客户管理 数据分析 管理设置 <b>运营助手</b></nav>
+          <span>中企业测试有限公司</span>
+        </div>
+        <div class="shell">
+          <div class="sessions">
+            <div class="sess-title">会话记录</div>
+            <div class="new auto">◎ 自动化任务</div>
+            <div class="new">+ 新会话</div>
+            <div class="sess-tabs"><span class="on">历史会话</span><span>定时任务会话</span></div>
+            <div class="item on">今天 · 未命名</div>
+            <div class="item">发布球阀</div>
+          </div>
+          <div class="chat">
+            <div class="chat-head">
+              <div>
+                <div class="name">AI 运营助手</div>
+                <div class="sub">增长智能中心</div>
+              </div>
+              <button class="mark" type="button">网站信息 · 2 个网站</button>
+              <span class="online">在线</span>
+            </div>
+            <div class="msgs">
+              <div class="bubble">
+                Hi~ 我是您的专属运营助手，我可以帮您：
+                <div class="chips">
+                  <span class="chip">发布产品</span>
+                  <span class="chip">发布内容</span>
+                  <span class="chip">商机挖掘</span>
+                  <span class="chip">邮件营销</span>
+                  <span class="chip">运营数据</span>
+                  <span class="chip">辅助配置</span>
+                </div>
+                <div class="tiny" style="margin-top:6px">快捷区只放办事。档案不在这里。</div>
+              </div>
+            </div>
+            <div class="input">请输入内容</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="block" id="p1b">
+      <div class="meta">
+        <h2>1b · 点左栏「自动化任务」（现网 Demo 已有）</h2>
+        <span>中间换成任务列表，没有聊天头，也就没有「网站信息」按钮</span>
+      </div>
+      <p class="callout">定时获客计划仍按门户企业身份注入档案，不在这一页改档案。改档案要回到对话（历史会话或某条定时任务会话）。「定时任务会话」是执行记录进聊天，不是选站。</p>
+      <div class="frame">
+        <div class="topbar">
+          <span class="brand">数字门户</span>
+          <nav class="portal">概况 网站管理 营销管理 客户管理 数据分析 管理设置 <b>运营助手</b></nav>
+          <span>中企业测试有限公司</span>
+        </div>
+        <div class="shell">
+          <div class="sessions">
+            <div class="sess-title">会话记录</div>
+            <div class="new auto on">◎ 自动化任务</div>
+            <div class="new">+ 新会话</div>
+            <div class="sess-tabs"><span>历史会话</span><span>定时任务会话</span></div>
+            <div class="tiny">此页不列出对话。点「定时任务会话」才回到聊天。</div>
+          </div>
+          <div class="chat">
+            <div class="side-body" style="flex:1">
+              <div class="tiny">自动化任务 · 推荐任务</div>
+              <div class="card">
+                <b>获客计划</b>
+                <div class="tiny">用外贸客户洞察找还在采购的工厂，自动写开发信，群发前由你确认</div>
+              </div>
+              <div class="sess-tabs" style="max-width:240px;margin-top:8px">
+                <span class="on">我的任务</span><span>执行历史</span>
+              </div>
+              <div class="site-row">
+                <b>HS 071290 · 美国 · 每周一</b>
+                <div class="tiny">启用中 · 手动执行 / 到点执行</div>
+              </div>
+              <div class="flag">这一屏没有「网站信息」。档案入口跟着聊天头走。</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="block" id="p2">
+      <div class="meta">
+        <h2>2 · 点「网站信息」→ 右侧出本门户站点列表</h2>
+        <span>占用现有右侧分栏，和产品预览同一位置</span>
+      </div>
+      <p class="callout">这里是档案目录，不是发布目标。没有「用作当前站 / 本次发布到这些站」。</p>
+      <div class="frame">
+        <div class="topbar">
+          <span class="brand">数字门户</span>
+          <nav class="portal">… <b>运营助手</b></nav>
+        </div>
+        <div class="shell">
+          <div class="sessions">
+            <div class="sess-title">会话记录</div>
+            <div class="new auto">◎ 自动化任务</div>
+            <div class="new">+ 新会话</div>
+            <div class="sess-tabs"><span class="on">历史会话</span><span>定时任务会话</span></div>
+            <div class="item on">今天 · 未命名</div>
+          </div>
+          <div class="chat">
+            <div class="chat-head">
+              <div>
+                <div class="name">AI 运营助手</div>
+                <div class="sub">对话区继续可用</div>
+              </div>
+              <span class="mark">网站信息 · 2 个网站</span>
+            </div>
+            <div class="msgs">
+              <div class="bubble">欢迎语 / 对话保持原位。打开档案不打断任务。</div>
+            </div>
+            <div class="input">请输入内容</div>
+          </div>
+          <aside class="side">
+            <div class="side-head">网站信息 <span class="x">关闭</span></div>
+            <div class="side-body">
+              <div class="tiny">本数字门户下的网站。每站一份档案。点开可改。</div>
+              <div class="site-row on">
+                <b>精工阀门 <span class="tag">中文</span></b>
+                jinggong-valve.com
+                <div class="tiny">已确认 · 2026-08-20 抽取</div>
+              </div>
+              <div class="site-row">
+                <b>Jinggong Valve <span class="tag">EN</span></b>
+                en.jinggong-valve.com
+                <div class="tiny">待确认 3 项 · 2026-08-20 抽取</div>
+              </div>
+              <div class="flag">不是多选框。一次只打开一份档案。</div>
+            </div>
+          </aside>
+        </div>
+      </div>
+    </section>
+
+    <section class="block" id="p3">
+      <div class="meta">
+        <h2>3 · 点某一站 → 8 节档案，允许修改</h2>
+        <span>客户看的和 Agent 读的是同一份已确认正文</span>
+      </div>
+      <p class="callout">保存只改这一站的档案。不改变「下一单要发到哪些站」。空字段保持空，不编造。</p>
+      <div class="frame">
+        <div class="topbar">
+          <span class="brand">数字门户</span>
+          <nav class="portal">… <b>运营助手</b></nav>
+        </div>
+        <div class="shell">
+          <div class="sessions">
+            <div class="sess-title">会话记录</div>
+            <div class="new auto">◎ 自动化任务</div>
+            <div class="new">+ 新会话</div>
+            <div class="sess-tabs"><span class="on">历史会话</span><span>定时任务会话</span></div>
+            <div class="item on">今天 · 未命名</div>
+          </div>
+          <div class="chat">
+            <div class="chat-head">
+              <div>
+                <div class="name">AI 运营助手</div>
+                <div class="sub">生成时用已确认字段，不再问「你们卖什么」</div>
+              </div>
+              <span class="mark">网站信息</span>
+            </div>
+            <div class="msgs">
+              <div class="bubble user">帮我写一款球阀详情页</div>
+              <div class="bubble">已用精工阀门档案中的行业、卖点、语气。规格和配图还请提供…</div>
+            </div>
+            <div class="input">请输入内容</div>
+          </div>
+          <aside class="side">
+            <div class="side-head"><span class="tiny">← 站点列表</span> Jinggong Valve</div>
+            <div class="side-body">
+              <div class="tiny">en.jinggong-valve.com · 英语 · 待确认：口号、默认收件邮箱、HS</div>
+              <div class="field"><b>1 企业是谁</b>Jinggong Valve Co., Ltd. · 工业阀门制造商</div>
+              <div class="field"><b>2 行业与买家</b>阀门 / OEM 工程商 / 北美、欧洲</div>
+              <div class="field"><b>3 卖什么</b>球阀、蝶阀 · 主推：浮动球阀</div>
+              <div class="field"><b>4 品牌/语气</b>专业克制 · 禁用「行业第一」</div>
+              <div class="field"><b>5 联系</b>对外 sales@… · 默认收件（待确认）</div>
+              <div class="field"><b>6 栏目</b>About / Products / News / Contact</div>
+              <div class="field"><b>7 优势</b>ISO 认证 · 20 年出口（网站原话）</div>
+              <div class="field"><b>8 商务售后</b>质保、交期：站上没有则空着</div>
+              <div class="btns"><span class="pri">保存</span><span>取消</span></div>
+            </div>
+          </aside>
+        </div>
+      </div>
+    </section>
+
+    <section class="block" id="p4">
+      <div class="meta">
+        <h2>4 · 任务做到末尾才选站，仍可多选</h2>
+        <span>和「网站信息」不是同一个控件</span>
+      </div>
+      <p class="callout">内容已定稿之后：get_website_list → 多选发布目标。档案只解决「按谁的身份来写」，不锁发布范围。</p>
+      <div class="frame">
+        <div class="topbar">
+          <span class="brand">数字门户</span>
+          <nav class="portal">… <b>运营助手</b></nav>
+        </div>
+        <div class="shell">
+          <div class="sessions">
+            <div class="sess-title">会话记录</div>
+            <div class="new auto">◎ 自动化任务</div>
+            <div class="new">+ 新会话</div>
+            <div class="sess-tabs"><span class="on">历史会话</span><span>定时任务会话</span></div>
+            <div class="item on">发布球阀</div>
+          </div>
+          <div class="chat">
+            <div class="chat-head">
+              <div>
+                <div class="name">AI 运营助手</div>
+                <div class="sub">聊天头仍是网站信息（看档案）</div>
+              </div>
+              <span class="mark ghost">网站信息 · 2 个网站</span>
+            </div>
+            <div class="msgs">
+              <div class="bubble">详情页已定稿。请选择要发布到哪些网站（可多选）：</div>
+              <div class="card">
+                <b>发布到</b>
+                <div class="checks">
+                  <label><input type="checkbox" checked disabled /> 精工阀门 · jinggong-valve.com · 中文</label>
+                  <label><input type="checkbox" checked disabled /> Jinggong Valve · en.jinggong-valve.com · EN</label>
+                </div>
+                <div class="tiny">可同时勾选。与右侧「正在看哪份档案」无关。</div>
+                <div class="tiny" style="margin-top:6px">若语言不同：提示将按一份正文发布，或建议分两次。</div>
+                <div class="btns" style="margin-top:8px"><span class="pri">确认发布</span><span>返回改内容</span></div>
+              </div>
+            </div>
+            <div class="input">请输入内容</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="block" id="p5">
+      <div class="meta">
+        <h2>5 · 不要做成这样</h2>
+        <span>进门单选锁站 / 快捷区多一颗「网站档案」</span>
+      </div>
+      <p class="callout">左：进门强制当前站，后面无法多选发布。右：档案混进办事按钮，客户会以为要「跑一项任务」。</p>
+      <div class="frame" style="min-height:auto;padding:16px;display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+        <div>
+          <div class="tiny" style="margin-bottom:8px">错误 A · 进门单选当前站</div>
+          <div class="bubble">请先选择当前网站才能开始</div>
+          <div class="card" style="margin-top:8px">
+            <div class="checks">
+              <label><input type="radio" checked disabled /> 精工阀门（当前）</label>
+              <label><input type="radio" disabled /> Jinggong Valve</label>
+            </div>
+            <div class="flag" style="margin-top:8px">发布时只能打到「当前」这一站，和现网多选冲突。</div>
+          </div>
+        </div>
+        <div>
+          <div class="tiny" style="margin-bottom:8px">错误 B · 第 13 条快捷能力</div>
+          <div class="chips">
+            <span class="chip">发布产品</span>
+            <span class="chip">发布内容</span>
+            <span class="chip muted">网站档案 ← 不要加在这里</span>
+            <span class="chip">辅助配置</span>
+          </div>
+          <div class="flag" style="margin-top:8px">档案是壳层记忆，不是一次任务。辅助配置继续只放提醒/报告。</div>
+        </div>
+      </div>
+    </section>
+  </main>
+</body>
+</html>

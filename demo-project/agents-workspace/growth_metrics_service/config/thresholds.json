@@ -1,0 +1,51 @@
+{
+  "version": "1.0.0",
+  "note": "阈值档位表。改这里不改代码。metric_dict.json 里的 judge 是默认档，本表按站点覆盖。",
+  "baseline": {
+    "method": "past_4w_same_period",
+    "min_weeks_for_absolute_line": 4,
+    "comment": "新口径一期只判环比方向；绝对值线连采 4 周后再定。改口径必须重采基线。"
+  },
+  "deadband": {
+    "comment": "三态之间的死档：跌幅落在持平与异常之间，谁都不接。v0.1 一律并进持平。",
+    "policy": "fold_into_flat",
+    "cases": [
+      {
+        "ref": "留资数@全站",
+        "gap": "环比跌 20%~30%",
+        "range": { "dir": "down", "pct_gte": 0.2, "pct_lt": 0.3 },
+        "current": "fold_into_flat",
+        "alternatives": ["fold_into_anomaly"],
+        "status": "未决 · 见 SPEC 第 8 节",
+        "reason": "异常线 >30%，20~30% 区间被持平吞掉。改成 fold_into_anomaly 即会下钻。"
+      }
+    ]
+  },
+  "global_defaults": {
+    "rate_metrics": { "pct_change": 0.1, "abs_change_pp": 2 },
+    "volume_metrics": { "pct_change": 0.2 },
+    "lead_count_metrics": { "pct_change": 0.3 },
+    "bounce_like_metrics": { "pct_change": 0.15 },
+    "quantile_metrics": { "pp_change": 15 },
+    "exit_share_metrics": { "pp_change": 10 }
+  },
+  "min_base_defaults": {
+    "denominator": 10,
+    "channel_uv": 30,
+    "keyword_click": 10,
+    "prev_lead_count": 5,
+    "prev_site_uv": 100,
+    "period_days": 14
+  },
+  "site_overrides": {
+    "site_demo_b2b": {
+      "comment": "贯穿案例站点，暂不覆盖任何阈值，全部走默认档。",
+      "metrics": {}
+    }
+  },
+  "unavailable_metrics": {
+    "comment": "一期明确不接的指标，固定落 data_gaps，不参与三态与假设核对。",
+    "not_connected": ["表单曝光率@页面", "页面留资率@页面"],
+    "not_in_phase1": ["高价值线索占比@全站"]
+  }
+}

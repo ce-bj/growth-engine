@@ -1,0 +1,2593 @@
+{
+  "version": "1.0.0",
+  "source": "指标字典与假设方案库.xlsx · 指标字典",
+  "note": "生成后此文件为唯一事实源，请直接编辑，不要再从 xlsx 覆盖生成。plain 是给老板/运营看的说法，改这里就能改 Agent 的措辞。",
+  "dims": [
+    "全站",
+    "渠道",
+    "页面",
+    "渠道×页",
+    "搜索词",
+    "搜索词×页",
+    "通道",
+    "路径"
+  ],
+  "layers": [
+    "扫描",
+    "访问入口",
+    "流失点1",
+    "流失点2",
+    "流失点3",
+    "技术侧"
+  ],
+  "metrics": [
+    {
+      "id": "M1",
+      "ref": "留资数@全站",
+      "name": "留资数",
+      "dim": "全站",
+      "layer": "扫描",
+      "role": "primary",
+      "tri_state": "full",
+      "numerator": "24h 同联系方式去重后的条数",
+      "denominator": "无",
+      "meaning": "用来看这个月到底留下了多少条询盘，是对客户承诺的绝对产出。\n绝对数。≠ 留资访客（访客不是条数）。",
+      "min_base": {
+        "raw": "上期 ≤5 不计算",
+        "rules": [
+          {
+            "type": "prev_value",
+            "gt": 5
+          }
+        ]
+      },
+      "judge": {
+        "anomaly": {
+          "type": "pct_change",
+          "dir": "down",
+          "gt": 0.3
+        },
+        "improve": {
+          "type": "pct_change",
+          "dir": "up",
+          "gt": 0.3
+        }
+      },
+      "baseline": "past_4w_same_period",
+      "source_raw": {
+        "是否判3态": "是",
+        "异常条件": "异常：环比跌 >30%，且上期基数 >5\n提升：环比涨 >30%，且本期 >5\n持平：其余\n对比：过去 4 周同期平均"
+      },
+      "deadband_ref": "留资数@全站",
+      "plain": "拿到的询盘条数"
+    },
+    {
+      "id": "M2",
+      "ref": "留资率@全站",
+      "name": "留资率",
+      "dim": "全站",
+      "layer": "扫描",
+      "role": "primary",
+      "tri_state": "full",
+      "numerator": "去重留资条数",
+      "denominator": "全站 UV",
+      "meaning": "用来看来的人里有多大比例留下了询盘，看站点获客能力。\n北极星。≠ 留资完成率（分母不是转化交互访客）。≠ 留资访客率（分子不是访客）。",
+      "min_base": {
+        "raw": "无",
+        "rules": []
+      },
+      "judge": {
+        "anomaly": {
+          "any": [
+            {
+              "type": "pct_change",
+              "dir": "down",
+              "gt": 0.2
+            },
+            {
+              "type": "value",
+              "lt": 0.005
+            }
+          ]
+        },
+        "improve": {
+          "any": [
+            {
+              "type": "pct_change",
+              "dir": "up",
+              "gt": 0.2
+            },
+            {
+              "type": "value",
+              "gt": 0.025
+            }
+          ]
+        }
+      },
+      "baseline": "past_4w_same_period",
+      "source_raw": {
+        "是否判3态": "是",
+        "异常条件": "异常：环比跌 >20%，或绝对值 <0.5%\n提升：环比涨 >20%，或绝对值 >2.5%\n持平：其余\n对比：过去 4 周同期平均；另比年度目标 3%"
+      },
+      "note": "另比年度目标 3%",
+      "plain": "每 100 个访客里有几个留了联系方式"
+    },
+    {
+      "id": "M3",
+      "ref": "有效浏览率@全站",
+      "name": "有效浏览率",
+      "dim": "全站",
+      "layer": "扫描",
+      "role": "primary",
+      "tri_state": "full",
+      "numerator": "有效浏览访客",
+      "denominator": "全站 UV",
+      "meaning": "用来看进来的人有没有真看进去。\n流失点 1 定位主指标。\n有效浏览＝该访客 cookie 当天落地停留 ≥15s 或当天已转化交互 或 当天任一页停留 ≥15s（看该 UV 当天所有会话，任一次满足即可）。\n停留＝前台有效停留；单次上限 30 分钟（与会话超时对齐，超过按 30 分钟计）。≥15s 判定和均值都用封顶后的秒数；挂着标签过夜不按真实阅读计。",
+      "min_base": {
+        "raw": "周期 <14 天不计算",
+        "rules": [
+          {
+            "type": "period_days",
+            "gte": 14
+          }
+        ]
+      },
+      "judge": {
+        "anomaly": {
+          "all": [
+            {
+              "type": "pct_change",
+              "dir": "down",
+              "gt": 0.1
+            },
+            {
+              "type": "abs_change_pp",
+              "dir": "down",
+              "gt": 2
+            }
+          ]
+        },
+        "improve": {
+          "all": [
+            {
+              "type": "pct_change",
+              "dir": "up",
+              "gt": 0.1
+            },
+            {
+              "type": "abs_change_pp",
+              "dir": "up",
+              "gt": 2
+            }
+          ]
+        }
+      },
+      "baseline": "past_4w_same_period",
+      "source_raw": {
+        "是否判3态": "是",
+        "异常条件": "异常：环比跌 >10% 且绝对跌 >2pp（须同时满足）\n提升：环比涨 >10% 且绝对涨 >2pp\n持平：其余\n对比：过去 4 周同期平均。新口径一期只判环比方向，绝对值线连采 4 周后再定"
+      },
+      "plain": "来的人里有多少真的看进去了"
+    },
+    {
+      "id": "M4",
+      "ref": "转化交互率@全站",
+      "name": "转化交互率",
+      "dim": "全站",
+      "layer": "扫描",
+      "role": "primary",
+      "tri_state": "full",
+      "numerator": "表单开始编辑访客 或 主动开聊访客（去重）",
+      "denominator": "有效浏览访客",
+      "meaning": "用来看看进网站浏览的人，有没有动手开填表或开聊。\n流失点 2 定位主指标。",
+      "min_base": {
+        "raw": "有效浏览访客 <10 不计算；\n周期 <14 天不计算",
+        "rules": [
+          {
+            "type": "denominator",
+            "gte": 10
+          },
+          {
+            "type": "period_days",
+            "gte": 14
+          }
+        ]
+      },
+      "judge": {
+        "anomaly": {
+          "all": [
+            {
+              "type": "pct_change",
+              "dir": "down",
+              "gt": 0.1
+            },
+            {
+              "type": "abs_change_pp",
+              "dir": "down",
+              "gt": 2
+            }
+          ]
+        },
+        "improve": {
+          "all": [
+            {
+              "type": "pct_change",
+              "dir": "up",
+              "gt": 0.1
+            },
+            {
+              "type": "abs_change_pp",
+              "dir": "up",
+              "gt": 2
+            }
+          ]
+        }
+      },
+      "baseline": "past_4w_same_period",
+      "source_raw": {
+        "是否判3态": "是",
+        "异常条件": "异常：环比跌 >10% 且绝对跌 >2pp（须同时满足）\n提升：环比涨 >10% 且绝对涨 >2pp\n持平：其余\n对比：过去 4 周同期平均。新口径一期只判环比方向，绝对值线连采 4 周后再定"
+      },
+      "plain": "看进去的人里有多少动手问价或开聊"
+    },
+    {
+      "id": "M5",
+      "ref": "留资完成率@全站",
+      "name": "留资完成率",
+      "dim": "全站",
+      "layer": "扫描",
+      "role": "primary",
+      "tri_state": "full",
+      "numerator": "留资访客",
+      "denominator": "转化交互访客",
+      "meaning": "用来看动手开始填写或聊天的人，最后有没有留下联系方式。\n流失点 3 定位主指标。\n≠ 留资率（分母不是全站 UV）。≠ 表单完成率（表单完成率只反应表单来源）。",
+      "min_base": {
+        "raw": "转化交互访客 <10 不计算；\n周期 <14 天不计算",
+        "rules": [
+          {
+            "type": "denominator",
+            "gte": 10
+          },
+          {
+            "type": "period_days",
+            "gte": 14
+          }
+        ]
+      },
+      "judge": {
+        "anomaly": {
+          "all": [
+            {
+              "type": "pct_change",
+              "dir": "down",
+              "gt": 0.1
+            },
+            {
+              "type": "abs_change_pp",
+              "dir": "down",
+              "gt": 2
+            }
+          ]
+        },
+        "improve": {
+          "all": [
+            {
+              "type": "pct_change",
+              "dir": "up",
+              "gt": 0.1
+            },
+            {
+              "type": "abs_change_pp",
+              "dir": "up",
+              "gt": 2
+            }
+          ]
+        }
+      },
+      "baseline": "past_4w_same_period",
+      "source_raw": {
+        "是否判3态": "是",
+        "异常条件": "异常：环比跌 >10% 且绝对跌 >2pp（须同时满足）\n提升：环比涨 >10% 且绝对涨 >2pp\n持平：其余\n对比：过去 4 周同期平均。新口径一期只判环比方向，绝对值线连采 4 周后再定"
+      },
+      "plain": "问价开聊的人里有多少最后留了联系方式"
+    },
+    {
+      "id": "M6",
+      "ref": "UV@全站",
+      "name": "UV",
+      "dim": "全站",
+      "layer": "扫描",
+      "role": "primary",
+      "tri_state": "full",
+      "numerator": "当日不重复访客（cookie，一天 1 次；周期内逐日累加，不是按月去重）",
+      "denominator": "无",
+      "meaning": "用来看来了多少人。\n访问入口的量。会话 ≠ cookie：会话有独立 ID，无操作 30 分钟或过 0 点新开。Cookie上 一年不变，除非主动清除。",
+      "min_base": {
+        "raw": "上期 ≤100 不计算",
+        "rules": [
+          {
+            "type": "prev_value",
+            "gt": 100
+          }
+        ]
+      },
+      "judge": {
+        "anomaly": {
+          "type": "pct_change",
+          "dir": "down",
+          "gt": 0.2
+        },
+        "improve": {
+          "type": "pct_change",
+          "dir": "up",
+          "gt": 0.2
+        }
+      },
+      "baseline": "past_4w_same_period",
+      "source_raw": {
+        "是否判3态": "是",
+        "异常条件": "异常：环比跌 >20%，且上期基数 >100\n提升：环比涨 >20%，且本期 >100\n持平：其余\n对比：过去 4 周同期平均"
+      },
+      "plain": "一共来了多少人"
+    },
+    {
+      "id": "M7",
+      "ref": "渠道UV占比@渠道",
+      "name": "渠道UV占比",
+      "dim": "渠道",
+      "layer": "扫描",
+      "role": "primary",
+      "tri_state": "no_flat",
+      "numerator": "该渠道 UV",
+      "denominator": "全站 UV",
+      "meaning": "用来看来的人结构变没变，哪条渠变多了。\n看结构，不看总量。",
+      "min_base": {
+        "raw": "该渠道 UV <30 不计算",
+        "rules": [
+          {
+            "type": "companion",
+            "ref": "UV@渠道",
+            "gte": 30
+          }
+        ]
+      },
+      "judge": {
+        "anomaly": {
+          "all": [
+            {
+              "type": "pct_change",
+              "dir": "up",
+              "gt": 0.3
+            },
+            {
+              "type": "ref_ratio",
+              "left": "留资率@渠道",
+              "right": "留资率@全站",
+              "lt": 0.5
+            }
+          ]
+        },
+        "improve": {
+          "all": [
+            {
+              "type": "pct_change",
+              "dir": "up",
+              "gt": 0.3
+            },
+            {
+              "type": "ref_ratio",
+              "left": "留资率@渠道",
+              "right": "留资率@全站",
+              "gte": 1.0
+            }
+          ]
+        }
+      },
+      "baseline": "past_4w_same_period",
+      "source_raw": {
+        "是否判3态": "不判持平",
+        "异常条件": "异常：占比升 >30%，且该渠道留资率 < 全站留资率的一半\n提升：占比升 >30%，且该渠道留资率 ≥ 全站留资率\n持平：不判\n对比：过去 4 周同期平均"
+      },
+      "plain": "这条来路占全部访客的比例"
+    },
+    {
+      "id": "M8",
+      "ref": "秒退率@全站",
+      "name": "秒退率",
+      "dim": "全站",
+      "layer": "扫描",
+      "role": "primary",
+      "tri_state": "full",
+      "numerator": "该访客 cookie 当天只看 1 页，且当天所有会话都不满足有效浏览（落地停留 <15s、任一页停留都 <15s、当天没有转化交互）的访客",
+      "denominator": "全站 UV",
+      "meaning": "用来评估那些没看进去的人里，有多少是刚落地看了一眼就走的。\n≠ 跳出率（跳出率只看页数）。\n秒退率 < 1−有效浏览率；秒退率+有效浏览率 >1 是取数 bug。",
+      "min_base": {
+        "raw": "周期 <14 天不计算",
+        "rules": [
+          {
+            "type": "period_days",
+            "gte": 14
+          }
+        ]
+      },
+      "judge": {
+        "anomaly": {
+          "type": "pct_change",
+          "dir": "up",
+          "gt": 0.15
+        },
+        "improve": {
+          "type": "pct_change",
+          "dir": "down",
+          "gt": 0.15
+        }
+      },
+      "baseline": "past_4w_same_period",
+      "source_raw": {
+        "是否判3态": "是",
+        "异常条件": "异常：环比升 >15%\n提升：环比降 >15%\n持平：其余\n对比：过去 4 周同期平均。新口径一期只判环比方向，绝对值线连采 4 周后再定"
+      },
+      "plain": "打开就走的人占多少"
+    },
+    {
+      "id": "M9",
+      "ref": "有效浏览访客@全站",
+      "name": "有效浏览访客",
+      "dim": "全站",
+      "layer": "扫描",
+      "role": "counting",
+      "tri_state": "none",
+      "numerator": "该访客 cookie 当天落地停留 ≥15s 或当天已转化交互 或 当天任一页停留 ≥15s（看该 UV 当天所有会话，任一次满足即可）。\n停留＝前台有效停留；单次上限 30 分钟（与会话超时对齐，超过按 30 分钟计）。≥15s 判定和均值都用封顶后的秒数；挂着标签过夜不按真实阅读计。",
+      "denominator": "无",
+      "meaning": "用来计数当天看进去了的人数。\n漏斗第二层人数。计数，不单独判三态。\n该访客 cookie 当天落地停留 ≥15s 或当天已转化交互 或 当天任一页停留 ≥15s（看该 UV 当天所有会话，任一次满足即可）。\n停留＝前台有效停留；单次上限 30 分钟（与会话超时对齐，超过按 30 分钟计）。≥15s 判定和均值都用封顶后的秒数；挂着标签过夜不按真实阅读计。",
+      "min_base": {
+        "raw": "无",
+        "rules": []
+      },
+      "judge": null,
+      "baseline": "past_4w_same_period",
+      "source_raw": {
+        "是否判3态": "否",
+        "异常条件": "不判三态。给有效浏览率当分子。"
+      },
+      "plain": "真的看进去的人数"
+    },
+    {
+      "id": "M10",
+      "ref": "转化交互访客@全站",
+      "name": "转化交互访客",
+      "dim": "全站",
+      "layer": "扫描",
+      "role": "counting",
+      "tri_state": "none",
+      "numerator": "表单开始编辑 或 主动开聊（去重）的访客",
+      "denominator": "无",
+      "meaning": "用来计数当天有转化交互动作的人数。\n漏斗第三层人数。现网两通道。点 CTA 无独立事件。",
+      "min_base": {
+        "raw": "无",
+        "rules": []
+      },
+      "judge": null,
+      "baseline": "past_4w_same_period",
+      "source_raw": {
+        "是否判3态": "否",
+        "异常条件": "不判三态。给转化交互率当分子、给留资完成率当分母。"
+      },
+      "plain": "问价或开聊的人数"
+    },
+    {
+      "id": "M11",
+      "ref": "留资访客@全站",
+      "name": "留资访客",
+      "dim": "全站",
+      "layer": "扫描",
+      "role": "counting",
+      "tri_state": "none",
+      "numerator": "线索来源为表单提交或智能客服的访客（外贸客户洞察等其他来源不算）",
+      "denominator": "无",
+      "meaning": "用来数当天留下了的人数\n漏斗第四层人数。数的是访客。≠ 线索数。",
+      "min_base": {
+        "raw": "无",
+        "rules": []
+      },
+      "judge": null,
+      "baseline": "past_4w_same_period",
+      "source_raw": {
+        "是否判3态": "否",
+        "异常条件": "不判三态。给留资完成率当分子。"
+      },
+      "plain": "留了联系方式的人数"
+    },
+    {
+      "id": "M12",
+      "ref": "健康度待处理问题数@全站",
+      "name": "健康度待处理问题数",
+      "dim": "全站",
+      "layer": "技术侧",
+      "role": "primary",
+      "tri_state": "anomaly_only",
+      "numerator": "待处理问题条数",
+      "denominator": "无",
+      "meaning": "用来看站点有没有技术故障挡着转化。\n技术侧。不进漏斗、不占落点。",
+      "min_base": {
+        "raw": "无",
+        "rules": []
+      },
+      "judge": {
+        "anomaly": {
+          "type": "health_high_risk"
+        }
+      },
+      "baseline": "past_4w_same_period",
+      "source_raw": {
+        "是否判3态": "只报异常",
+        "异常条件": "异常：出现高危级别问题，或问题能挂到该页\n提升：不判\n持平：不判"
+      },
+      "plain": "网站待处理的技术问题条数"
+    },
+    {
+      "id": "M13",
+      "ref": "健康度待处理问题列表@全站",
+      "name": "健康度待处理问题列表",
+      "dim": "全站",
+      "layer": "技术侧",
+      "role": "reference",
+      "tri_state": "anomaly_only",
+      "numerator": "待处理问题列表",
+      "denominator": "无",
+      "meaning": "用来看站点有没有技术故障挡着转化。\n技术侧。不进漏斗、不占落点。",
+      "min_base": {
+        "raw": "无",
+        "rules": []
+      },
+      "judge": {
+        "anomaly": {
+          "type": "health_high_risk"
+        }
+      },
+      "baseline": "past_4w_same_period",
+      "source_raw": {
+        "是否判3态": "只报异常",
+        "异常条件": "异常：出现高危级别问题，或问题能挂到该页\n提升：不判\n持平：不判"
+      },
+      "plain": "网站待处理的技术问题清单"
+    },
+    {
+      "id": "M14",
+      "ref": "UV@渠道",
+      "name": "UV",
+      "dim": "渠道",
+      "layer": "访问入口",
+      "role": "primary",
+      "tri_state": "full",
+      "numerator": "该渠道访客·日",
+      "denominator": "无",
+      "meaning": "用来看这条渠来了多少人。\n渠道量。",
+      "min_base": {
+        "raw": "该渠道 UV <30 不计算",
+        "rules": [
+          {
+            "type": "self_value",
+            "gte": 30
+          }
+        ]
+      },
+      "judge": {
+        "anomaly": {
+          "type": "pct_change",
+          "dir": "down",
+          "gt": 0.2
+        },
+        "improve": {
+          "type": "pct_change",
+          "dir": "up",
+          "gt": 0.2
+        }
+      },
+      "baseline": "past_4w_same_period",
+      "source_raw": {
+        "是否判3态": "是",
+        "异常条件": "异常：环比跌 >20%\n提升：环比涨 >20%\n持平：其余\n对比：过去 4 周同期平均"
+      },
+      "plain": "这条来路来了多少人"
+    },
+    {
+      "id": "M15",
+      "ref": "留资率@渠道",
+      "name": "留资率",
+      "dim": "渠道",
+      "layer": "访问入口",
+      "role": "primary",
+      "tri_state": "full",
+      "numerator": "该渠道去重留资条数",
+      "denominator": "该渠道 UV",
+      "meaning": "用来看这条渠来的人好不好转化。\n渠道质。",
+      "min_base": {
+        "raw": "该渠道 UV <30 不计算",
+        "rules": [
+          {
+            "type": "companion",
+            "ref": "UV@渠道",
+            "gte": 30
+          }
+        ]
+      },
+      "judge": {
+        "anomaly": {
+          "any": [
+            {
+              "type": "pct_change",
+              "dir": "down",
+              "gt": 0.2
+            },
+            {
+              "type": "ref_ratio",
+              "left": "留资率@渠道",
+              "right": "留资率@全站",
+              "lt": 0.5
+            }
+          ]
+        },
+        "improve": {
+          "type": "pct_change",
+          "dir": "up",
+          "gt": 0.2
+        }
+      },
+      "baseline": "past_4w_same_period",
+      "source_raw": {
+        "是否判3态": "是",
+        "异常条件": "异常：环比跌 >20%，或低于全站留资率一半\n提升：环比涨 >20%\n持平：其余\n对比：过去 4 周同期平均"
+      },
+      "plain": "这条来路每 100 人里有几个留了联系方式"
+    },
+    {
+      "id": "M16",
+      "ref": "留资数@渠道",
+      "name": "留资数",
+      "dim": "渠道",
+      "layer": "访问入口",
+      "role": "primary",
+      "tri_state": "full",
+      "numerator": "该渠道去重留资条数",
+      "denominator": "无",
+      "meaning": "用来看这条渠留下了多少条线索。\n渠道的绝对产出。",
+      "min_base": {
+        "raw": "上期该渠道留资数 ≤5 不计算",
+        "rules": [
+          {
+            "type": "prev_value",
+            "gt": 5
+          }
+        ]
+      },
+      "judge": {
+        "anomaly": {
+          "type": "pct_change",
+          "dir": "down",
+          "gt": 0.3
+        },
+        "improve": {
+          "type": "pct_change",
+          "dir": "up",
+          "gt": 0.3
+        }
+      },
+      "baseline": "past_4w_same_period",
+      "source_raw": {
+        "是否判3态": "是",
+        "异常条件": "异常：环比跌 >30%\n提升：环比涨 >30%\n持平：其余\n对比：过去 4 周同期平均"
+      },
+      "plain": "这条来路拿到的询盘条数"
+    },
+    {
+      "id": "M17",
+      "ref": "来路关键词展现量@搜索词",
+      "name": "来路关键词展现量",
+      "dim": "搜索词",
+      "layer": "访问入口",
+      "role": "primary",
+      "tri_state": "full",
+      "numerator": "该词在搜索结果中被展示的次数（自然结果或广告）",
+      "denominator": "无",
+      "meaning": "用来看搜这个词时，搜索结果里指向本站的链接出现了多少次（自然结果或广告）。\n词只在自然搜索和付费搜索上有；次数来自搜索资源平台、Search Console、广告后台。",
+      "min_base": {
+        "raw": "该词本期点击 <10 不计算",
+        "rules": [
+          {
+            "type": "companion",
+            "ref": "来路关键词点击量@搜索词",
+            "gte": 10
+          }
+        ]
+      },
+      "judge": {
+        "anomaly": {
+          "type": "pct_change",
+          "dir": "down",
+          "gt": 0.2
+        },
+        "improve": {
+          "type": "pct_change",
+          "dir": "up",
+          "gt": 0.2
+        }
+      },
+      "baseline": "past_4w_same_period",
+      "source_raw": {
+        "是否判3态": "是",
+        "异常条件": "异常：环比跌 >20%\n提升：环比涨 >20%\n持平：其余\n对比：过去 4 周同期平均"
+      },
+      "plain": "这个词在搜索结果里被看到多少次"
+    },
+    {
+      "id": "M18",
+      "ref": "来路关键词点击量@搜索词",
+      "name": "来路关键词点击量",
+      "dim": "搜索词",
+      "layer": "访问入口",
+      "role": "primary",
+      "tri_state": "full",
+      "numerator": "该词在搜索结果中被点击的次数（自然结果或广告）",
+      "denominator": "无",
+      "meaning": "用来看搜这个词时，有多少次有人点了搜索结果里指向本站的链接（自然结果或广告）。\n词只在自然搜索和付费搜索上有；次数来自搜索资源平台、Search Console、广告后台。",
+      "min_base": {
+        "raw": "该词本期点击 <10 不计算",
+        "rules": [
+          {
+            "type": "self_value",
+            "gte": 10
+          }
+        ]
+      },
+      "judge": {
+        "anomaly": {
+          "type": "pct_change",
+          "dir": "down",
+          "gt": 0.2
+        },
+        "improve": {
+          "type": "pct_change",
+          "dir": "up",
+          "gt": 0.2
+        }
+      },
+      "baseline": "past_4w_same_period",
+      "source_raw": {
+        "是否判3态": "是",
+        "异常条件": "异常：环比跌 >20%\n提升：环比涨 >20%\n持平：其余\n对比：过去 4 周同期平均"
+      },
+      "plain": "这个词带来了多少次点击"
+    },
+    {
+      "id": "M19",
+      "ref": "有效浏览率@渠道",
+      "name": "有效浏览率",
+      "dim": "渠道",
+      "layer": "流失点1",
+      "role": "primary",
+      "tri_state": "full",
+      "numerator": "该渠道有效浏览访客\n(该访客 cookie 当天落地停留 ≥15s 或当天已转化交互 或 当天任一页停留 ≥15s（看该 UV 当天所有会话，任一次满足即可）。\n停留＝前台有效停留；单次上限 30 分钟（与会话超时对齐，超过按 30 分钟计）。≥15s 判定和均值都用封顶后的秒数；挂着标签过夜不按真实阅读计。)",
+      "denominator": "该渠道 UV",
+      "meaning": "用来看这条渠来的人看进去没有。",
+      "min_base": {
+        "raw": "该渠道 UV <30 不计算",
+        "rules": [
+          {
+            "type": "companion",
+            "ref": "UV@渠道",
+            "gte": 30
+          }
+        ]
+      },
+      "judge": {
+        "anomaly": {
+          "all": [
+            {
+              "type": "pct_change",
+              "dir": "down",
+              "gt": 0.1
+            },
+            {
+              "type": "abs_change_pp",
+              "dir": "down",
+              "gt": 2
+            }
+          ]
+        },
+        "improve": {
+          "all": [
+            {
+              "type": "pct_change",
+              "dir": "up",
+              "gt": 0.1
+            },
+            {
+              "type": "abs_change_pp",
+              "dir": "up",
+              "gt": 2
+            }
+          ]
+        }
+      },
+      "baseline": "past_4w_same_period",
+      "source_raw": {
+        "是否判3态": "是",
+        "异常条件": "异常：环比跌 >10% 且绝对跌 >2pp（须同时满足）\n提升：环比涨 >10% 且绝对涨 >2pp\n持平：其余\n对比：过去 4 周同期平均。新口径一期只判环比方向，绝对值线连采 4 周后再定"
+      },
+      "plain": "这条来路的人里有多少看进去了"
+    },
+    {
+      "id": "M20",
+      "ref": "秒退率@渠道",
+      "name": "秒退率",
+      "dim": "渠道",
+      "layer": "流失点1",
+      "role": "primary",
+      "tri_state": "full",
+      "numerator": "该渠道秒退访客\n(该访客 cookie 当天只看 1 页，且当天所有会话都不满足有效浏览（落地停留 <15s、任一页停留都 <15s、当天没有转化交互）的访客)",
+      "denominator": "该渠道 UV",
+      "meaning": "用来看这条渠道来的人，是不是落地后看了一眼就走了。",
+      "min_base": {
+        "raw": "该渠道 UV <30 不计算",
+        "rules": [
+          {
+            "type": "companion",
+            "ref": "UV@渠道",
+            "gte": 30
+          }
+        ]
+      },
+      "judge": {
+        "anomaly": {
+          "type": "pct_change",
+          "dir": "up",
+          "gt": 0.15
+        },
+        "improve": {
+          "type": "pct_change",
+          "dir": "down",
+          "gt": 0.15
+        }
+      },
+      "baseline": "past_4w_same_period",
+      "source_raw": {
+        "是否判3态": "是",
+        "异常条件": "异常：环比升 >15%\n提升：环比降 >15%\n持平：其余\n对比：过去 4 周同期平均。新口径一期只判环比方向，绝对值线连采 4 周后再定"
+      },
+      "plain": "这条来路打开就走的人占多少"
+    },
+    {
+      "id": "M21",
+      "ref": "落地接住率@页面",
+      "name": "落地接住率",
+      "dim": "页面",
+      "layer": "流失点1",
+      "role": "primary",
+      "tri_state": "full",
+      "numerator": "以该页为落地页，且落地停留≥15s 或当天有转化交互动作的访客",
+      "denominator": "以该页为当天落地页的访客",
+      "meaning": "用来看从这一页进站的人，这一页自己接住了没有。\n只衡量落地页本身。\n后面某页停满 15s，也不算这一页接住了。≠ 全站有效浏览率。≠ 合格浏览率。\n停留＝前台有效停留；单次上限 30 分钟（与会话超时对齐，超过按 30 分钟计）。≥15s 判定和均值都用封顶后的秒数；挂着标签过夜不按真实阅读计。",
+      "min_base": {
+        "raw": "该页落地访客 <10 不计算",
+        "rules": [
+          {
+            "type": "denominator",
+            "gte": 10
+          }
+        ]
+      },
+      "judge": {
+        "anomaly": {
+          "all": [
+            {
+              "type": "pct_change",
+              "dir": "down",
+              "gt": 0.1
+            },
+            {
+              "type": "abs_change_pp",
+              "dir": "down",
+              "gt": 2
+            }
+          ]
+        },
+        "improve": {
+          "all": [
+            {
+              "type": "pct_change",
+              "dir": "up",
+              "gt": 0.1
+            },
+            {
+              "type": "abs_change_pp",
+              "dir": "up",
+              "gt": 2
+            }
+          ]
+        }
+      },
+      "baseline": "past_4w_same_period",
+      "source_raw": {
+        "是否判3态": "是",
+        "异常条件": "异常：环比跌 >10% 且绝对跌 >2pp（须同时满足）\n提升：环比涨 >10% 且绝对涨 >2pp\n持平：其余\n对比：过去 4 周同期平均。新口径一期只判环比方向，绝对值线连采 4 周后再定\n三个通过率都没掉时，仍看本条或落地停留，有页破线仍定位流失点 1。"
+      },
+      "note": "三个通过率都没掉时仍看本条或落地停留，有页破线仍定位流失点 1",
+      "plain": "从这一页进来的人，有多少留下来继续看"
+    },
+    {
+      "id": "M22",
+      "ref": "合格浏览率@页面",
+      "name": "合格浏览率",
+      "dim": "页面",
+      "layer": "流失点1",
+      "role": "primary",
+      "tri_state": "full",
+      "numerator": "该页停留≥15s 或在该页发生转化交互的访客",
+      "denominator": "该页 UV",
+      "meaning": "用来看打开过这一页的人，这一页看进去了没有。\n打开过这一页的人里看进去的比例。\n各页分子加总 ≠ 全站有效浏览访客。停留＝前台有效停留；单次上限 30 分钟（与会话超时对齐，超过按 30 分钟计）。≥15s 判定和均值都用封顶后的秒数；挂着标签过夜不按真实阅读计。",
+      "min_base": {
+        "raw": "该页 UV <10 不计算",
+        "rules": [
+          {
+            "type": "denominator",
+            "gte": 10
+          }
+        ]
+      },
+      "judge": {
+        "anomaly": {
+          "all": [
+            {
+              "type": "pct_change",
+              "dir": "down",
+              "gt": 0.1
+            },
+            {
+              "type": "abs_change_pp",
+              "dir": "down",
+              "gt": 2
+            }
+          ]
+        },
+        "improve": {
+          "all": [
+            {
+              "type": "pct_change",
+              "dir": "up",
+              "gt": 0.1
+            },
+            {
+              "type": "abs_change_pp",
+              "dir": "up",
+              "gt": 2
+            }
+          ]
+        }
+      },
+      "baseline": "past_4w_same_period",
+      "source_raw": {
+        "是否判3态": "是",
+        "异常条件": "异常：环比跌 >10% 且绝对跌 >2pp（须同时满足）\n提升：环比涨 >10% 且绝对涨 >2pp\n持平：其余\n对比：过去 4 周同期平均。新口径一期只判环比方向，绝对值线连采 4 周后再定"
+      },
+      "plain": "在这一页看够时间、也翻得够深的人占多少"
+    },
+    {
+      "id": "M23",
+      "ref": "落地接住率@渠道×页",
+      "name": "落地接住率",
+      "dim": "渠道×页",
+      "layer": "流失点1",
+      "role": "primary",
+      "tri_state": "full",
+      "numerator": "该渠以该页为落地页，且落地停留≥15s 或当天已转化的访客",
+      "denominator": "该渠以该页为当天落地页的访客",
+      "meaning": "用来看是所有人到这一页（落地页）都差，还是只有某一渠道的人到这一页（落地页）变差了。",
+      "min_base": {
+        "raw": "从该渠道进来、且当天的落地页就是这一页的访客 <10 不计算",
+        "rules": [
+          {
+            "type": "denominator",
+            "gte": 10
+          }
+        ]
+      },
+      "judge": {
+        "anomaly": {
+          "all": [
+            {
+              "type": "pct_change",
+              "dir": "down",
+              "gt": 0.1
+            },
+            {
+              "type": "abs_change_pp",
+              "dir": "down",
+              "gt": 2
+            }
+          ]
+        },
+        "improve": {
+          "all": [
+            {
+              "type": "pct_change",
+              "dir": "up",
+              "gt": 0.1
+            },
+            {
+              "type": "abs_change_pp",
+              "dir": "up",
+              "gt": 2
+            }
+          ]
+        }
+      },
+      "baseline": "past_4w_same_period",
+      "source_raw": {
+        "是否判3态": "是",
+        "异常条件": "异常：环比跌 >10% 且绝对跌 >2pp（须同时满足）\n提升：环比涨 >10% 且绝对涨 >2pp\n持平：其余\n对比：过去 4 周同期平均。新口径一期只判环比方向，绝对值线连采 4 周后再定"
+      },
+      "plain": "这条来路落到这一页，有多少人留下来继续看"
+    },
+    {
+      "id": "M24",
+      "ref": "合格浏览率@渠道×页",
+      "name": "合格浏览率",
+      "dim": "渠道×页",
+      "layer": "流失点1",
+      "role": "primary",
+      "tri_state": "full",
+      "numerator": "该渠打开过该页，且该页停留≥15s 或在该页发生转化交互的访客",
+      "denominator": "该渠该页 UV",
+      "meaning": "用来看打开这一页的某一渠道，这一页看进去了没有。",
+      "min_base": {
+        "raw": "从该渠道进来并访问到该页面的访客 <10 不计算",
+        "rules": [
+          {
+            "type": "denominator",
+            "gte": 10
+          }
+        ]
+      },
+      "judge": {
+        "anomaly": {
+          "all": [
+            {
+              "type": "pct_change",
+              "dir": "down",
+              "gt": 0.1
+            },
+            {
+              "type": "abs_change_pp",
+              "dir": "down",
+              "gt": 2
+            }
+          ]
+        },
+        "improve": {
+          "all": [
+            {
+              "type": "pct_change",
+              "dir": "up",
+              "gt": 0.1
+            },
+            {
+              "type": "abs_change_pp",
+              "dir": "up",
+              "gt": 2
+            }
+          ]
+        }
+      },
+      "baseline": "past_4w_same_period",
+      "source_raw": {
+        "是否判3态": "是",
+        "异常条件": "异常：环比跌 >10% 且绝对跌 >2pp（须同时满足）\n提升：环比涨 >10% 且绝对涨 >2pp\n持平：其余\n对比：过去 4 周同期平均。新口径一期只判环比方向，绝对值线连采 4 周后再定"
+      },
+      "plain": "这条来路在这一页看够时间、也翻得够深的人占多少"
+    },
+    {
+      "id": "M25",
+      "ref": "落地接住率@搜索词×页",
+      "name": "落地接住率",
+      "dim": "搜索词×页",
+      "layer": "流失点1",
+      "role": "primary",
+      "tri_state": "full",
+      "numerator": "该词落到该页、且落地停留≥15s 或当天已转化的访客",
+      "denominator": "该词以该页为当天落地页的访客",
+      "meaning": "用来看搜这个词落到这一页的人，这一页接住了没有。\n搜索意图核对用。",
+      "min_base": {
+        "raw": "该词本期点击 <10 不计算",
+        "rules": [
+          {
+            "type": "companion",
+            "ref": "来路关键词点击量@搜索词",
+            "gte": 10
+          }
+        ]
+      },
+      "judge": {
+        "anomaly": {
+          "any": [
+            {
+              "all": [
+                {
+                  "type": "pct_change",
+                  "dir": "down",
+                  "gt": 0.1
+                },
+                {
+                  "type": "abs_change_pp",
+                  "dir": "down",
+                  "gt": 2
+                }
+              ]
+            },
+            {
+              "type": "companion_pct_change",
+              "ref": "来路关键词点击量@搜索词",
+              "dir": "down",
+              "gt": 0.2
+            }
+          ]
+        },
+        "improve": {
+          "all": [
+            {
+              "type": "pct_change",
+              "dir": "up",
+              "gt": 0.1
+            },
+            {
+              "type": "abs_change_pp",
+              "dir": "up",
+              "gt": 2
+            }
+          ]
+        }
+      },
+      "baseline": "past_4w_same_period",
+      "source_raw": {
+        "是否判3态": "是",
+        "异常条件": "异常：环比跌 >10% 且绝对跌 >2pp（须同时满足），或该词点击跌 >20%\n提升：环比涨 >10% 且绝对涨 >2pp\n持平：其余\n对比：过去 4 周同期平均"
+      },
+      "plain": "搜这个词落到这一页，有多少人留下来继续看"
+    },
+    {
+      "id": "M26",
+      "ref": "落地停留均值@页面",
+      "name": "落地停留均值",
+      "dim": "页面",
+      "layer": "流失点1",
+      "role": "corroborating",
+      "tri_state": "full",
+      "numerator": "该页作为落地页的停留总秒数（每条先封顶 30 分钟再加总）",
+      "denominator": "以该页为当天落地页的访客",
+      "meaning": "用来看从这一页进站的人在这一页停了多久。\n页内旁证，不单独钉点。\n验证「第一屏没接住」时要看。\n停留＝前台有效停留；单次上限 30 分钟（与会话超时对齐，超过按 30 分钟计）。≥15s 判定和均值都用封顶后的秒数；挂着标签过夜不按真实阅读计。",
+      "min_base": {
+        "raw": "分母人数 <10 不计算",
+        "rules": [
+          {
+            "type": "denominator",
+            "gte": 10
+          }
+        ]
+      },
+      "judge": {
+        "anomaly": {
+          "type": "pct_change",
+          "dir": "down",
+          "gt": 0.2
+        },
+        "improve": {
+          "type": "pct_change",
+          "dir": "up",
+          "gt": 0.2
+        }
+      },
+      "baseline": "past_4w_same_period",
+      "source_raw": {
+        "是否判3态": "是",
+        "异常条件": "异常：环比跌 >20%（标「停留明显变短」）\n提升：环比涨 >20%\n持平：其余"
+      },
+      "label_on_anomaly": "停留明显变短",
+      "plain": "从这一页进来的人平均待了多少秒"
+    },
+    {
+      "id": "M27",
+      "ref": "页面停留均值@页面",
+      "name": "页面停留均值",
+      "dim": "页面",
+      "layer": "流失点1",
+      "role": "corroborating",
+      "tri_state": "full",
+      "numerator": "该页打开访客停留总秒数（每条先封顶 30 分钟再加总）",
+      "denominator": "该页 UV",
+      "meaning": "用来看打开过这一页的人在这一页停了多久。\n旁证，不单独钉点。\n停留＝前台有效停留；单次上限 30 分钟（与会话超时对齐，超过按 30 分钟计）。≥15s 判定和均值都用封顶后的秒数；挂着标签过夜不按真实阅读计。",
+      "min_base": {
+        "raw": "分母人数 <10 不计算",
+        "rules": [
+          {
+            "type": "denominator",
+            "gte": 10
+          }
+        ]
+      },
+      "judge": {
+        "anomaly": {
+          "type": "pct_change",
+          "dir": "down",
+          "gt": 0.2
+        },
+        "improve": {
+          "type": "pct_change",
+          "dir": "up",
+          "gt": 0.2
+        }
+      },
+      "baseline": "past_4w_same_period",
+      "source_raw": {
+        "是否判3态": "是",
+        "异常条件": "异常：环比跌 >20%（标「停留明显变短」）\n提升：环比涨 >20%\n持平：其余"
+      },
+      "label_on_anomaly": "停留明显变短",
+      "plain": "在这一页平均待了多少秒"
+    },
+    {
+      "id": "M28",
+      "ref": "滚动深度P75@页面",
+      "name": "滚动深度P75",
+      "dim": "页面",
+      "layer": "流失点1",
+      "role": "corroborating",
+      "tri_state": "full",
+      "numerator": "该页滚动百分比的 75 分位",
+      "denominator": "无",
+      "meaning": "用来看多数人滚到这一页的哪里，还在不在首屏。\n分位数。",
+      "min_base": {
+        "raw": "人数 <10 不计算",
+        "rules": [
+          {
+            "type": "denominator",
+            "gte": 10
+          }
+        ]
+      },
+      "judge": {
+        "anomaly": {
+          "type": "pp_change",
+          "dir": "down",
+          "gt": 15
+        },
+        "improve": {
+          "type": "pp_change",
+          "dir": "up",
+          "gt": 15
+        }
+      },
+      "baseline": "past_4w_same_period",
+      "source_raw": {
+        "是否判3态": "是",
+        "异常条件": "异常：跟上期该页比跌 >15 个点；本期 P75 <40% 只标注「多数人还在首屏附近」，不单独钉点\n提升：跟上期该页比升 >15 个点\n持平：其余"
+      },
+      "label_rules": [
+        {
+          "when": {
+            "type": "value",
+            "lt": 0.4
+          },
+          "label": "多数人还在首屏附近"
+        }
+      ],
+      "plain": "大部分人往下翻到了整页的百分之几"
+    },
+    {
+      "id": "M29",
+      "ref": "按词页面停留@搜索词×页",
+      "name": "按词页面停留",
+      "dim": "搜索词×页",
+      "layer": "流失点1",
+      "role": "corroborating",
+      "tri_state": "none",
+      "numerator": "该词落到该页的停留（先封顶 30 分钟）",
+      "denominator": "该词到该页访客",
+      "meaning": "用来看搜这个词进来的人，在这一页停了多久。\n搜索意图核对的旁证。\n停留＝前台有效停留；单次上限 30 分钟（与会话超时对齐，超过按 30 分钟计）。≥15s 判定和均值都用封顶后的秒数；挂着标签过夜不按真实阅读计。",
+      "min_base": {
+        "raw": "该词本期点击 <10 不计算",
+        "rules": [
+          {
+            "type": "companion",
+            "ref": "来路关键词点击量@搜索词",
+            "gte": 10
+          }
+        ]
+      },
+      "judge": null,
+      "baseline": "past_4w_same_period",
+      "source_raw": {
+        "是否判3态": "否",
+        "异常条件": "异常：不单独钉点。跟搜索词×页落地接住率一起看\n提升：不判\n持平：不判"
+      },
+      "plain": "搜这个词落到这一页平均待了多少秒"
+    },
+    {
+      "id": "M30",
+      "ref": "转化交互率@渠道",
+      "name": "转化交互率",
+      "dim": "渠道",
+      "layer": "流失点2",
+      "role": "primary",
+      "tri_state": "full",
+      "numerator": "该渠道转化交互访客",
+      "denominator": "该渠道有效浏览访客",
+      "meaning": "用来看这条渠看进去的人动没动手。\n按渠道切开。",
+      "min_base": {
+        "raw": "该渠道有效浏览访客 <10 不计算",
+        "rules": [
+          {
+            "type": "denominator",
+            "gte": 10
+          }
+        ]
+      },
+      "judge": {
+        "anomaly": {
+          "all": [
+            {
+              "type": "pct_change",
+              "dir": "down",
+              "gt": 0.1
+            },
+            {
+              "type": "abs_change_pp",
+              "dir": "down",
+              "gt": 2
+            }
+          ]
+        },
+        "improve": {
+          "all": [
+            {
+              "type": "pct_change",
+              "dir": "up",
+              "gt": 0.1
+            },
+            {
+              "type": "abs_change_pp",
+              "dir": "up",
+              "gt": 2
+            }
+          ]
+        }
+      },
+      "baseline": "past_4w_same_period",
+      "source_raw": {
+        "是否判3态": "是",
+        "异常条件": "异常：环比跌 >10% 且绝对跌 >2pp（须同时满足）\n提升：环比涨 >10% 且绝对涨 >2pp\n持平：其余\n对比：过去 4 周同期平均。新口径一期只判环比方向，绝对值线连采 4 周后再定"
+      },
+      "plain": "这条来路的人里有多少问价或开聊"
+    },
+    {
+      "id": "M31",
+      "ref": "表单开始率@全站",
+      "name": "表单开始率",
+      "dim": "全站",
+      "layer": "流失点2",
+      "role": "primary",
+      "tri_state": "full",
+      "numerator": "开始编辑表单的访客",
+      "denominator": "有效浏览访客",
+      "meaning": "用来衡量看进去的人有没有开始填表单。\n表单这一条门。\n现网：表单内任意字段光标开始记一次。",
+      "min_base": {
+        "raw": "有效浏览访客 <10 不计算",
+        "rules": [
+          {
+            "type": "denominator",
+            "gte": 10
+          }
+        ]
+      },
+      "judge": {
+        "anomaly": {
+          "all": [
+            {
+              "type": "pct_change",
+              "dir": "down",
+              "gt": 0.1
+            },
+            {
+              "type": "abs_change_pp",
+              "dir": "down",
+              "gt": 2
+            }
+          ]
+        },
+        "improve": {
+          "all": [
+            {
+              "type": "pct_change",
+              "dir": "up",
+              "gt": 0.1
+            },
+            {
+              "type": "abs_change_pp",
+              "dir": "up",
+              "gt": 2
+            }
+          ]
+        }
+      },
+      "baseline": "past_4w_same_period",
+      "source_raw": {
+        "是否判3态": "是",
+        "异常条件": "异常：环比跌 >10% 且绝对跌 >2pp（须同时满足）\n提升：环比涨 >10% 且绝对涨 >2pp\n持平：其余\n对比：过去 4 周同期平均。新口径一期只判环比方向，绝对值线连采 4 周后再定"
+      },
+      "plain": "有多少人动手开始填表单"
+    },
+    {
+      "id": "M32",
+      "ref": "表单开始率@渠道",
+      "name": "表单开始率",
+      "dim": "渠道",
+      "layer": "流失点2",
+      "role": "primary",
+      "tri_state": "full",
+      "numerator": "该渠道开始编辑表单的访客",
+      "denominator": "该渠道有效浏览访客",
+      "meaning": "用来看从这条渠道来的人，看进去的人有没有开始填表。",
+      "min_base": {
+        "raw": "该渠道有效浏览访客 <10 不计算",
+        "rules": [
+          {
+            "type": "denominator",
+            "gte": 10
+          }
+        ]
+      },
+      "judge": {
+        "anomaly": {
+          "all": [
+            {
+              "type": "pct_change",
+              "dir": "down",
+              "gt": 0.1
+            },
+            {
+              "type": "abs_change_pp",
+              "dir": "down",
+              "gt": 2
+            }
+          ]
+        },
+        "improve": {
+          "all": [
+            {
+              "type": "pct_change",
+              "dir": "up",
+              "gt": 0.1
+            },
+            {
+              "type": "abs_change_pp",
+              "dir": "up",
+              "gt": 2
+            }
+          ]
+        }
+      },
+      "baseline": "past_4w_same_period",
+      "source_raw": {
+        "是否判3态": "是",
+        "异常条件": "异常：环比跌 >10% 且绝对跌 >2pp（须同时满足）\n提升：环比涨 >10% 且绝对涨 >2pp\n持平：其余\n对比：过去 4 周同期平均。新口径一期只判环比方向，绝对值线连采 4 周后再定"
+      },
+      "plain": "这条来路有多少人动手开始填表单"
+    },
+    {
+      "id": "M33",
+      "ref": "开聊率@全站",
+      "name": "开聊率",
+      "dim": "全站",
+      "layer": "流失点2",
+      "role": "primary",
+      "tri_state": "full",
+      "numerator": "主动开聊的访客",
+      "denominator": "有效浏览访客",
+      "meaning": "用来看看进去的人有没有跟智能客服主动开聊。",
+      "min_base": {
+        "raw": "有效浏览访客 <10 不计算",
+        "rules": [
+          {
+            "type": "denominator",
+            "gte": 10
+          }
+        ]
+      },
+      "judge": {
+        "anomaly": {
+          "all": [
+            {
+              "type": "pct_change",
+              "dir": "down",
+              "gt": 0.1
+            },
+            {
+              "type": "abs_change_pp",
+              "dir": "down",
+              "gt": 2
+            }
+          ]
+        },
+        "improve": {
+          "all": [
+            {
+              "type": "pct_change",
+              "dir": "up",
+              "gt": 0.1
+            },
+            {
+              "type": "abs_change_pp",
+              "dir": "up",
+              "gt": 2
+            }
+          ]
+        }
+      },
+      "baseline": "past_4w_same_period",
+      "source_raw": {
+        "是否判3态": "是",
+        "异常条件": "异常：环比跌 >10% 且绝对跌 >2pp（须同时满足）\n提升：环比涨 >10% 且绝对涨 >2pp\n持平：其余\n对比：过去 4 周同期平均。新口径一期只判环比方向，绝对值线连采 4 周后再定"
+      },
+      "plain": "有多少人主动找客服开聊"
+    },
+    {
+      "id": "M34",
+      "ref": "开聊率@渠道",
+      "name": "开聊率",
+      "dim": "渠道",
+      "layer": "流失点2",
+      "role": "primary",
+      "tri_state": "full",
+      "numerator": "该渠道主动开聊的访客",
+      "denominator": "该渠道有效浏览访客",
+      "meaning": "用来看这条渠道看进去的人，有没有主动找智能客服开聊。",
+      "min_base": {
+        "raw": "该渠道有效浏览访客 <10 不计算",
+        "rules": [
+          {
+            "type": "denominator",
+            "gte": 10
+          }
+        ]
+      },
+      "judge": {
+        "anomaly": {
+          "all": [
+            {
+              "type": "pct_change",
+              "dir": "down",
+              "gt": 0.1
+            },
+            {
+              "type": "abs_change_pp",
+              "dir": "down",
+              "gt": 2
+            }
+          ]
+        },
+        "improve": {
+          "all": [
+            {
+              "type": "pct_change",
+              "dir": "up",
+              "gt": 0.1
+            },
+            {
+              "type": "abs_change_pp",
+              "dir": "up",
+              "gt": 2
+            }
+          ]
+        }
+      },
+      "baseline": "past_4w_same_period",
+      "source_raw": {
+        "是否判3态": "是",
+        "异常条件": "异常：环比跌 >10% 且绝对跌 >2pp（须同时满足）\n提升：环比涨 >10% 且绝对涨 >2pp\n持平：其余\n对比：过去 4 周同期平均。新口径一期只判环比方向，绝对值线连采 4 周后再定"
+      },
+      "plain": "这条来路有多少人主动找客服开聊"
+    },
+    {
+      "id": "M35",
+      "ref": "详情页到达率@全站",
+      "name": "详情页到达率",
+      "dim": "全站",
+      "layer": "流失点2",
+      "role": "primary",
+      "tri_state": "full",
+      "numerator": "打开过产品详情的有效浏览访客",
+      "denominator": "有效浏览访客",
+      "meaning": "用来看看进去的人有没有摸到产品详情页。\nB2B 转化主场是详情页，不是联系我们。",
+      "min_base": {
+        "raw": "有效浏览访客 <10 不计算",
+        "rules": [
+          {
+            "type": "denominator",
+            "gte": 10
+          }
+        ]
+      },
+      "judge": {
+        "anomaly": {
+          "all": [
+            {
+              "type": "pct_change",
+              "dir": "down",
+              "gt": 0.1
+            },
+            {
+              "type": "abs_change_pp",
+              "dir": "down",
+              "gt": 2
+            }
+          ]
+        },
+        "improve": {
+          "all": [
+            {
+              "type": "pct_change",
+              "dir": "up",
+              "gt": 0.1
+            },
+            {
+              "type": "abs_change_pp",
+              "dir": "up",
+              "gt": 2
+            }
+          ]
+        }
+      },
+      "baseline": "past_4w_same_period",
+      "source_raw": {
+        "是否判3态": "是",
+        "异常条件": "异常：环比跌 >10% 且绝对跌 >2pp（须同时满足）\n提升：环比涨 >10% 且绝对涨 >2pp\n持平：其余\n对比：过去 4 周同期平均。新口径一期只判环比方向，绝对值线连采 4 周后再定"
+      },
+      "plain": "有多少人逛到了产品详情页"
+    },
+    {
+      "id": "M36",
+      "ref": "详情页到达率@渠道",
+      "name": "详情页到达率",
+      "dim": "渠道",
+      "layer": "流失点2",
+      "role": "primary",
+      "tri_state": "full",
+      "numerator": "该渠道打开过产品详情的有效浏览访客",
+      "denominator": "该渠道有效浏览访客",
+      "meaning": "用来看这条渠看进去的人有没有摸到产品详情页。",
+      "min_base": {
+        "raw": "该渠道有效浏览访客 <10 不计算",
+        "rules": [
+          {
+            "type": "denominator",
+            "gte": 10
+          }
+        ]
+      },
+      "judge": {
+        "anomaly": {
+          "all": [
+            {
+              "type": "pct_change",
+              "dir": "down",
+              "gt": 0.1
+            },
+            {
+              "type": "abs_change_pp",
+              "dir": "down",
+              "gt": 2
+            }
+          ]
+        },
+        "improve": {
+          "all": [
+            {
+              "type": "pct_change",
+              "dir": "up",
+              "gt": 0.1
+            },
+            {
+              "type": "abs_change_pp",
+              "dir": "up",
+              "gt": 2
+            }
+          ]
+        }
+      },
+      "baseline": "past_4w_same_period",
+      "source_raw": {
+        "是否判3态": "是",
+        "异常条件": "异常：环比跌 >10% 且绝对跌 >2pp（须同时满足）\n提升：环比涨 >10% 且绝对涨 >2pp\n持平：其余\n对比：过去 4 周同期平均。新口径一期只判环比方向，绝对值线连采 4 周后再定"
+      },
+      "plain": "这条来路有多少人逛到了产品详情页"
+    },
+    {
+      "id": "M37",
+      "ref": "未转化页出口率@页面",
+      "name": "未转化页出口率",
+      "dim": "页面",
+      "layer": "流失点2",
+      "role": "primary",
+      "tri_state": "full",
+      "numerator": "当天落地停满 15 秒，或当天任一页停满 15 秒（看该 cookie 当天所有会话，任一次满足即可），且未发生转化交互动作，且从该页离开的访客",
+      "denominator": "有效浏览但未转化的访客（即当天落地停满 15 秒，或当天任一页停满 15 秒（同样看该 cookie 当天所有会话，任一次满足即可），且未发生转化交互动作的访客",
+      "meaning": "用来看没留下的人是从哪一页离开网站的。\n人从哪一页离开网站。",
+      "min_base": {
+        "raw": "该页这格访客 <10 不计算",
+        "rules": [
+          {
+            "type": "denominator",
+            "gte": 10
+          }
+        ]
+      },
+      "judge": {
+        "anomaly": {
+          "type": "pp_change",
+          "dir": "up",
+          "gt": 10
+        },
+        "improve": {
+          "type": "pp_change",
+          "dir": "down",
+          "gt": 10
+        }
+      },
+      "baseline": "past_4w_same_period",
+      "source_raw": {
+        "是否判3态": "是",
+        "异常条件": "异常：跟上期该页占比升 >10 个点\n提升：跟上期该页占比降 >10 个点\n持平：其余"
+      },
+      "plain": "在这一页离开、而且没留联系方式的人占多少"
+    },
+    {
+      "id": "M38",
+      "ref": "转化交互率@页面",
+      "name": "转化交互率",
+      "dim": "页面",
+      "layer": "流失点2",
+      "role": "primary",
+      "tri_state": "full",
+      "numerator": "当天在该页开始填表或开聊的访客",
+      "denominator": "当天打开过该页的有效浏览访客",
+      "meaning": "用来看人已经在这一页了，开不开表单、开不开聊。\n人已经在这一页，开不开表单、开不开聊。≠ 全站转化交互率。",
+      "min_base": {
+        "raw": "该页有效浏览访客 <10 不计算",
+        "rules": [
+          {
+            "type": "denominator",
+            "gte": 10
+          }
+        ]
+      },
+      "judge": {
+        "anomaly": {
+          "all": [
+            {
+              "type": "pct_change",
+              "dir": "down",
+              "gt": 0.1
+            },
+            {
+              "type": "abs_change_pp",
+              "dir": "down",
+              "gt": 2
+            }
+          ]
+        },
+        "improve": {
+          "all": [
+            {
+              "type": "pct_change",
+              "dir": "up",
+              "gt": 0.1
+            },
+            {
+              "type": "abs_change_pp",
+              "dir": "up",
+              "gt": 2
+            }
+          ]
+        }
+      },
+      "baseline": "past_4w_same_period",
+      "source_raw": {
+        "是否判3态": "是",
+        "异常条件": "异常：环比跌 >10% 且绝对跌 >2pp（须同时满足）\n提升：环比涨 >10% 且绝对涨 >2pp\n持平：其余\n对比：过去 4 周同期平均。新口径一期只判环比方向，绝对值线连采 4 周后再定"
+      },
+      "plain": "在这一页问价或开聊的人占多少"
+    },
+    {
+      "id": "M39",
+      "ref": "转化交互率@渠道×页",
+      "name": "转化交互率",
+      "dim": "渠道×页",
+      "layer": "流失点2",
+      "role": "primary",
+      "tri_state": "full",
+      "numerator": "该渠道来的且打开过该页且在该页开始填表或开聊的访客",
+      "denominator": "该渠道来的且当天打开过该页的有效浏览访客",
+      "meaning": "用来看某一渠道的人到了这一页，动没动手。",
+      "min_base": {
+        "raw": "该切面访客 <10 不计算",
+        "rules": [
+          {
+            "type": "denominator",
+            "gte": 10
+          }
+        ]
+      },
+      "judge": {
+        "anomaly": {
+          "all": [
+            {
+              "type": "pct_change",
+              "dir": "down",
+              "gt": 0.1
+            },
+            {
+              "type": "abs_change_pp",
+              "dir": "down",
+              "gt": 2
+            }
+          ]
+        },
+        "improve": {
+          "all": [
+            {
+              "type": "pct_change",
+              "dir": "up",
+              "gt": 0.1
+            },
+            {
+              "type": "abs_change_pp",
+              "dir": "up",
+              "gt": 2
+            }
+          ]
+        }
+      },
+      "baseline": "past_4w_same_period",
+      "source_raw": {
+        "是否判3态": "是",
+        "异常条件": "异常：环比跌 >10% 且绝对跌 >2pp（须同时满足）\n提升：环比涨 >10% 且绝对涨 >2pp\n持平：其余\n对比：过去 4 周同期平均。新口径一期只判环比方向，绝对值线连采 4 周后再定"
+      },
+      "plain": "这条来路在这一页问价或开聊的人占多少"
+    },
+    {
+      "id": "M40",
+      "ref": "人均有效浏览页数@全站",
+      "name": "人均有效浏览页数",
+      "dim": "全站",
+      "layer": "流失点2",
+      "role": "corroborating",
+      "tri_state": "full",
+      "numerator": "有效浏览访客的 PV",
+      "denominator": "有效浏览访客",
+      "meaning": "用来看看进去的人当天翻了几页。\n旁证。分母不是全站 UV。",
+      "min_base": {
+        "raw": "有效浏览访客 <10 不计算",
+        "rules": [
+          {
+            "type": "denominator",
+            "gte": 10
+          }
+        ]
+      },
+      "judge": {
+        "anomaly": {
+          "type": "pct_change",
+          "dir": "down",
+          "gt": 0.2
+        },
+        "improve": {
+          "type": "pct_change",
+          "dir": "up",
+          "gt": 0.2
+        }
+      },
+      "baseline": "past_4w_same_period",
+      "source_raw": {
+        "是否判3态": "是",
+        "异常条件": "异常：不单独钉点。环比跌 >20% 只标注「逛得更浅」\n提升：环比涨 >20%\n持平：其余"
+      },
+      "label_on_anomaly": "逛得更浅",
+      "plain": "平均每人认真看了几页"
+    },
+    {
+      "id": "M41",
+      "ref": "人均浏览页数@全站",
+      "name": "人均浏览页数",
+      "dim": "全站",
+      "layer": "流失点2",
+      "role": "corroborating",
+      "tri_state": "full",
+      "numerator": "PV",
+      "denominator": "全站UV",
+      "meaning": "平均每个独立访客产生的PV，用来看全量进站的人，当天翻了几页。\n旁证。分母是全站 UV。",
+      "min_base": {
+        "raw": "全站UV <10 不计算",
+        "rules": [
+          {
+            "type": "denominator",
+            "gte": 10
+          }
+        ]
+      },
+      "judge": {
+        "anomaly": {
+          "type": "pct_change",
+          "dir": "down",
+          "gt": 0.2
+        },
+        "improve": {
+          "type": "pct_change",
+          "dir": "up",
+          "gt": 0.2
+        }
+      },
+      "baseline": "past_4w_same_period",
+      "source_raw": {
+        "是否判3态": "是",
+        "异常条件": "异常：不单独钉点。环比跌 >20% \n提升：环比涨 >20%\n持平：其余"
+      },
+      "plain": "平均每人打开了几页"
+    },
+    {
+      "id": "M42",
+      "ref": "单页深读占比@全站",
+      "name": "单页深读占比",
+      "dim": "全站",
+      "layer": "流失点2",
+      "role": "corroborating",
+      "tri_state": "none",
+      "numerator": "有效浏览且当天只看 1 页的访客",
+      "denominator": "有效浏览访客",
+      "meaning": "用来看有多少人就在一页把内容看完了，不一定是坏事。\n旁证。升不单独算坏。B2B中，详情页作为落地页，在详情页看完参数直接开表单，是高质量路径。",
+      "min_base": {
+        "raw": "有效浏览访客 <10 不计算",
+        "rules": [
+          {
+            "type": "denominator",
+            "gte": 10
+          }
+        ]
+      },
+      "judge": null,
+      "baseline": "past_4w_same_period",
+      "source_raw": {
+        "是否判3态": "否",
+        "异常条件": "异常：不单独钉点\n提升：不判\n持平：不判"
+      },
+      "plain": "只看一页但看得很仔细的人占多少"
+    },
+    {
+      "id": "M43",
+      "ref": "站内搜索关键词数@全站",
+      "name": "站内搜索关键词数",
+      "dim": "全站",
+      "layer": "流失点2",
+      "role": "reference",
+      "tri_state": "none",
+      "numerator": "站内搜索关键词",
+      "denominator": "-",
+      "meaning": "用来看客户都在站内搜索了什么",
+      "min_base": {
+        "raw": "无",
+        "rules": []
+      },
+      "judge": null,
+      "baseline": "past_4w_same_period",
+      "source_raw": {
+        "是否判3态": "否",
+        "异常条件": "异常：不判\n提升：不判\n持平：不判"
+      },
+      "plain": "客户在站内搜了多少个不同的词"
+    },
+    {
+      "id": "M44",
+      "ref": "站内搜索0关键词@全站",
+      "name": "站内搜索0关键词",
+      "dim": "全站",
+      "layer": "流失点2",
+      "role": "reference",
+      "tri_state": "none",
+      "numerator": "站内搜索 0 的关键词",
+      "denominator": "-",
+      "meaning": "用来看客户都在站内搜索了什么且搜的内容没有结果",
+      "min_base": {
+        "raw": "无",
+        "rules": []
+      },
+      "judge": null,
+      "baseline": "past_4w_same_period",
+      "source_raw": {
+        "是否判3态": "否",
+        "异常条件": "异常：不判\n提升：不判\n持平：不判"
+      },
+      "plain": "客户在站内搜了、但站里没有的词"
+    },
+    {
+      "id": "M45",
+      "ref": "站内搜索0结果率@全站",
+      "name": "站内搜索0结果率",
+      "dim": "全站",
+      "layer": "流失点2",
+      "role": "corroborating",
+      "tri_state": "full",
+      "numerator": "站内搜索 0 结果次数",
+      "denominator": "站内搜索次数",
+      "meaning": "用来看站内搜索是不是经常搜不到客户想要的东西。\n旁证。",
+      "min_base": {
+        "raw": "搜索次数 <10 不计算",
+        "rules": [
+          {
+            "type": "denominator",
+            "gte": 10
+          }
+        ]
+      },
+      "judge": {
+        "anomaly": {
+          "type": "pct_change",
+          "dir": "up",
+          "gt": 0.15
+        },
+        "improve": {
+          "type": "pct_change",
+          "dir": "down",
+          "gt": 0.15
+        }
+      },
+      "baseline": "past_4w_same_period",
+      "source_raw": {
+        "是否判3态": "是",
+        "异常条件": "异常：环比升 >15%（旁证，不单独钉点）\n提升：环比降 >15%\n持平：其余"
+      },
+      "plain": "站内搜索搜不到东西的比例"
+    },
+    {
+      "id": "M46",
+      "ref": "搜后离站率@搜索词",
+      "name": "搜后离站率",
+      "dim": "搜索词",
+      "layer": "流失点2",
+      "role": "corroborating",
+      "tri_state": "full",
+      "numerator": "当天在站内搜过该词之后，没有再打开其他页面就离开网站的访客",
+      "denominator": "在站内搜过该词的访客",
+      "meaning": "用来看搜完这个词之后人是不是直接走了。\n旁证。",
+      "min_base": {
+        "raw": "搜索次数 <10 不计算",
+        "rules": [
+          {
+            "type": "denominator",
+            "gte": 10
+          }
+        ]
+      },
+      "judge": {
+        "anomaly": {
+          "type": "pct_change",
+          "dir": "up",
+          "gt": 0.15
+        },
+        "improve": {
+          "type": "pct_change",
+          "dir": "down",
+          "gt": 0.15
+        }
+      },
+      "baseline": "past_4w_same_period",
+      "source_raw": {
+        "是否判3态": "是",
+        "异常条件": "异常：环比升 >15%（旁证，不单独钉点）\n提升：环比降 >15%\n持平：其余"
+      },
+      "plain": "站内搜完这个词就走的人占多少"
+    },
+    {
+      "id": "M47",
+      "ref": "路径UV@路径",
+      "name": "路径UV",
+      "dim": "路径",
+      "layer": "流失点2",
+      "role": "reference",
+      "tri_state": "none",
+      "numerator": "走这条页面序列的访客",
+      "denominator": "无",
+      "meaning": "用来看人当天是按哪条页面顺序走的。\n排行用。",
+      "min_base": {
+        "raw": "无",
+        "rules": []
+      },
+      "judge": null,
+      "baseline": "past_4w_same_period",
+      "source_raw": {
+        "是否判3态": "否",
+        "异常条件": "异常：不定波动（绝对数、排行）\n提升：不判\n持平：不判"
+      },
+      "plain": "走这条浏览路线的人数"
+    },
+    {
+      "id": "M48",
+      "ref": "表单曝光率@页面",
+      "name": "表单曝光率",
+      "dim": "页面",
+      "layer": "流失点2",
+      "role": "reference",
+      "tri_state": "none",
+      "numerator": "看到表单的访客",
+      "denominator": "打开该页的访客",
+      "meaning": "用来看打开这一页的人看没看见表单。",
+      "min_base": {
+        "raw": "未接入，不计算",
+        "rules": [
+          {
+            "type": "unavailable",
+            "status": "not_connected",
+            "reason": "埋点未接入"
+          }
+        ]
+      },
+      "judge": null,
+      "baseline": "past_4w_same_period",
+      "source_raw": {
+        "是否判3态": "否",
+        "异常条件": "异常：未接入，不定案\n提升：不判\n持平：不判"
+      },
+      "plain": "这一页的表单被看到的比例"
+    },
+    {
+      "id": "M49",
+      "ref": "页面内容@页面",
+      "name": "页面内容",
+      "dim": "页面",
+      "layer": "流失点2",
+      "role": "reference",
+      "tri_state": "none",
+      "numerator": "AI自己抓取页面获取的。页面内容",
+      "denominator": "无",
+      "meaning": "AI查看当前页面都有什么信息和内容。",
+      "min_base": {
+        "raw": "抓不到该页则不判定",
+        "rules": [
+          {
+            "type": "page_fetch"
+          }
+        ]
+      },
+      "judge": null,
+      "baseline": "past_4w_same_period",
+      "source_raw": {
+        "是否判3态": "否",
+        "异常条件": "异常：不判\n提升：不判\n持平：不判"
+      },
+      "plain": "这一页的正文内容"
+    },
+    {
+      "id": "M50",
+      "ref": "询价入口个数@页面",
+      "name": "询价入口个数",
+      "dim": "页面",
+      "layer": "流失点2",
+      "role": "reference",
+      "tri_state": "none",
+      "numerator": "AI自己抓取页面获取的。详情页可见内容里的询价/报价/要样品入口（不是页脚「联系我们」）",
+      "denominator": "无",
+      "meaning": "用来看详情页上询价入口在不在、有几个。\n读页，不是埋点。打开第 3 步钉的那一页：正文＋首屏截图＋整页长截图。抓不到页就喊人，不编。",
+      "min_base": {
+        "raw": "抓不到该页则不判定",
+        "rules": [
+          {
+            "type": "page_fetch"
+          }
+        ]
+      },
+      "judge": null,
+      "baseline": "past_4w_same_period",
+      "source_raw": {
+        "是否判3态": "否",
+        "异常条件": "异常：0 个 → 假设「没有询价入口」可通过；1 个或以上 → 该假设不通过\n提升：不判\n持平：不判"
+      },
+      "plain": "这一页上有几个询价入口"
+    },
+    {
+      "id": "M51",
+      "ref": "留资完成率@渠道",
+      "name": "留资完成率",
+      "dim": "渠道",
+      "layer": "流失点3",
+      "role": "primary",
+      "tri_state": "full",
+      "numerator": "该渠道留资访客",
+      "denominator": "该渠道转化交互访客",
+      "meaning": "用来看这条渠道来的且动手了的人最后留没留下。\n按渠道切开。转化交互过少时完成率 0% 不代表这个渠道坏了。",
+      "min_base": {
+        "raw": "该渠道转化交互访客 <10 不计算",
+        "rules": [
+          {
+            "type": "denominator",
+            "gte": 10
+          }
+        ]
+      },
+      "judge": {
+        "anomaly": {
+          "all": [
+            {
+              "type": "pct_change",
+              "dir": "down",
+              "gt": 0.1
+            },
+            {
+              "type": "abs_change_pp",
+              "dir": "down",
+              "gt": 2
+            }
+          ]
+        },
+        "improve": {
+          "all": [
+            {
+              "type": "pct_change",
+              "dir": "up",
+              "gt": 0.1
+            },
+            {
+              "type": "abs_change_pp",
+              "dir": "up",
+              "gt": 2
+            }
+          ]
+        }
+      },
+      "baseline": "past_4w_same_period",
+      "source_raw": {
+        "是否判3态": "是",
+        "异常条件": "异常：环比跌 >10% 且绝对跌 >2pp（须同时满足）\n提升：环比涨 >10% 且绝对涨 >2pp\n持平：其余\n对比：过去 4 周同期平均。新口径一期只判环比方向，绝对值线连采 4 周后再定"
+      },
+      "plain": "这条来路问价开聊的人里有多少留了联系方式"
+    },
+    {
+      "id": "M52",
+      "ref": "表单完成率@全站",
+      "name": "表单完成率",
+      "dim": "全站",
+      "layer": "流失点3",
+      "role": "primary",
+      "tri_state": "full",
+      "numerator": "表单提交访客",
+      "denominator": "开始填写访客",
+      "meaning": "用来看开始填表的人最后交没交。一期钉不到哪一栏，就靠这条看整张表有没有填完。\n只管表单一个通道。≠ 留资完成率。",
+      "min_base": {
+        "raw": "开始填写访客 <10 不计算",
+        "rules": [
+          {
+            "type": "denominator",
+            "gte": 10
+          }
+        ]
+      },
+      "judge": {
+        "anomaly": {
+          "all": [
+            {
+              "type": "pct_change",
+              "dir": "down",
+              "gt": 0.1
+            },
+            {
+              "type": "abs_change_pp",
+              "dir": "down",
+              "gt": 2
+            }
+          ]
+        },
+        "improve": {
+          "all": [
+            {
+              "type": "pct_change",
+              "dir": "up",
+              "gt": 0.1
+            },
+            {
+              "type": "abs_change_pp",
+              "dir": "up",
+              "gt": 2
+            }
+          ]
+        }
+      },
+      "baseline": "past_4w_same_period",
+      "source_raw": {
+        "是否判3态": "是",
+        "异常条件": "异常：环比跌 >10% 且绝对跌 >2pp（须同时满足）\n提升：环比涨 >10% 且绝对涨 >2pp\n持平：其余\n对比：过去 4 周同期平均。新口径一期只判环比方向，绝对值线连采 4 周后再定"
+      },
+      "plain": "开始填表单的人里有多少填完了"
+    },
+    {
+      "id": "M53",
+      "ref": "表单完成率@渠道",
+      "name": "表单完成率",
+      "dim": "渠道",
+      "layer": "流失点3",
+      "role": "primary",
+      "tri_state": "full",
+      "numerator": "该渠道表单提交访客",
+      "denominator": "该渠道开始填写访客",
+      "meaning": "用来看这条渠道来的且开始填表的人最后交没交。",
+      "min_base": {
+        "raw": "该渠道开始填写访客 <10 不计算",
+        "rules": [
+          {
+            "type": "denominator",
+            "gte": 10
+          }
+        ]
+      },
+      "judge": {
+        "anomaly": {
+          "all": [
+            {
+              "type": "pct_change",
+              "dir": "down",
+              "gt": 0.1
+            },
+            {
+              "type": "abs_change_pp",
+              "dir": "down",
+              "gt": 2
+            }
+          ]
+        },
+        "improve": {
+          "all": [
+            {
+              "type": "pct_change",
+              "dir": "up",
+              "gt": 0.1
+            },
+            {
+              "type": "abs_change_pp",
+              "dir": "up",
+              "gt": 2
+            }
+          ]
+        }
+      },
+      "baseline": "past_4w_same_period",
+      "source_raw": {
+        "是否判3态": "是",
+        "异常条件": "异常：环比跌 >10% 且绝对跌 >2pp（须同时满足）\n提升：环比涨 >10% 且绝对涨 >2pp\n持平：其余\n对比：过去 4 周同期平均。新口径一期只判环比方向，绝对值线连采 4 周后再定"
+      },
+      "plain": "这条来路开始填表单的人里有多少填完了"
+    },
+    {
+      "id": "M54",
+      "ref": "开聊留资率@全站",
+      "name": "开聊留资率",
+      "dim": "全站",
+      "layer": "流失点3",
+      "role": "primary",
+      "tri_state": "full",
+      "numerator": "客服通道留资成功访客",
+      "denominator": "主动开聊访客",
+      "meaning": "用来看开了聊的人最后留没留下。\n分母是主动开聊访客（访客·日），不是客服会话数。",
+      "min_base": {
+        "raw": "主动开聊访客 <10 不计算",
+        "rules": [
+          {
+            "type": "denominator",
+            "gte": 10
+          }
+        ]
+      },
+      "judge": {
+        "anomaly": {
+          "all": [
+            {
+              "type": "pct_change",
+              "dir": "down",
+              "gt": 0.1
+            },
+            {
+              "type": "abs_change_pp",
+              "dir": "down",
+              "gt": 2
+            }
+          ]
+        },
+        "improve": {
+          "all": [
+            {
+              "type": "pct_change",
+              "dir": "up",
+              "gt": 0.1
+            },
+            {
+              "type": "abs_change_pp",
+              "dir": "up",
+              "gt": 2
+            }
+          ]
+        }
+      },
+      "baseline": "past_4w_same_period",
+      "source_raw": {
+        "是否判3态": "是",
+        "异常条件": "异常：环比跌 >10% 且绝对跌 >2pp（须同时满足）\n提升：环比涨 >10% 且绝对涨 >2pp\n持平：其余\n对比：过去 4 周同期平均。新口径一期只判环比方向，绝对值线连采 4 周后再定"
+      },
+      "plain": "开聊的人里有多少留了联系方式"
+    },
+    {
+      "id": "M55",
+      "ref": "开聊留资率@渠道",
+      "name": "开聊留资率",
+      "dim": "渠道",
+      "layer": "流失点3",
+      "role": "primary",
+      "tri_state": "full",
+      "numerator": "该渠道客服通道留资成功访客",
+      "denominator": "该渠道主动开聊访客",
+      "meaning": "用来看这条渠开了聊的人最后留没留下。\n交叉。",
+      "min_base": {
+        "raw": "该渠道主动开聊访客 <10 不计算",
+        "rules": [
+          {
+            "type": "denominator",
+            "gte": 10
+          }
+        ]
+      },
+      "judge": {
+        "anomaly": {
+          "all": [
+            {
+              "type": "pct_change",
+              "dir": "down",
+              "gt": 0.1
+            },
+            {
+              "type": "abs_change_pp",
+              "dir": "down",
+              "gt": 2
+            }
+          ]
+        },
+        "improve": {
+          "all": [
+            {
+              "type": "pct_change",
+              "dir": "up",
+              "gt": 0.1
+            },
+            {
+              "type": "abs_change_pp",
+              "dir": "up",
+              "gt": 2
+            }
+          ]
+        }
+      },
+      "baseline": "past_4w_same_period",
+      "source_raw": {
+        "是否判3态": "是",
+        "异常条件": "异常：环比跌 >10% 且绝对跌 >2pp（须同时满足）\n提升：环比涨 >10% 且绝对涨 >2pp\n持平：其余\n对比：过去 4 周同期平均。新口径一期只判环比方向，绝对值线连采 4 周后再定"
+      },
+      "plain": "这条来路开聊的人里有多少留了联系方式"
+    },
+    {
+      "id": "M56",
+      "ref": "留资来源通道占比@通道",
+      "name": "留资来源通道占比",
+      "dim": "通道",
+      "layer": "流失点3",
+      "role": "reference",
+      "tri_state": "none",
+      "numerator": "该通道留资条数",
+      "denominator": "去重留资条数",
+      "meaning": "用来看留下的询盘是表单多还是客服多。\n只作对照，不定单独异常点。",
+      "min_base": {
+        "raw": "无",
+        "rules": []
+      },
+      "judge": null,
+      "baseline": "past_4w_same_period",
+      "source_raw": {
+        "是否判3态": "否",
+        "异常条件": "异常：不定单独异常点。一边占比掉、完成率又低于另一边一半，用来印证单边翻车\n提升：不判\n持平：不判"
+      },
+      "plain": "询盘是从表单来的还是从客服来的"
+    },
+    {
+      "id": "M57",
+      "ref": "意图留资率@全站",
+      "name": "意图留资率",
+      "dim": "全站",
+      "layer": "流失点3",
+      "role": "corroborating",
+      "tri_state": "none",
+      "numerator": "意图为留资的会话",
+      "denominator": "客服会话",
+      "meaning": "用来看客服会话里有多少是有留资意图的。\n客服旁证。不单独钉点。",
+      "min_base": {
+        "raw": "小分母，不单独钉点",
+        "rules": []
+      },
+      "judge": null,
+      "baseline": "past_4w_same_period",
+      "source_raw": {
+        "是否判3态": "否",
+        "异常条件": "异常：不单独钉点（旁证）\n提升：不判\n持平：不判"
+      },
+      "plain": "有明确采购意图的人里有多少留了联系方式"
+    },
+    {
+      "id": "M58",
+      "ref": "高价值线索占比@全站",
+      "name": "高价值线索占比",
+      "dim": "全站",
+      "layer": "流失点3",
+      "role": "reference",
+      "tri_state": "none",
+      "numerator": "高价值线索",
+      "denominator": "留资条数",
+      "meaning": "用来看留下来的询盘里值钱的占多少。\n质量线。一期不进本层。",
+      "min_base": {
+        "raw": "一期不计算",
+        "rules": [
+          {
+            "type": "unavailable",
+            "status": "not_in_phase1",
+            "reason": "一期不进本层"
+          }
+        ]
+      },
+      "judge": null,
+      "baseline": "past_4w_same_period",
+      "source_raw": {
+        "是否判3态": "否",
+        "异常条件": "异常：一期不进本层，不定案\n提升：不判\n持平：不判"
+      },
+      "plain": "高价值询盘占全部询盘的比例"
+    },
+    {
+      "id": "M59",
+      "ref": "页面留资率@页面",
+      "name": "页面留资率",
+      "dim": "页面",
+      "layer": "流失点3",
+      "role": "reference",
+      "tri_state": "none",
+      "numerator": "该页留资访客",
+      "denominator": "该页 UV",
+      "meaning": "用来看打开这一页的人留下了多少。\n现网没有。二期再留口。",
+      "min_base": {
+        "raw": "现网无，不计算",
+        "rules": [
+          {
+            "type": "unavailable",
+            "status": "not_connected",
+            "reason": "现网无，二期留口"
+          }
+        ]
+      },
+      "judge": null,
+      "baseline": "past_4w_same_period",
+      "source_raw": {
+        "是否判3态": "否",
+        "异常条件": "异常：现网没有，二期再留口，不定案\n提升：不判\n持平：不判"
+      },
+      "plain": "这一页带来的留资比例"
+    }
+  ]
+}

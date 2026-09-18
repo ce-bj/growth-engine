@@ -1,0 +1,17 @@
+export const C = {
+  brand: "#3B9FD0",
+  brandDark: "#2F8BB8",
+  brandSoft: "rgba(59, 159, 208, 0.12)",
+  surface: "#FFFFFF",
+  surfaceDark: "#F5F7FA",
+  border: "#E2E8F0",
+  borderLight: "#F1F5F9",
+  text: "#1E293B",
+  textSec: "#475569",
+  textDim: "#94A3B8",
+  success: "#10B981",
+  successBg: "rgba(16,185,129,0.1)",
+  warning: "#F59E0B",
+  warningBg: "rgba(245,158,11,0.1)",
+  aiBg: "#FFFFFF",
+};

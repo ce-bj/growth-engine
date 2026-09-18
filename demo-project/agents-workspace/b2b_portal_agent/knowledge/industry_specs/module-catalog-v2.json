@@ -1,0 +1,63 @@
+{
+  "version": "2.0.0",
+  "scope": "agent-generatable-ab-only",
+  "description": "运营助手可生成的内容模块目录。全库固定 4 项：A×3 + B×1。行业差异通过 industryHints 与 AI 实时 HTML 编排体现，不在此目录拆分子模块。",
+  "agentScope": "A+B-only",
+  "moduleCount": 4,
+  "modules": [
+    {
+      "id": 1,
+      "name": "产品名称",
+      "contentLayer": "A",
+      "agentScope": "generate",
+      "aiGeneratable": true,
+      "outputShape": "title",
+      "fieldTarget": "layerA.title",
+      "priority": "required",
+      "guidance": "单行 SEO 标题；含品牌/型号/品类关键词；禁止夸张用语与无法证实的宣称。"
+    },
+    {
+      "id": 0,
+      "name": "产品概述",
+      "contentLayer": "A",
+      "agentScope": "generate",
+      "aiGeneratable": true,
+      "outputShape": "overview",
+      "fieldTarget": "layerA.overview",
+      "priority": "required",
+      "guidance": "2–4 句总述，覆盖核心卖点与应用场景；简体中文 B2B 风格。"
+    },
+    {
+      "id": 5,
+      "name": "产品图片说明",
+      "contentLayer": "A",
+      "agentScope": "generate",
+      "aiGeneratable": true,
+      "outputShape": "image_meta",
+      "fieldTarget": "layerA.media",
+      "priority": "required",
+      "guidance": "仅为用户已上传图片生成 alt 与说明文案；imageRef 引用会话内图片，禁止虚构 URL 或替用户选图排序。"
+    },
+    {
+      "id": 100,
+      "name": "产品详情",
+      "contentLayer": "B",
+      "agentScope": "generate",
+      "aiGeneratable": true,
+      "outputShape": "html_richtext",
+      "fieldTarget": "layerB.body",
+      "priority": "required",
+      "guidance": "输出一整段可直接发布的 HTML。根据识图、用户描述与 industryHints，由 AI 实时决定章节顺序与排版（h2/h3、段落、列表、table、图文）。须包含实质技术/应用信息；不得编造认证与检测数据；缺失处标注「待补充」。"
+    }
+  ],
+  "outputShapeGlossary": {
+    "title": "产品名称对象 { headline, sellingPoints? }",
+    "overview": "纯文本概述",
+    "image_meta": "图片 alt/说明 { items: [{ imageRef, alt, caption? }], caption? }",
+    "html_richtext": "消毒前 HTML 字符串 + 可选 outline 摘要"
+  },
+  "deprecated": {
+    "note": "v1 中 layerB.sections[*] 多模块、spec_table/scenario_cards 等 outputShape 已废弃",
+    "legacyFieldTargetPattern": "layerB.sections\\[.+\\]"
+  }
+}

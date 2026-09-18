@@ -1,0 +1,50 @@
+{
+  "version": "1.0.0-phase-a",
+  "mappings": [
+    {
+      "cause_id": "landing_creative_mismatch",
+      "cause_name": "落地页和广告创意（或来路）对不上",
+      "funnel_stage": "落地页",
+      "library": "流失原因库",
+      "tasks": [
+        {
+          "task_type": "生成/重做营销落地页",
+          "default_object": "/campaign/cnc-oem-q3",
+          "brief_template": {
+            "页面类型": "留资获客页",
+            "修改要求要点": [
+              "首屏必须对齐广告承诺（如 48 小时打样、ISO9001）",
+              "广告没说过的卖点不要加码",
+              "新页生成后建议把广告落地地址切过去"
+            ],
+            "明确不做": "不改投放后台创意（投放侧另开站外建议）"
+          }
+        },
+        {
+          "task_type": "站外或人工处理建议",
+          "default_object": "该活动对应的广告创意与落地地址",
+          "brief_template": {
+            "建议谁处理": "投放侧",
+            "建议做什么": "把广告文案和落地页说的对齐，或把落地地址切到重做后的新页"
+          }
+        }
+      ]
+    },
+    {
+      "cause_id": "landing_tech_issue",
+      "cause_name": "加载慢或页上有技术伤",
+      "funnel_stage": "落地页",
+      "library": "流失原因库",
+      "tasks": [
+        {
+          "task_type": "健康度修复",
+          "default_object": "关联坏链/慢加载 URL 列表",
+          "brief_template": {
+            "问题类型": "页面打不开或加载慢",
+            "建议动作": "恢复页面或跳转到最近在线页"
+          }
+        }
+      ]
+    }
+  ]
+}

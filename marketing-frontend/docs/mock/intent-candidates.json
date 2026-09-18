@@ -1,0 +1,48 @@
+{
+  "site_id": "haigong-precision",
+  "note": "选词列表。点一条 = 选定意图，打开对应 prefab-plans.json 项。",
+  "candidates": [
+    {
+      "id": "int_cnc_oem",
+      "query": "CNC OEM machining",
+      "source": "seo",
+      "clicks_28d": 86,
+      "impressions_28d": 1400,
+      "status": "candidate"
+    },
+    {
+      "id": "int_48h_alu",
+      "query": "48h prototype aluminum parts",
+      "source": "seo",
+      "clicks_28d": 41,
+      "impressions_28d": 620,
+      "status": "candidate"
+    },
+    {
+      "id": "int_iso_shop",
+      "query": "ISO certified machine shop China",
+      "source": "seo",
+      "clicks_28d": 22,
+      "impressions_28d": 890,
+      "status": "candidate"
+    },
+    {
+      "id": "int_hannover",
+      "query": "Hannover Messe 2026 booth invitation",
+      "source": "manual",
+      "clicks_28d": null,
+      "impressions_28d": null,
+      "status": "candidate",
+      "comment": "老板点名做展会页。档案里没有展位号。"
+    },
+    {
+      "id": "int_q4_promo",
+      "query": "Q4 volume discount CNC parts",
+      "source": "social",
+      "clicks_28d": null,
+      "impressions_28d": null,
+      "status": "candidate",
+      "comment": "社媒主题。截止日期有，折扣力度档案没有。"
+    }
+  ]
+}

@@ -1,0 +1,31 @@
+{
+  "name": "ai-ops-assistant-demo",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "dev:server": "node server/chat-server.js",
+    "dev:full": "node scripts/dev-full.js",
+    "dev:lan": "vite --host",
+    "build": "vite build",
+    "build:intranet": "vite build --outDir web --emptyOutDir",
+    "preview": "vite preview",
+    "preview:lan": "vite preview --host",
+    "deploy": "vercel --prod"
+  },
+  "dependencies": {
+    "@ant-design/icons": "^6.3.4",
+    "@stackblitz/sdk": "^1.11.0",
+    "antd": "^6.6.4",
+    "dompurify": "^3.4.11",
+    "marked": "^18.0.5",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "react-resizable-panels": "^4.11.2"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-react": "^4.3.1",
+    "vite": "^5.4.0"
+  }
+}

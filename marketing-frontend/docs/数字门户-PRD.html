@@ -1,0 +1,562 @@
+<!DOCTYPE html>
+<html lang="zh-CN"><head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>数字门户 AI 智能体 · 产品需求文档（PRD）</title>
+<style>
+  :root{
+    --bg:#f7f8fa; --card:#ffffff; --ink:#1c2430; --muted:#5b6774; --line:#e5e9f0;
+    --brand:#2563eb; --accent:#f59e0b; --green:#10b981; --purple:#8b5cf6; --cyan:#06b6d4;
+    --diag:#f59e0b; --cheng:#3b82f6; --match:#6366f1; --support:#06b6d4; --conv:#10b981; --opt:#8b5cf6;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Microsoft YaHei",sans-serif;background:var(--bg);color:var(--ink);line-height:1.75;font-size:15px}
+  .wrap{max-width:960px;margin:0 auto;padding:0 24px 96px}
+  header{padding:56px 0 32px;border-bottom:1px solid var(--line);margin-bottom:32px}
+  .tag{display:inline-block;font-size:12px;font-weight:600;letter-spacing:1px;color:var(--brand);background:#eff4ff;padding:4px 12px;border-radius:20px;margin-bottom:14px}
+  h1{font-size:30px;font-weight:800;line-height:1.3;margin-bottom:10px}
+  .subtitle{color:var(--muted);font-size:15px;max-width:720px}
+  .meta{display:flex;flex-wrap:wrap;gap:24px;margin-top:20px;font-size:13px;color:var(--muted)}
+  .meta b{color:var(--ink);font-weight:600}
+  nav.toc{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:22px 26px;margin-bottom:40px}
+  nav.toc h2{font-size:13px;letter-spacing:1px;color:var(--muted);margin-bottom:10px;text-transform:uppercase}
+  nav.toc ol{margin-left:20px;columns:2;column-gap:40px}
+  nav.toc li{margin:4px 0;font-size:14px}
+  nav.toc a{color:var(--ink);text-decoration:none}
+  nav.toc a:hover{color:var(--brand)}
+  section{margin-bottom:52px}
+  .sec-num{font-size:12px;font-weight:700;color:var(--brand);letter-spacing:1px}
+  h2.sec-title{font-size:22px;font-weight:800;margin:4px 0 16px;padding-bottom:12px;border-bottom:2px solid var(--line)}
+  h3{font-size:17px;font-weight:700;margin:26px 0 10px}
+  h4{font-size:15px;font-weight:700;margin:18px 0 8px;color:#2a3442}
+  p{margin:8px 0;color:#38434f}
+  ul,ol{margin:8px 0 8px 22px}
+  li{margin:4px 0;color:#38434f}
+  b,strong{color:var(--ink);font-weight:600}
+  .muted{color:var(--muted)}
+  .note{background:#fff8e6;border:1px solid #f5e0a8;border-left:4px solid var(--accent);border-radius:8px;padding:14px 16px;margin:18px 0;font-size:14px}
+  .note.cool{background:#eff4ff;border-color:#cdd9f5;border-left-color:var(--brand)}
+  .note.merge{background:#f0fdfa;border-color:#b8e6dd;border-left-color:var(--green)}
+  .kv{display:flex;gap:12px;align-items:flex-start;margin:12px 0}
+  .kv .chip{flex:0 0 96px;font-size:12px;font-weight:700;color:#fff;border-radius:6px;padding:3px 8px;text-align:center}
+  .agent{border:1px solid var(--line);border-radius:14px;overflow:hidden;margin:24px 0;background:var(--card)}
+  .agent-head{padding:18px 22px;color:#fff}
+  .agent-head .role{font-size:12px;opacity:.85;letter-spacing:1px}
+  .agent-head .nm{font-size:19px;font-weight:800;margin:3px 0 2px}
+  .agent-head .one{font-size:13px;opacity:.92}
+  .agent-body{padding:20px 22px}
+  .agent-body h4{margin-top:0}
+  .flow{display:flex;flex-wrap:wrap;align-items:center;gap:6px;background:#f4f6fb;border-radius:10px;padding:14px 16px;font-size:13px;color:#33404e;margin:12px 0}
+  .flow .st{background:#fff;border:1px solid var(--line);border-radius:6px;padding:5px 10px;font-weight:600;color:var(--ink)}
+  .flow .arrow{color:var(--brand);font-weight:700}
+  table{width:100%;border-collapse:collapse;margin:14px 0;font-size:13.5px;background:#fff}
+  th,td{border:1px solid var(--line);padding:9px 12px;text-align:left;vertical-align:top}
+  th{background:#f4f6fb;font-weight:700;color:#2a3442}
+  .pill{display:inline-block;font-size:11px;font-weight:700;border-radius:10px;padding:1px 9px;white-space:nowrap}
+  .p-diag{background:#fff4e0;color:#a16207}.p-cheng{background:#e7efff;color:#2557c4}
+  .p-match{background:#ece9fe;color:#5b3fd4}.p-support{background:#e0f7f5;color:#0a7f78}
+  .p-conv{background:#ddf6ec;color:#06724e}.p-opt{background:#f0eafd;color:#6d3fd6}.p-base{background:#eef2f7;color:#3d4a5a}
+  .strategy{background:#fafbfd;border-left:3px solid var(--brand);border-radius:0 8px 8px 0;padding:12px 16px;margin:12px 0}
+  .strategy strong{color:#1d3f8f}
+  .kicker{font-size:12px;font-weight:700;color:var(--brand);letter-spacing:.5px;margin:18px 0 6px}
+  .rule{background:#fbfcfe;border:1px dashed #cfd8e6;border-radius:8px;padding:10px 14px;margin:10px 0}
+  .rule b{color:#24406e}
+  .ex{color:#6b7280}
+  .ex i{color:#3b82f6;font-style:normal;font-weight:600}
+  footer{color:var(--muted);font-size:12px;text-align:center;border-top:1px solid var(--line);padding-top:20px;margin-top:20px}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <span class="tag">PRODUCT REQUIREMENTS DOCUMENT</span>
+  <h1>数字门户 AI 智能体</h1>
+  <p class="subtitle">让企业网站成为会自我增值的数字资产——给 AI 看，它看见你、理解你、信任你；给人看，它接得住、留得下。架构为"AI 知识基座 + 五大智能体"。</p>
+  <div class="meta">
+    <span><b>版本</b> v1.4</span>
+    <span><b>状态</b> 待评审</span>
+    <span><b>日期</b> 2026-09-14</span>
+  </div>
+</header>
+
+<nav class="toc">
+  <h2>目录</h2>
+  <ol>
+    <li><a href="#s1">&nbsp;背景与问题</a></li>
+    <li><a href="#s2">目标与关键结果</a></li>
+    <li><a href="#s3">目标客户</a></li>
+    <li><a href="#s4">价值主张</a></li>
+    <li><a href="#s5">增值机制</a></li>
+    <li><a href="#s6">解决方案</a></li>
+    <li><a href="#s7">发布计划</a></li>
+  </ol>
+</nav>
+
+<section id="s1">
+  <span class="sec-num">SECTION 01</span>
+  <h2 class="sec-title">背景与问题</h2>
+  <p>AI 时代，采购方找供应商的方式正从传统搜索引擎逐渐转向问 AI——企业的网站要么被 AI 看见、被 AI 理解、被 AI 信任、越用越值钱，要么被 AI 忽略、持续贬值。与此同时，外贸 / B2B 企业的官网即便截住了流量也"接不住"：内容不够专业留不住人、没有匹配意图的落地页接不住诉求、非营业时段的询盘被错过、页面改版全凭感觉没有数据依据。</p>
+  <p>过去补齐这些环节需要一支专职运营团队（内容、SEO、设计、数据分析、客服），中小企业负担不起。大语言模型、RAG 检索增强与实时行为采集，让这些能力能封装成开箱即用的智能体，按需独立上线。</p>
+  <div class="note cool"><b>让你的网站成为会自己增值的数字资产</b>：给 AI 看，被看见、被理解、被信任；给人看，接得住、留得下。</div>
+</section>
+
+<section id="s2">
+  <span class="sec-num">SECTION 02</span>
+  <h2 class="sec-title">目标与关键结果</h2>
+  <p><b>北极星指标：</b>全站留资（线索）转化率，对应「给真实访客看」的留资转化结果。<b>支撑指标：</b>「给 AI 看」分三个能力维度——<b>被看见</b>（AI 收录率、站点可发现性）、<b>被理解</b>（结构化解析比例、Schema 字段完整度）、<b>被信任</b>（权威信号完整度、内容新鲜度），以及外部结果追踪指标（被引用次数、AI 来源流量占比，作为参考信号回流校准权重，不作为产品承诺）；「给访客看」（接得住、留得下）两层结果。</p>
+  <table>
+    <tbody><tr><th style="width:30%">智能体</th><th>关键结果（预期，部分AEO指标暂时无法用标准系统监控）</th></tr>
+    <tr><td>AI 访客行为分析</td><td>上线首周识别 Top5 高流失页面；建议执行后目标页跳出率降 20%–30%、关键环节转化率升 15%–25%</td></tr>
+    <tr><td>AI 个性化体验</td><td>首屏与意图匹配度提升 50%+；首次访客跳出率降 15%–25%；动态加载延迟 &lt;200ms</td></tr>
+    <tr><td>AI 内容运营（含营销页）</td><td>内容完整度 60%→80%+；产品页停留时长 +30%–50%；营销页承接的广告转化率 +30%–50%，获客成本 -20%–35%；AI 友好度三柱评分：被看见 ≥90、被理解 ≥85、被信任 ≥80；AI 收录率核心页 100%（被看见）；外部追踪：被引用命中率 ≥30%（参考信号，不承诺）</td></tr>
+    <tr><td>AI 智能客服 PRO</td><td>接待率 0→60%+；挽留挽回率 15%–25%；表单提交率提升 2–3 倍；</td></tr>
+    <tr><td>AI A/B 测试</td><td>每月 10–20 条测试；胜出变体对元素转化率 +15%–30%；测试周期 3–7 天</td></tr>
+  </tbody></table>
+  <p class="muted">数字为预期目标，需在灰度期用真实客户数据校准。</p>
+</section>
+
+<section id="s3">
+  <span class="sec-num">SECTION 03</span>
+  <h2 class="sec-title">目标客户</h2>
+  <p>有网站、依赖自然流量与付费投放获取线索的 B2B / 外贸制造企业（阀门、机械、化工、电子元器件、建材等）。他们的需求对应数字资产的两层读者，由五类工作定义：</p>
+  <ul>
+    <li><b>被 AI 看得见</b>——结构化数据缺失、无 llms.txt，AI 爬虫读不到、收录不到；</li>
+    <li><b>被 AI 理解得对</b>——内容散在自然语言段落里，AI 可能解析偏、提取不到关键参数；</li>
+    <li><b>被 AI 信任得上</b>——缺认证编号、缺作者资质、数据过期，AI 判定不可靠不采信；</li>
+    <li><b>接得住</b>——靠 SEO / SEM / 社媒引流，但缺专业内容承接流量；</li>
+    <li><b>留得下</b>——访客看几秒就走、非营业时段无人接待，询盘流失；</li>
+    <li><b>改得对</b>——改版与文案优化没有数据依据、试错成本高。</li>
+  </ul>
+</section>
+
+<section id="s4">
+  <span class="sec-num">SECTION 04</span>
+  <h2 class="sec-title">价值主张</h2>
+  <div class="note cool"><b>核心主张：</b>让你的网站，成为<b>会自己增值的数字资产</b>。AI 时代，采购方找供应商的方式正从传统搜索引擎逐渐转向问 AI。企业的网站要么被 AI 看见、被 AI 理解、被 AI 信任，越用越值钱，要么被 AI 忽略、持续贬值。</div>
+  <p>价值围绕<b>数字资产的两层读者</b>展开：同一份网站内容，<b>一层给 AI 看</b>（被看见、被理解、被信任），<b>一层给真实访客看</b>（接得住、留得下）。<b>被 AI 看见、被 AI 理解、被 AI 信任是三个可控的能力维度——产品承诺能力得分，不承诺「被引用」（被引用是能力做到位后的自然结果，由外部监测工具追踪）</b>。各层含义与对应能力如下：</p>
+  <table>
+    <tbody><tr><th style="width:14%">读者层</th><th style="width:18%">价值点</th><th style="width:28%">含义</th><th>对应产品能力</th></tr>
+    <tr><td rowspan="3"><b>给 AI 看</b></td><td><b>被 AI 看见</b></td><td>AI 爬虫能否找到、访问、收录你的内容（入场资格）</td><td>知识基座 + 内容运营的结构化输出（Schema / llms.txt / 机器可读页 / sitemap）</td></tr>
+    <tr><td><b>被 AI 理解</b></td><td>AI 能否准确解析、提取内容含义，不产生理解偏差</td><td>内容运营的结构化参数表 + 自包含段落 + 结论前置 + 语义去模糊</td></tr>
+    <tr><td><b>被 AI 信任</b></td><td>AI 能否判定你的内容可靠、值得采信（E-E-A-T 信号）</td><td>内容运营的权威信号标注（认证编号 / 作者资质 / 来源引用）+ 知识基座权威性 + 新鲜度管理</td></tr>
+    <tr><td rowspan="2"><b>给访客看</b></td><td><b>接得住</b></td><td>访客进站后，是否看到匹配意图的内容与落地页</td><td>内容运营（详情 / 营销页）+ 个性化体验</td></tr>
+    <tr><td><b>留得下</b></td><td>访客的询盘是否被接住、转成留资商机</td><td>行为分析 + 个性化 + 客服 PRO + A/B + 营销页</td></tr>
+  </tbody></table>
+  <p>落到品牌、营销、转化三类客户各自关心的一件事上：</p>
+  <table>
+    <tbody><tr><th style="width:16%">客户关注</th><th style="width:38%">数字资产视角</th><th>一句话价值</th></tr>
+    <tr><td>品牌</td><td>网站是品牌的数字门面，被 AI 看见、被 AI 理解、被 AI 信任</td><td>AI 能不能看见你、理解你、信任你，就是新时代的品牌</td></tr>
+    <tr><td>营销</td><td>网站是获客引擎，内容做到被 AI 看见、理解、信任，自然更有机会被引用</td><td>把内容做到 AI 看得见、读得懂、信得过，被引用是自然结果</td></tr>
+    <tr><td>转化</td><td>网站是转化入口，接得住访客、留得下商机</td><td>人来了之后，能不能接得住、留得下</td></tr>
+  </tbody></table>
+</section>
+
+<section id="s5">
+  <span class="sec-num">SECTION 05</span>
+  <h2 class="sec-title">增值机制</h2>
+  <p>「会自己增值」是两层价值各自形成复利、再被一个引擎串成正循环——传统网站"建完即巅峰、越用越贬值"，数字门户则把内容与数据变成越积越厚的资产：</p>
+  <svg viewBox="0 0 620 460" xmlns="http://www.w3.org/2000/svg" style="width:100%;max-width:640px;height:auto;display:block;margin:12px auto">
+    <defs>
+      <marker id="arrComp" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+        <path d="M0,0 L8,3 L0,6 z" fill="#94a3b8"/>
+      </marker>
+    </defs>
+    <path d="M 412 38 A 218 218 0 0 1 502 128" fill="none" stroke="#94a3b8" stroke-width="2.2" marker-end="url(#arrComp)"/>
+    <path d="M 502 332 A 218 218 0 0 1 412 422" fill="none" stroke="#94a3b8" stroke-width="2.2" marker-end="url(#arrComp)"/>
+    <path d="M 208 422 A 218 218 0 0 1 118 332" fill="none" stroke="#94a3b8" stroke-width="2.2" marker-end="url(#arrComp)"/>
+    <path d="M 118 128 A 218 218 0 0 1 208 38" fill="none" stroke="#94a3b8" stroke-width="2.2" marker-end="url(#arrComp)"/>
+    <g>
+      <rect x="220" y="24" width="180" height="72" rx="14" fill="#ffffff" stroke="#2563eb" stroke-opacity="0.7" stroke-width="1.5"/>
+      <text x="310" y="55" text-anchor="middle" font-size="16" font-weight="700" fill="#1d4ed8">内容资产 · 给 AI 看</text>
+      <text x="310" y="78" text-anchor="middle" font-size="12.5" fill="#5b6774">被看见 · 被理解 · 被信任</text>
+    </g>
+    <g>
+      <rect x="390" y="194" width="180" height="72" rx="14" fill="#ffffff" stroke="#06b6d4" stroke-opacity="0.7" stroke-width="1.5"/>
+      <text x="480" y="225" text-anchor="middle" font-size="16" font-weight="700" fill="#0e7490">来源流量</text>
+      <text x="480" y="248" text-anchor="middle" font-size="12.5" fill="#5b6774">高意向访客进站</text>
+    </g>
+    <g>
+      <rect x="220" y="364" width="180" height="72" rx="14" fill="#ffffff" stroke="#10b981" stroke-opacity="0.7" stroke-width="1.5"/>
+      <text x="310" y="395" text-anchor="middle" font-size="16" font-weight="700" fill="#047857">转化闭环 · 给访客看</text>
+      <text x="310" y="418" text-anchor="middle" font-size="12.5" fill="#5b6774">接得住 · 留得下</text>
+    </g>
+    <g>
+      <rect x="50" y="194" width="180" height="72" rx="14" fill="#ffffff" stroke="#f59e0b" stroke-opacity="0.7" stroke-width="1.5"/>
+      <text x="140" y="225" text-anchor="middle" font-size="16" font-weight="700" fill="#b45309">数据沉淀</text>
+      <text x="140" y="248" text-anchor="middle" font-size="12.5" fill="#5b6774">行为 + 转化案例</text>
+    </g>
+    <circle cx="310" cy="230" r="54" fill="#fff7ed" stroke="#f59e0b" stroke-width="1.5"/>
+    <text x="310" y="225" text-anchor="middle" font-size="15" font-weight="700" fill="#b45309">知识反哺</text>
+    <text x="310" y="247" text-anchor="middle" font-size="11.5" fill="#8a6d3b">复利引擎</text>
+  </svg>
+  <div class="rule"><b>复利是怎么滚起来的：</b>给 AI 看——内容越积越多、越权威、越新鲜，被看见、被理解、被信任三个能力维度的得分持续提升，被引用的概率随之上升（被引用是能力做到位后的自然结果，由外部监测工具追踪，不作为产品承诺）；给访客看——行为数据越攒越多，诊断、个性化、A/B 越做越准，接得住、留得下的转化率持续爬升；两端由"知识反哺"串起——转化案例与行为策略回流知识库，下一轮站在更高起点。</div>
+</section>
+
+<section id="s6">
+  <span class="sec-num">SECTION 06</span>
+  <h2 class="sec-title">解决方案</h2>
+
+  <h3>6.1 总体架构：AI 知识基座 + 五大智能体</h3>
+  <p>产品由<b>一个知识基座</b>与<b>五个智能体</b>构成，兑现数字资产的两层读者价值——<b>给 AI 看</b>（被看见、被理解、被信任）与<b>给访客看</b>（接得住、留得下）：知识基座 + 内容运营负责<b>给 AI 看</b>的结构化输出、可解析内容与权威信号标注，五大智能体负责<b>给访客看</b>的站内转化闭环——<b>诊断 → 匹配 → 承接/支撑 → 转化 → 优化</b>。</p>
+  <div class="note merge">原规划中的"AI 智能落地页（营销页）智能体"<b>并入"AI 内容运营智能体"</b>，营销页 / 落地页作为内容运营智能体的一种<strong>内容类型</strong>统一管理。这样做的理由：营销页与产品详情、行业文章共用同一套"意图识别 → 生成 → SEO → 发布 → 追踪"流水线，不建两套内容引擎；营销页作为内容资产可被 SEO 内链、SEM 投放、个性化推送、客服推送共同引用。</div>
+  <table>
+    <tbody><tr><th style="width:16%">层级</th><th style="width:30%">智能体</th><th>职责</th></tr>
+    <tr><td><span class="pill p-base">知识基座</span></td><td>AI 知识库体系</td><td>为所有智能体提供"分析基准 + 内容专业度 + 对话能力 + 策略制定"的知识底座</td></tr>
+    <tr><td><span class="pill p-diag">诊断</span></td><td>AI 访客行为分析</td><td>识别访客意图、定位转化流失环节，输出按收益排序的优化建议</td></tr>
+    <tr><td><span class="pill p-match">匹配</span></td><td>AI 个性化体验</td><td>200ms 内解析访客，动态渲染最相关的首屏内容与 CTA</td></tr>
+    <tr><td><span class="pill p-support">承接+支撑</span></td><td>AI 内容运营（含营销页）</td><td>诊断内容完整度、生成产品/文章/<b>营销页</b>等多类型内容，并承接多渠道引流</td></tr>
+    <tr><td><span class="pill p-conv">转化</span></td><td>AI 智能客服 PRO</td><td>7×24 接待 + 挽留 + 选型 + 多语言，完成在线留资</td></tr>
+    <tr><td><span class="pill p-opt">优化</span></td><td>AI A/B 测试</td><td>科学迭代页面元素，数据驱动持续提升</td></tr>
+  </tbody></table>
+
+  <h3>6.2 知识基座</h3>
+  <p>知识库不是智能体，而是<b>五大智能体共同运转的地基</b>。由<b>企业知识库</b>（客户上传：产品手册、技术文档、客户案例、销售话术、FAQ）与<b>行业知识库</b>（平台预置：行业术语、技术标准、采购决策路径模型、竞品信息）构成，按三层加工：</p>
+  <ul>
+    <li><b>数据层</b>：原始资料多格式上传采集；</li>
+    <li><b>语料层</b>：向量化索引、语义分块、多语言对齐、权限隔离；</li>
+    <li><b>知识层</b>：产品知识图谱、问答对、话术模板、选型规则、痛点-方案映射。</li>
+  </ul>
+  <p>行业知识库回答"行业怎么做"，企业知识库回答"我们怎么做"。知识库越丰富，智能体输出的文案、推荐、回答就越专业。</p>
+  <p>知识基座同时是<b>「给 AI 看」的源头</b>：知识层的产品知识图谱、FAQ、选型规则、痛点-方案映射，经内容运营智能体加工成 AI 可解析的结构化字段（Schema.org、llms.txt、机器可读页），让 AI 看见企业、收录企业（<b>被看见</b>）；结构化的参数表和自包含段落让 AI 准确理解内容含义（<b>被理解</b>）；认证编号、作者资质、权威来源的标注让 AI 信任企业内容（<b>被信任</b>）。三个能力做到位，被引用的概率自然提升——但被引用本身由 AI 平台机制决定，产品不承诺，只通过外部监测工具追踪。<b></b></p>
+  <div class="note merge">知识库的反哺闭环：流量大、行为数据多的网站能沉淀更多"成功经验与可验证策略"，这些策略经结构化回收进行业知识库后，反向增强所有客户的诊断基准、内容模板与决策路径模型。小流量站点因此拿到的是"别人验证过的正确答案"，而不必从零试错。</div>
+  <div class="kv"><span class="chip" style="background:var(--diag)">对访客分析</span><div>提供行业基准与企业语境，用于区分机会与风险</div></div>
+  <div class="kv"><span class="chip" style="background:var(--support)">对内容运营</span><div>通过 RAG 提供产品知识与品牌话语</div></div>
+  <div class="kv"><span class="chip" style="background:var(--conv)">对客服 PRO</span><div>提供参数、选型规则与话术模板</div></div>
+  <div class="kv"><span class="chip" style="background:var(--opt)">对个性化/A/B</span><div>提供行业最佳实践</div></div>
+
+  <h3>6.3 各智能体核心运转策略</h3>
+
+  <!-- 智能体1：访客行为分析 -->
+  <div class="agent">
+    <div class="agent-head" style="background:linear-gradient(135deg,#f59e0b,#d97706)">
+      <div class="role">诊断层 · DIAGNOSIS</div>
+      <div class="nm">1. AI 访客行为分析智能体</div>
+      <div class="one">看见看不见的商机流失</div>
+    </div>
+    <div class="agent-body">
+      <h4>总体逻辑</h4>
+      <div class="flow">
+        <span class="st">无埋点采集全站行为</span><span class="arrow">→</span>
+        <span class="st">AI 多维分析识别异常</span><span class="arrow">→</span>
+        <span class="st">定位流失环节/瓶颈</span><span class="arrow">→</span>
+        <span class="st">按收益排序输出建议</span><span class="arrow">→</span>
+        <span class="st">协同落地并追踪闭环</span>
+      </div>
+
+      <div class="kicker">机制 A · 访客意图识别——"词根 → 采购阶段 → 意图深浅"映射</div>
+      <p>访客意图由三类信号交叉融合 + 知识库语义翻译得到。其中最直接、可解释的证据是<b>来源词根</b>：</p>
+      <table>
+        <tbody><tr><th style="width:16%">词根类型</th><th style="width:30%">典型例子</th><th style="width:20%">对应采购阶段</th><th>意图深浅与含义</th></tr>
+        <tr>
+          <td><b>产品词</b></td>
+          <td>"不锈钢球阀""法兰蝶阀 DN200""316L 截止阀"</td>
+          <td>决策期 / 对比后期</td>
+          <td><b>最深</b>——已明确要什么，正在锁定规格与供应商，最接近询价</td>
+        </tr>
+        <tr>
+          <td><b>行业词 / 品类词</b></td>
+          <td>"阀门厂家""工业阀门供应商""球阀哪家好"</td>
+          <td>对比期</td>
+          <td><b>中深</b>——在物色供应商，有意向但未锁定产品，需案例/资质/差异化承接</td>
+        </tr>
+        <tr>
+          <td><b>方案词 / 场景词</b></td>
+          <td>"阀门选型指南""高温阀门怎么选""化工厂用什么阀门"</td>
+          <td>了解期 / 对比早期</td>
+          <td><b>中浅</b>——先解决问题、搜集信息，需教育型内容引导，不宜硬推销</td>
+        </tr>
+        <tr>
+          <td><b>公司词 / 品牌词</b></td>
+          <td>品牌名、公司全称、"XX 阀门有限公司"</td>
+          <td>决策后期 / 复购 / 调研</td>
+          <td><b>深但分叉</b>——需借行为信号区分老客复购、主动上门高意向新客、竞品调研</td>
+        </tr>
+      </tbody></table>
+      <div class="rule"><b>行为信号对意图的升降级：</b>来源词根给出"初始阶段"，浏览行为在其上修正——</div>
+      <ul>
+        <li>浏览 ≥3 个产品页 或 单页停留 &gt;60s → 意图阶段<b>升级一档</b>（了解→对比，或对比→决策）；</li>
+        <li>重复查看同一产品页 且 打开"联系方式/报价"页 → 判为<b>决策期</b>；</li>
+        <li>仅看首页 1 屏即离开（停留 &lt;10s、滚动 &lt;20%）→ 判为<b>无明确意图的泛流量</b>。</li>
+      </ul>
+      <div class="rule"><b>意向等级判定（高/中/低）：</b></div>
+      <ul>
+        <li><b>高意向</b>：来源为公司词或精准产品词 + 访问报价/联系页 + 停留长 + 二次回访（满足 2 项以上）；</li>
+        <li><b>中意向</b>：行业词/方案词 + 浏览多个产品页 + 停留 30–90s；</li>
+        <li><b>低意向</b>：泛词/资讯词 + 单页浅浏览。</li>
+      </ul>
+      <p class="ex"><i>有效性判据：</i>判为"决策期·高意向"的访客，留资概率应显著高于"了解期·低意向"访客；两者留资率的区分度是衡量该机制是否有效的核心。</p>
+
+      <div class="kicker">机制 B · 转化瓶颈诊断——漏斗 × 热力图 × 回放 × 归因</div>
+      <div class="rule"><b>漏斗环节定义：</b>到达（落地页加载）→ 浏览（停留 &gt;30s 或滚动 &gt;50%）→ 互动（点击 CTA / 进产品页 / 发起对比）→ 留资（提交表单 / 发起咨询）。每环节流失率 = 1 − 下一环节人数 / 本环节人数。</div>
+      <div class="rule"><b>瓶颈定位：</b>每环节流失率与知识库<b>行业基准流失率</b>对表；高出基准 <b>20% 以上</b>的环节标记为"瓶颈"，并计算流失规模。</div>
+      <div class="rule"><b>热力图定位原因（暂无）：</b>
+        <ul>
+          <li><b>点击冷区</b>：CTA 区域点击密度低于页面整体点击密度均值 <b>30%</b>，说明关键入口"没人点"；</li>
+          <li><b>无效内容区</b>：连续滚动段位的到达率 &lt;10%，说明该段"没人看"；</li>
+          <li><b>注意力热图</b>：识别注意力聚焦点与散点，判断内容结构是否吸引人。</li>
+        </ul>
+      </div>
+      <div class="rule"><b>会话回放（暂无）：</b>对瓶颈环节抽样还原典型访客的完整路径，把"漏斗数字 + 热图异常"落到具体场景。</div>
+      <div class="rule"><b>根因归类（判定规则示例）：</b>
+        <ul>
+          <li>"浏览→互动"流失 + CTA 为点击冷区 → 根因=<b>CTA 不醒目 / 与意图不匹配</b>；</li>
+          <li>"到达→浏览"流失 + 首屏滚动深度浅 → 根因=<b>首屏内容与搜索意图不匹配</b>；</li>
+          <li>"互动→留资"流失 + 表单页停留短 → 根因=<b>留资门槛过高 / 信任要素缺失</b>。</li>
+        </ul>
+      </div>
+      <h4>输出与闭环</h4>
+      <p>建议按<b>预期收益 = 该环节流失人数 × 环节历史转化率 × 可挽回概率系数</b>降序排列，标注建议对接的智能体。执行后持续追踪改后数据，判定瓶颈是否消除，未消除进入下一轮。</p>
+    </div>
+  </div>
+
+  <!-- 智能体2：个性化体验 -->
+  <div class="agent">
+    <div class="agent-head" style="background:linear-gradient(135deg,#6366f1,#4f46e5)">
+      <div class="role">匹配层 · MATCHING</div>
+      <div class="nm">2. AI 个性化体验智能体</div>
+      <div class="one">让每个访客看到最相关的内容</div>
+    </div>
+    <div class="agent-body">
+      <h4>核心运转策略</h4>
+      <div class="flow">
+        <span class="st">访客抵达</span><span class="arrow">→</span>
+        <span class="st">200ms 解析四维画像</span><span class="arrow">→</span>
+        <span class="st">匹配展示策略</span><span class="arrow">→</span>
+        <span class="st">服务端动态渲染首屏</span><span class="arrow">→</span>
+        <span class="st">追踪停留/跳出</span>
+      </div>
+
+      <div class="kicker">机制 A · 四维画像解析</div>
+      <table>
+        <tbody><tr><th style="width:18%">维度</th><th style="width:34%">取值</th><th>用途与匹配规则</th></tr>
+        <tr><td><b>来源渠道</b></td><td>SEO / SEM / 社媒 / 直接访问·回访</td><td>SEO →偏知识内容；SEM →偏产品/落地页；社媒 →偏信任/案例；直接访问·回访 →偏续接</td></tr>
+        <tr><td><b>搜索关键词</b></td><td>词根文本</td><td>复用行为分析的"词根→阶段"映射，判断了解/对比/决策阶段</td></tr>
+        <tr><td><b>地域信息</b></td><td>国家/地区/语言</td><td>映射本地化模板：案例、货币、联系方式、语言</td></tr>
+        <tr><td><b>设备类型</b></td><td>PC / 移动</td><td>移动端精简首屏、放大 CTA；PC 端承载更丰富布局</td></tr>
+      </tbody></table>
+
+      <div class="kicker">机制 B · 分阶段内容匹配</div>
+      <table>
+        <tbody><tr><th style="width:16%">意图阶段</th><th style="width:30%">首屏展示内容</th><th>对应 CTA</th></tr>
+        <tr><td><b>了解阶段</b></td><td>行业知识 + 产品概览</td><td>下载选型指南 / 了解更多</td></tr>
+        <tr><td><b>对比阶段</b></td><td>产品优势 + 客户案例</td><td>查看参数对比 / 获取报价</td></tr>
+        <tr><td><b>决策阶段</b></td><td>报价 + 信任背书 + 预约</td><td>立即咨询 / 预约演示</td></tr>
+      </tbody></table>
+      <div class="rule"><b>回访记忆：</b>用 cookie 记录上次浏览的产品/页面，二次到访渲染"继续上次浏览的产品 X"入口，续接上下文。</div>
+      <div class="rule"><b>服务端渲染（SEO 安全）：</b>意图解析在请求到达服务端时完成，直接输出个性化后的 HTML（而非前端 JS 二次换肤）；搜索引擎爬虫 UA 或未命中策略的流量，始终返回稳定默认版本。</div>
+    </div>
+  </div>
+
+  <!-- 智能体3：内容运营（含营销页） -->
+  <div class="agent">
+    <div class="agent-head" style="background:linear-gradient(135deg,#06b6d4,#0891b2)">
+      <div class="role">承接+支撑层 · CONTENT &amp; LANDING</div>
+      <div class="nm">3. AI 内容运营智能体（含营销页）</div>
+      <div class="one">让网站内容自己会说话</div>
+    </div>
+    <div class="agent-body">
+      <h4>总体逻辑</h4>
+      <div class="flow">
+        <span class="st">扫描全站内容</span><span class="arrow">→</span>
+        <span class="st">评估完整度/新鲜度</span><span class="arrow">→</span>
+        <span class="st">判断优化/生成方向</span><span class="arrow">→</span>
+        <span class="st">RAG 生成内容+SEO</span><span class="arrow">→</span>
+        <span class="st">客户确认发布</span><span class="arrow">→</span>
+        <span class="st">追踪迭代</span>
+      </div>
+
+      <div class="kicker">机制 A · 内容完整度诊断</div>
+      <p>逐页扫描全站，用"完整度评分模型"做结构化检查。模型把"合格页面该有什么"拆成五层模块清单，逐项打分、加权汇总：</p>
+      <table>
+        <tbody><tr><th style="width:18%">层级（权重）</th><th style="width:48%">应具备的内容模块</th><th>诊断输出</th></tr>
+        <tr><td><b>基础层</b>（25%）</td><td>产品标题（含核心关键词）、一句话卖点、完整参数表、高清图/视频</td><td>缺什么、短多少</td></tr>
+        <tr><td><b>价值层</b>（25%）</td><td>核心卖点（3–5 条）、应用场景/解决方案、客户案例、FAQ</td><td>卖点是否缺失/含糊</td></tr>
+        <tr><td><b>信任层</b>（15%）</td><td>资质认证、质量标准、生产/交付能力、售后保障</td><td>信任要素是否齐备</td></tr>
+        <tr><td><b>转化层</b>（20%）</td><td>清晰 CTA、相关产品推荐、关联内容内链</td><td>CTA 是否缺失/位置不当</td></tr>
+        <tr><td><b>SEO 层</b>（15%）</td><td>SEO 标题、Meta 描述、结构化数据（Schema.org）、内链</td><td>SEO 元信息待优化项</td></tr>
+      </tbody></table>
+      <div class="rule"><b>打分与分档：</b>每模块按"缺失=0 / 不完整=0.5 / 完整=1"计分后加权，得<b>完整度得分（0–100）</b>。<b>&lt;60</b> 待优化；<b>60–80</b> 有短板；<b>&gt;80</b> 达标。</div>
+      <div class="rule"><b>新鲜度与深度：</b>动态信息（价格/参数/案例）最后更新距今 &gt;180 天 → 标记<b>过时</b>；正文 &lt;300 字 → 标记<b>过短</b>。二者覆盖"模块齐全但内容陈旧/空洞"的漏判。</div>
+
+      <div class="kicker">机制 B · AI 友好内容产出：让网站被 AI 看见、被 AI 理解、被 AI 信任</div>
+      <p>内容运营智能体不仅面向"人"写内容，也面向"AI"生产内容。「给 AI 看」不是只有"被看见"一层，而是三个可控的能力维度——<b>被看见</b>（可发现性）、<b>被理解</b>（可解析性）、<b>被信任</b>（权威性）。产品承诺能力得分，<b>不承诺「被引用」</b>——被引用是三柱做到位后的自然结果，由外部监测工具追踪：</p>
+      <div class="rule"><b>被 AI 看见（可发现性）：</b>为每类页面自动生成 Schema.org 结构化数据（Organization / Product / FAQPage / BreadcrumbList）、llms.txt、机器可读的内容清单、sitemap 同步，把知识基座里的产品图谱、FAQ、选型规则转成 AI 爬虫可发现、可访问的结构化字段。人工只需确认发布。</div>
+      <div class="rule"><b>被 AI 理解（可解析性）：</b>内容不是自然语言段落的堆砌，而是按"结论前置 + 自包含 + 参数即字段 + 语义去模糊"四条规则产出，让 AI 能准确解析、逐字段提取，不产生理解偏差。产品参数用结构化表格而非描述文字，FAQ 每条答案独立成义、截取一段即可引用。</div>
+      <div class="rule"><b>被 AI 信任（权威性）：</b>每段内容嵌入权威信号——认证编号（可验证）、作者资质标注（专业背书）、来源引用（标准编号/案例数据）、新鲜度标记（dateModified + 过期提醒）。企业知识库的权威性越高，AI 越倾向于采信。E-E-A-T 信号越完整，被信任的概率越高。</div>
+      <div class="rule"><b>九维三柱评分模型：</b>每篇内容发布前自动评分——被看见（站点可发现性 + 页面可访问性 + 结构化索引，权重 25%）、被理解（结构化程度 + 自包含性 + 语义清晰度，权重 40%）、被信任（事实密度 + 权威信号 + 新鲜度，权重 35%）。总分 ≥ 80 可发布；65–79 标黄警告；&lt; 65 硬拦截。</div>
+      <div class="rule"><b>外部结果追踪（不承诺，仅监测）：</b>集成外部工具 API（Bing AI Performance / GEOBase 等），追踪被引用次数、AI 来源流量占比等结果指标。结果数据回流用于校准三柱权重——哪个能力柱对引用的影响最大，动态调整——但不作为评分本身或产品承诺。</div>
+      <div class="rule"><b>指标：</b>能力指标（可控、可承诺）——三柱评分各柱达标率、AI 收录率核心页 100%（被看见）；结果指标（不可控、仅监测）——被引用次数、AI 来源流量占比。</div>
+
+      <div class="kicker">机制 C · 从访客意图到营销页的生成</div>
+      <p>当行为分析 / 个性化智能体把识别到的访客意图同步过来后，按以下流水线创建营销页：</p>
+      <div class="strategy"><strong>① 意图定型</strong>——把"来源词根 + 意图阶段 + 画像"合成<b>意图指纹</b>，判定访客所处阶段与决策所需信息。</div>
+      <div class="rule"><b>② 形态选择（阶段 → 页面结构）：</b>
+        <ul>
+          <li><b>了解阶段</b> → <b>行业知识型</b>：痛点 → 原理 → 解决方案 → 品牌引入；CTA=下载选型指南；</li>
+          <li><b>对比阶段</b> → <b>产品优势型</b>：参数对比 → 差异化卖点 → 客户案例；CTA=获取对比报告 / 预约演示；</li>
+          <li><b>决策阶段</b> → <b>报价咨询型</b>：报价/方案 → 信任背书 → 表单；CTA=获取报价 / 立即咨询。</li>
+        </ul>
+      </div>
+      <div class="strategy"><strong>③ RAG 生成正文 + 精准 CTA</strong>——基于企业 + 行业知识库检索增强生成正文；CTA 与阶段匹配：了解期=下载选型指南，对比期=获取对比报告/预约演示，决策期=获取报价/立即咨询。</div>
+      <div class="strategy"><strong>④ SEO/SEM 适配</strong>——同步生成 SEO 标题、Meta 描述，使营销页可被三条链路引用：SEO 内链、SEM 落地、社媒外链。</div>
+      <div class="strategy"><strong>⑤ 客户确认后发布</strong>——进预览态，客户确认后一键发布；发布后追踪浏览量与停留时长，未达预期自动进入下一轮优化。</div>
+
+      <div class="kicker">机制 D · 相同意图访客再进入时，如何推送对应营销页</div>
+      <p>持有同一"意图指纹"的新访客进来时，系统在<b>服务端 200ms 内</b>完成意图解析与匹配，以多种形态触达。五种推送方式的触发条件、展示机制与打开策略：</p>
+      <table>
+        <tbody><tr><th style="width:15%">推送方式</th><th style="width:37%">触发条件与展示机制</th><th>引导打开落地页的策略</th></tr>
+        <tr>
+          <td><b>首屏 Banner</b></td>
+          <td>意图命中 且 意向等级≥中 且 访客当日未见过同一营销页；在首屏主视觉位渲染入口，不命中展示默认 Banner</td>
+          <td>意图匹配大图 + 一句利益点 + 主 CTA 按钮，点击进落地页</td>
+        </tr>
+        <tr>
+          <td><b>页中横幅</b></td>
+          <td>滚动深度 &gt;50% 且 当前页主题与营销页相关；在段落间插入横幅</td>
+          <td>上下文引导（"看了 X 你可能需要 Y 方案"），点击进落地页</td>
+        </tr>
+        <tr>
+          <td><b>侧边广告位</b></td>
+          <td>意图阶段=对比/决策 时持续展示；侧边栏动态 Slot 渲染营销页卡片</td>
+          <td>常驻低打扰，持续唤起高阶段访客</td>
+        </tr>
+        <tr>
+          <td><b>底部弹出</b></td>
+          <td>滚动 ≥80% 或 出现离开意图 且 本次会话未触发过；弹层展示引导</td>
+          <td>离开临界点最后一次拦截；可关闭、带频控</td>
+        </tr>
+        <tr>
+          <td><b>智能客服推送</b></td>
+          <td>客服识别高意向访客时主动推，或访客表达对应意图时推荐</td>
+          <td>对高意向效果最好，对话场景自然引出落地页链接/卡片</td>
+        </tr>
+      </tbody></table>
+      <div class="strategy"><strong>共同约束：</strong>①<strong>意图指纹命中</strong>——仅意图匹配才推送；②<strong>服务端渲染</strong>——动态内容不影响 SEO，爬虫抓原版；③<strong>精准 CTA</strong>——推送位带与阶段匹配的 CTA；④<strong>频控与去重</strong>——同一访客同一营销页 24h 内最多展示 2 次（可配置）；⑤<strong>效果追踪</strong>——每个推送位独立统计曝光/点击/进入/转化，交 A/B 智能体迭代。</div>
+      <p class="ex"><i>衡量：</i>各推送位的点击率、进入落地页后的转化率是直接效果指标；同时监控"推送是否引发跳出率上升"以避免过度打扰。</p>
+    </div>
+  </div>
+
+  <!-- 智能体4：客服PRO -->
+  <div class="agent">
+    <div class="agent-head" style="background:linear-gradient(135deg,#10b981,#059669)">
+      <div class="role">转化层 · CONVERSION</div>
+      <div class="nm">4. AI 智能客服 PRO 智能体</div>
+      <div class="one">不让任何高意向访客溜走</div>
+    </div>
+    <div class="agent-body">
+      <h4>核心运转策略</h4>
+      <div class="flow">
+        <span class="st">访客进入</span><span class="arrow">→</span>
+        <span class="st">实时分析行为意图</span><span class="arrow">→</span>
+        <span class="st">匹配转化策略</span><span class="arrow">→</span>
+        <span class="st">多轮交互</span><span class="arrow">→</span>
+        <span class="st">判断意向等级</span><span class="arrow">→</span>
+        <span class="st">留资→CRM→销售跟进</span>
+      </div>
+
+      <div class="kicker">机制 A · 四项转化能力</div>
+      <div class="rule"><b>AI 智能接待：</b>访客主动会话或命中"决策期·高意向"画像时，7×24 自动应答、识别采购意图、主动引导留资。</div>
+      <div class="rule"><b>AI 智能挽留：</b>检测到<b>离开意图</b>（鼠标移向地址栏/关闭区）且<b>会话停留 &gt;30s</b>且<b>尚未留资</b>，触发挽留弹窗（优惠券 / 资料下载 / 转人工）。</div>
+      <div class="rule"><b>AI 互动选型：</b>多轮对话（需求类型 → 关键参数 → 数量 → 预算 → 交期），每轮收窄追问，最终生成选型方案并引导留资——用咨询代替填表。</div>
+      <div class="rule"><b>AI 多语言：</b>按地域自动切换母语对话，实时翻译 + 本地化表达，覆盖 30+ 语种。</div>
+
+      <div class="kicker">机制 B · 意向等级与分级处理</div>
+      <table>
+        <tbody><tr><th style="width:14%">意向等级</th><th style="width:42%">判定规则</th><th>处理策略</th></tr>
+        <tr><td><b>高意向</b></td><td>访问报价/联系页，或停留 &gt;90s，或看 ≥3 个产品，或来源为精准产品词/广告词</td><td>引导留资 + 同步 CRM + 销售即时跟进（延迟 &lt;1 分钟）</td></tr>
+        <tr><td><b>中意向</b></td><td>看 2–3 个产品、停留 30–90s、来源为行业词</td><td>持续互动深化需求，适时推进选型</td></tr>
+        <tr><td><b>低意向</b></td><td>单页浅浏览、停留 &lt;30s、来源为泛词/资讯</td><td>推荐内容引导浏览更多页面（可联动内容运营推送营销页）</td></tr>
+      </tbody></table>
+    </div>
+  </div>
+
+  <!-- 智能体5：A/B测试 -->
+  <div class="agent">
+    <div class="agent-head" style="background:linear-gradient(135deg,#8b5cf6,#7c3aed)">
+      <div class="role">优化层 · OPTIMIZATION</div>
+      <div class="nm">5. AI A/B 测试智能体</div>
+      <div class="one">让每一次改进都基于数据</div>
+    </div>
+    <div class="agent-body">
+      <h4>核心运转策略</h4>
+      <div class="flow">
+        <span class="st">扫描可优化元素</span><span class="arrow">→</span>
+        <span class="st">生成 3–5 变体</span><span class="arrow">→</span>
+        <span class="st">服务端分流</span><span class="arrow">→</span>
+        <span class="st">追踪转化率</span><span class="arrow">→</span>
+        <span class="st">显著性判定</span><span class="arrow">→</span>
+        <span class="st">自动推全/归档</span>
+      </div>
+
+      <div class="rule"><b>变体生成：</b>扫描 CTA 文案、首屏标题、按钮颜色/位置、布局、表单字段数等元素，每个元素生成 <b>3–5 个变体</b>；变体间保持<b>单变量差异</b>，保证归因清晰。</div>
+      <div class="rule"><b>服务端分流：</b>基于 <b>cookie 哈希</b>分桶——同一访客始终看到同一版本；<b>搜索引擎爬虫统一返回原版</b>。</div>
+      <div class="rule"><b>显著性判定（贝叶斯）：</b>实时计算各版本转化率后判三态：<b>变体优于原版概率 &gt;95%</b> → 胜出推全；<b>劣于原版概率 &gt;95%</b> → 落败归档；其余 → 延长测试或换元素。</div>
+      <div class="rule"><b>自动推全：</b>胜出后设变体为正式版，标注 <b>canonical</b> 指向正式版；推全后继续追踪整体转化率，未达预期进入下一轮。</div>
+      <div class="rule"><b>样本量与时长（预期说明，非门槛）：</b>以留资率 3% 为例，95% 置信度下每个变体约需 <b>1,000 次转化</b>出可信结论。流量小的站点结论出得慢，系统把"还需多少展示/天数"透明展示，而非拒绝其使用。</div>
+    </div>
+  </div>
+
+  <h3>6.4 关键技术与约束</h3>
+  <ul>
+    <li><b>RAG / 知识库</b>：内容生成、意图解释、客服回答都以检索知识库为前提。</li>
+    <li><b>服务端渲染（SSR）</b>：个性化换肤、营销页动态植入、A/B 分流均在服务端完成，爬虫抓取稳定版本。</li>
+    <li><b>实时性</b>：意图解析与动态渲染延迟 &lt;200ms。</li>
+    <li><b>统计正确性</b>：A/B 用贝叶斯显著性，cookie 哈希保证同用户版本一致。</li>
+    <li><b>数据合规</b>：行为采集匿名化，隐私开关可配置。</li>
+  </ul>
+
+  <h3>6.5 假设</h3>
+  <ul>
+    <li>"意图 → 分阶段内容匹配"能显著降低跳出率，待灰度期用真实流量验证。</li>
+    <li>访客行为分析在小流量站点上仍能识别出有价值的优化点（借助知识库反哺），建议质量待灰度验证。</li>
+    <li>多智能体效果随知识库丰富度提升，正相关关系待用案例量化。</li>
+  </ul>
+</section>
+
+<section id="s7">
+  <span class="sec-num">SECTION 07</span>
+  <h2 class="sec-title">发布计划</h2>
+  <p></p>
+
+  <table>
+    <tbody><tr><th style="width:12%">优先级</th><th style="width:26%">智能体</th><th>价值机理（为何排在此位）</th></tr>
+    <tr>
+      <td><span class="pill p-base">0 · 地基</span></td>
+      <td>AI 知识库体系</td>
+      <td>所有智能体的知识来源，必须先建</td>
+    </tr>
+    <tr>
+      <td><span class="pill p-conv">1</span></td>
+      <td>AI 智能客服 PRO</td>
+      <td>在线留资的"最后一公里"，直接产出线索，对转化率结果最直接、见效最快</td>
+    </tr>
+    <tr>
+      <td><span class="pill p-support">2</span></td>
+      <td>AI 内容运营（含营销页）</td>
+      <td>承接流量的内容与落地页资产，是转化率的分母基础</td>
+    </tr>
+    <tr>
+      <td><span class="pill p-match">3</span></td>
+      <td>AI 访客行为分析</td>
+      <td>诊断流失、定位方向；把大流量站点的可验证策略回收进行业知识库，反哺全部客户</td>
+    </tr>
+    <tr>
+      <td style=""><span class="pill p-diag">4</span></td>
+      <td>AI 个性化体验</td>
+      <td>内容与落地页就绪后做精准匹配，即时提升承接效率与停留</td>
+    </tr>
+    <tr>
+      <td><span class="pill p-opt">5</span></td>
+      <td>AI A/B 测试</td>
+      <td>持续迭代手段，需在页面与内容基础就绪后才有对象可测</td>
+    </tr>
+  </tbody></table>
+
+  <div class="note cool">排序逻辑：先把"离转化最近、结果可量化"的客服 PRO 与内容运营落地，最快证明价值、建立客户信任；再引入诊断、匹配与优化，形成"先转化、再找增量、后持续迭代"的闭环。客户可独立启用任一智能体。</div>
+</section>
+
+<footer>数字门户 AI 智能体 · 产品需求文档（PRD） · v1.4 · 2026-09-14</footer>
+</div>
+
+</body></html>

@@ -1,0 +1,15 @@
+{
+  "status": "pending_review",
+  "source": "model",
+  "created_at": "20260831T100157Z",
+  "site_id": "site_demo_b2b",
+  "layer": "流失点1",
+  "name": "主力型号详情页首屏缺少核心参数（材质、规格等），买家无法快速判断产品匹配度，导致大量用户秒退。",
+  "when_text": "落地接住率大幅下跌 + 有效浏览率下跌 + 停留/滚动深度减半 + 多渠道同步恶化",
+  "how_to_verify": "用「首屏核心参数可见性」指标 + 页面改版后有效浏览率/落地接住率变化验证。",
+  "metrics_needed": [
+    "首屏关键参数曝光率、页面改版后有效浏览率、主力型号详情页跳出率"
+  ],
+  "note": "页面在 2026-08-02 完成改版，当前首屏英雄区参数不可见（hero_params_visible=false），仅有泛化的服务商介绍。",
+  "instruction": "运营确认后，按 hypothesis_lib.json 的 when DSL 改写成机器可执行条件再入库。未确认不得生效。"
+}

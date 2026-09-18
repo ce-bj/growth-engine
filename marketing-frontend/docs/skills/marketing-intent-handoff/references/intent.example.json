@@ -1,0 +1,37 @@
+{
+  "schemaVersion": "1.0",
+  "requestId": "marketing-request-001",
+  "sourceAgent": "visitor-analysis-agent",
+  "siteId": "site-demo",
+  "intent": {
+    "id": "intent-gate-quotation",
+    "fingerprint": "gate:decision:procurement:zh-CN",
+    "topic": "铸铁闸门",
+    "stage": "决策",
+    "audience": "工程采购负责人",
+    "need": "介绍铸铁闸门的应用场景与选型服务，引导采购负责人获取报价。"
+  },
+  "generation": {
+    "pageType": "产品营销",
+    "templateId": "precision",
+    "conversionAction": "获取报价",
+    "market": "中国大陆",
+    "language": "中文简体",
+    "primaryColor": "#314ed8",
+    "fontStyle": "现代无衬线"
+  },
+  "resources": {
+    "knowledgeDirectories": ["产品资料", "企业与品牌"],
+    "productIds": ["gate"],
+    "imageAssetId": "demo-product-image"
+  },
+  "publication": {
+    "mode": "automatic",
+    "authorizationRef": "demo-publish-grant",
+    "slug": "gate-quotation",
+    "placements": ["智能客服推送"],
+    "navigationPages": ["产品中心"],
+    "onMissingResources": "pause",
+    "minimumAiScore": 80
+  }
+}

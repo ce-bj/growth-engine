@@ -1,0 +1,5199 @@
+{
+  "site_id": "site_demo_b2b",
+  "site_label": "Demo · CNC 精密加工件外贸站",
+  "site_origin": "https://www.demo-cnc-oem.com",
+  "period": {
+    "current": {
+      "start": "2026-08-04",
+      "end": "2026-08-31",
+      "days": 28
+    },
+    "baseline": {
+      "method": "past_4w_same_period",
+      "start": "2026-07-07",
+      "end": "2026-08-03",
+      "days": 28
+    }
+  },
+  "case_note": "贯穿案例：UV 1650 持平、有效浏览率 40%→30%、主力型号详情页落地接住率腰斩、四渠在该页同步变差、转化交互率与留资完成率持平、询盘条数 47→36",
+  "metric_catalog": {
+    "source": "指标字典与假设方案库.xlsx",
+    "excel_metric_count": 111,
+    "note": "facts 主键 = Excel 指标名称；名称@维度 为旧引擎别名"
+  },
+  "executed_measures": [
+    {
+      "id": "trial-202608-cta",
+      "measure_id": "M-改产品详情-补询价入口",
+      "hypothesis_id": "H-L2-09",
+      "target": "/products/cnc-6061-bracket",
+      "executed_on": "2026-08-12",
+      "frozen_month": "2026-07",
+      "observe_month": "2026-09",
+      "snapshot_before": {
+        "转化交互率@页面": {
+          "key": "/products/cnc-6061-bracket",
+          "value": 0.041,
+          "baseline": 0.04,
+          "state": "持平",
+          "data_status": "ok"
+        }
+      }
+    }
+  ],
+  "dimensions": {
+    "渠道": [
+      {
+        "key": "search",
+        "label": "搜索引擎"
+      },
+      {
+        "key": "direct",
+        "label": "直接访问"
+      },
+      {
+        "key": "referral",
+        "label": "外部链接"
+      },
+      {
+        "key": "ads",
+        "label": "广告"
+      }
+    ],
+    "页面": [
+      {
+        "key": "/products/cnc-6061-bracket",
+        "label": "主力型号详情页 · CNC-6061 铝支架",
+        "page_type": "product_detail"
+      },
+      {
+        "key": "/",
+        "label": "首页",
+        "page_type": "home"
+      },
+      {
+        "key": "/products",
+        "label": "产品列表",
+        "page_type": "list"
+      },
+      {
+        "key": "/campaign/cnc-oem-q3",
+        "label": "Q3 OEM 营销落地页",
+        "page_type": "landing"
+      },
+      {
+        "key": "/blog/cnc-tolerance-guide",
+        "label": "公差指南文章",
+        "page_type": "article"
+      },
+      {
+        "key": "/about",
+        "label": "关于我们",
+        "page_type": "about"
+      }
+    ],
+    "自然搜索词": [
+      {
+        "key": "cnc aluminum bracket oem",
+        "channel": "search",
+        "landing": "/products/cnc-6061-bracket"
+      },
+      {
+        "key": "6061 bracket manufacturer",
+        "channel": "search",
+        "landing": "/products/cnc-6061-bracket"
+      },
+      {
+        "key": "cnc tolerance standard",
+        "channel": "search",
+        "landing": "/blog/cnc-tolerance-guide"
+      },
+      {
+        "key": "oem cnc parts moq",
+        "channel": "search",
+        "landing": "/products/cnc-6061-bracket"
+      }
+    ],
+    "广告关键词": [
+      {
+        "key": "cnc machining quote",
+        "channel": "ads",
+        "landing": "/campaign/cnc-oem-q3"
+      },
+      {
+        "key": "oem cnc quote",
+        "channel": "ads",
+        "landing": "/campaign/cnc-oem-q3"
+      }
+    ],
+    "搜索词": [
+      {
+        "key": "cnc aluminum bracket oem",
+        "channel": "search",
+        "landing": "/products/cnc-6061-bracket"
+      },
+      {
+        "key": "6061 bracket manufacturer",
+        "channel": "search",
+        "landing": "/products/cnc-6061-bracket"
+      },
+      {
+        "key": "cnc tolerance standard",
+        "channel": "search",
+        "landing": "/blog/cnc-tolerance-guide"
+      },
+      {
+        "key": "oem cnc parts moq",
+        "channel": "search",
+        "landing": "/products/cnc-6061-bracket"
+      },
+      {
+        "key": "cnc machining quote",
+        "channel": "ads",
+        "landing": "/campaign/cnc-oem-q3"
+      },
+      {
+        "key": "oem cnc quote",
+        "channel": "ads",
+        "landing": "/campaign/cnc-oem-q3"
+      },
+      {
+        "key": "6061 bracket drawing",
+        "channel": "onsite"
+      },
+      {
+        "key": "6082 bracket",
+        "channel": "onsite"
+      },
+      {
+        "key": "anodized finish spec",
+        "channel": "onsite"
+      }
+    ],
+    "路径": [
+      {
+        "key": "/ > /products > /products/cnc-6061-bracket"
+      },
+      {
+        "key": "/products/cnc-6061-bracket > /"
+      },
+      {
+        "key": "/blog/cnc-tolerance-guide > /products > /products/cnc-6061-bracket"
+      }
+    ],
+    "访客": [
+      {
+        "key": "v01"
+      },
+      {
+        "key": "v02"
+      },
+      {
+        "key": "v03"
+      },
+      {
+        "key": "v04"
+      },
+      {
+        "key": "v05"
+      },
+      {
+        "key": "v06"
+      },
+      {
+        "key": "v07"
+      },
+      {
+        "key": "v08"
+      },
+      {
+        "key": "v09"
+      },
+      {
+        "key": "v10"
+      }
+    ],
+    "通道": [
+      {
+        "key": "form",
+        "label": "表单"
+      },
+      {
+        "key": "chat",
+        "label": "智能客服"
+      }
+    ]
+  },
+  "facts": {
+    "全站UV": {
+      "slices": [
+        {
+          "key": "__site__",
+          "current": {
+            "numerator": 1650,
+            "value": 1650
+          },
+          "baseline": {
+            "numerator": 1650,
+            "value": 1650
+          }
+        }
+      ]
+    },
+    "UV@全站": {
+      "slices": [
+        {
+          "key": "__site__",
+          "current": {
+            "numerator": 1650,
+            "value": 1650
+          },
+          "baseline": {
+            "numerator": 1650,
+            "value": 1650
+          }
+        }
+      ]
+    },
+    "全站留资数": {
+      "slices": [
+        {
+          "key": "__site__",
+          "current": {
+            "numerator": 36,
+            "value": 36
+          },
+          "baseline": {
+            "numerator": 47,
+            "value": 47
+          }
+        }
+      ]
+    },
+    "留资数@全站": {
+      "slices": [
+        {
+          "key": "__site__",
+          "current": {
+            "numerator": 36,
+            "value": 36
+          },
+          "baseline": {
+            "numerator": 47,
+            "value": 47
+          }
+        }
+      ]
+    },
+    "全站留资率": {
+      "slices": [
+        {
+          "key": "__site__",
+          "current": {
+            "numerator": 36,
+            "denominator": 1650,
+            "value": 0.021818
+          },
+          "baseline": {
+            "numerator": 47,
+            "denominator": 1650,
+            "value": 0.028485
+          }
+        }
+      ]
+    },
+    "留资率@全站": {
+      "slices": [
+        {
+          "key": "__site__",
+          "current": {
+            "numerator": 36,
+            "denominator": 1650,
+            "value": 0.021818
+          },
+          "baseline": {
+            "numerator": 47,
+            "denominator": 1650,
+            "value": 0.028485
+          }
+        }
+      ]
+    },
+    "全站有效浏览率": {
+      "slices": [
+        {
+          "key": "__site__",
+          "current": {
+            "numerator": 495,
+            "denominator": 1650,
+            "value": 0.3
+          },
+          "baseline": {
+            "numerator": 660,
+            "denominator": 1650,
+            "value": 0.4
+          }
+        }
+      ]
+    },
+    "有效浏览率@全站": {
+      "slices": [
+        {
+          "key": "__site__",
+          "current": {
+            "numerator": 495,
+            "denominator": 1650,
+            "value": 0.3
+          },
+          "baseline": {
+            "numerator": 660,
+            "denominator": 1650,
+            "value": 0.4
+          }
+        }
+      ]
+    },
+    "全站转化交互率": {
+      "slices": [
+        {
+          "key": "__site__",
+          "current": {
+            "numerator": 74,
+            "denominator": 495,
+            "value": 0.149495
+          },
+          "baseline": {
+            "numerator": 99,
+            "denominator": 660,
+            "value": 0.15
+          }
+        }
+      ]
+    },
+    "转化交互率@全站": {
+      "slices": [
+        {
+          "key": "__site__",
+          "current": {
+            "numerator": 74,
+            "denominator": 495,
+            "value": 0.149495
+          },
+          "baseline": {
+            "numerator": 99,
+            "denominator": 660,
+            "value": 0.15
+          }
+        }
+      ]
+    },
+    "全站留资完成率": {
+      "slices": [
+        {
+          "key": "__site__",
+          "current": {
+            "numerator": 34,
+            "denominator": 74,
+            "value": 0.459459
+          },
+          "baseline": {
+            "numerator": 45,
+            "denominator": 99,
+            "value": 0.454545
+          }
+        }
+      ]
+    },
+    "留资完成率@全站": {
+      "slices": [
+        {
+          "key": "__site__",
+          "current": {
+            "numerator": 34,
+            "denominator": 74,
+            "value": 0.459459
+          },
+          "baseline": {
+            "numerator": 45,
+            "denominator": 99,
+            "value": 0.454545
+          }
+        }
+      ]
+    },
+    "全站秒退率": {
+      "slices": [
+        {
+          "key": "__site__",
+          "current": {
+            "numerator": 693,
+            "denominator": 1650,
+            "value": 0.42
+          },
+          "baseline": {
+            "numerator": 545,
+            "denominator": 1650,
+            "value": 0.330303
+          }
+        }
+      ]
+    },
+    "秒退率@全站": {
+      "slices": [
+        {
+          "key": "__site__",
+          "current": {
+            "numerator": 693,
+            "denominator": 1650,
+            "value": 0.42
+          },
+          "baseline": {
+            "numerator": 545,
+            "denominator": 1650,
+            "value": 0.330303
+          }
+        }
+      ]
+    },
+    "全站有效浏览访客": {
+      "slices": [
+        {
+          "key": "__site__",
+          "current": {
+            "numerator": 495,
+            "value": 495
+          },
+          "baseline": {
+            "numerator": 660,
+            "value": 660
+          }
+        }
+      ]
+    },
+    "有效浏览访客@全站": {
+      "slices": [
+        {
+          "key": "__site__",
+          "current": {
+            "numerator": 495,
+            "value": 495
+          },
+          "baseline": {
+            "numerator": 660,
+            "value": 660
+          }
+        }
+      ]
+    },
+    "全站转化交互访客": {
+      "slices": [
+        {
+          "key": "__site__",
+          "current": {
+            "numerator": 74,
+            "value": 74
+          },
+          "baseline": {
+            "numerator": 99,
+            "value": 99
+          }
+        }
+      ]
+    },
+    "转化交互访客@全站": {
+      "slices": [
+        {
+          "key": "__site__",
+          "current": {
+            "numerator": 74,
+            "value": 74
+          },
+          "baseline": {
+            "numerator": 99,
+            "value": 99
+          }
+        }
+      ]
+    },
+    "全站留资访客": {
+      "slices": [
+        {
+          "key": "__site__",
+          "current": {
+            "numerator": 34,
+            "value": 34
+          },
+          "baseline": {
+            "numerator": 45,
+            "value": 45
+          }
+        }
+      ]
+    },
+    "留资访客@全站": {
+      "slices": [
+        {
+          "key": "__site__",
+          "current": {
+            "numerator": 34,
+            "value": 34
+          },
+          "baseline": {
+            "numerator": 45,
+            "value": 45
+          }
+        }
+      ]
+    },
+    "健康度待处理问题数": {
+      "slices": [
+        {
+          "key": "__site__",
+          "current": {
+            "numerator": 0,
+            "value": 0
+          },
+          "baseline": {
+            "numerator": 0,
+            "value": 0
+          }
+        }
+      ]
+    },
+    "健康度待处理问题数@全站": {
+      "slices": [
+        {
+          "key": "__site__",
+          "current": {
+            "numerator": 0,
+            "value": 0
+          },
+          "baseline": {
+            "numerator": 0,
+            "value": 0
+          }
+        }
+      ]
+    },
+    "健康度待处理问题列表": {
+      "slices": [
+        {
+          "key": "__site__",
+          "current": {
+            "value": [],
+            "high_risk": 0
+          },
+          "baseline": {
+            "value": []
+          }
+        }
+      ]
+    },
+    "健康度待处理问题列表@全站": {
+      "slices": [
+        {
+          "key": "__site__",
+          "current": {
+            "value": [],
+            "high_risk": 0
+          },
+          "baseline": {
+            "value": []
+          }
+        }
+      ]
+    },
+    "搜索引擎UV占比": {
+      "slices": [
+        {
+          "key": "__site__",
+          "current": {
+            "numerator": 780,
+            "denominator": 1650,
+            "value": 0.472727
+          },
+          "baseline": {
+            "numerator": 770,
+            "denominator": 1650,
+            "value": 0.466667
+          }
+        }
+      ]
+    },
+    "直接访问UV占比": {
+      "slices": [
+        {
+          "key": "__site__",
+          "current": {
+            "numerator": 290,
+            "denominator": 1650,
+            "value": 0.175758
+          },
+          "baseline": {
+            "numerator": 300,
+            "denominator": 1650,
+            "value": 0.181818
+          }
+        }
+      ]
+    },
+    "外部链接UV占比": {
+      "slices": [
+        {
+          "key": "__site__",
+          "current": {
+            "numerator": 210,
+            "denominator": 1650,
+            "value": 0.127273
+          },
+          "baseline": {
+            "numerator": 220,
+            "denominator": 1650,
+            "value": 0.133333
+          }
+        }
+      ]
+    },
+    "广告UV占比": {
+      "slices": [
+        {
+          "key": "__site__",
+          "current": {
+            "numerator": 370,
+            "denominator": 1650,
+            "value": 0.224242
+          },
+          "baseline": {
+            "numerator": 360,
+            "denominator": 1650,
+            "value": 0.218182
+          }
+        }
+      ]
+    },
+    "渠道UV占比@渠道": {
+      "slices": [
+        {
+          "key": "search",
+          "current": {
+            "numerator": 780,
+            "denominator": 1650,
+            "value": 0.472727
+          },
+          "baseline": {
+            "numerator": 770,
+            "denominator": 1650,
+            "value": 0.466667
+          }
+        },
+        {
+          "key": "direct",
+          "current": {
+            "numerator": 290,
+            "denominator": 1650,
+            "value": 0.175758
+          },
+          "baseline": {
+            "numerator": 300,
+            "denominator": 1650,
+            "value": 0.181818
+          }
+        },
+        {
+          "key": "referral",
+          "current": {
+            "numerator": 210,
+            "denominator": 1650,
+            "value": 0.127273
+          },
+          "baseline": {
+            "numerator": 220,
+            "denominator": 1650,
+            "value": 0.133333
+          }
+        },
+        {
+          "key": "ads",
+          "current": {
+            "numerator": 370,
+            "denominator": 1650,
+            "value": 0.224242
+          },
+          "baseline": {
+            "numerator": 360,
+            "denominator": 1650,
+            "value": 0.218182
+          }
+        }
+      ]
+    },
+    "搜索引擎UV": {
+      "slices": [
+        {
+          "key": "__site__",
+          "current": {
+            "numerator": 780,
+            "value": 780
+          },
+          "baseline": {
+            "numerator": 770,
+            "value": 770
+          }
+        }
+      ]
+    },
+    "直接访问UV": {
+      "slices": [
+        {
+          "key": "__site__",
+          "current": {
+            "numerator": 290,
+            "value": 290
+          },
+          "baseline": {
+            "numerator": 300,
+            "value": 300
+          }
+        }
+      ]
+    },
+    "外部链接UV": {
+      "slices": [
+        {
+          "key": "__site__",
+          "current": {
+            "numerator": 210,
+            "value": 210
+          },
+          "baseline": {
+            "numerator": 220,
+            "value": 220
+          }
+        }
+      ]
+    },
+    "广告UV": {
+      "slices": [
+        {
+          "key": "__site__",
+          "current": {
+            "numerator": 370,
+            "value": 370
+          },
+          "baseline": {
+            "numerator": 360,
+            "value": 360
+          }
+        }
+      ]
+    },
+    "UV@渠道": {
+      "slices": [
+        {
+          "key": "search",
+          "current": {
+            "numerator": 780,
+            "value": 780
+          },
+          "baseline": {
+            "numerator": 770,
+            "value": 770
+          }
+        },
+        {
+          "key": "direct",
+          "current": {
+            "numerator": 290,
+            "value": 290
+          },
+          "baseline": {
+            "numerator": 300,
+            "value": 300
+          }
+        },
+        {
+          "key": "referral",
+          "current": {
+            "numerator": 210,
+            "value": 210
+          },
+          "baseline": {
+            "numerator": 220,
+            "value": 220
+          }
+        },
+        {
+          "key": "ads",
+          "current": {
+            "numerator": 370,
+            "value": 370
+          },
+          "baseline": {
+            "numerator": 360,
+            "value": 360
+          }
+        }
+      ]
+    },
+    "搜索引擎留资率": {
+      "slices": [
+        {
+          "key": "__site__",
+          "current": {
+            "numerator": 13,
+            "denominator": 780,
+            "value": 0.016667
+          },
+          "baseline": {
+            "numerator": 22,
+            "denominator": 770,
+            "value": 0.028571
+          }
+        }
+      ]
+    },
+    "直接访问留资率": {
+      "slices": [
+        {
+          "key": "__site__",
+          "current": {
+            "numerator": 13,
+            "denominator": 290,
+            "value": 0.044828
+          },
+          "baseline": {
+            "numerator": 13,
+            "denominator": 300,
+            "value": 0.043333
+          }
+        }
+      ]
+    },
+    "外部链接留资率": {
+      "slices": [
+        {
+          "key": "__site__",
+          "current": {
+            "numerator": 6,
+            "denominator": 210,
+            "value": 0.028571
+          },
+          "baseline": {
+            "numerator": 7,
+            "denominator": 220,
+            "value": 0.031818
+          }
+        }
+      ]
+    },
+    "广告留资率": {
+      "slices": [
+        {
+          "key": "__site__",
+          "current": {
+            "numerator": 4,
+            "denominator": 370,
+            "value": 0.010811
+          },
+          "baseline": {
+            "numerator": 5,
+            "denominator": 360,
+            "value": 0.013889
+          }
+        }
+      ]
+    },
+    "留资率@渠道": {
+      "slices": [
+        {
+          "key": "search",
+          "current": {
+            "numerator": 13,
+            "denominator": 780,
+            "value": 0.016667
+          },
+          "baseline": {
+            "numerator": 22,
+            "denominator": 770,
+            "value": 0.028571
+          }
+        },
+        {
+          "key": "direct",
+          "current": {
+            "numerator": 13,
+            "denominator": 290,
+            "value": 0.044828
+          },
+          "baseline": {
+            "numerator": 13,
+            "denominator": 300,
+            "value": 0.043333
+          }
+        },
+        {
+          "key": "referral",
+          "current": {
+            "numerator": 6,
+            "denominator": 210,
+            "value": 0.028571
+          },
+          "baseline": {
+            "numerator": 7,
+            "denominator": 220,
+            "value": 0.031818
+          }
+        },
+        {
+          "key": "ads",
+          "current": {
+            "numerator": 4,
+            "denominator": 370,
+            "value": 0.010811
+          },
+          "baseline": {
+            "numerator": 5,
+            "denominator": 360,
+            "value": 0.013889
+          }
+        }
+      ]
+    },
+    "搜索引擎留资数": {
+      "slices": [
+        {
+          "key": "__site__",
+          "current": {
+            "numerator": 13,
+            "value": 13
+          },
+          "baseline": {
+            "numerator": 22,
+            "value": 22
+          }
+        }
+      ]
+    },
+    "直接访问留资数": {
+      "slices": [
+        {
+          "key": "__site__",
+          "current": {
+            "numerator": 13,
+            "value": 13
+          },
+          "baseline": {
+            "numerator": 13,
+            "value": 13
+          }
+        }
+      ]
+    },
+    "外部链接留资数": {
+      "slices": [
+        {
+          "key": "__site__",
+          "current": {
+            "numerator": 6,
+            "value": 6
+          },
+          "baseline": {
+            "numerator": 7,
+            "value": 7
+          }
+        }
+      ]
+    },
+    "广告留资数": {
+      "slices": [
+        {
+          "key": "__site__",
+          "current": {
+            "numerator": 4,
+            "value": 4
+          },
+          "baseline": {
+            "numerator": 5,
+            "value": 5
+          }
+        }
+      ]
+    },
+    "留资数@渠道": {
+      "slices": [
+        {
+          "key": "search",
+          "current": {
+            "numerator": 13,
+            "value": 13
+          },
+          "baseline": {
+            "numerator": 22,
+            "value": 22
+          }
+        },
+        {
+          "key": "direct",
+          "current": {
+            "numerator": 13,
+            "value": 13
+          },
+          "baseline": {
+            "numerator": 13,
+            "value": 13
+          }
+        },
+        {
+          "key": "referral",
+          "current": {
+            "numerator": 6,
+            "value": 6
+          },
+          "baseline": {
+            "numerator": 7,
+            "value": 7
+          }
+        },
+        {
+          "key": "ads",
+          "current": {
+            "numerator": 4,
+            "value": 4
+          },
+          "baseline": {
+            "numerator": 5,
+            "value": 5
+          }
+        }
+      ]
+    },
+    "自然搜索词展现量": {
+      "slices": [
+        {
+          "key": "cnc aluminum bracket oem",
+          "current": {
+            "numerator": 4200,
+            "value": 4200
+          },
+          "baseline": {
+            "numerator": 4100,
+            "value": 4100
+          }
+        },
+        {
+          "key": "6061 bracket manufacturer",
+          "current": {
+            "numerator": 1900,
+            "value": 1900
+          },
+          "baseline": {
+            "numerator": 1850,
+            "value": 1850
+          }
+        },
+        {
+          "key": "cnc tolerance standard",
+          "current": {
+            "numerator": 1600,
+            "value": 1600
+          },
+          "baseline": {
+            "numerator": 1580,
+            "value": 1580
+          }
+        },
+        {
+          "key": "oem cnc parts moq",
+          "current": {
+            "numerator": 1100,
+            "value": 1100
+          },
+          "baseline": {
+            "numerator": 1080,
+            "value": 1080
+          }
+        }
+      ]
+    },
+    "自然搜索词点击量": {
+      "slices": [
+        {
+          "key": "cnc aluminum bracket oem",
+          "current": {
+            "numerator": 210,
+            "value": 210
+          },
+          "baseline": {
+            "numerator": 205,
+            "value": 205
+          }
+        },
+        {
+          "key": "6061 bracket manufacturer",
+          "current": {
+            "numerator": 95,
+            "value": 95
+          },
+          "baseline": {
+            "numerator": 92,
+            "value": 92
+          }
+        },
+        {
+          "key": "cnc tolerance standard",
+          "current": {
+            "numerator": 80,
+            "value": 80
+          },
+          "baseline": {
+            "numerator": 79,
+            "value": 79
+          }
+        },
+        {
+          "key": "oem cnc parts moq",
+          "current": {
+            "numerator": 55,
+            "value": 55
+          },
+          "baseline": {
+            "numerator": 54,
+            "value": 54
+          }
+        }
+      ]
+    },
+    "广告关键词展现量": {
+      "slices": [
+        {
+          "key": "cnc machining quote",
+          "current": {
+            "numerator": 2600,
+            "value": 2600
+          },
+          "baseline": {
+            "numerator": 2550,
+            "value": 2550
+          }
+        },
+        {
+          "key": "oem cnc quote",
+          "current": {
+            "numerator": 1400,
+            "value": 1400
+          },
+          "baseline": {
+            "numerator": 1380,
+            "value": 1380
+          }
+        }
+      ]
+    },
+    "广告关键词点击量": {
+      "slices": [
+        {
+          "key": "cnc machining quote",
+          "current": {
+            "numerator": 130,
+            "value": 130
+          },
+          "baseline": {
+            "numerator": 128,
+            "value": 128
+          }
+        },
+        {
+          "key": "oem cnc quote",
+          "current": {
+            "numerator": 70,
+            "value": 70
+          },
+          "baseline": {
+            "numerator": 69,
+            "value": 69
+          }
+        }
+      ]
+    },
+    "来路关键词展现量@搜索词": {
+      "slices": [
+        {
+          "key": "cnc aluminum bracket oem",
+          "current": {
+            "numerator": 4200,
+            "value": 4200
+          },
+          "baseline": {
+            "numerator": 4100,
+            "value": 4100
+          }
+        },
+        {
+          "key": "6061 bracket manufacturer",
+          "current": {
+            "numerator": 1900,
+            "value": 1900
+          },
+          "baseline": {
+            "numerator": 1850,
+            "value": 1850
+          }
+        },
+        {
+          "key": "cnc tolerance standard",
+          "current": {
+            "numerator": 1600,
+            "value": 1600
+          },
+          "baseline": {
+            "numerator": 1580,
+            "value": 1580
+          }
+        },
+        {
+          "key": "oem cnc parts moq",
+          "current": {
+            "numerator": 1100,
+            "value": 1100
+          },
+          "baseline": {
+            "numerator": 1080,
+            "value": 1080
+          }
+        },
+        {
+          "key": "cnc machining quote",
+          "current": {
+            "numerator": 2600,
+            "value": 2600
+          },
+          "baseline": {
+            "numerator": 2550,
+            "value": 2550
+          }
+        },
+        {
+          "key": "oem cnc quote",
+          "current": {
+            "numerator": 1400,
+            "value": 1400
+          },
+          "baseline": {
+            "numerator": 1380,
+            "value": 1380
+          }
+        }
+      ]
+    },
+    "来路关键词点击量@搜索词": {
+      "slices": [
+        {
+          "key": "cnc aluminum bracket oem",
+          "current": {
+            "numerator": 210,
+            "value": 210
+          },
+          "baseline": {
+            "numerator": 205,
+            "value": 205
+          }
+        },
+        {
+          "key": "6061 bracket manufacturer",
+          "current": {
+            "numerator": 95,
+            "value": 95
+          },
+          "baseline": {
+            "numerator": 92,
+            "value": 92
+          }
+        },
+        {
+          "key": "cnc tolerance standard",
+          "current": {
+            "numerator": 80,
+            "value": 80
+          },
+          "baseline": {
+            "numerator": 79,
+            "value": 79
+          }
+        },
+        {
+          "key": "oem cnc parts moq",
+          "current": {
+            "numerator": 55,
+            "value": 55
+          },
+          "baseline": {
+            "numerator": 54,
+            "value": 54
+          }
+        },
+        {
+          "key": "cnc machining quote",
+          "current": {
+            "numerator": 130,
+            "value": 130
+          },
+          "baseline": {
+            "numerator": 128,
+            "value": 128
+          }
+        },
+        {
+          "key": "oem cnc quote",
+          "current": {
+            "numerator": 70,
+            "value": 70
+          },
+          "baseline": {
+            "numerator": 69,
+            "value": 69
+          }
+        }
+      ]
+    },
+    "搜索引擎有效浏览率": {
+      "slices": [
+        {
+          "key": "__site__",
+          "current": {
+            "numerator": 195,
+            "denominator": 780,
+            "value": 0.25
+          },
+          "baseline": {
+            "numerator": 308,
+            "denominator": 770,
+            "value": 0.4
+          }
+        }
+      ]
+    },
+    "直接访问有效浏览率": {
+      "slices": [
+        {
+          "key": "__site__",
+          "current": {
+            "numerator": 131,
+            "denominator": 290,
+            "value": 0.451724
+          },
+          "baseline": {
+            "numerator": 135,
+            "denominator": 300,
+            "value": 0.45
+          }
+        }
+      ]
+    },
+    "外部链接有效浏览率": {
+      "slices": [
+        {
+          "key": "__site__",
+          "current": {
+            "numerator": 84,
+            "denominator": 210,
+            "value": 0.4
+          },
+          "baseline": {
+            "numerator": 92,
+            "denominator": 220,
+            "value": 0.418182
+          }
+        }
+      ]
+    },
+    "广告有效浏览率": {
+      "slices": [
+        {
+          "key": "__site__",
+          "current": {
+            "numerator": 85,
+            "denominator": 370,
+            "value": 0.22973
+          },
+          "baseline": {
+            "numerator": 125,
+            "denominator": 360,
+            "value": 0.347222
+          }
+        }
+      ]
+    },
+    "有效浏览率@渠道": {
+      "slices": [
+        {
+          "key": "search",
+          "current": {
+            "numerator": 195,
+            "denominator": 780,
+            "value": 0.25
+          },
+          "baseline": {
+            "numerator": 308,
+            "denominator": 770,
+            "value": 0.4
+          }
+        },
+        {
+          "key": "direct",
+          "current": {
+            "numerator": 131,
+            "denominator": 290,
+            "value": 0.451724
+          },
+          "baseline": {
+            "numerator": 135,
+            "denominator": 300,
+            "value": 0.45
+          }
+        },
+        {
+          "key": "referral",
+          "current": {
+            "numerator": 84,
+            "denominator": 210,
+            "value": 0.4
+          },
+          "baseline": {
+            "numerator": 92,
+            "denominator": 220,
+            "value": 0.418182
+          }
+        },
+        {
+          "key": "ads",
+          "current": {
+            "numerator": 85,
+            "denominator": 370,
+            "value": 0.22973
+          },
+          "baseline": {
+            "numerator": 125,
+            "denominator": 360,
+            "value": 0.347222
+          }
+        }
+      ]
+    },
+    "搜索引擎秒退率": {
+      "slices": [
+        {
+          "key": "__site__",
+          "current": {
+            "numerator": 388,
+            "denominator": 780,
+            "value": 0.497436
+          },
+          "baseline": {
+            "numerator": 308,
+            "denominator": 770,
+            "value": 0.4
+          }
+        }
+      ]
+    },
+    "直接访问秒退率": {
+      "slices": [
+        {
+          "key": "__site__",
+          "current": {
+            "numerator": 55,
+            "denominator": 290,
+            "value": 0.189655
+          },
+          "baseline": {
+            "numerator": 54,
+            "denominator": 300,
+            "value": 0.18
+          }
+        }
+      ]
+    },
+    "外部链接秒退率": {
+      "slices": [
+        {
+          "key": "__site__",
+          "current": {
+            "numerator": 69,
+            "denominator": 210,
+            "value": 0.328571
+          },
+          "baseline": {
+            "numerator": 62,
+            "denominator": 220,
+            "value": 0.281818
+          }
+        }
+      ]
+    },
+    "广告秒退率": {
+      "slices": [
+        {
+          "key": "__site__",
+          "current": {
+            "numerator": 181,
+            "denominator": 370,
+            "value": 0.489189
+          },
+          "baseline": {
+            "numerator": 121,
+            "denominator": 360,
+            "value": 0.336111
+          }
+        }
+      ]
+    },
+    "秒退率@渠道": {
+      "slices": [
+        {
+          "key": "search",
+          "current": {
+            "numerator": 388,
+            "denominator": 780,
+            "value": 0.497436
+          },
+          "baseline": {
+            "numerator": 308,
+            "denominator": 770,
+            "value": 0.4
+          }
+        },
+        {
+          "key": "direct",
+          "current": {
+            "numerator": 55,
+            "denominator": 290,
+            "value": 0.189655
+          },
+          "baseline": {
+            "numerator": 54,
+            "denominator": 300,
+            "value": 0.18
+          }
+        },
+        {
+          "key": "referral",
+          "current": {
+            "numerator": 69,
+            "denominator": 210,
+            "value": 0.328571
+          },
+          "baseline": {
+            "numerator": 62,
+            "denominator": 220,
+            "value": 0.281818
+          }
+        },
+        {
+          "key": "ads",
+          "current": {
+            "numerator": 181,
+            "denominator": 370,
+            "value": 0.489189
+          },
+          "baseline": {
+            "numerator": 121,
+            "denominator": 360,
+            "value": 0.336111
+          }
+        }
+      ]
+    },
+    "落地接住率": {
+      "slices": [
+        {
+          "key": "/products/cnc-6061-bracket",
+          "current": {
+            "numerator": 92,
+            "denominator": 420,
+            "value": 0.219048
+          },
+          "baseline": {
+            "numerator": 226,
+            "denominator": 420,
+            "value": 0.538095
+          }
+        },
+        {
+          "key": "/",
+          "current": {
+            "numerator": 186,
+            "denominator": 310,
+            "value": 0.6
+          },
+          "baseline": {
+            "numerator": 186,
+            "denominator": 310,
+            "value": 0.6
+          }
+        },
+        {
+          "key": "/products",
+          "current": {
+            "numerator": 99,
+            "denominator": 260,
+            "value": 0.380769
+          },
+          "baseline": {
+            "numerator": 102,
+            "denominator": 255,
+            "value": 0.4
+          }
+        },
+        {
+          "key": "/campaign/cnc-oem-q3",
+          "current": {
+            "numerator": 41,
+            "denominator": 180,
+            "value": 0.227778
+          },
+          "baseline": {
+            "numerator": 41,
+            "denominator": 180,
+            "value": 0.227778
+          }
+        },
+        {
+          "key": "/blog/cnc-tolerance-guide",
+          "current": {
+            "numerator": 84,
+            "denominator": 140,
+            "value": 0.6
+          },
+          "baseline": {
+            "numerator": 84,
+            "denominator": 140,
+            "value": 0.6
+          }
+        },
+        {
+          "key": "/about",
+          "current": {
+            "numerator": 52,
+            "denominator": 90,
+            "value": 0.577778
+          },
+          "baseline": {
+            "numerator": 52,
+            "denominator": 90,
+            "value": 0.577778
+          }
+        }
+      ]
+    },
+    "落地接住率@页面": {
+      "slices": [
+        {
+          "key": "/products/cnc-6061-bracket",
+          "current": {
+            "numerator": 92,
+            "denominator": 420,
+            "value": 0.219048
+          },
+          "baseline": {
+            "numerator": 226,
+            "denominator": 420,
+            "value": 0.538095
+          }
+        },
+        {
+          "key": "/",
+          "current": {
+            "numerator": 186,
+            "denominator": 310,
+            "value": 0.6
+          },
+          "baseline": {
+            "numerator": 186,
+            "denominator": 310,
+            "value": 0.6
+          }
+        },
+        {
+          "key": "/products",
+          "current": {
+            "numerator": 99,
+            "denominator": 260,
+            "value": 0.380769
+          },
+          "baseline": {
+            "numerator": 102,
+            "denominator": 255,
+            "value": 0.4
+          }
+        },
+        {
+          "key": "/campaign/cnc-oem-q3",
+          "current": {
+            "numerator": 41,
+            "denominator": 180,
+            "value": 0.227778
+          },
+          "baseline": {
+            "numerator": 41,
+            "denominator": 180,
+            "value": 0.227778
+          }
+        },
+        {
+          "key": "/blog/cnc-tolerance-guide",
+          "current": {
+            "numerator": 84,
+            "denominator": 140,
+            "value": 0.6
+          },
+          "baseline": {
+            "numerator": 84,
+            "denominator": 140,
+            "value": 0.6
+          }
+        },
+        {
+          "key": "/about",
+          "current": {
+            "numerator": 52,
+            "denominator": 90,
+            "value": 0.577778
+          },
+          "baseline": {
+            "numerator": 52,
+            "denominator": 90,
+            "value": 0.577778
+          }
+        }
+      ]
+    },
+    "合格浏览率": {
+      "slices": [
+        {
+          "key": "/products/cnc-6061-bracket",
+          "current": {
+            "numerator": 139,
+            "denominator": 580,
+            "value": 0.239655
+          },
+          "baseline": {
+            "numerator": 319,
+            "denominator": 570,
+            "value": 0.559649
+          }
+        },
+        {
+          "key": "/",
+          "current": {
+            "numerator": 248,
+            "denominator": 400,
+            "value": 0.62
+          },
+          "baseline": {
+            "numerator": 241,
+            "denominator": 395,
+            "value": 0.610127
+          }
+        },
+        {
+          "key": "/products",
+          "current": {
+            "numerator": 148,
+            "denominator": 340,
+            "value": 0.435294
+          },
+          "baseline": {
+            "numerator": 149,
+            "denominator": 334,
+            "value": 0.446108
+          }
+        },
+        {
+          "key": "/campaign/cnc-oem-q3",
+          "current": {
+            "numerator": 57,
+            "denominator": 220,
+            "value": 0.259091
+          },
+          "baseline": {
+            "numerator": 58,
+            "denominator": 215,
+            "value": 0.269767
+          }
+        },
+        {
+          "key": "/blog/cnc-tolerance-guide",
+          "current": {
+            "numerator": 140,
+            "denominator": 180,
+            "value": 0.777778
+          },
+          "baseline": {
+            "numerator": 137,
+            "denominator": 178,
+            "value": 0.769663
+          }
+        },
+        {
+          "key": "/about",
+          "current": {
+            "numerator": 64,
+            "denominator": 110,
+            "value": 0.581818
+          },
+          "baseline": {
+            "numerator": 62,
+            "denominator": 108,
+            "value": 0.574074
+          }
+        }
+      ]
+    },
+    "合格浏览率@页面": {
+      "slices": [
+        {
+          "key": "/products/cnc-6061-bracket",
+          "current": {
+            "numerator": 139,
+            "denominator": 580,
+            "value": 0.239655
+          },
+          "baseline": {
+            "numerator": 319,
+            "denominator": 570,
+            "value": 0.559649
+          }
+        },
+        {
+          "key": "/",
+          "current": {
+            "numerator": 248,
+            "denominator": 400,
+            "value": 0.62
+          },
+          "baseline": {
+            "numerator": 241,
+            "denominator": 395,
+            "value": 0.610127
+          }
+        },
+        {
+          "key": "/products",
+          "current": {
+            "numerator": 148,
+            "denominator": 340,
+            "value": 0.435294
+          },
+          "baseline": {
+            "numerator": 149,
+            "denominator": 334,
+            "value": 0.446108
+          }
+        },
+        {
+          "key": "/campaign/cnc-oem-q3",
+          "current": {
+            "numerator": 57,
+            "denominator": 220,
+            "value": 0.259091
+          },
+          "baseline": {
+            "numerator": 58,
+            "denominator": 215,
+            "value": 0.269767
+          }
+        },
+        {
+          "key": "/blog/cnc-tolerance-guide",
+          "current": {
+            "numerator": 140,
+            "denominator": 180,
+            "value": 0.777778
+          },
+          "baseline": {
+            "numerator": 137,
+            "denominator": 178,
+            "value": 0.769663
+          }
+        },
+        {
+          "key": "/about",
+          "current": {
+            "numerator": 64,
+            "denominator": 110,
+            "value": 0.581818
+          },
+          "baseline": {
+            "numerator": 62,
+            "denominator": 108,
+            "value": 0.574074
+          }
+        }
+      ]
+    },
+    "落地停留均值": {
+      "slices": [
+        {
+          "key": "/products/cnc-6061-bracket",
+          "current": {
+            "numerator": 4620,
+            "denominator": 420,
+            "value": 11.0
+          },
+          "baseline": {
+            "numerator": 13440,
+            "denominator": 420,
+            "value": 32.0
+          }
+        },
+        {
+          "key": "/",
+          "current": {
+            "numerator": 10540,
+            "denominator": 310,
+            "value": 34.0
+          },
+          "baseline": {
+            "numerator": 10540,
+            "denominator": 310,
+            "value": 34.0
+          }
+        },
+        {
+          "key": "/products",
+          "current": {
+            "numerator": 10140,
+            "denominator": 260,
+            "value": 39.0
+          },
+          "baseline": {
+            "numerator": 10455,
+            "denominator": 255,
+            "value": 41.0
+          }
+        },
+        {
+          "key": "/campaign/cnc-oem-q3",
+          "current": {
+            "numerator": 2340,
+            "denominator": 180,
+            "value": 13.0
+          },
+          "baseline": {
+            "numerator": 2340,
+            "denominator": 180,
+            "value": 13.0
+          }
+        },
+        {
+          "key": "/blog/cnc-tolerance-guide",
+          "current": {
+            "numerator": 6720,
+            "denominator": 140,
+            "value": 48.0
+          },
+          "baseline": {
+            "numerator": 6720,
+            "denominator": 140,
+            "value": 48.0
+          }
+        },
+        {
+          "key": "/about",
+          "current": {
+            "numerator": 2610,
+            "denominator": 90,
+            "value": 29.0
+          },
+          "baseline": {
+            "numerator": 2610,
+            "denominator": 90,
+            "value": 29.0
+          }
+        }
+      ]
+    },
+    "落地停留均值@页面": {
+      "slices": [
+        {
+          "key": "/products/cnc-6061-bracket",
+          "current": {
+            "numerator": 4620,
+            "denominator": 420,
+            "value": 11.0
+          },
+          "baseline": {
+            "numerator": 13440,
+            "denominator": 420,
+            "value": 32.0
+          }
+        },
+        {
+          "key": "/",
+          "current": {
+            "numerator": 10540,
+            "denominator": 310,
+            "value": 34.0
+          },
+          "baseline": {
+            "numerator": 10540,
+            "denominator": 310,
+            "value": 34.0
+          }
+        },
+        {
+          "key": "/products",
+          "current": {
+            "numerator": 10140,
+            "denominator": 260,
+            "value": 39.0
+          },
+          "baseline": {
+            "numerator": 10455,
+            "denominator": 255,
+            "value": 41.0
+          }
+        },
+        {
+          "key": "/campaign/cnc-oem-q3",
+          "current": {
+            "numerator": 2340,
+            "denominator": 180,
+            "value": 13.0
+          },
+          "baseline": {
+            "numerator": 2340,
+            "denominator": 180,
+            "value": 13.0
+          }
+        },
+        {
+          "key": "/blog/cnc-tolerance-guide",
+          "current": {
+            "numerator": 6720,
+            "denominator": 140,
+            "value": 48.0
+          },
+          "baseline": {
+            "numerator": 6720,
+            "denominator": 140,
+            "value": 48.0
+          }
+        },
+        {
+          "key": "/about",
+          "current": {
+            "numerator": 2610,
+            "denominator": 90,
+            "value": 29.0
+          },
+          "baseline": {
+            "numerator": 2610,
+            "denominator": 90,
+            "value": 29.0
+          }
+        }
+      ]
+    },
+    "页面停留均值": {
+      "slices": [
+        {
+          "key": "/products/cnc-6061-bracket",
+          "current": {
+            "numerator": 9280,
+            "denominator": 580,
+            "value": 16.0
+          },
+          "baseline": {
+            "numerator": 21660,
+            "denominator": 570,
+            "value": 38.0
+          }
+        },
+        {
+          "key": "/",
+          "current": {
+            "numerator": 14400,
+            "denominator": 400,
+            "value": 36.0
+          },
+          "baseline": {
+            "numerator": 14220,
+            "denominator": 395,
+            "value": 36.0
+          }
+        },
+        {
+          "key": "/products",
+          "current": {
+            "numerator": 12240,
+            "denominator": 340,
+            "value": 36.0
+          },
+          "baseline": {
+            "numerator": 12692,
+            "denominator": 334,
+            "value": 38.0
+          }
+        },
+        {
+          "key": "/campaign/cnc-oem-q3",
+          "current": {
+            "numerator": 3080,
+            "denominator": 220,
+            "value": 14.0
+          },
+          "baseline": {
+            "numerator": 3010,
+            "denominator": 215,
+            "value": 14.0
+          }
+        },
+        {
+          "key": "/blog/cnc-tolerance-guide",
+          "current": {
+            "numerator": 9360,
+            "denominator": 180,
+            "value": 52.0
+          },
+          "baseline": {
+            "numerator": 9256,
+            "denominator": 178,
+            "value": 52.0
+          }
+        },
+        {
+          "key": "/about",
+          "current": {
+            "numerator": 3410,
+            "denominator": 110,
+            "value": 31.0
+          },
+          "baseline": {
+            "numerator": 3348,
+            "denominator": 108,
+            "value": 31.0
+          }
+        }
+      ]
+    },
+    "页面停留均值@页面": {
+      "slices": [
+        {
+          "key": "/products/cnc-6061-bracket",
+          "current": {
+            "numerator": 9280,
+            "denominator": 580,
+            "value": 16.0
+          },
+          "baseline": {
+            "numerator": 21660,
+            "denominator": 570,
+            "value": 38.0
+          }
+        },
+        {
+          "key": "/",
+          "current": {
+            "numerator": 14400,
+            "denominator": 400,
+            "value": 36.0
+          },
+          "baseline": {
+            "numerator": 14220,
+            "denominator": 395,
+            "value": 36.0
+          }
+        },
+        {
+          "key": "/products",
+          "current": {
+            "numerator": 12240,
+            "denominator": 340,
+            "value": 36.0
+          },
+          "baseline": {
+            "numerator": 12692,
+            "denominator": 334,
+            "value": 38.0
+          }
+        },
+        {
+          "key": "/campaign/cnc-oem-q3",
+          "current": {
+            "numerator": 3080,
+            "denominator": 220,
+            "value": 14.0
+          },
+          "baseline": {
+            "numerator": 3010,
+            "denominator": 215,
+            "value": 14.0
+          }
+        },
+        {
+          "key": "/blog/cnc-tolerance-guide",
+          "current": {
+            "numerator": 9360,
+            "denominator": 180,
+            "value": 52.0
+          },
+          "baseline": {
+            "numerator": 9256,
+            "denominator": 178,
+            "value": 52.0
+          }
+        },
+        {
+          "key": "/about",
+          "current": {
+            "numerator": 3410,
+            "denominator": 110,
+            "value": 31.0
+          },
+          "baseline": {
+            "numerator": 3348,
+            "denominator": 108,
+            "value": 31.0
+          }
+        }
+      ]
+    },
+    "滚动深度P75": {
+      "slices": [
+        {
+          "key": "/products/cnc-6061-bracket",
+          "current": {
+            "value": 0.18,
+            "denominator": 420
+          },
+          "baseline": {
+            "value": 0.62,
+            "denominator": 420
+          }
+        },
+        {
+          "key": "/",
+          "current": {
+            "value": 0.52,
+            "denominator": 310
+          },
+          "baseline": {
+            "value": 0.52,
+            "denominator": 310
+          }
+        },
+        {
+          "key": "/products",
+          "current": {
+            "value": 0.55,
+            "denominator": 260
+          },
+          "baseline": {
+            "value": 0.57,
+            "denominator": 255
+          }
+        },
+        {
+          "key": "/campaign/cnc-oem-q3",
+          "current": {
+            "value": 0.22,
+            "denominator": 180
+          },
+          "baseline": {
+            "value": 0.22,
+            "denominator": 180
+          }
+        },
+        {
+          "key": "/blog/cnc-tolerance-guide",
+          "current": {
+            "value": 0.71,
+            "denominator": 140
+          },
+          "baseline": {
+            "value": 0.71,
+            "denominator": 140
+          }
+        },
+        {
+          "key": "/about",
+          "current": {
+            "value": 0.48,
+            "denominator": 90
+          },
+          "baseline": {
+            "value": 0.48,
+            "denominator": 90
+          }
+        }
+      ]
+    },
+    "滚动深度P75@页面": {
+      "slices": [
+        {
+          "key": "/products/cnc-6061-bracket",
+          "current": {
+            "value": 0.18,
+            "denominator": 420
+          },
+          "baseline": {
+            "value": 0.62,
+            "denominator": 420
+          }
+        },
+        {
+          "key": "/",
+          "current": {
+            "value": 0.52,
+            "denominator": 310
+          },
+          "baseline": {
+            "value": 0.52,
+            "denominator": 310
+          }
+        },
+        {
+          "key": "/products",
+          "current": {
+            "value": 0.55,
+            "denominator": 260
+          },
+          "baseline": {
+            "value": 0.57,
+            "denominator": 255
+          }
+        },
+        {
+          "key": "/campaign/cnc-oem-q3",
+          "current": {
+            "value": 0.22,
+            "denominator": 180
+          },
+          "baseline": {
+            "value": 0.22,
+            "denominator": 180
+          }
+        },
+        {
+          "key": "/blog/cnc-tolerance-guide",
+          "current": {
+            "value": 0.71,
+            "denominator": 140
+          },
+          "baseline": {
+            "value": 0.71,
+            "denominator": 140
+          }
+        },
+        {
+          "key": "/about",
+          "current": {
+            "value": 0.48,
+            "denominator": 90
+          },
+          "baseline": {
+            "value": 0.48,
+            "denominator": 90
+          }
+        }
+      ]
+    },
+    "搜索引擎落地接住率": {
+      "slices": [
+        {
+          "key": "/products/cnc-6061-bracket",
+          "current": {
+            "numerator": 44,
+            "denominator": 200,
+            "value": 0.22
+          },
+          "baseline": {
+            "numerator": 108,
+            "denominator": 200,
+            "value": 0.54
+          }
+        }
+      ]
+    },
+    "搜索引擎合格浏览率": {
+      "slices": [
+        {
+          "key": "/products/cnc-6061-bracket",
+          "current": {
+            "numerator": 50,
+            "denominator": 280,
+            "value": 0.178571
+          },
+          "baseline": {
+            "numerator": 154,
+            "denominator": 275,
+            "value": 0.56
+          }
+        }
+      ]
+    },
+    "直接访问落地接住率": {
+      "slices": [
+        {
+          "key": "/products/cnc-6061-bracket",
+          "current": {
+            "numerator": 15,
+            "denominator": 70,
+            "value": 0.214286
+          },
+          "baseline": {
+            "numerator": 38,
+            "denominator": 70,
+            "value": 0.542857
+          }
+        }
+      ]
+    },
+    "直接访问合格浏览率": {
+      "slices": [
+        {
+          "key": "/products/cnc-6061-bracket",
+          "current": {
+            "numerator": 22,
+            "denominator": 90,
+            "value": 0.244444
+          },
+          "baseline": {
+            "numerator": 49,
+            "denominator": 88,
+            "value": 0.556818
+          }
+        }
+      ]
+    },
+    "外部链接落地接住率": {
+      "slices": [
+        {
+          "key": "/products/cnc-6061-bracket",
+          "current": {
+            "numerator": 18,
+            "denominator": 80,
+            "value": 0.225
+          },
+          "baseline": {
+            "numerator": 43,
+            "denominator": 80,
+            "value": 0.5375
+          }
+        }
+      ]
+    },
+    "外部链接合格浏览率": {
+      "slices": [
+        {
+          "key": "/products/cnc-6061-bracket",
+          "current": {
+            "numerator": 26,
+            "denominator": 110,
+            "value": 0.236364
+          },
+          "baseline": {
+            "numerator": 60,
+            "denominator": 108,
+            "value": 0.555556
+          }
+        }
+      ]
+    },
+    "广告落地接住率": {
+      "slices": [
+        {
+          "key": "/products/cnc-6061-bracket",
+          "current": {
+            "numerator": 15,
+            "denominator": 70,
+            "value": 0.214286
+          },
+          "baseline": {
+            "numerator": 37,
+            "denominator": 70,
+            "value": 0.528571
+          }
+        }
+      ]
+    },
+    "广告合格浏览率": {
+      "slices": [
+        {
+          "key": "/products/cnc-6061-bracket",
+          "current": {
+            "numerator": 24,
+            "denominator": 100,
+            "value": 0.24
+          },
+          "baseline": {
+            "numerator": 55,
+            "denominator": 99,
+            "value": 0.555556
+          }
+        }
+      ]
+    },
+    "落地接住率@渠道×页": {
+      "slices": [
+        {
+          "key": "search|/products/cnc-6061-bracket",
+          "current": {
+            "numerator": 44,
+            "denominator": 200,
+            "value": 0.22
+          },
+          "baseline": {
+            "numerator": 108,
+            "denominator": 200,
+            "value": 0.54
+          }
+        },
+        {
+          "key": "direct|/products/cnc-6061-bracket",
+          "current": {
+            "numerator": 15,
+            "denominator": 70,
+            "value": 0.214286
+          },
+          "baseline": {
+            "numerator": 38,
+            "denominator": 70,
+            "value": 0.542857
+          }
+        },
+        {
+          "key": "referral|/products/cnc-6061-bracket",
+          "current": {
+            "numerator": 18,
+            "denominator": 80,
+            "value": 0.225
+          },
+          "baseline": {
+            "numerator": 43,
+            "denominator": 80,
+            "value": 0.5375
+          }
+        },
+        {
+          "key": "ads|/products/cnc-6061-bracket",
+          "current": {
+            "numerator": 15,
+            "denominator": 70,
+            "value": 0.214286
+          },
+          "baseline": {
+            "numerator": 37,
+            "denominator": 70,
+            "value": 0.528571
+          }
+        }
+      ]
+    },
+    "合格浏览率@渠道×页": {
+      "slices": [
+        {
+          "key": "search|/products/cnc-6061-bracket",
+          "current": {
+            "numerator": 50,
+            "denominator": 280,
+            "value": 0.178571
+          },
+          "baseline": {
+            "numerator": 154,
+            "denominator": 275,
+            "value": 0.56
+          }
+        },
+        {
+          "key": "direct|/products/cnc-6061-bracket",
+          "current": {
+            "numerator": 22,
+            "denominator": 90,
+            "value": 0.244444
+          },
+          "baseline": {
+            "numerator": 49,
+            "denominator": 88,
+            "value": 0.556818
+          }
+        },
+        {
+          "key": "referral|/products/cnc-6061-bracket",
+          "current": {
+            "numerator": 26,
+            "denominator": 110,
+            "value": 0.236364
+          },
+          "baseline": {
+            "numerator": 60,
+            "denominator": 108,
+            "value": 0.555556
+          }
+        },
+        {
+          "key": "ads|/products/cnc-6061-bracket",
+          "current": {
+            "numerator": 24,
+            "denominator": 100,
+            "value": 0.24
+          },
+          "baseline": {
+            "numerator": 55,
+            "denominator": 99,
+            "value": 0.555556
+          }
+        }
+      ]
+    },
+    "广告关键词落地接住率": {
+      "slices": [
+        {
+          "key": "cnc machining quote|/campaign/cnc-oem-q3",
+          "current": {
+            "numerator": 30,
+            "denominator": 130,
+            "value": 0.230769
+          },
+          "baseline": {
+            "numerator": 29,
+            "denominator": 128,
+            "value": 0.226562
+          }
+        },
+        {
+          "key": "oem cnc quote|/campaign/cnc-oem-q3",
+          "current": {
+            "numerator": 16,
+            "denominator": 70,
+            "value": 0.228571
+          },
+          "baseline": {
+            "numerator": 16,
+            "denominator": 69,
+            "value": 0.231884
+          }
+        }
+      ]
+    },
+    "按广告词页面停留": {
+      "slices": [
+        {
+          "key": "cnc machining quote|/campaign/cnc-oem-q3",
+          "current": {
+            "numerator": 1560,
+            "denominator": 130,
+            "value": 12.0
+          },
+          "baseline": {
+            "numerator": 1664,
+            "denominator": 128,
+            "value": 13.0
+          }
+        },
+        {
+          "key": "oem cnc quote|/campaign/cnc-oem-q3",
+          "current": {
+            "numerator": 840,
+            "denominator": 70,
+            "value": 12.0
+          },
+          "baseline": {
+            "numerator": 897,
+            "denominator": 69,
+            "value": 13.0
+          }
+        }
+      ]
+    },
+    "按词页面停留@搜索词×页": {
+      "slices": [
+        {
+          "key": "cnc machining quote|/campaign/cnc-oem-q3",
+          "current": {
+            "numerator": 1560,
+            "denominator": 130,
+            "value": 12.0
+          },
+          "baseline": {
+            "numerator": 1664,
+            "denominator": 128,
+            "value": 13.0
+          }
+        },
+        {
+          "key": "oem cnc quote|/campaign/cnc-oem-q3",
+          "current": {
+            "numerator": 840,
+            "denominator": 70,
+            "value": 12.0
+          },
+          "baseline": {
+            "numerator": 897,
+            "denominator": 69,
+            "value": 13.0
+          }
+        }
+      ]
+    },
+    "落地接住率@搜索词×页": {
+      "slices": [
+        {
+          "key": "cnc aluminum bracket oem|/products/cnc-6061-bracket",
+          "current": {
+            "numerator": 46,
+            "denominator": 210,
+            "value": 0.219048
+          },
+          "baseline": {
+            "numerator": 92,
+            "denominator": 205,
+            "value": 0.44878
+          }
+        },
+        {
+          "key": "6061 bracket manufacturer|/products/cnc-6061-bracket",
+          "current": {
+            "numerator": 20,
+            "denominator": 95,
+            "value": 0.210526
+          },
+          "baseline": {
+            "numerator": 41,
+            "denominator": 92,
+            "value": 0.445652
+          }
+        },
+        {
+          "key": "cnc tolerance standard|/blog/cnc-tolerance-guide",
+          "current": {
+            "numerator": 48,
+            "denominator": 80,
+            "value": 0.6
+          },
+          "baseline": {
+            "numerator": 48,
+            "denominator": 79,
+            "value": 0.607595
+          }
+        },
+        {
+          "key": "oem cnc parts moq|/products/cnc-6061-bracket",
+          "current": {
+            "numerator": 12,
+            "denominator": 55,
+            "value": 0.218182
+          },
+          "baseline": {
+            "numerator": 24,
+            "denominator": 54,
+            "value": 0.444444
+          }
+        },
+        {
+          "key": "cnc machining quote|/campaign/cnc-oem-q3",
+          "current": {
+            "numerator": 30,
+            "denominator": 130,
+            "value": 0.230769
+          },
+          "baseline": {
+            "numerator": 29,
+            "denominator": 128,
+            "value": 0.226562
+          }
+        },
+        {
+          "key": "oem cnc quote|/campaign/cnc-oem-q3",
+          "current": {
+            "numerator": 16,
+            "denominator": 70,
+            "value": 0.228571
+          },
+          "baseline": {
+            "numerator": 16,
+            "denominator": 69,
+            "value": 0.231884
+          }
+        }
+      ]
+    },
+    "搜索引擎转化交互率": {
+      "slices": [
+        {
+          "key": "__site__",
+          "current": {
+            "numerator": 28,
+            "denominator": 195,
+            "value": 0.14359
+          },
+          "baseline": {
+            "numerator": 46,
+            "denominator": 308,
+            "value": 0.149351
+          }
+        }
+      ]
+    },
+    "直接访问转化交互率": {
+      "slices": [
+        {
+          "key": "__site__",
+          "current": {
+            "numerator": 22,
+            "denominator": 131,
+            "value": 0.167939
+          },
+          "baseline": {
+            "numerator": 23,
+            "denominator": 135,
+            "value": 0.17037
+          }
+        }
+      ]
+    },
+    "外部链接转化交互率": {
+      "slices": [
+        {
+          "key": "__site__",
+          "current": {
+            "numerator": 12,
+            "denominator": 84,
+            "value": 0.142857
+          },
+          "baseline": {
+            "numerator": 14,
+            "denominator": 92,
+            "value": 0.152174
+          }
+        }
+      ]
+    },
+    "广告转化交互率": {
+      "slices": [
+        {
+          "key": "__site__",
+          "current": {
+            "numerator": 12,
+            "denominator": 85,
+            "value": 0.141176
+          },
+          "baseline": {
+            "numerator": 16,
+            "denominator": 125,
+            "value": 0.128
+          }
+        }
+      ]
+    },
+    "转化交互率@渠道": {
+      "slices": [
+        {
+          "key": "search",
+          "current": {
+            "numerator": 28,
+            "denominator": 195,
+            "value": 0.14359
+          },
+          "baseline": {
+            "numerator": 46,
+            "denominator": 308,
+            "value": 0.149351
+          }
+        },
+        {
+          "key": "direct",
+          "current": {
+            "numerator": 22,
+            "denominator": 131,
+            "value": 0.167939
+          },
+          "baseline": {
+            "numerator": 23,
+            "denominator": 135,
+            "value": 0.17037
+          }
+        },
+        {
+          "key": "referral",
+          "current": {
+            "numerator": 12,
+            "denominator": 84,
+            "value": 0.142857
+          },
+          "baseline": {
+            "numerator": 14,
+            "denominator": 92,
+            "value": 0.152174
+          }
+        },
+        {
+          "key": "ads",
+          "current": {
+            "numerator": 12,
+            "denominator": 85,
+            "value": 0.141176
+          },
+          "baseline": {
+            "numerator": 16,
+            "denominator": 125,
+            "value": 0.128
+          }
+        }
+      ]
+    },
+    "全站表单开始率": {
+      "slices": [
+        {
+          "key": "__site__",
+          "current": {
+            "numerator": 50,
+            "denominator": 495,
+            "value": 0.10101
+          },
+          "baseline": {
+            "numerator": 66,
+            "denominator": 660,
+            "value": 0.1
+          }
+        }
+      ]
+    },
+    "表单开始率@全站": {
+      "slices": [
+        {
+          "key": "__site__",
+          "current": {
+            "numerator": 50,
+            "denominator": 495,
+            "value": 0.10101
+          },
+          "baseline": {
+            "numerator": 66,
+            "denominator": 660,
+            "value": 0.1
+          }
+        }
+      ]
+    },
+    "搜索引擎表单开始率": {
+      "slices": [
+        {
+          "key": "__site__",
+          "current": {
+            "numerator": 18,
+            "denominator": 195,
+            "value": 0.092308
+          },
+          "baseline": {
+            "numerator": 28,
+            "denominator": 308,
+            "value": 0.090909
+          }
+        }
+      ]
+    },
+    "直接访问表单开始率": {
+      "slices": [
+        {
+          "key": "__site__",
+          "current": {
+            "numerator": 16,
+            "denominator": 131,
+            "value": 0.122137
+          },
+          "baseline": {
+            "numerator": 16,
+            "denominator": 135,
+            "value": 0.118519
+          }
+        }
+      ]
+    },
+    "外部链接表单开始率": {
+      "slices": [
+        {
+          "key": "__site__",
+          "current": {
+            "numerator": 8,
+            "denominator": 84,
+            "value": 0.095238
+          },
+          "baseline": {
+            "numerator": 9,
+            "denominator": 92,
+            "value": 0.097826
+          }
+        }
+      ]
+    },
+    "广告表单开始率": {
+      "slices": [
+        {
+          "key": "__site__",
+          "current": {
+            "numerator": 8,
+            "denominator": 85,
+            "value": 0.094118
+          },
+          "baseline": {
+            "numerator": 13,
+            "denominator": 125,
+            "value": 0.104
+          }
+        }
+      ]
+    },
+    "表单开始率@渠道": {
+      "slices": [
+        {
+          "key": "search",
+          "current": {
+            "numerator": 18,
+            "denominator": 195,
+            "value": 0.092308
+          },
+          "baseline": {
+            "numerator": 28,
+            "denominator": 308,
+            "value": 0.090909
+          }
+        },
+        {
+          "key": "direct",
+          "current": {
+            "numerator": 16,
+            "denominator": 131,
+            "value": 0.122137
+          },
+          "baseline": {
+            "numerator": 16,
+            "denominator": 135,
+            "value": 0.118519
+          }
+        },
+        {
+          "key": "referral",
+          "current": {
+            "numerator": 8,
+            "denominator": 84,
+            "value": 0.095238
+          },
+          "baseline": {
+            "numerator": 9,
+            "denominator": 92,
+            "value": 0.097826
+          }
+        },
+        {
+          "key": "ads",
+          "current": {
+            "numerator": 8,
+            "denominator": 85,
+            "value": 0.094118
+          },
+          "baseline": {
+            "numerator": 13,
+            "denominator": 125,
+            "value": 0.104
+          }
+        }
+      ]
+    },
+    "全站开聊率": {
+      "slices": [
+        {
+          "key": "__site__",
+          "current": {
+            "numerator": 24,
+            "denominator": 495,
+            "value": 0.048485
+          },
+          "baseline": {
+            "numerator": 32,
+            "denominator": 660,
+            "value": 0.048485
+          }
+        }
+      ]
+    },
+    "开聊率@全站": {
+      "slices": [
+        {
+          "key": "__site__",
+          "current": {
+            "numerator": 24,
+            "denominator": 495,
+            "value": 0.048485
+          },
+          "baseline": {
+            "numerator": 32,
+            "denominator": 660,
+            "value": 0.048485
+          }
+        }
+      ]
+    },
+    "搜索引擎开聊率": {
+      "slices": [
+        {
+          "key": "__site__",
+          "current": {
+            "numerator": 10,
+            "denominator": 195,
+            "value": 0.051282
+          },
+          "baseline": {
+            "numerator": 17,
+            "denominator": 308,
+            "value": 0.055195
+          }
+        }
+      ]
+    },
+    "直接访问开聊率": {
+      "slices": [
+        {
+          "key": "__site__",
+          "current": {
+            "numerator": 6,
+            "denominator": 131,
+            "value": 0.045802
+          },
+          "baseline": {
+            "numerator": 6,
+            "denominator": 135,
+            "value": 0.044444
+          }
+        }
+      ]
+    },
+    "外部链接开聊率": {
+      "slices": [
+        {
+          "key": "__site__",
+          "current": {
+            "numerator": 4,
+            "denominator": 84,
+            "value": 0.047619
+          },
+          "baseline": {
+            "numerator": 4,
+            "denominator": 92,
+            "value": 0.043478
+          }
+        }
+      ]
+    },
+    "广告开聊率": {
+      "slices": [
+        {
+          "key": "__site__",
+          "current": {
+            "numerator": 4,
+            "denominator": 85,
+            "value": 0.047059
+          },
+          "baseline": {
+            "numerator": 5,
+            "denominator": 125,
+            "value": 0.04
+          }
+        }
+      ]
+    },
+    "开聊率@渠道": {
+      "slices": [
+        {
+          "key": "search",
+          "current": {
+            "numerator": 10,
+            "denominator": 195,
+            "value": 0.051282
+          },
+          "baseline": {
+            "numerator": 17,
+            "denominator": 308,
+            "value": 0.055195
+          }
+        },
+        {
+          "key": "direct",
+          "current": {
+            "numerator": 6,
+            "denominator": 131,
+            "value": 0.045802
+          },
+          "baseline": {
+            "numerator": 6,
+            "denominator": 135,
+            "value": 0.044444
+          }
+        },
+        {
+          "key": "referral",
+          "current": {
+            "numerator": 4,
+            "denominator": 84,
+            "value": 0.047619
+          },
+          "baseline": {
+            "numerator": 4,
+            "denominator": 92,
+            "value": 0.043478
+          }
+        },
+        {
+          "key": "ads",
+          "current": {
+            "numerator": 4,
+            "denominator": 85,
+            "value": 0.047059
+          },
+          "baseline": {
+            "numerator": 5,
+            "denominator": 125,
+            "value": 0.04
+          }
+        }
+      ]
+    },
+    "全站详情页到达率": {
+      "slices": [
+        {
+          "key": "__site__",
+          "current": {
+            "numerator": 287,
+            "denominator": 495,
+            "value": 0.579798
+          },
+          "baseline": {
+            "numerator": 383,
+            "denominator": 660,
+            "value": 0.580303
+          }
+        }
+      ]
+    },
+    "详情页到达率@全站": {
+      "slices": [
+        {
+          "key": "__site__",
+          "current": {
+            "numerator": 287,
+            "denominator": 495,
+            "value": 0.579798
+          },
+          "baseline": {
+            "numerator": 383,
+            "denominator": 660,
+            "value": 0.580303
+          }
+        }
+      ]
+    },
+    "搜索引擎详情页到达率": {
+      "slices": [
+        {
+          "key": "__site__",
+          "current": {
+            "numerator": 101,
+            "denominator": 195,
+            "value": 0.517949
+          },
+          "baseline": {
+            "numerator": 160,
+            "denominator": 308,
+            "value": 0.519481
+          }
+        }
+      ]
+    },
+    "直接访问详情页到达率": {
+      "slices": [
+        {
+          "key": "__site__",
+          "current": {
+            "numerator": 89,
+            "denominator": 131,
+            "value": 0.679389
+          },
+          "baseline": {
+            "numerator": 92,
+            "denominator": 135,
+            "value": 0.681481
+          }
+        }
+      ]
+    },
+    "外部链接详情页到达率": {
+      "slices": [
+        {
+          "key": "__site__",
+          "current": {
+            "numerator": 46,
+            "denominator": 84,
+            "value": 0.547619
+          },
+          "baseline": {
+            "numerator": 51,
+            "denominator": 92,
+            "value": 0.554348
+          }
+        }
+      ]
+    },
+    "广告详情页到达率": {
+      "slices": [
+        {
+          "key": "__site__",
+          "current": {
+            "numerator": 51,
+            "denominator": 85,
+            "value": 0.6
+          },
+          "baseline": {
+            "numerator": 80,
+            "denominator": 125,
+            "value": 0.64
+          }
+        }
+      ]
+    },
+    "详情页到达率@渠道": {
+      "slices": [
+        {
+          "key": "search",
+          "current": {
+            "numerator": 101,
+            "denominator": 195,
+            "value": 0.517949
+          },
+          "baseline": {
+            "numerator": 160,
+            "denominator": 308,
+            "value": 0.519481
+          }
+        },
+        {
+          "key": "direct",
+          "current": {
+            "numerator": 89,
+            "denominator": 131,
+            "value": 0.679389
+          },
+          "baseline": {
+            "numerator": 92,
+            "denominator": 135,
+            "value": 0.681481
+          }
+        },
+        {
+          "key": "referral",
+          "current": {
+            "numerator": 46,
+            "denominator": 84,
+            "value": 0.547619
+          },
+          "baseline": {
+            "numerator": 51,
+            "denominator": 92,
+            "value": 0.554348
+          }
+        },
+        {
+          "key": "ads",
+          "current": {
+            "numerator": 51,
+            "denominator": 85,
+            "value": 0.6
+          },
+          "baseline": {
+            "numerator": 80,
+            "denominator": 125,
+            "value": 0.64
+          }
+        }
+      ]
+    },
+    "页面转化交互率": {
+      "slices": [
+        {
+          "key": "/products/cnc-6061-bracket",
+          "current": {
+            "numerator": 8,
+            "denominator": 92,
+            "value": 0.086957
+          },
+          "baseline": {
+            "numerator": 8,
+            "denominator": 90,
+            "value": 0.088889
+          }
+        },
+        {
+          "key": "/blog/cnc-tolerance-guide",
+          "current": {
+            "numerator": 2,
+            "denominator": 84,
+            "value": 0.02381
+          },
+          "baseline": {
+            "numerator": 2,
+            "denominator": 82,
+            "value": 0.02439
+          }
+        },
+        {
+          "key": "/products",
+          "current": {
+            "numerator": 5,
+            "denominator": 110,
+            "value": 0.045455
+          },
+          "baseline": {
+            "numerator": 5,
+            "denominator": 108,
+            "value": 0.046296
+          }
+        },
+        {
+          "key": "/",
+          "current": {
+            "numerator": 12,
+            "denominator": 150,
+            "value": 0.08
+          },
+          "baseline": {
+            "numerator": 13,
+            "denominator": 156,
+            "value": 0.083333
+          }
+        },
+        {
+          "key": "/campaign/cnc-oem-q3",
+          "current": {
+            "numerator": 14,
+            "denominator": 95,
+            "value": 0.147368
+          },
+          "baseline": {
+            "numerator": 15,
+            "denominator": 99,
+            "value": 0.151515
+          }
+        },
+        {
+          "key": "/about",
+          "current": {
+            "numerator": 1,
+            "denominator": 30,
+            "value": 0.033333
+          },
+          "baseline": {
+            "numerator": 1,
+            "denominator": 31,
+            "value": 0.032258
+          }
+        }
+      ]
+    },
+    "转化交互率@页面": {
+      "slices": [
+        {
+          "key": "/products/cnc-6061-bracket",
+          "current": {
+            "numerator": 8,
+            "denominator": 92,
+            "value": 0.086957
+          },
+          "baseline": {
+            "numerator": 8,
+            "denominator": 90,
+            "value": 0.088889
+          }
+        },
+        {
+          "key": "/blog/cnc-tolerance-guide",
+          "current": {
+            "numerator": 2,
+            "denominator": 84,
+            "value": 0.02381
+          },
+          "baseline": {
+            "numerator": 2,
+            "denominator": 82,
+            "value": 0.02439
+          }
+        },
+        {
+          "key": "/products",
+          "current": {
+            "numerator": 5,
+            "denominator": 110,
+            "value": 0.045455
+          },
+          "baseline": {
+            "numerator": 5,
+            "denominator": 108,
+            "value": 0.046296
+          }
+        },
+        {
+          "key": "/",
+          "current": {
+            "numerator": 12,
+            "denominator": 150,
+            "value": 0.08
+          },
+          "baseline": {
+            "numerator": 13,
+            "denominator": 156,
+            "value": 0.083333
+          }
+        },
+        {
+          "key": "/campaign/cnc-oem-q3",
+          "current": {
+            "numerator": 14,
+            "denominator": 95,
+            "value": 0.147368
+          },
+          "baseline": {
+            "numerator": 15,
+            "denominator": 99,
+            "value": 0.151515
+          }
+        },
+        {
+          "key": "/about",
+          "current": {
+            "numerator": 1,
+            "denominator": 30,
+            "value": 0.033333
+          },
+          "baseline": {
+            "numerator": 1,
+            "denominator": 31,
+            "value": 0.032258
+          }
+        }
+      ]
+    },
+    "搜索引擎页面转化交互率": {
+      "slices": [
+        {
+          "key": "/products/cnc-6061-bracket",
+          "current": {
+            "numerator": 3,
+            "denominator": 48,
+            "value": 0.0625
+          },
+          "baseline": {
+            "numerator": 3,
+            "denominator": 50,
+            "value": 0.06
+          }
+        }
+      ]
+    },
+    "直接访问页面转化交互率": {
+      "slices": [
+        {
+          "key": "/products/cnc-6061-bracket",
+          "current": {
+            "numerator": 6,
+            "denominator": 38,
+            "value": 0.157895
+          },
+          "baseline": {
+            "numerator": 6,
+            "denominator": 36,
+            "value": 0.166667
+          }
+        }
+      ]
+    },
+    "外部链接页面转化交互率": {
+      "slices": [
+        {
+          "key": "/products/cnc-6061-bracket",
+          "current": {
+            "numerator": 2,
+            "denominator": 22,
+            "value": 0.090909
+          },
+          "baseline": {
+            "numerator": 2,
+            "denominator": 22,
+            "value": 0.090909
+          }
+        }
+      ]
+    },
+    "广告页面转化交互率": {
+      "slices": [
+        {
+          "key": "/products/cnc-6061-bracket",
+          "current": {
+            "numerator": 2,
+            "denominator": 20,
+            "value": 0.1
+          },
+          "baseline": {
+            "numerator": 2,
+            "denominator": 20,
+            "value": 0.1
+          }
+        }
+      ]
+    },
+    "转化交互率@渠道×页": {
+      "slices": [
+        {
+          "key": "search|/products/cnc-6061-bracket",
+          "current": {
+            "numerator": 3,
+            "denominator": 48,
+            "value": 0.0625
+          },
+          "baseline": {
+            "numerator": 3,
+            "denominator": 50,
+            "value": 0.06
+          }
+        },
+        {
+          "key": "direct|/products/cnc-6061-bracket",
+          "current": {
+            "numerator": 6,
+            "denominator": 38,
+            "value": 0.157895
+          },
+          "baseline": {
+            "numerator": 6,
+            "denominator": 36,
+            "value": 0.166667
+          }
+        },
+        {
+          "key": "referral|/products/cnc-6061-bracket",
+          "current": {
+            "numerator": 2,
+            "denominator": 22,
+            "value": 0.090909
+          },
+          "baseline": {
+            "numerator": 2,
+            "denominator": 22,
+            "value": 0.090909
+          }
+        },
+        {
+          "key": "ads|/products/cnc-6061-bracket",
+          "current": {
+            "numerator": 2,
+            "denominator": 20,
+            "value": 0.1
+          },
+          "baseline": {
+            "numerator": 2,
+            "denominator": 20,
+            "value": 0.1
+          }
+        }
+      ]
+    },
+    "未转化页出口率": {
+      "slices": [
+        {
+          "key": "/products/cnc-6061-bracket",
+          "current": {
+            "numerator": 38,
+            "denominator": 160,
+            "value": 0.2375
+          },
+          "baseline": {
+            "numerator": 40,
+            "denominator": 165,
+            "value": 0.242424
+          }
+        },
+        {
+          "key": "/blog/cnc-tolerance-guide",
+          "current": {
+            "numerator": 32,
+            "denominator": 160,
+            "value": 0.2
+          },
+          "baseline": {
+            "numerator": 33,
+            "denominator": 165,
+            "value": 0.2
+          }
+        },
+        {
+          "key": "/products",
+          "current": {
+            "numerator": 20,
+            "denominator": 160,
+            "value": 0.125
+          },
+          "baseline": {
+            "numerator": 20,
+            "denominator": 165,
+            "value": 0.121212
+          }
+        },
+        {
+          "key": "/",
+          "current": {
+            "numerator": 41,
+            "denominator": 160,
+            "value": 0.25625
+          },
+          "baseline": {
+            "numerator": 42,
+            "denominator": 165,
+            "value": 0.254545
+          }
+        },
+        {
+          "key": "/campaign/cnc-oem-q3",
+          "current": {
+            "numerator": 18,
+            "denominator": 160,
+            "value": 0.1125
+          },
+          "baseline": {
+            "numerator": 19,
+            "denominator": 165,
+            "value": 0.115152
+          }
+        },
+        {
+          "key": "/about",
+          "current": {
+            "numerator": 11,
+            "denominator": 160,
+            "value": 0.06875
+          },
+          "baseline": {
+            "numerator": 11,
+            "denominator": 165,
+            "value": 0.066667
+          }
+        }
+      ]
+    },
+    "未转化页出口率@页面": {
+      "slices": [
+        {
+          "key": "/products/cnc-6061-bracket",
+          "current": {
+            "numerator": 38,
+            "denominator": 160,
+            "value": 0.2375
+          },
+          "baseline": {
+            "numerator": 40,
+            "denominator": 165,
+            "value": 0.242424
+          }
+        },
+        {
+          "key": "/blog/cnc-tolerance-guide",
+          "current": {
+            "numerator": 32,
+            "denominator": 160,
+            "value": 0.2
+          },
+          "baseline": {
+            "numerator": 33,
+            "denominator": 165,
+            "value": 0.2
+          }
+        },
+        {
+          "key": "/products",
+          "current": {
+            "numerator": 20,
+            "denominator": 160,
+            "value": 0.125
+          },
+          "baseline": {
+            "numerator": 20,
+            "denominator": 165,
+            "value": 0.121212
+          }
+        },
+        {
+          "key": "/",
+          "current": {
+            "numerator": 41,
+            "denominator": 160,
+            "value": 0.25625
+          },
+          "baseline": {
+            "numerator": 42,
+            "denominator": 165,
+            "value": 0.254545
+          }
+        },
+        {
+          "key": "/campaign/cnc-oem-q3",
+          "current": {
+            "numerator": 18,
+            "denominator": 160,
+            "value": 0.1125
+          },
+          "baseline": {
+            "numerator": 19,
+            "denominator": 165,
+            "value": 0.115152
+          }
+        },
+        {
+          "key": "/about",
+          "current": {
+            "numerator": 11,
+            "denominator": 160,
+            "value": 0.06875
+          },
+          "baseline": {
+            "numerator": 11,
+            "denominator": 165,
+            "value": 0.066667
+          }
+        }
+      ]
+    },
+    "人均有效浏览页数": {
+      "slices": [
+        {
+          "key": "__site__",
+          "current": {
+            "numerator": 1287,
+            "denominator": 495,
+            "value": 2.6
+          },
+          "baseline": {
+            "numerator": 1716,
+            "denominator": 660,
+            "value": 2.6
+          }
+        }
+      ]
+    },
+    "人均有效浏览页数@全站": {
+      "slices": [
+        {
+          "key": "__site__",
+          "current": {
+            "numerator": 1287,
+            "denominator": 495,
+            "value": 2.6
+          },
+          "baseline": {
+            "numerator": 1716,
+            "denominator": 660,
+            "value": 2.6
+          }
+        }
+      ]
+    },
+    "人均浏览页数": {
+      "slices": [
+        {
+          "key": "__site__",
+          "current": {
+            "numerator": 3135,
+            "denominator": 1650,
+            "value": 1.9
+          },
+          "baseline": {
+            "numerator": 3135,
+            "denominator": 1650,
+            "value": 1.9
+          }
+        }
+      ]
+    },
+    "人均浏览页数@全站": {
+      "slices": [
+        {
+          "key": "__site__",
+          "current": {
+            "numerator": 3135,
+            "denominator": 1650,
+            "value": 1.9
+          },
+          "baseline": {
+            "numerator": 3135,
+            "denominator": 1650,
+            "value": 1.9
+          }
+        }
+      ]
+    },
+    "单页深读占比": {
+      "slices": [
+        {
+          "key": "__site__",
+          "current": {
+            "numerator": 203,
+            "denominator": 495,
+            "value": 0.410101
+          },
+          "baseline": {
+            "numerator": 271,
+            "denominator": 660,
+            "value": 0.410606
+          }
+        }
+      ]
+    },
+    "单页深读占比@全站": {
+      "slices": [
+        {
+          "key": "__site__",
+          "current": {
+            "numerator": 203,
+            "denominator": 495,
+            "value": 0.410101
+          },
+          "baseline": {
+            "numerator": 271,
+            "denominator": 660,
+            "value": 0.410606
+          }
+        }
+      ]
+    },
+    "站内搜索关键词数": {
+      "slices": [
+        {
+          "key": "__site__",
+          "current": {
+            "numerator": 37,
+            "value": 37
+          },
+          "baseline": {
+            "numerator": 39,
+            "value": 39
+          }
+        }
+      ]
+    },
+    "站内搜索关键词数@全站": {
+      "slices": [
+        {
+          "key": "__site__",
+          "current": {
+            "numerator": 37,
+            "value": 37
+          },
+          "baseline": {
+            "numerator": 39,
+            "value": 39
+          }
+        }
+      ]
+    },
+    "站内搜索0关键词": {
+      "slices": [
+        {
+          "key": "__site__",
+          "current": {
+            "value": [
+              "6082 bracket",
+              "anodized finish spec"
+            ]
+          },
+          "baseline": {
+            "value": [
+              "anodized finish spec"
+            ]
+          }
+        }
+      ]
+    },
+    "站内搜索0关键词@全站": {
+      "slices": [
+        {
+          "key": "__site__",
+          "current": {
+            "value": [
+              "6082 bracket",
+              "anodized finish spec"
+            ]
+          },
+          "baseline": {
+            "value": [
+              "anodized finish spec"
+            ]
+          }
+        }
+      ]
+    },
+    "站内搜索0结果率": {
+      "slices": [
+        {
+          "key": "__site__",
+          "current": {
+            "numerator": 11,
+            "denominator": 138,
+            "value": 0.07971
+          },
+          "baseline": {
+            "numerator": 11,
+            "denominator": 146,
+            "value": 0.075342
+          }
+        }
+      ]
+    },
+    "站内搜索0结果率@全站": {
+      "slices": [
+        {
+          "key": "__site__",
+          "current": {
+            "numerator": 11,
+            "denominator": 138,
+            "value": 0.07971
+          },
+          "baseline": {
+            "numerator": 11,
+            "denominator": 146,
+            "value": 0.075342
+          }
+        }
+      ]
+    },
+    "搜后离站率": {
+      "slices": [
+        {
+          "key": "6061 bracket drawing",
+          "current": {
+            "numerator": 4,
+            "denominator": 18,
+            "value": 0.222222
+          },
+          "baseline": {
+            "numerator": 4,
+            "denominator": 17,
+            "value": 0.235294
+          }
+        },
+        {
+          "key": "6082 bracket",
+          "current": {
+            "numerator": 6,
+            "denominator": 8,
+            "value": 0.75
+          },
+          "baseline": {
+            "numerator": 5,
+            "denominator": 8,
+            "value": 0.625
+          }
+        },
+        {
+          "key": "anodized finish spec",
+          "current": {
+            "numerator": 5,
+            "denominator": 9,
+            "value": 0.555556
+          },
+          "baseline": {
+            "numerator": 5,
+            "denominator": 9,
+            "value": 0.555556
+          }
+        }
+      ]
+    },
+    "搜后离站率@搜索词": {
+      "slices": [
+        {
+          "key": "6061 bracket drawing",
+          "current": {
+            "numerator": 4,
+            "denominator": 18,
+            "value": 0.222222
+          },
+          "baseline": {
+            "numerator": 4,
+            "denominator": 17,
+            "value": 0.235294
+          }
+        },
+        {
+          "key": "6082 bracket",
+          "current": {
+            "numerator": 6,
+            "denominator": 8,
+            "value": 0.75
+          },
+          "baseline": {
+            "numerator": 5,
+            "denominator": 8,
+            "value": 0.625
+          }
+        },
+        {
+          "key": "anodized finish spec",
+          "current": {
+            "numerator": 5,
+            "denominator": 9,
+            "value": 0.555556
+          },
+          "baseline": {
+            "numerator": 5,
+            "denominator": 9,
+            "value": 0.555556
+          }
+        }
+      ]
+    },
+    "路径UV": {
+      "slices": [
+        {
+          "key": "/ > /products > /products/cnc-6061-bracket",
+          "current": {
+            "numerator": 210,
+            "value": 210
+          },
+          "baseline": {
+            "numerator": 205,
+            "value": 205
+          }
+        },
+        {
+          "key": "/products/cnc-6061-bracket > /",
+          "current": {
+            "numerator": 180,
+            "value": 180
+          },
+          "baseline": {
+            "numerator": 176,
+            "value": 176
+          }
+        },
+        {
+          "key": "/blog/cnc-tolerance-guide > /products > /products/cnc-6061-bracket",
+          "current": {
+            "numerator": 95,
+            "value": 95
+          },
+          "baseline": {
+            "numerator": 92,
+            "value": 92
+          }
+        }
+      ]
+    },
+    "路径UV@路径": {
+      "slices": [
+        {
+          "key": "/ > /products > /products/cnc-6061-bracket",
+          "current": {
+            "numerator": 210,
+            "value": 210
+          },
+          "baseline": {
+            "numerator": 205,
+            "value": 205
+          }
+        },
+        {
+          "key": "/products/cnc-6061-bracket > /",
+          "current": {
+            "numerator": 180,
+            "value": 180
+          },
+          "baseline": {
+            "numerator": 176,
+            "value": 176
+          }
+        },
+        {
+          "key": "/blog/cnc-tolerance-guide > /products > /products/cnc-6061-bracket",
+          "current": {
+            "numerator": 95,
+            "value": 95
+          },
+          "baseline": {
+            "numerator": 92,
+            "value": 92
+          }
+        }
+      ]
+    },
+    "表单曝光率": {
+      "slices": []
+    },
+    "表单曝光率@页面": {
+      "slices": []
+    },
+    "询价入口个数": {
+      "slices": [
+        {
+          "key": "/products/cnc-6061-bracket",
+          "current": {
+            "value": 1
+          },
+          "baseline": {
+            "value": 1
+          }
+        },
+        {
+          "key": "/campaign/cnc-oem-q3",
+          "current": {
+            "value": 1
+          },
+          "baseline": {
+            "value": 1
+          }
+        }
+      ]
+    },
+    "询价入口个数@页面": {
+      "slices": [
+        {
+          "key": "/products/cnc-6061-bracket",
+          "current": {
+            "value": 1
+          },
+          "baseline": {
+            "value": 1
+          }
+        },
+        {
+          "key": "/campaign/cnc-oem-q3",
+          "current": {
+            "value": 1
+          },
+          "baseline": {
+            "value": 1
+          }
+        }
+      ]
+    },
+    "页面内容": {
+      "slices": [
+        {
+          "key": "/products/cnc-6061-bracket",
+          "current": {
+            "value": {
+              "title": "CNC-6061 铝合金精密支架 | OEM 定制加工",
+              "first_screen": "专业 CNC 加工服务商 · 20 年经验 · 全球交付",
+              "sections": [
+                "公司介绍",
+                "服务优势",
+                "规格表",
+                "认证",
+                "怎么报价",
+                "相关产品"
+              ],
+              "has": {
+                "规格表": true,
+                "认证": true,
+                "怎么报价": true
+              },
+              "hero_params_visible": false,
+              "material": "6061-T6",
+              "wall_thickness": "待确认",
+              "last_redesign": "2026-08-02"
+            }
+          },
+          "baseline": {
+            "value": {
+              "first_screen": "CNC-6061 铝合金精密支架 · 公差 ±0.01mm · 6061-T6",
+              "hero_params_visible": true
+            }
+          }
+        }
+      ]
+    },
+    "页面内容@页面": {
+      "slices": [
+        {
+          "key": "/products/cnc-6061-bracket",
+          "current": {
+            "value": {
+              "title": "CNC-6061 铝合金精密支架 | OEM 定制加工",
+              "first_screen": "专业 CNC 加工服务商 · 20 年经验 · 全球交付",
+              "sections": [
+                "公司介绍",
+                "服务优势",
+                "规格表",
+                "认证",
+                "怎么报价",
+                "相关产品"
+              ],
+              "has": {
+                "规格表": true,
+                "认证": true,
+                "怎么报价": true
+              },
+              "hero_params_visible": false,
+              "material": "6061-T6",
+              "wall_thickness": "待确认",
+              "last_redesign": "2026-08-02"
+            }
+          },
+          "baseline": {
+            "value": {
+              "first_screen": "CNC-6061 铝合金精密支架 · 公差 ±0.01mm · 6061-T6",
+              "hero_params_visible": true
+            }
+          }
+        }
+      ]
+    },
+    "访客当日浏览档案": {
+      "slices": [
+        {
+          "key": "v01",
+          "current": {
+            "value": {
+              "访客渠道": "搜索引擎",
+              "访客落地页": "/products/cnc-6061-bracket",
+              "访客广告关键词": null,
+              "访客站内搜索词": [],
+              "访客页面序列": [
+                "/products/cnc-6061-bracket"
+              ],
+              "访客页面停留": [
+                8
+              ],
+              "访客落地是否接住": false,
+              "访客是否有效浏览": false,
+              "访客是否秒退": true,
+              "访客是否转化交互": false,
+              "访客是否留资": false,
+              "访客流失点": "没看进去",
+              "访客出口页": "/products/cnc-6061-bracket"
+            }
+          },
+          "baseline": {
+            "value": null
+          }
+        },
+        {
+          "key": "v02",
+          "current": {
+            "value": {
+              "访客渠道": "搜索引擎",
+              "访客落地页": "/products/cnc-6061-bracket",
+              "访客广告关键词": null,
+              "访客站内搜索词": [],
+              "访客页面序列": [
+                "/products/cnc-6061-bracket"
+              ],
+              "访客页面停留": [
+                6
+              ],
+              "访客落地是否接住": false,
+              "访客是否有效浏览": false,
+              "访客是否秒退": true,
+              "访客是否转化交互": false,
+              "访客是否留资": false,
+              "访客流失点": "没看进去",
+              "访客出口页": "/products/cnc-6061-bracket"
+            }
+          },
+          "baseline": {
+            "value": null
+          }
+        },
+        {
+          "key": "v03",
+          "current": {
+            "value": {
+              "访客渠道": "广告",
+              "访客落地页": "/campaign/cnc-oem-q3",
+              "访客广告关键词": "cnc machining quote",
+              "访客站内搜索词": [],
+              "访客页面序列": [
+                "/campaign/cnc-oem-q3"
+              ],
+              "访客页面停留": [
+                9
+              ],
+              "访客落地是否接住": false,
+              "访客是否有效浏览": false,
+              "访客是否秒退": true,
+              "访客是否转化交互": false,
+              "访客是否留资": false,
+              "访客流失点": "没看进去",
+              "访客出口页": "/campaign/cnc-oem-q3"
+            }
+          },
+          "baseline": {
+            "value": null
+          }
+        },
+        {
+          "key": "v04",
+          "current": {
+            "value": {
+              "访客渠道": "搜索引擎",
+              "访客落地页": "/blog/cnc-tolerance-guide",
+              "访客广告关键词": null,
+              "访客站内搜索词": [
+                "6061 bracket drawing"
+              ],
+              "访客页面序列": [
+                "/blog/cnc-tolerance-guide",
+                "/products",
+                "/products/cnc-6061-bracket"
+              ],
+              "访客页面停留": [
+                74,
+                18,
+                41
+              ],
+              "访客落地是否接住": true,
+              "访客是否有效浏览": true,
+              "访客是否秒退": false,
+              "访客是否转化交互": false,
+              "访客是否留资": false,
+              "访客流失点": "看了没动手",
+              "访客出口页": "/products/cnc-6061-bracket"
+            }
+          },
+          "baseline": {
+            "value": null
+          }
+        },
+        {
+          "key": "v05",
+          "current": {
+            "value": {
+              "访客渠道": "直接访问",
+              "访客落地页": "/",
+              "访客广告关键词": null,
+              "访客站内搜索词": [],
+              "访客页面序列": [
+                "/",
+                "/products/cnc-6061-bracket",
+                "/about",
+                "/",
+                "/products/cnc-6061-bracket"
+              ],
+              "访客页面停留": [
+                22,
+                88,
+                36,
+                14,
+                40
+              ],
+              "访客落地是否接住": true,
+              "访客是否有效浏览": true,
+              "访客是否秒退": false,
+              "访客是否转化交互": false,
+              "访客是否留资": false,
+              "访客流失点": "看了没动手",
+              "访客出口页": "/products/cnc-6061-bracket"
+            }
+          },
+          "baseline": {
+            "value": null
+          }
+        },
+        {
+          "key": "v06",
+          "current": {
+            "value": {
+              "访客渠道": "搜索引擎",
+              "访客落地页": "/products/cnc-6061-bracket",
+              "访客广告关键词": null,
+              "访客站内搜索词": [],
+              "访客页面序列": [
+                "/products/cnc-6061-bracket"
+              ],
+              "访客页面停留": [
+                96
+              ],
+              "访客落地是否接住": true,
+              "访客是否有效浏览": true,
+              "访客是否秒退": false,
+              "访客是否转化交互": true,
+              "访客是否留资": false,
+              "访客流失点": "动手没留下",
+              "访客出口页": "/products/cnc-6061-bracket"
+            }
+          },
+          "baseline": {
+            "value": null
+          }
+        },
+        {
+          "key": "v07",
+          "current": {
+            "value": {
+              "访客渠道": "直接访问",
+              "访客落地页": "/products/cnc-6061-bracket",
+              "访客广告关键词": null,
+              "访客站内搜索词": [],
+              "访客页面序列": [
+                "/products/cnc-6061-bracket"
+              ],
+              "访客页面停留": [
+                140
+              ],
+              "访客落地是否接住": true,
+              "访客是否有效浏览": true,
+              "访客是否秒退": false,
+              "访客是否转化交互": true,
+              "访客是否留资": true,
+              "访客流失点": "留下了",
+              "访客出口页": null
+            }
+          },
+          "baseline": {
+            "value": null
+          }
+        },
+        {
+          "key": "v08",
+          "current": {
+            "value": {
+              "访客渠道": "外部链接",
+              "访客落地页": "/products/cnc-6061-bracket",
+              "访客广告关键词": null,
+              "访客站内搜索词": [],
+              "访客页面序列": [
+                "/products/cnc-6061-bracket"
+              ],
+              "访客页面停留": [
+                7
+              ],
+              "访客落地是否接住": false,
+              "访客是否有效浏览": false,
+              "访客是否秒退": true,
+              "访客是否转化交互": false,
+              "访客是否留资": false,
+              "访客流失点": "没看进去",
+              "访客出口页": "/products/cnc-6061-bracket"
+            }
+          },
+          "baseline": {
+            "value": null
+          }
+        },
+        {
+          "key": "v09",
+          "current": {
+            "value": {
+              "访客渠道": "广告",
+              "访客落地页": "/campaign/cnc-oem-q3",
+              "访客广告关键词": "cnc machining quote",
+              "访客站内搜索词": [],
+              "访客页面序列": [
+                "/campaign/cnc-oem-q3",
+                "/products/cnc-6061-bracket"
+              ],
+              "访客页面停留": [
+                41,
+                22
+              ],
+              "访客落地是否接住": true,
+              "访客是否有效浏览": true,
+              "访客是否秒退": false,
+              "访客是否转化交互": false,
+              "访客是否留资": false,
+              "访客流失点": "看了没动手",
+              "访客出口页": "/products/cnc-6061-bracket"
+            }
+          },
+          "baseline": {
+            "value": null
+          }
+        },
+        {
+          "key": "v10",
+          "current": {
+            "value": {
+              "访客渠道": "广告",
+              "访客落地页": "/campaign/cnc-oem-q3",
+              "访客广告关键词": "oem cnc quote",
+              "访客站内搜索词": [],
+              "访客页面序列": [
+                "/campaign/cnc-oem-q3",
+                "/products/cnc-6061-bracket"
+              ],
+              "访客页面停留": [
+                28,
+                72
+              ],
+              "访客落地是否接住": true,
+              "访客是否有效浏览": true,
+              "访客是否秒退": false,
+              "访客是否转化交互": true,
+              "访客是否留资": false,
+              "访客流失点": "动手没留下",
+              "访客出口页": "/products/cnc-6061-bracket"
+            }
+          },
+          "baseline": {
+            "value": null
+          }
+        }
+      ]
+    },
+    "搜索引擎留资完成率": {
+      "slices": [
+        {
+          "key": "__site__",
+          "current": {
+            "numerator": 12,
+            "denominator": 28,
+            "value": 0.428571
+          },
+          "baseline": {
+            "numerator": 21,
+            "denominator": 46,
+            "value": 0.456522
+          }
+        }
+      ]
+    },
+    "直接访问留资完成率": {
+      "slices": [
+        {
+          "key": "__site__",
+          "current": {
+            "numerator": 12,
+            "denominator": 22,
+            "value": 0.545455
+          },
+          "baseline": {
+            "numerator": 12,
+            "denominator": 23,
+            "value": 0.521739
+          }
+        }
+      ]
+    },
+    "外部链接留资完成率": {
+      "slices": [
+        {
+          "key": "__site__",
+          "current": {
+            "numerator": 6,
+            "denominator": 12,
+            "value": 0.5
+          },
+          "baseline": {
+            "numerator": 7,
+            "denominator": 14,
+            "value": 0.5
+          }
+        }
+      ]
+    },
+    "广告留资完成率": {
+      "slices": [
+        {
+          "key": "__site__",
+          "current": {
+            "numerator": 4,
+            "denominator": 12,
+            "value": 0.333333
+          },
+          "baseline": {
+            "numerator": 5,
+            "denominator": 16,
+            "value": 0.3125
+          }
+        }
+      ]
+    },
+    "留资完成率@渠道": {
+      "slices": [
+        {
+          "key": "search",
+          "current": {
+            "numerator": 12,
+            "denominator": 28,
+            "value": 0.428571
+          },
+          "baseline": {
+            "numerator": 21,
+            "denominator": 46,
+            "value": 0.456522
+          }
+        },
+        {
+          "key": "direct",
+          "current": {
+            "numerator": 12,
+            "denominator": 22,
+            "value": 0.545455
+          },
+          "baseline": {
+            "numerator": 12,
+            "denominator": 23,
+            "value": 0.521739
+          }
+        },
+        {
+          "key": "referral",
+          "current": {
+            "numerator": 6,
+            "denominator": 12,
+            "value": 0.5
+          },
+          "baseline": {
+            "numerator": 7,
+            "denominator": 14,
+            "value": 0.5
+          }
+        },
+        {
+          "key": "ads",
+          "current": {
+            "numerator": 4,
+            "denominator": 12,
+            "value": 0.333333
+          },
+          "baseline": {
+            "numerator": 5,
+            "denominator": 16,
+            "value": 0.3125
+          }
+        }
+      ]
+    },
+    "全站表单完成率": {
+      "slices": [
+        {
+          "key": "__site__",
+          "current": {
+            "numerator": 22,
+            "denominator": 50,
+            "value": 0.44
+          },
+          "baseline": {
+            "numerator": 29,
+            "denominator": 66,
+            "value": 0.439394
+          }
+        }
+      ]
+    },
+    "表单完成率@全站": {
+      "slices": [
+        {
+          "key": "__site__",
+          "current": {
+            "numerator": 22,
+            "denominator": 50,
+            "value": 0.44
+          },
+          "baseline": {
+            "numerator": 29,
+            "denominator": 66,
+            "value": 0.439394
+          }
+        }
+      ]
+    },
+    "搜索引擎表单完成率": {
+      "slices": [
+        {
+          "key": "__site__",
+          "current": {
+            "numerator": 7,
+            "denominator": 18,
+            "value": 0.388889
+          },
+          "baseline": {
+            "numerator": 11,
+            "denominator": 28,
+            "value": 0.392857
+          }
+        }
+      ]
+    },
+    "直接访问表单完成率": {
+      "slices": [
+        {
+          "key": "__site__",
+          "current": {
+            "numerator": 8,
+            "denominator": 16,
+            "value": 0.5
+          },
+          "baseline": {
+            "numerator": 8,
+            "denominator": 16,
+            "value": 0.5
+          }
+        }
+      ]
+    },
+    "外部链接表单完成率": {
+      "slices": [
+        {
+          "key": "__site__",
+          "current": {
+            "numerator": 4,
+            "denominator": 8,
+            "value": 0.5
+          },
+          "baseline": {
+            "numerator": 4,
+            "denominator": 9,
+            "value": 0.444444
+          }
+        }
+      ]
+    },
+    "广告表单完成率": {
+      "slices": [
+        {
+          "key": "__site__",
+          "current": {
+            "numerator": 3,
+            "denominator": 8,
+            "value": 0.375
+          },
+          "baseline": {
+            "numerator": 6,
+            "denominator": 13,
+            "value": 0.461538
+          }
+        }
+      ]
+    },
+    "表单完成率@渠道": {
+      "slices": [
+        {
+          "key": "search",
+          "current": {
+            "numerator": 7,
+            "denominator": 18,
+            "value": 0.388889
+          },
+          "baseline": {
+            "numerator": 11,
+            "denominator": 28,
+            "value": 0.392857
+          }
+        },
+        {
+          "key": "direct",
+          "current": {
+            "numerator": 8,
+            "denominator": 16,
+            "value": 0.5
+          },
+          "baseline": {
+            "numerator": 8,
+            "denominator": 16,
+            "value": 0.5
+          }
+        },
+        {
+          "key": "referral",
+          "current": {
+            "numerator": 4,
+            "denominator": 8,
+            "value": 0.5
+          },
+          "baseline": {
+            "numerator": 4,
+            "denominator": 9,
+            "value": 0.444444
+          }
+        },
+        {
+          "key": "ads",
+          "current": {
+            "numerator": 3,
+            "denominator": 8,
+            "value": 0.375
+          },
+          "baseline": {
+            "numerator": 6,
+            "denominator": 13,
+            "value": 0.461538
+          }
+        }
+      ]
+    },
+    "全站开聊留资率": {
+      "slices": [
+        {
+          "key": "__site__",
+          "current": {
+            "numerator": 12,
+            "denominator": 24,
+            "value": 0.5
+          },
+          "baseline": {
+            "numerator": 16,
+            "denominator": 32,
+            "value": 0.5
+          }
+        }
+      ]
+    },
+    "开聊留资率@全站": {
+      "slices": [
+        {
+          "key": "__site__",
+          "current": {
+            "numerator": 12,
+            "denominator": 24,
+            "value": 0.5
+          },
+          "baseline": {
+            "numerator": 16,
+            "denominator": 32,
+            "value": 0.5
+          }
+        }
+      ]
+    },
+    "搜索引擎开聊留资率": {
+      "slices": [
+        {
+          "key": "__site__",
+          "current": {
+            "numerator": 4,
+            "denominator": 10,
+            "value": 0.4
+          },
+          "baseline": {
+            "numerator": 7,
+            "denominator": 17,
+            "value": 0.411765
+          }
+        }
+      ]
+    },
+    "直接访问开聊留资率": {
+      "slices": [
+        {
+          "key": "__site__",
+          "current": {
+            "numerator": 3,
+            "denominator": 6,
+            "value": 0.5
+          },
+          "baseline": {
+            "numerator": 3,
+            "denominator": 6,
+            "value": 0.5
+          }
+        }
+      ]
+    },
+    "外部链接开聊留资率": {
+      "slices": [
+        {
+          "key": "__site__",
+          "current": {
+            "numerator": 2,
+            "denominator": 4,
+            "value": 0.5
+          },
+          "baseline": {
+            "numerator": 2,
+            "denominator": 4,
+            "value": 0.5
+          }
+        }
+      ]
+    },
+    "广告开聊留资率": {
+      "slices": [
+        {
+          "key": "__site__",
+          "current": {
+            "numerator": 3,
+            "denominator": 4,
+            "value": 0.75
+          },
+          "baseline": {
+            "numerator": 4,
+            "denominator": 5,
+            "value": 0.8
+          }
+        }
+      ]
+    },
+    "开聊留资率@渠道": {
+      "slices": [
+        {
+          "key": "search",
+          "current": {
+            "numerator": 4,
+            "denominator": 10,
+            "value": 0.4
+          },
+          "baseline": {
+            "numerator": 7,
+            "denominator": 17,
+            "value": 0.411765
+          }
+        },
+        {
+          "key": "direct",
+          "current": {
+            "numerator": 3,
+            "denominator": 6,
+            "value": 0.5
+          },
+          "baseline": {
+            "numerator": 3,
+            "denominator": 6,
+            "value": 0.5
+          }
+        },
+        {
+          "key": "referral",
+          "current": {
+            "numerator": 2,
+            "denominator": 4,
+            "value": 0.5
+          },
+          "baseline": {
+            "numerator": 2,
+            "denominator": 4,
+            "value": 0.5
+          }
+        },
+        {
+          "key": "ads",
+          "current": {
+            "numerator": 3,
+            "denominator": 4,
+            "value": 0.75
+          },
+          "baseline": {
+            "numerator": 4,
+            "denominator": 5,
+            "value": 0.8
+          }
+        }
+      ]
+    },
+    "表单留资占比": {
+      "slices": [
+        {
+          "key": "__site__",
+          "current": {
+            "numerator": 22,
+            "denominator": 36,
+            "value": 0.611111
+          },
+          "baseline": {
+            "numerator": 29,
+            "denominator": 47,
+            "value": 0.617021
+          }
+        }
+      ]
+    },
+    "智能客服留资占比": {
+      "slices": [
+        {
+          "key": "__site__",
+          "current": {
+            "numerator": 12,
+            "denominator": 36,
+            "value": 0.333333
+          },
+          "baseline": {
+            "numerator": 16,
+            "denominator": 47,
+            "value": 0.340426
+          }
+        }
+      ]
+    },
+    "留资来源通道占比@通道": {
+      "slices": [
+        {
+          "key": "form",
+          "current": {
+            "numerator": 22,
+            "denominator": 36,
+            "value": 0.611111
+          },
+          "baseline": {
+            "numerator": 29,
+            "denominator": 47,
+            "value": 0.617021
+          }
+        },
+        {
+          "key": "chat",
+          "current": {
+            "numerator": 12,
+            "denominator": 36,
+            "value": 0.333333
+          },
+          "baseline": {
+            "numerator": 16,
+            "denominator": 47,
+            "value": 0.340426
+          }
+        }
+      ]
+    },
+    "意图留资率": {
+      "slices": [
+        {
+          "key": "__site__",
+          "current": {
+            "numerator": 14,
+            "denominator": 22,
+            "value": 0.636364
+          },
+          "baseline": {
+            "numerator": 18,
+            "denominator": 29,
+            "value": 0.62069
+          }
+        }
+      ]
+    },
+    "意图留资率@全站": {
+      "slices": [
+        {
+          "key": "__site__",
+          "current": {
+            "numerator": 14,
+            "denominator": 22,
+            "value": 0.636364
+          },
+          "baseline": {
+            "numerator": 18,
+            "denominator": 29,
+            "value": 0.62069
+          }
+        }
+      ]
+    },
+    "高价值线索占比": {
+      "slices": []
+    },
+    "高价值线索占比@全站": {
+      "slices": []
+    },
+    "页面留资率": {
+      "slices": []
+    },
+    "页面留资率@页面": {
+      "slices": []
+    }
+  }
+}

@@ -1,0 +1,64 @@
+{
+  "version": "2.0.0",
+  "engine": "DOMPurify",
+  "description": "layerB.body.html 前端渲染前强制消毒策略（已拍板：允许 img / table / 内联样式）",
+  "npmPackage": "dompurify",
+  "usage": {
+    "when": "IndustrialRobotTemplate 或通用 RichHtmlBlock 渲染 layerB.body.html 之前",
+    "hook": "import DOMPurify from 'dompurify'; const safe = DOMPurify.sanitize(rawHtml, CONFIG)"
+  },
+  "config": {
+    "ALLOWED_TAGS": [
+      "h1", "h2", "h3", "h4", "h5", "h6",
+      "p", "br", "hr",
+      "ul", "ol", "li",
+      "strong", "em", "b", "i", "u", "s", "sub", "sup",
+      "blockquote", "pre", "code",
+      "a",
+      "img",
+      "table", "thead", "tbody", "tfoot", "tr", "th", "td", "caption", "colgroup", "col",
+      "div", "span", "section", "article", "header", "footer", "figure", "figcaption"
+    ],
+    "ALLOWED_ATTR": [
+      "href", "title", "target", "rel",
+      "src", "alt", "width", "height", "loading",
+      "colspan", "rowspan", "scope",
+      "class",
+      "style"
+    ],
+    "ALLOWED_URI_REGEXP": "^(?:(?:https?|upload|data:image\\/)|[^:]*$)",
+    "ALLOW_DATA_ATTR": false,
+    "FORBID_TAGS": ["script", "iframe", "object", "embed", "form", "input", "button", "textarea", "select", "style", "link", "meta"],
+    "FORBID_ATTR": ["onerror", "onload", "onclick", "onmouseover", "onfocus", "onblur"],
+    "ADD_ATTR": ["target"],
+    "SAFE_FOR_TEMPLATES": false
+  },
+  "stylePolicy": {
+    "description": "允许 style 属性，但仅透传常见排版属性；实现时可用 DOMPurify 钩子过滤",
+    "allowedProperties": [
+      "color", "background-color", "background",
+      "font-size", "font-weight", "font-style", "line-height", "text-align", "text-decoration",
+      "margin", "margin-top", "margin-right", "margin-bottom", "margin-left",
+      "padding", "padding-top", "padding-right", "padding-bottom", "padding-left",
+      "border", "border-collapse", "border-spacing", "border-color", "border-width", "border-style",
+      "width", "max-width", "height", "max-height",
+      "display", "vertical-align", "list-style-type"
+    ],
+    "forbiddenValues": ["expression(", "javascript:", "vbscript:"]
+  },
+  "imgPolicy": {
+    "allowedSrc": [
+      "用户上传图：upload://* 或会话绑定的同源 URL",
+      "data:image/* 仅当来自用户裁剪/粘贴（可选关闭）"
+    ],
+    "forbidExternalHotlink": true,
+    "requireAlt": true
+  },
+  "agentPromptRules": [
+    "生成 HTML 时仅使用白名单内标签",
+    "图片 src 使用 imageRef 占位或会话已知 URL，禁止随机外链",
+    "禁止 script、iframe、事件属性",
+    "表格用于参数与对比，保持 thead/tbody 结构",
+    "简体中文正文"
+  ]
+}

@@ -1,0 +1,242 @@
+{
+  "version": "2.0.0",
+  "source": "标准材料/行业产品详情页内容结构标准.md",
+  "derivedFrom": "specLibrary/generated.json",
+  "generatedAt": "2026-06-18T05:39:13.697Z",
+  "scope": "user-agent-content-ab-only",
+  "description": "200 行行业未命中时的 7 类母版回退",
+  "templateCount": 7,
+  "templates": {
+    "机械设备": {
+      "industryType": "机械设备",
+      "industryCount": 61,
+      "contentModuleIds": [
+        1,
+        0,
+        5,
+        100
+      ],
+      "contentModules": [],
+      "industryHints": {
+        "compliance": [
+          "不得编造 CE/ISO 等认证号与检测数据",
+          "无法从图片或用户输入确认的参数须标注「待补充」或「待核对官方规格」",
+          "展示ISO、CE等认证，第三方检测数据",
+          "列出操作安全规范、防护装置"
+        ],
+        "suggestedTopics": [
+          "产品规格参数表",
+          "产品功能/性能介绍",
+          "应用场景/使用案例",
+          "技术原理/工艺流程",
+          "质量认证/检测报告",
+          "包装与物流信息",
+          "安装/使用指南",
+          "常见问题FAQ",
+          "对比优势/竞品分析",
+          "安全注意事项"
+        ],
+        "tone": "B2B 专业、简体中文",
+        "htmlLayoutNote": "章节顺序与是否使用表格/列表由 AI 按布局合理性实时决定，知识库不预制 htmlOutline"
+      },
+      "_v1LegacyModuleCount": 17
+    },
+    "材料化工": {
+      "industryType": "材料化工",
+      "industryCount": 38,
+      "contentModuleIds": [
+        1,
+        0,
+        5,
+        100
+      ],
+      "contentModules": [],
+      "industryHints": {
+        "compliance": [
+          "不得编造 CE/ISO 等认证号与检测数据",
+          "无法从图片或用户输入确认的参数须标注「待补充」或「待核对官方规格」",
+          "COA、MSDS、第三方检测、ISO",
+          "MSDS、防护措施、应急处理"
+        ],
+        "suggestedTopics": [
+          "产品规格参数表",
+          "产品功能/性能介绍",
+          "应用场景/使用案例",
+          "技术原理/工艺流程",
+          "质量认证/检测报告",
+          "包装与物流信息",
+          "常见问题FAQ",
+          "对比优势/竞品分析",
+          "安全注意事项",
+          "技术文档下载"
+        ],
+        "tone": "B2B 专业、简体中文",
+        "htmlLayoutNote": "章节顺序与是否使用表格/列表由 AI 按布局合理性实时决定，知识库不预制 htmlOutline"
+      },
+      "_v1LegacyModuleCount": 16
+    },
+    "消费品食品": {
+      "industryType": "消费品食品",
+      "industryCount": 35,
+      "contentModuleIds": [
+        1,
+        0,
+        5,
+        100
+      ],
+      "contentModules": [],
+      "industryHints": {
+        "compliance": [
+          "不得编造 CE/ISO 等认证号与检测数据",
+          "无法从图片或用户输入确认的参数须标注「待补充」或「待核对官方规格」",
+          "食品许可证、有机认证、质检报告",
+          "过敏原、食用禁忌"
+        ],
+        "suggestedTopics": [
+          "产品规格参数表",
+          "产品功能/性能介绍",
+          "应用场景/使用案例",
+          "技术原理/工艺流程",
+          "质量认证/检测报告",
+          "包装与物流信息",
+          "常见问题FAQ",
+          "对比优势/竞品分析",
+          "安全注意事项",
+          "营养成分/成分说明"
+        ],
+        "tone": "B2B 专业、简体中文",
+        "htmlLayoutNote": "章节顺序与是否使用表格/列表由 AI 按布局合理性实时决定，知识库不预制 htmlOutline"
+      },
+      "_v1LegacyModuleCount": 14
+    },
+    "家居建材": {
+      "industryType": "家居建材",
+      "industryCount": 9,
+      "contentModuleIds": [
+        1,
+        0,
+        5,
+        100
+      ],
+      "contentModules": [],
+      "industryHints": {
+        "compliance": [
+          "不得编造 CE/ISO 等认证号与检测数据",
+          "无法从图片或用户输入确认的参数须标注「待补充」或「待核对官方规格」",
+          "环保检测（甲醛）、材质检测",
+          "安装安全、承重限制、儿童安全"
+        ],
+        "suggestedTopics": [
+          "产品规格参数表",
+          "产品功能/性能介绍",
+          "应用场景/使用案例",
+          "技术原理/工艺流程",
+          "质量认证/检测报告",
+          "包装与物流信息",
+          "安装/使用指南",
+          "常见问题FAQ",
+          "对比优势/竞品分析",
+          "安全注意事项"
+        ],
+        "tone": "B2B 专业、简体中文",
+        "htmlLayoutNote": "章节顺序与是否使用表格/列表由 AI 按布局合理性实时决定，知识库不预制 htmlOutline"
+      },
+      "_v1LegacyModuleCount": 16
+    },
+    "服务类": {
+      "industryType": "服务类",
+      "industryCount": 34,
+      "contentModuleIds": [
+        1,
+        0,
+        5,
+        100
+      ],
+      "contentModules": [],
+      "industryHints": {
+        "compliance": [
+          "不得编造 CE/ISO 等认证号与检测数据",
+          "无法从图片或用户输入确认的参数须标注「待补充」或「待核对官方规格」",
+          "机构资质、人员资格、行业认可",
+          "数据保密、信息安全、合规"
+        ],
+        "suggestedTopics": [
+          "产品规格参数表",
+          "产品功能/性能介绍",
+          "应用场景/使用案例",
+          "技术原理/工艺流程",
+          "质量认证/检测报告",
+          "安装/使用指南",
+          "常见问题FAQ",
+          "对比优势/竞品分析",
+          "安全注意事项",
+          "技术文档下载"
+        ],
+        "tone": "B2B 专业、简体中文",
+        "htmlLayoutNote": "章节顺序与是否使用表格/列表由 AI 按布局合理性实时决定，知识库不预制 htmlOutline"
+      },
+      "_v1LegacyModuleCount": 15
+    },
+    "其他": {
+      "industryType": "其他",
+      "industryCount": 8,
+      "contentModuleIds": [
+        1,
+        0,
+        5,
+        100
+      ],
+      "contentModules": [],
+      "industryHints": {
+        "compliance": [
+          "不得编造 CE/ISO 等认证号与检测数据",
+          "无法从图片或用户输入确认的参数须标注「待补充」或「待核对官方规格」"
+        ],
+        "suggestedTopics": [
+          "产品概述",
+          "核心参数",
+          "应用场景",
+          "使用说明",
+          "注意事项"
+        ],
+        "tone": "B2B 专业、简体中文",
+        "htmlLayoutNote": "章节顺序与是否使用表格/列表由 AI 按布局合理性实时决定，知识库不预制 htmlOutline"
+      },
+      "_v1LegacyModuleCount": 1
+    },
+    "电子电气": {
+      "industryType": "电子电气",
+      "industryCount": 15,
+      "contentModuleIds": [
+        1,
+        0,
+        5,
+        100
+      ],
+      "contentModules": [],
+      "industryHints": {
+        "compliance": [
+          "不得编造 CE/ISO 等认证号与检测数据",
+          "无法从图片或用户输入确认的参数须标注「待补充」或「待核对官方规格」",
+          "AEC-Q100/Q200、RoHS、REACH、可靠性报告",
+          "ESD防护、操作规范"
+        ],
+        "suggestedTopics": [
+          "产品规格参数表",
+          "产品功能/性能介绍",
+          "应用场景/使用案例",
+          "技术原理/工艺流程",
+          "质量认证/检测报告",
+          "包装与物流信息",
+          "安装/使用指南",
+          "常见问题FAQ",
+          "对比优势/竞品分析",
+          "安全注意事项"
+        ],
+        "tone": "B2B 专业、简体中文",
+        "htmlLayoutNote": "章节顺序与是否使用表格/列表由 AI 按布局合理性实时决定，知识库不预制 htmlOutline"
+      },
+      "_v1LegacyModuleCount": 16
+    }
+  }
+}

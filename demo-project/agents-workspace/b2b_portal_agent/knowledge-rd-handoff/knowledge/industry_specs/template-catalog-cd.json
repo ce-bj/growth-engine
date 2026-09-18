@@ -1,0 +1,56 @@
+{
+  "version": "2.0.0",
+  "scope": "template-prefab-cd-only",
+  "description": "C/D 层预制组件注册表。由页面模板 manifest 引用；运营助手不生成、不覆盖此处定义的业务数据。",
+  "agentScope": "none",
+  "layerC": {
+    "description": "独立应用组件 — 数据来自 CMS",
+    "apps": [
+      {
+        "cmsAppKey": "breadcrumb",
+        "appName": "面包屑导航",
+        "contentLayer": "C",
+        "agentScope": "template-only",
+        "defaultPlacement": "header",
+        "defaultVariant": "inline-light",
+        "dataBinding": { "source": "cms", "cmsAppKey": "breadcrumb" }
+      },
+      {
+        "cmsAppKey": "inquiry-form",
+        "appName": "询价表单",
+        "contentLayer": "C",
+        "agentScope": "template-only",
+        "defaultPlacement": "footer-cta",
+        "defaultVariant": "split-form-industrial",
+        "dataBinding": { "source": "cms", "cmsAppKey": "inquiry-form" }
+      },
+      {
+        "cmsAppKey": "enterprise-profile",
+        "appName": "企业概况",
+        "contentLayer": "C",
+        "agentScope": "template-only",
+        "defaultPlacement": "pre-footer",
+        "defaultVariant": "trust-bar-compact",
+        "dataBinding": { "source": "cms", "cmsAppKey": "enterprise-profile" }
+      }
+    ]
+  },
+  "layerD": {
+    "description": "衍生推荐区块 — 数据来自产品库关联 API",
+    "blocks": [
+      {
+        "blockId": "related-products",
+        "blockName": "同系列与配套推荐",
+        "contentLayer": "D",
+        "agentScope": "template-only",
+        "defaultPlacement": "post-content",
+        "defaultVariant": "card-grid-3col",
+        "dataBinding": {
+          "source": "product-relation",
+          "rule": "same-series",
+          "limit": 3
+        }
+      }
+    ]
+  }
+}

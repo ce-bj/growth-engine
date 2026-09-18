@@ -1,0 +1,140 @@
+{
+  "capturedAt": "2026-09-11",
+  "desktopVersion": "0.22.2",
+  "strategyVersion": "2.0.4",
+  "upstreamCommit": "73953213a6fec2c8092e8e77d229a3074aa828a9",
+  "upstreamTag": "open-design-v0.22.2",
+  "scope": "Reference snapshot, not runnable engine; source-excerpts contains selected complete source files, not their dependency tree.",
+  "files": [
+    {
+      "path": "upstream/plugins/_official/scenarios/od-next-strategy/open-design.json",
+      "source": "/Applications/Open Design.app/Contents/Resources/open-design/plugins/_official/scenarios/od-next-strategy/open-design.json",
+      "sha256": "b187bee4147eeb09d607d150a797399bd6bfa136dd9c43fe0e473e8b8047cd11"
+    },
+    {
+      "path": "upstream/plugins/_official/scenarios/od-next-strategy/SKILL.md",
+      "source": "/Applications/Open Design.app/Contents/Resources/open-design/plugins/_official/scenarios/od-next-strategy/SKILL.md",
+      "sha256": "1f54abb3dada7044a84c1209737c0ea41ee4031d932865685c9e6fa9e1fd7ffb"
+    },
+    {
+      "path": "upstream/plugins/_official/scenarios/od-next-strategy/assets/core-system-prompt.md",
+      "source": "/Applications/Open Design.app/Contents/Resources/open-design/plugins/_official/scenarios/od-next-strategy/assets/core-system-prompt.md",
+      "sha256": "9a06c99284a4830ad51cc30053b7b0eea4f2abee2010284d494e32cb7af290ed"
+    },
+    {
+      "path": "upstream/plugins/_official/scenarios/od-next-strategy/assets/general-orchestration.md",
+      "source": "/Applications/Open Design.app/Contents/Resources/open-design/plugins/_official/scenarios/od-next-strategy/assets/general-orchestration.md",
+      "sha256": "d2104643f9a15c5eb22fa7ddb92ef2416defece880156271624c43642838466a"
+    },
+    {
+      "path": "upstream/plugins/_official/scenarios/od-next-strategy/assets/task-profiles/prototype.md",
+      "source": "/Applications/Open Design.app/Contents/Resources/open-design/plugins/_official/scenarios/od-next-strategy/assets/task-profiles/prototype.md",
+      "sha256": "aba5cb7c5e1a90cd898c3bf784492c487cdde5d94a97b64bf02efeba14d51d38"
+    },
+    {
+      "path": "upstream/plugins/_official/scenarios/od-next-strategy/assets/task-profiles/marketing.md",
+      "source": "/Applications/Open Design.app/Contents/Resources/open-design/plugins/_official/scenarios/od-next-strategy/assets/task-profiles/marketing.md",
+      "sha256": "fb9bb1b6e3a402bf431a743868149410f5ca4713bf8833c91f5ffe947dfc7767"
+    },
+    {
+      "path": "upstream/plugins/_official/scenarios/od-next-strategy/references/task-profile-mapping.md",
+      "source": "/Applications/Open Design.app/Contents/Resources/open-design/plugins/_official/scenarios/od-next-strategy/references/task-profile-mapping.md",
+      "sha256": "f600afa816f44745778c17133105a126489777fe5d8228b59d519ec4b4ff723a"
+    },
+    {
+      "path": "upstream/plugins/_official/scenarios/od-next-strategy/assets/task-profiles/prototype/layout.css",
+      "source": "/Applications/Open Design.app/Contents/Resources/open-design/plugins/_official/scenarios/od-next-strategy/assets/task-profiles/prototype/layout.css",
+      "sha256": "d97bf66fb7da23fd06cd2aca185462a1f6c6d6b022052383267fe39f1377cc15"
+    },
+    {
+      "path": "upstream/plugins/_official/scenarios/od-next-strategy/assets/task-profiles/prototype/device-frames/iphone.html",
+      "source": "/Applications/Open Design.app/Contents/Resources/open-design/plugins/_official/scenarios/od-next-strategy/assets/task-profiles/prototype/device-frames/iphone.html",
+      "sha256": "8f0b4a36904760020a5edf0510d73e05c005ea3eb59a66b852ce05f40c89b1a5"
+    },
+    {
+      "path": "upstream/plugins/_official/scenarios/od-next-strategy/assets/task-profiles/prototype/device-frames/android.html",
+      "source": "/Applications/Open Design.app/Contents/Resources/open-design/plugins/_official/scenarios/od-next-strategy/assets/task-profiles/prototype/device-frames/android.html",
+      "sha256": "af7526ddc73139f55979e3ec7912855ccfaa6fe73cfdddcf592faba4ebce2ff7"
+    },
+    {
+      "path": "upstream/plugins/_official/scenarios/od-next-strategy/assets/task-profiles/prototype/device-frames/neutral.html",
+      "source": "/Applications/Open Design.app/Contents/Resources/open-design/plugins/_official/scenarios/od-next-strategy/assets/task-profiles/prototype/device-frames/neutral.html",
+      "sha256": "b7c6fa62da365016f889f2a85e1420d50a77a9e770f4e9d27ad2e953479f4cf4"
+    },
+    {
+      "path": "upstream/skills/od-next-media-inputs/SKILL.md",
+      "source": "/Applications/Open Design.app/Contents/Resources/open-design/skills/od-next-media-inputs/SKILL.md",
+      "sha256": "946a71a61a9536bfe99d1607d4327bfd5c475d7e36272d76c2b66b958bf262ad"
+    },
+    {
+      "path": "upstream/plugins/_official/atoms/discovery-question-form/SKILL.md",
+      "source": "/Applications/Open Design.app/Contents/Resources/open-design/plugins/_official/atoms/discovery-question-form/SKILL.md",
+      "sha256": "bf66980e3bcd1bfce2f081fdaf5c78982ea4257d9891c8260d5f41690a7706ed"
+    },
+    {
+      "path": "upstream/plugins/_official/atoms/direction-picker/SKILL.md",
+      "source": "/Applications/Open Design.app/Contents/Resources/open-design/plugins/_official/atoms/direction-picker/SKILL.md",
+      "sha256": "9e24489a0b8be69986e517cfc0abdd07da52c5249c3d3369112d1d40d52f2e33"
+    },
+    {
+      "path": "upstream/plugins/_official/atoms/todo-write/SKILL.md",
+      "source": "/Applications/Open Design.app/Contents/Resources/open-design/plugins/_official/atoms/todo-write/SKILL.md",
+      "sha256": "de0da70a25a35e4401b1c0027ef16b465f3ec18ec05a6fb874e6ddacc2c5ac7e"
+    },
+    {
+      "path": "source-excerpts/LICENSE",
+      "source": "https://github.com/nexu-io/open-design/blob/73953213a6fec2c8092e8e77d229a3074aa828a9/LICENSE",
+      "sha256": "9d95806a26532623360eb84bb17d298f394b55ef73fb4c0796d99b4319b2b0da"
+    },
+    {
+      "path": "source-excerpts/apps/daemon/src/strategies/od-next/protocol.ts",
+      "source": "https://github.com/nexu-io/open-design/blob/73953213a6fec2c8092e8e77d229a3074aa828a9/apps/daemon/src/strategies/od-next/protocol.ts",
+      "sha256": "56d0400a0a73ff8fca927dac52b9eeaa2dbc9b78fd4ad27ba530178073d7f8cf"
+    },
+    {
+      "path": "source-excerpts/apps/daemon/src/strategies/od-next/automatic-simple-production.ts",
+      "source": "https://github.com/nexu-io/open-design/blob/73953213a6fec2c8092e8e77d229a3074aa828a9/apps/daemon/src/strategies/od-next/automatic-simple-production.ts",
+      "sha256": "ed6e96a459affb37cefd477d6b6337b6e4fec22fd72f97abc8f837228603bcb4"
+    },
+    {
+      "path": "source-excerpts/apps/daemon/src/run-deliverable-validation.ts",
+      "source": "https://github.com/nexu-io/open-design/blob/73953213a6fec2c8092e8e77d229a3074aa828a9/apps/daemon/src/run-deliverable-validation.ts",
+      "sha256": "0b95e09d99012bdf8b4ea749de7da3a84733ef6ca642b052ba9e6bb91494ba06"
+    },
+    {
+      "path": "source-excerpts/packages/contracts/src/prompts/od-next-prompt-bundle-v2.ts",
+      "source": "https://github.com/nexu-io/open-design/blob/73953213a6fec2c8092e8e77d229a3074aa828a9/packages/contracts/src/prompts/od-next-prompt-bundle-v2.ts",
+      "sha256": "f3d8ea93dd54f2acc2331f78269006ed30eee4804f13f663a564d2819363b540"
+    },
+    {
+      "path": "source-excerpts/apps/daemon/src/strategies/od-next/task-input-snapshot.ts",
+      "source": "https://github.com/nexu-io/open-design/blob/73953213a6fec2c8092e8e77d229a3074aa828a9/apps/daemon/src/strategies/od-next/task-input-snapshot.ts",
+      "sha256": "ae1929f74fbdabe4586206d56e6ae161f5e9c68750101df2d0f95daeb6d2e684"
+    },
+    {
+      "path": "source-excerpts/packages/contracts/src/prompts/od-next-strategy.ts",
+      "source": "https://github.com/nexu-io/open-design/blob/73953213a6fec2c8092e8e77d229a3074aa828a9/packages/contracts/src/prompts/od-next-strategy.ts",
+      "sha256": "d02911f5f782879bcbf190c620354d793aa6c542b7602c477297051cb34455de"
+    },
+    {
+      "path": "source-excerpts/apps/daemon/src/strategies/od-next/resolver.ts",
+      "source": "https://github.com/nexu-io/open-design/blob/73953213a6fec2c8092e8e77d229a3074aa828a9/apps/daemon/src/strategies/od-next/resolver.ts",
+      "sha256": "7ff03c730b092a0ea12257043899e18463e9fe5d75a18c3dd2bea95e0f787127"
+    },
+    {
+      "path": "source-excerpts/apps/daemon/src/agent-protocol/codex-app-server/session.ts",
+      "source": "https://github.com/nexu-io/open-design/blob/73953213a6fec2c8092e8e77d229a3074aa828a9/apps/daemon/src/agent-protocol/codex-app-server/session.ts",
+      "sha256": "b722e061ce188d89f012c82c46c59714c288b12ea8969a63d0dfb5d523546b40"
+    },
+    {
+      "path": "source-excerpts/apps/daemon/src/strategies/od-next/coordinator.ts",
+      "source": "https://github.com/nexu-io/open-design/blob/73953213a6fec2c8092e8e77d229a3074aa828a9/apps/daemon/src/strategies/od-next/coordinator.ts",
+      "sha256": "0064ab89b03755f6168ff4b364ccad139c7942b8393cf0635128f0612eea6052"
+    },
+    {
+      "path": "source-excerpts/apps/daemon/src/strategies/od-next/initial-prompt-bundle-service.ts",
+      "source": "https://github.com/nexu-io/open-design/blob/73953213a6fec2c8092e8e77d229a3074aa828a9/apps/daemon/src/strategies/od-next/initial-prompt-bundle-service.ts",
+      "sha256": "4b4655570e333ab7c9618a490d1256fc6b0469e572a14ea34495915d41213972"
+    }
+  ]
+}

@@ -1,0 +1,608 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>新增产品 - 数字门户</title>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/quill/2.0.2/quill.snow.min.css" rel="stylesheet">
+<style>
+  *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif; background: #f0f2f5; color: #333; font-size: 14px; line-height: 1.6; }
+
+  /* ── Top Nav ── */
+  .top-nav { height: 48px; background: #001529; display: flex; align-items: center; padding: 0 20px; gap: 24px; position: fixed; top: 0; left: 0; right: 0; z-index: 100; }
+  .top-nav .logo { color: #fff; font-size: 16px; font-weight: 600; letter-spacing: 1px; }
+  .top-nav .nav-items { display: flex; gap: 4px; }
+  .top-nav .nav-items a { color: rgba(255,255,255,0.65); text-decoration: none; padding: 12px 16px; font-size: 14px; border-radius: 4px; transition: all 0.2s; }
+  .top-nav .nav-items a:hover, .top-nav .nav-items a.active { color: #fff; background: rgba(255,255,255,0.08); }
+  .top-nav .nav-right { margin-left: auto; display: flex; align-items: center; gap: 16px; color: rgba(255,255,255,0.65); font-size: 13px; }
+  .top-nav .model-select { background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.15); color: #fff; padding: 4px 10px; border-radius: 4px; font-size: 12px; }
+  .top-nav .avatar { width: 28px; height: 28px; border-radius: 50%; background: #1890ff; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 12px; font-weight: 600; }
+
+  /* ── Page Header ── */
+  .page-header { height: 50px; background: #fff; border-bottom: 1px solid #e8e8e8; display: flex; align-items: center; padding: 0 24px; margin-top: 48px; position: sticky; top: 48px; z-index: 50; }
+  .page-header .back-btn { color: #1890ff; cursor: pointer; font-size: 14px; display: flex; align-items: center; gap: 4px; }
+  .page-header .back-btn:hover { color: #40a9ff; }
+  .page-header h2 { font-size: 16px; font-weight: 500; margin-left: 16px; color: #333; }
+  .page-header .header-actions { margin-left: auto; display: flex; gap: 8px; }
+  .page-header .header-actions button { padding: 5px 14px; border-radius: 4px; border: 1px solid #d9d9d9; background: #fff; color: #666; font-size: 13px; cursor: pointer; transition: all 0.2s; }
+  .page-header .header-actions button:hover { border-color: #1890ff; color: #1890ff; }
+
+  /* ── Layout ── */
+  .page-body { display: flex; min-height: calc(100vh - 98px); }
+
+  /* ── Left Sidebar ── */
+  .sidebar { width: 300px; background: #fff; border-right: 1px solid #e8e8e8; flex-shrink: 0; display: flex; flex-direction: column; position: sticky; top: 98px; height: calc(100vh - 98px); overflow-y: auto; }
+  .sidebar-tabs { display: flex; border-bottom: 1px solid #e8e8e8; padding: 0; }
+  .sidebar-tabs button { flex: 1; padding: 12px 0; border: none; background: none; font-size: 13px; color: #999; cursor: pointer; position: relative; transition: color 0.2s; }
+  .sidebar-tabs button.active { color: #1890ff; font-weight: 500; }
+  .sidebar-tabs button.active::after { content: ""; position: absolute; bottom: 0; left: 20%; right: 20%; height: 2px; background: #1890ff; border-radius: 1px; }
+  .sidebar-tabs button:hover { color: #1890ff; }
+
+  .sidebar-content { padding: 20px 16px; flex: 1; }
+  .form-group { margin-bottom: 18px; }
+  .form-label { font-size: 13px; color: #666; margin-bottom: 6px; display: flex; align-items: center; gap: 4px; }
+  .form-label .required { color: #ff4d4f; }
+
+  /* Toggle Switch */
+  .toggle { position: relative; display: inline-block; width: 40px; height: 22px; }
+  .toggle input { opacity: 0; width: 0; height: 0; }
+  .toggle .slider { position: absolute; inset: 0; background: #ccc; border-radius: 22px; cursor: pointer; transition: 0.3s; }
+  .toggle .slider::before { content: ""; position: absolute; height: 18px; width: 18px; left: 2px; bottom: 2px; background: #fff; border-radius: 50%; transition: 0.3s; }
+  .toggle input:checked + .slider { background: #1890ff; }
+  .toggle input:checked + .slider::before { transform: translateX(18px); }
+
+  /* Radio */
+  .radio-group { display: flex; flex-direction: column; gap: 8px; }
+  .radio-group label { display: flex; align-items: center; gap: 6px; font-size: 13px; color: #333; cursor: pointer; }
+  .radio-group input[type="radio"] { accent-color: #1890ff; }
+
+  /* Select */
+  .form-select { width: 100%; padding: 7px 10px; border: 1px solid #d9d9d9; border-radius: 4px; font-size: 13px; color: #999; background: #fff; cursor: pointer; appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath d='M3 5l3 3 3-3' fill='none' stroke='%23999' stroke-width='1.5'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 10px center; }
+  .form-select:focus { border-color: #1890ff; outline: none; box-shadow: 0 0 0 2px rgba(24,144,255,0.1); }
+
+  /* Input */
+  .form-input { width: 100%; padding: 7px 10px; border: 1px solid #d9d9d9; border-radius: 4px; font-size: 13px; color: #333; }
+  .form-input:focus { border-color: #1890ff; outline: none; box-shadow: 0 0 0 2px rgba(24,144,255,0.1); }
+
+  .input-with-btn { display: flex; gap: 6px; align-items: center; }
+  .input-with-btn .form-input { flex: 1; }
+  .input-with-btn .btn-sm { padding: 6px 12px; border: 1px solid #d9d9d9; border-radius: 4px; background: #fafafa; color: #666; font-size: 12px; cursor: pointer; white-space: nowrap; }
+  .input-with-btn .btn-sm:hover { border-color: #1890ff; color: #1890ff; }
+
+  .form-textarea { width: 100%; padding: 7px 10px; border: 1px solid #d9d9d9; border-radius: 4px; font-size: 13px; color: #333; resize: vertical; min-height: 60px; }
+  .form-textarea:focus { border-color: #1890ff; outline: none; }
+  .form-hint { font-size: 11px; color: #999; margin-top: 4px; }
+  .form-hint a { color: #1890ff; text-decoration: none; }
+
+  /* Sidebar bottom buttons */
+  .sidebar-bottom { padding: 12px 16px; border-top: 1px solid #e8e8e8; display: flex; gap: 8px; flex-wrap: wrap; background: #fff; }
+  .btn { padding: 7px 18px; border-radius: 4px; font-size: 13px; cursor: pointer; border: 1px solid #d9d9d9; transition: all 0.2s; }
+  .btn-default { background: #fff; color: #666; }
+  .btn-default:hover { border-color: #1890ff; color: #1890ff; }
+  .btn-primary { background: #1890ff; color: #fff; border-color: #1890ff; }
+  .btn-primary:hover { background: #40a9ff; border-color: #40a9ff; }
+  .btn-light { background: #fff; color: #1890ff; border-color: #1890ff; }
+  .btn-light:hover { background: #e6f7ff; }
+
+  /* ── Main Content ── */
+  .main-content { flex: 1; padding: 24px; min-width: 0; }
+  .content-card { background: #fff; border-radius: 4px; padding: 24px; margin-bottom: 20px; box-shadow: 0 1px 2px rgba(0,0,0,0.04); }
+
+  /* Form Row */
+  .form-row { display: flex; gap: 24px; margin-bottom: 20px; align-items: flex-start; }
+  .form-row .form-group { flex: 1; margin-bottom: 0; }
+  .form-row .form-group label { display: block; font-size: 13px; color: #666; margin-bottom: 6px; }
+
+  /* Upload Area */
+  .upload-area { border: 2px dashed #d9d9d9; border-radius: 6px; padding: 32px; text-align: center; color: #999; cursor: pointer; transition: all 0.2s; background: #fafafa; }
+  .upload-area:hover { border-color: #1890ff; color: #1890ff; background: #f0f7ff; }
+  .upload-area .upload-icon { font-size: 32px; margin-bottom: 8px; }
+  .upload-area p { font-size: 13px; }
+
+  .upload-video { width: 120px; height: 80px; border: 2px dashed #d9d9d9; border-radius: 6px; display: flex; align-items: center; justify-content: center; cursor: pointer; background: #fafafa; color: #ccc; font-size: 28px; transition: all 0.2s; }
+  .upload-video:hover { border-color: #1890ff; color: #1890ff; }
+
+  /* Section Header */
+  .section-header { display: flex; align-items: center; gap: 8px; margin-bottom: 20px; padding-bottom: 12px; border-bottom: 1px solid #f0f0f0; }
+  .section-header::before { content: ""; width: 3px; height: 16px; background: #1890ff; border-radius: 2px; }
+  .section-header h3 { font-size: 15px; font-weight: 500; color: #333; }
+
+  /* Quill Editor */
+  .editor-wrapper { border: 1px solid #d9d9d9; border-radius: 4px; overflow: hidden; }
+  .editor-toolbar-row { display: flex; align-items: center; background: #fafafa; border-bottom: 1px solid #d9d9d9; }
+  .editor-toolbar-row .ql-toolbar { border: none !important; flex: 1; }
+  .editor-extra-btns { display: flex; gap: 6px; padding-right: 10px; }
+  .editor-extra-btns button { padding: 4px 10px; border: 1px solid #d9d9d9; border-radius: 3px; background: #fff; color: #666; font-size: 12px; cursor: pointer; white-space: nowrap; }
+  .editor-extra-btns button:hover { border-color: #1890ff; color: #1890ff; }
+  .editor-wrapper .ql-container { border: none !important; min-height: 400px; font-size: 14px; }
+  .editor-wrapper .ql-editor { min-height: 400px; line-height: 1.8; }
+  .editor-wrapper .ql-editor h2 { font-size: 18px; color: #1890ff; border-left: 3px solid #1890ff; padding-left: 10px; margin: 24px 0 12px; }
+  .editor-wrapper .ql-editor h3 { font-size: 16px; color: #333; margin: 20px 0 10px; }
+  .editor-wrapper .ql-editor p { margin: 8px 0; color: #555; }
+  .editor-wrapper .ql-editor table { border-collapse: collapse; width: 100%; margin: 12px 0; }
+  .editor-wrapper .ql-editor table td, .editor-wrapper .ql-editor table th { border: 1px solid #e8e8e8; padding: 8px 12px; font-size: 13px; }
+  .editor-wrapper .ql-editor table tr:nth-child(even) { background: #fafafa; }
+  .editor-wrapper .ql-editor ul, .editor-wrapper .ql-editor ol { padding-left: 20px; margin: 8px 0; }
+  .editor-wrapper .ql-editor li { margin: 4px 0; color: #555; }
+  .editor-wrapper .ql-editor blockquote { border-left: 3px solid #1890ff; padding: 8px 16px; background: #f6f8fa; margin: 12px 0; color: #666; }
+  .detail-btn { display: inline-flex; align-items: center; gap: 4px; padding: 4px 12px; border: 1px solid #d9d9d9; border-radius: 3px; background: #fff; color: #666; font-size: 12px; cursor: pointer; margin-top: 8px; }
+  .detail-btn:hover { border-color: #1890ff; color: #1890ff; }
+
+  /* ── Right Floating Panel ── */
+  .float-panel { position: fixed; right: 0; top: 50%; transform: translateY(-50%); z-index: 90; display: flex; flex-direction: column; gap: 2px; }
+  .float-panel .fp-item { width: 48px; height: 48px; background: #fff; border: 1px solid #e8e8e8; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; font-size: 10px; color: #999; transition: all 0.2s; position: relative; }
+  .float-panel .fp-item:first-child { border-radius: 4px 0 0 0; }
+  .float-panel .fp-item:last-child { border-radius: 0 0 0 4px; }
+  .float-panel .fp-item:hover { background: #f5f5f5; color: #1890ff; }
+  .float-panel .fp-badge { position: absolute; top: 4px; right: 4px; background: #ff4d4f; color: #fff; font-size: 9px; padding: 1px 4px; border-radius: 8px; min-width: 16px; text-align: center; }
+  .float-panel .fp-icon { font-size: 16px; margin-bottom: 2px; }
+
+  /* ── Product Spec Toggle ── */
+  .spec-section { border-top: 1px solid #f0f0f0; padding-top: 16px; margin-top: 16px; }
+  .spec-header { display: flex; align-items: center; justify-content: space-between; cursor: pointer; }
+  .spec-header span { font-size: 13px; color: #666; font-weight: 500; }
+
+  /* ── Responsive ── */
+  @media (max-width: 1200px) {
+    .sidebar { width: 260px; }
+    .main-content { padding: 16px; }
+  }
+
+  /* ── Embed Mode (嵌入右侧面板时隐藏导航和侧栏) ── */
+  body.embed-mode .top-nav { display: none; }
+  body.embed-mode .page-header { display: none; }
+  body.embed-mode .sidebar { display: none; }
+  body.embed-mode .page-body { min-height: 100vh; }
+  body.embed-mode .main-content { padding: 16px; }
+  body.embed-mode { background: #fff; }
+
+  /* ── Content Preview Styles (inside editor) ── */
+  .content-section { margin: 24px 0; }
+  .content-section-title { font-size: 18px; font-weight: 600; color: #1890ff; border-left: 3px solid #1890ff; padding-left: 12px; margin-bottom: 16px; }
+  .overview-box { background: #f9f9f9; border-radius: 6px; padding: 16px 20px; line-height: 1.9; color: #555; font-size: 14px; }
+  .spec-table { width: 100%; border-collapse: collapse; margin: 12px 0; }
+  .spec-table td { padding: 10px 14px; border: 1px solid #eee; font-size: 13px; }
+  .spec-table td:first-child { width: 35%; color: #666; background: #fafafa; font-weight: 500; }
+  .spec-table td:last-child { color: #333; }
+  .spec-table tr:nth-child(even) td:last-child { background: #fcfcfc; }
+  .feature-list { list-style: none; padding: 0; }
+  .feature-list li { position: relative; padding: 6px 0 6px 20px; color: #555; font-size: 14px; line-height: 1.7; }
+  .feature-list li::before { content: "●"; color: #1890ff; position: absolute; left: 0; top: 6px; font-size: 8px; }
+  .scenario-list { list-style: none; padding: 0; counter-reset: scenario; }
+  .scenario-list li { position: relative; padding: 6px 0 6px 24px; color: #555; font-size: 14px; line-height: 1.7; counter-increment: scenario; }
+  .scenario-list li::before { content: counter(scenario) "."; color: #1890ff; position: absolute; left: 0; font-weight: 600; }
+  .install-list { list-style: none; padding: 0; counter-reset: install; }
+  .install-list li { position: relative; padding: 8px 0 8px 28px; color: #555; font-size: 14px; line-height: 1.8; counter-increment: install; }
+  .install-list li::before { content: counter(install); color: #fff; background: #1890ff; position: absolute; left: 0; top: 10px; width: 20px; height: 20px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 600; }
+</style>
+</head>
+<body>
+
+<!-- ═══════ Top Navigation ═══════ -->
+<nav class="top-nav">
+  <span class="logo">数字门户</span>
+  <div class="nav-items">
+    <a href="#">概况</a>
+    <a href="#">网站管理</a>
+    <a href="#">营销管理</a>
+    <a href="#">客户管理</a>
+    <a href="#">数据分析</a>
+    <a href="http://127.0.0.1:5176/">增长工作台</a>
+  </div>
+  <div class="nav-right">
+    <select class="model-select">
+      <option>qwen3.6-plus</option>
+      <option>deepseek-v3</option>
+    </select>
+    <span>中企业测试有限公司</span>
+    <div class="avatar">张</div>
+  </div>
+</nav>
+
+<!-- ═══════ Page Header ═══════ -->
+<div class="page-header">
+  <span class="back-btn">← 返回</span>
+  <h2>新增产品</h2>
+  <div class="header-actions">
+    <button>切换全览模式</button>
+    <button>手机视图</button>
+  </div>
+</div>
+
+<!-- ═══════ Body ═══════ -->
+<div class="page-body">
+
+  <!-- ─── Left Sidebar ─── -->
+  <aside class="sidebar">
+    <div class="sidebar-tabs">
+      <button class="active" onclick="switchTab(this, 'settings')">设置</button>
+      <button onclick="switchTab(this, 'seo')">SEO</button>
+      <button onclick="switchTab(this, 'tags')">标签</button>
+      <button onclick="switchTab(this, 'related')">相关</button>
+    </div>
+
+    <!-- Settings Tab -->
+    <div class="sidebar-content" id="tab-settings">
+      <div class="form-group">
+        <div class="form-label">显示状态</div>
+        <label class="toggle"><input type="checkbox" checked><span class="slider"></span></label>
+      </div>
+
+      <div class="form-group">
+        <div class="form-label">发布时间</div>
+        <div class="radio-group">
+          <label><input type="radio" name="pubtime" checked> 立即发布</label>
+          <label><input type="radio" name="pubtime"> 定时发布</label>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <div class="form-label">浏览量</div>
+        <div class="input-with-btn">
+          <input class="form-input" type="number" value="1000">
+          <button class="btn-sm" onclick="this.previousElementSibling.value = Math.floor(Math.random()*9000+1000)">随机</button>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <div class="form-label">产品展示页面</div>
+        <select class="form-select"><option>请选择PC站展示页面</option></select>
+        <select class="form-select" style="margin-top:6px"><option>请选择H5站展示页面</option></select>
+      </div>
+
+      <div class="form-group">
+        <div class="form-label">会员权限</div>
+        <div class="radio-group">
+          <label><input type="radio" name="perm" checked> 全部访客</label>
+          <label><input type="radio" name="perm"> 指定访客</label>
+        </div>
+        <div class="form-hint">以下访客可以查看此内容</div>
+      </div>
+
+      <div class="form-group">
+        <div class="form-label">概要描述</div>
+        <textarea class="form-textarea" placeholder="请输入概要描述"></textarea>
+        <div class="form-hint"><a href="#">从富文本获取</a></div>
+      </div>
+
+      <div class="form-group">
+        <div class="form-label">所属橱窗</div>
+        <select class="form-select"><option>请选择</option></select>
+      </div>
+
+      <div class="form-group">
+        <div class="form-label">所属标记</div>
+        <select class="form-select"><option>请选择</option></select>
+      </div>
+
+      <div class="form-group">
+        <div class="form-label">所属品牌</div>
+        <select class="form-select"><option>请选择</option></select>
+      </div>
+
+      <div class="spec-section">
+        <div class="spec-header">
+          <span>产品规格</span>
+          <span style="font-size:12px;color:#999">▼</span>
+        </div>
+        <div style="margin-top:10px">
+          <div class="form-label" style="display:flex;align-items:center;justify-content:space-between">
+            <span>开启规格</span>
+            <label class="toggle"><input type="checkbox"><span class="slider"></span></label>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SEO Tab (hidden) -->
+    <div class="sidebar-content" id="tab-seo" style="display:none">
+      <div class="form-group">
+        <div class="form-label">SEO 标题</div>
+        <input class="form-input" placeholder="请输入 SEO 标题">
+      </div>
+      <div class="form-group">
+        <div class="form-label">SEO 关键词</div>
+        <input class="form-input" placeholder="请输入关键词，多个用逗号分隔">
+      </div>
+      <div class="form-group">
+        <div class="form-label">SEO 描述</div>
+        <textarea class="form-textarea" placeholder="请输入 SEO 描述"></textarea>
+      </div>
+    </div>
+
+    <!-- Tags Tab (hidden) -->
+    <div class="sidebar-content" id="tab-tags" style="display:none">
+      <div class="form-group">
+        <div class="form-label">产品标签</div>
+        <input class="form-input" placeholder="输入标签后回车添加">
+      </div>
+    </div>
+
+    <!-- Related Tab (hidden) -->
+    <div class="sidebar-content" id="tab-related" style="display:none">
+      <div class="form-group">
+        <div class="form-label">相关产品</div>
+        <input class="form-input" placeholder="搜索并关联产品">
+      </div>
+    </div>
+
+    <!-- Sidebar Bottom Buttons -->
+    <div class="sidebar-bottom">
+      <button class="btn btn-default">取消</button>
+      <button class="btn btn-default">存为草稿</button>
+      <button class="btn btn-primary" style="flex:1">发布 ▾</button>
+      <button class="btn btn-light">预览</button>
+    </div>
+  </aside>
+
+  <!-- ─── Main Content ─── -->
+  <div class="main-content">
+
+    <!-- Card 1: Product Meta -->
+    <div class="content-card">
+      <div class="form-row">
+        <div class="form-group">
+          <label>产品类型</label>
+          <select class="form-select"><option>普通商品</option></select>
+        </div>
+        <div class="form-group">
+          <label>产品分类 <span class="required">*</span></label>
+          <select class="form-select"><option>请选择</option></select>
+          <div class="form-hint" style="color:#ff4d4f">分类为必填项 &nbsp; <a href="#" style="color:#1890ff">新增分类</a></div>
+        </div>
+        <div class="form-group">
+          <label>所属模板</label>
+          <select class="form-select"><option>默认属性类型</option></select>
+        </div>
+      </div>
+    </div>
+
+    <!-- Card 2: Basic Info -->
+    <div class="content-card">
+      <div class="section-header"><h3>基本信息</h3></div>
+
+      <div class="form-group">
+        <div class="form-label"><span class="required">*</span> 产品名称</div>
+        <input class="form-input" value="豆包·球阀产品" style="max-width:500px">
+      </div>
+
+      <div class="form-row" style="margin-top:20px">
+        <div class="form-group">
+          <label>产品图片</label>
+          <div class="upload-area">
+            <div class="upload-icon">📁</div>
+            <p>可将本地文件拖到此处上传</p>
+          </div>
+        </div>
+        <div class="form-group" style="max-width:200px">
+          <label>产品视频</label>
+          <div class="upload-video">🎬</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Card 3: Extended Info -->
+    <div class="content-card">
+      <div class="section-header"><h3>扩展信息</h3></div>
+
+      <div class="form-group">
+        <div class="form-label">产品附件</div>
+        <div style="display:flex;gap:12px;align-items:flex-start">
+          <div class="upload-area" style="flex:1;padding:20px">
+            <div class="upload-icon" style="font-size:24px">📎</div>
+            <p>可将本地文件拖到此处上传</p>
+          </div>
+          <button class="btn btn-primary" style="margin-top:8px">添加文件</button>
+        </div>
+      </div>
+
+      <div class="form-group" style="margin-top:24px">
+        <div class="form-label" style="margin-bottom:10px">产品描述</div>
+
+        <!-- Quill Rich Text Editor -->
+        <div class="editor-wrapper">
+          <div class="editor-toolbar-row">
+            <div id="toolbar">
+              <span class="ql-formats">
+                <select class="ql-header">
+                  <option value="1"></option>
+                  <option value="2"></option>
+                  <option value="3"></option>
+                  <option selected></option>
+                </select>
+                <select class="ql-size">
+                  <option value="12px"></option>
+                  <option selected value="14px"></option>
+                  <option value="16px"></option>
+                  <option value="18px"></option>
+                </select>
+              </span>
+              <span class="ql-formats">
+                <button class="ql-bold"></button>
+                <button class="ql-italic"></button>
+                <button class="ql-underline"></button>
+                <button class="ql-strike"></button>
+              </span>
+              <span class="ql-formats">
+                <select class="ql-color"></select>
+                <select class="ql-background"></select>
+              </span>
+              <span class="ql-formats">
+                <button class="ql-list" value="ordered"></button>
+                <button class="ql-list" value="bullet"></button>
+                <select class="ql-align"></select>
+              </span>
+              <span class="ql-formats">
+                <button class="ql-blockquote"></button>
+                <button class="ql-code-block"></button>
+              </span>
+              <span class="ql-formats">
+                <button class="ql-link"></button>
+                <button class="ql-image"></button>
+                <button class="ql-video"></button>
+              </span>
+              <span class="ql-formats">
+                <button class="ql-table"></button>
+                <button class="ql-clean"></button>
+              </span>
+            </div>
+            <div class="editor-extra-btns">
+              <button>切换全览模式</button>
+              <button>手机视图</button>
+            </div>
+          </div>
+          <div id="editor">
+            <!-- Default placeholder content -->
+          </div>
+        </div>
+        <button class="detail-btn">📄 详情</button>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ─── Right Floating Panel ─── -->
+<div class="float-panel">
+  <div class="fp-item">
+    <div style="width:24px;height:24px;border-radius:50%;background:#1890ff;display:flex;align-items:center;justify-content:center;color:#fff;font-size:11px;font-weight:600;margin-bottom:2px">张</div>
+    <span style="font-size:9px">在线</span>
+  </div>
+  <div class="fp-item">
+    <span class="fp-badge">99+</span>
+    <span class="fp-icon">💬</span>
+    <span>业务</span>
+  </div>
+  <div class="fp-item">
+    <span class="fp-icon">❓</span>
+    <span>帮助</span>
+  </div>
+  <div class="fp-item">
+    <span class="fp-icon">↑</span>
+    <span>回顶</span>
+  </div>
+  <div class="fp-item">
+    <span class="fp-icon">›</span>
+  </div>
+</div>
+
+<!-- ═══════ Scripts ═══════ -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/quill/2.0.2/quill.min.js"></script>
+<script>
+// ── Tab switching ──
+function switchTab(btn, tabId) {
+  document.querySelectorAll('.sidebar-tabs button').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  document.querySelectorAll('.sidebar-content').forEach(el => el.style.display = 'none');
+  document.getElementById('tab-' + tabId).style.display = 'block';
+}
+
+// ── Quill Editor ──
+const quill = new Quill('#editor', {
+  modules: {
+    toolbar: '#toolbar',
+    table: true,
+  },
+  theme: 'snow',
+  placeholder: '在此编辑产品详情内容…\n\n支持直接粘贴 HTML 或通过 API 注入内容。',
+});
+
+// Expose quill globally for external HTML injection
+window.productEditor = quill;
+
+// ── Helper: inject HTML content into the editor ──
+window.injectProductHTML = function(html) {
+  const delta = quill.clipboard.convert({ html: html });
+  quill.setContents(delta, 'api');
+};
+
+// ── Helper: get current HTML content ──
+window.getProductHTML = function() {
+  return quill.root.innerHTML;
+};
+
+// ── Demo: load sample content ──
+window.loadDemoContent = function() {
+  const html = `
+    <h2>| 产品概述</h2>
+    <div class="overview-box">
+      <p>本款球阀为奇高阀门出品的两片式内螺纹黄铜球阀，采用优质HPb59-1黄铜精密锻造，配备手动限位手柄，具备开关轻便、密封可靠、流体阻力小、安装便捷等特点。产品符合通用阀门制造标准，可广泛用于给排水、暖通、燃气等管路系统，实现管路介质的截断与接通控制。</p>
+    </div>
+
+    <h2>| 技术参数</h2>
+    <table>
+      <tr><td>产品品牌</td><td>奇高阀门 QIGAO VALVE</td></tr>
+      <tr><td>公称通径</td><td>DN20（6分）</td></tr>
+      <tr><td>公称压力</td><td>PN16（1.6MPa）</td></tr>
+      <tr><td>阀体材质</td><td>HPb59-1铅黄铜</td></tr>
+      <tr><td>连接方式</td><td>内螺纹连接</td></tr>
+      <tr><td>结构形式</td><td>两片式浮动球结构</td></tr>
+      <tr><td>适用介质</td><td>水、燃气、油品、非腐蚀性流体</td></tr>
+      <tr><td>适用温度</td><td>-20°C ~ 120°C</td></tr>
+      <tr><td>驱动方式</td><td>手动手柄驱动</td></tr>
+    </table>
+
+    <h2>| 核心特点</h2>
+    <ul>
+      <li>HPb59-1黄铜精密锻造，耐腐蚀、强度高、使用寿命长</li>
+      <li>两片式浮动球结构，密封性能可靠，开关轻便灵活</li>
+      <li>手动限位手柄，防止误操作，开合状态一目了然</li>
+      <li>内螺纹连接，安装便捷，适配标准管路接口</li>
+      <li>流体阻力小，全通径设计保障介质流畅通过</li>
+    </ul>
+
+    <h2>| 适用场景</h2>
+    <ol>
+      <li>民用住宅、商业建筑给排水管道系统</li>
+      <li>地暖、空调冷热水供应系统</li>
+      <li>天然气、液化气等燃料输送管道</li>
+      <li>工业循环水、污水处理、消防管线系统</li>
+      <li>设备配套、小型化工非腐蚀性流体管路</li>
+    </ol>
+
+    <h2>| 安装与维护须知</h2>
+    <ol>
+      <li>安装前清理管道内部杂物，避免硬质颗粒损伤密封面，影响密封性能。</li>
+      <li>阀门可任意角度安装，但须预留足够的手动操作空间，方便日常启闭和检修。</li>
+      <li>螺纹连接时建议使用生料带或管道密封胶，均匀拧紧，防止渗漏。</li>
+      <li>在额定压力和温度范围内使用，避免在腐蚀性介质上使用，防止阀门损坏。</li>
+      <li>长期使用后如出现渗漏，检查密封件状况，更换标准密封组件即可恢复功能。</li>
+    </ol>
+  `;
+  injectProductHTML(html);
+};
+
+// ── 接收来自主应用的 postMessage 注入内容 ──
+let receivedExternalContent = false;
+window.addEventListener('message', function(event) {
+  if (event.data && event.data.type === 'inject-product-html') {
+    const html = event.data.html;
+    if (html) {
+      injectProductHTML(html);
+      receivedExternalContent = true;
+      console.log('[编辑器] 已从主应用接收并注入 HTML 内容');
+    }
+  }
+});
+
+// Auto-load demo content on page ready (only if no external content expected)
+// 如果 URL 参数含 fromApp=true，则不自动加载示例，等待 postMessage
+const urlParams = new URLSearchParams(window.location.search);
+// embed 模式：嵌入右侧面板时隐藏导航栏和侧栏
+if (urlParams.has('embed')) {
+  document.body.classList.add('embed-mode');
+}
+if (!urlParams.has('fromApp')) {
+  loadDemoContent();
+}
+
+console.log('%c产品编辑页已就绪', 'color: #1890ff; font-size: 14px; font-weight: bold');
+console.log('可用 API:');
+console.log('  window.productEditor          — Quill 实例');
+console.log('  window.injectProductHTML(html) — 注入 HTML 内容');
+console.log('  window.getProductHTML()        — 获取当前 HTML');
+console.log('  window.loadDemoContent()       — 加载示例内容');
+</script>
+</body>
+</html>

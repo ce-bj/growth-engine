@@ -1,0 +1,907 @@
+{
+  "version": "1.2.0",
+  "source": "指标字典与假设方案库.xlsx · 应对方案  ×  测试环境 AI 运营助手 Skill（2026-08-25）",
+  "note": "一期任务说明必须落到可激活的运营助手 Skill。成稿是交接提示词，不是「请去改首屏」这种空话。",
+  "opsclaw_skills": {
+    "product_edit_flow": {
+      "welcome": "帮我修改产品",
+      "need": [
+        "产品详情页 URL",
+        "改法：局部修改 / 按行业规范整页优化 / 上传新图覆盖"
+      ],
+      "can": "按 URL 改已有产品；局部改或按 15 板块重写；确认后 bizId 回写上线",
+      "cannot": "不改文章、不选站分类、不改导航/筛选/表单模块/版式系统"
+    },
+    "image_content_generation": {
+      "welcome": "帮我发布产品",
+      "need": [
+        "产品图片或文字描述，至少一样"
+      ],
+      "can": "生成新产品 title/summary/HTML 定稿",
+      "cannot": "不选站、不发布；无图无描述不能开工"
+    },
+    "product_publish": {
+      "welcome": "帮我发布产品",
+      "need": [
+        "已确认定稿"
+      ],
+      "can": "选站选分类发布已确认的产品稿",
+      "cannot": "不生成、不改写正文"
+    },
+    "content_generation_and_publishing": {
+      "welcome": "帮我发布内容",
+      "need": [
+        "文章主题或关键词"
+      ],
+      "can": "生成并发布文章（非产品）",
+      "cannot": "不改已有产品详情"
+    },
+    "content_product_edit_flow": {
+      "welcome": "帮我修改内容",
+      "need": [
+        "文章页 URL",
+        "具体怎么改"
+      ],
+      "can": "按 URL 改已有文章正文；默认不改标题摘要",
+      "cannot": "改产品应走 product_edit_flow；不改导航版式"
+    },
+    "ai_publish_plan": {
+      "welcome": "帮我创建发布内容计划",
+      "need": [
+        "主题",
+        "关键词",
+        "多少天发布一次",
+        "发布到哪个网站"
+      ],
+      "can": "按主题扩词后周期发文章",
+      "cannot": "不改已有页面、不发产品"
+    },
+    "smart_landing_page": {
+      "welcome": "帮我生成智能营销页",
+      "need": [
+        "目标网站",
+        "页面类型 1-5",
+        "公司/行业/产品/卖点/买家/联系方式"
+      ],
+      "can": "新生成营销落地页/留资页（异步）",
+      "cannot": "不能按 URL 修改已有营销页；未购买 smart-page 应用会劝退"
+    },
+    "find_and_replace": {
+      "welcome": "帮我查找并替换内容",
+      "need": [
+        "要查找的关键词",
+        "在哪个网站"
+      ],
+      "can": "整站关键词全量替换",
+      "cannot": "不能做首屏结构改写、不能选择性替换"
+    }
+  },
+  "boundaries": {
+    "确认后交接": "用户确认后，把交接提示词交给对应 Skill 执行",
+    "仅展示": "现网没有对应 Skill，只出口头建议，不假装能改站",
+    "系统动作": "只改本期分析口径，不产出对外任务"
+  },
+  "review": {
+    "cadence": "natural_month",
+    "window": "next_full_calendar_month",
+    "compare": "observe_month_vs_frozen_diagnosis_month",
+    "absolute_as": "daily_average",
+    "subtract_site_control": true,
+    "skip_repeat_while_observing": true,
+    "safety_check": "T+3_open_page_only",
+    "verdicts": [
+      "成功",
+      "部分改善",
+      "未改善",
+      "看不出"
+    ],
+    "plain": "改动当月不算。下一个完整自然月，对照工单冻结的那个月；绝对数按日均，并减掉全站同期变化。观察中不重出同一张工单。"
+  },
+  "measures": [
+    {
+      "id": "M-站外建议-渠道来量核查",
+      "type": "站外或人工处理建议",
+      "boundary": "仅展示",
+      "owner": "投放 / SEO / 外链负责人",
+      "brief": "核查该渠道来量下降：投放是否缩量或停投、自然搜索排名是否下滑、外链是否减少。",
+      "slots": [
+        "渠道名",
+        "本期UV",
+        "基线UV",
+        "跌幅"
+      ],
+      "execution": {
+        "kind": "display_only",
+        "reason": "投放/SEO/外链不在运营助手 12 项 Skill 内"
+      },
+      "review": {
+        "track": false,
+        "skip_repeat_while_observing": false,
+        "plain": "只出方案，不追踪执行效果。"
+      }
+    },
+    {
+      "id": "M-站外建议-预算配比调整",
+      "type": "站外或人工处理建议",
+      "boundary": "仅展示",
+      "owner": "投放负责人",
+      "brief": "调整各渠道预算和流量配比，压低低转化渠道占比、补足高转化渠道。",
+      "slots": [
+        "占比升高的渠道",
+        "该渠道留资率",
+        "全站留资率"
+      ],
+      "execution": {
+        "kind": "display_only",
+        "reason": "广告预算不在运营助手 Skill 内"
+      },
+      "review": {
+        "track": false,
+        "skip_repeat_while_observing": false,
+        "plain": "只出方案，不追踪执行效果。"
+      }
+    },
+    {
+      "id": "M-持续内容发布-承接搜索意图",
+      "type": "建立持续内容发布计划",
+      "boundary": "确认后交接",
+      "owner": "内容",
+      "brief": "围绕占比异常渠道对应的目标关键词，持续发布能承接这些搜索意图的内容和页面。",
+      "slots": [
+        "目标关键词清单",
+        "承接页面类型",
+        "发布节奏"
+      ],
+      "execution": {
+        "kind": "skill",
+        "skill": "ai_publish_plan",
+        "welcome": "帮我创建发布内容计划",
+        "prompt_template": [
+          "帮我创建发布内容计划",
+          "",
+          "主题：承接{目标关键词清单}相关搜索意图",
+          "关键词：{目标关键词清单}",
+          "发布频率：{发布节奏}"
+        ]
+      },
+      "review": {
+        "track": true,
+        "primary": [
+          "来路关键词点击量@搜索词"
+        ],
+        "corroborating": [
+          "渠道UV占比@渠道"
+        ],
+        "site_control": [
+          "UV@全站"
+        ]
+      }
+    },
+    {
+      "id": "M-持续内容发布-匹配词意图",
+      "type": "建立持续内容发布计划",
+      "boundary": "确认后交接",
+      "owner": "内容",
+      "brief": "围绕展现量或点击量异常的来路关键词，持续发布匹配该词搜索意图的内容。",
+      "slots": [
+        "异常关键词",
+        "该词意图判断",
+        "内容选题"
+      ],
+      "execution": {
+        "kind": "skill",
+        "skill": "ai_publish_plan",
+        "welcome": "帮我创建发布内容计划",
+        "prompt_template": [
+          "帮我创建发布内容计划",
+          "",
+          "主题：{内容选题}",
+          "关键词：{异常关键词}",
+          "说明：这些词的展现或点击掉了，内容要直接回答搜这个词的人想确认的问题（{该词意图判断}）。"
+        ]
+      },
+      "review": {
+        "track": true,
+        "primary": [
+          "来路关键词点击量@搜索词"
+        ],
+        "site_control": [
+          "UV@全站"
+        ]
+      }
+    },
+    {
+      "id": "M-持续内容发布-巩固该词承接",
+      "type": "建立持续内容发布计划",
+      "boundary": "确认后交接",
+      "owner": "内容",
+      "brief": "围绕该搜索词持续发布同意图内容，巩固该词的页面承接。",
+      "slots": [
+        "搜索词",
+        "现有承接页",
+        "补充选题"
+      ],
+      "execution": {
+        "kind": "skill",
+        "skill": "ai_publish_plan",
+        "welcome": "帮我创建发布内容计划",
+        "prompt_template": [
+          "帮我创建发布内容计划",
+          "",
+          "主题：{补充选题}",
+          "关键词：{搜索词}",
+          "说明：站内已有承接页 {现有承接页}，计划用来巩固同一意图，不要另起一套说法。"
+        ]
+      },
+      "review": {
+        "track": true,
+        "primary": [
+          "落地接住率@搜索词×页"
+        ],
+        "corroborating": [
+          "按词页面停留@搜索词×页"
+        ],
+        "site_control": [
+          "有效浏览率@全站"
+        ]
+      }
+    },
+    {
+      "id": "M-生成产品详情页-补缺型号",
+      "type": "生成产品详情页",
+      "boundary": "确认后交接",
+      "owner": "内容 / 建站",
+      "brief": "为客户要找、站内尚未提供的型号补做产品详情页。",
+      "slots": [
+        "型号",
+        "已知规格",
+        "参考同类页"
+      ],
+      "must_not": [
+        "规格数字不确定时填「待填写」，不要编造参数"
+      ],
+      "execution": {
+        "kind": "skill",
+        "skill": "image_content_generation",
+        "then": "product_publish",
+        "welcome": "帮我发布产品",
+        "prompt_template": [
+          "帮我发布产品",
+          "",
+          "请按行业规范生成一款新产品详情页。",
+          "型号：{型号}",
+          "已知规格：{已知规格}",
+          "可参考站内已有页：{参考同类页}",
+          "没有确切数字的规格写「待填写」，不要编造参数、认证号或交期。",
+          "先出 title / summary / HTML 给我确认，确认后再发布到网站。"
+        ]
+      },
+      "review": {
+        "track": true,
+        "primary": [
+          "详情页到达率@全站"
+        ],
+        "site_control": [
+          "有效浏览率@全站"
+        ]
+      }
+    },
+    {
+      "id": "M-生成产品详情页-按搜不到的词",
+      "type": "生成产品详情页",
+      "boundary": "确认后交接",
+      "owner": "内容 / 建站",
+      "brief": "按客户搜不到的高频词（尤其是型号）补做对应产品详情页。",
+      "slots": [
+        "零结果高频词",
+        "对应型号",
+        "客户叫法"
+      ],
+      "must_not": [
+        "规格数字不确定时填「待填写」，不要编造参数"
+      ],
+      "execution": {
+        "kind": "skill",
+        "skill": "image_content_generation",
+        "then": "product_publish",
+        "welcome": "帮我发布产品",
+        "prompt_template": [
+          "帮我发布产品",
+          "",
+          "客户在站内搜「{零结果高频词}」没有结果，请按这个叫法补一个产品详情页。",
+          "对应型号：{对应型号}",
+          "客户叫法：{客户叫法}",
+          "规格不确定写「待填写」，不要编造。先出稿确认，再发布。"
+        ]
+      },
+      "review": {
+        "track": true,
+        "primary": [
+          "站内搜索0结果率@全站"
+        ],
+        "corroborating": [
+          "搜后离站率@搜索词"
+        ],
+        "site_control": [
+          "详情页到达率@全站"
+        ]
+      }
+    },
+    {
+      "id": "M-生成或重做营销落地页-对口承接",
+      "type": "生成或重做营销落地页",
+      "boundary": "确认后交接",
+      "owner": "内容 / 设计",
+      "brief": "为该词补做或重做营销落地页，使搜索点击能落到对口页面。",
+      "slots": [
+        "搜索词",
+        "当前落地页",
+        "目标承接内容"
+      ],
+      "execution": {
+        "kind": "skill",
+        "skill": "smart_landing_page",
+        "welcome": "帮我生成智能营销页",
+        "cannot": "现网只能新生成营销页，不能按 URL 改已有营销页",
+        "prompt_template": [
+          "帮我生成智能营销页",
+          "",
+          "页面类型：产品营销页",
+          "要承接的搜索词：{搜索词}",
+          "当前点击落到：{当前落地页}，和搜索意图对不上。",
+          "主营产品/服务：{目标承接内容}",
+          "核心卖点请围绕该搜索词客户想确认的问题来写，不要写空泛的公司介绍。"
+        ]
+      },
+      "review": {
+        "track": true,
+        "primary": [
+          "落地接住率@页面"
+        ],
+        "site_control": [
+          "有效浏览率@全站"
+        ]
+      }
+    },
+    {
+      "id": "M-生成或重做营销落地页-按渠道来意",
+      "type": "生成或重做营销落地页",
+      "boundary": "确认后交接",
+      "owner": "内容 / 设计",
+      "brief": "按该渠道的来意重做营销落地页，使页面与广告创意和来路人群匹配。",
+      "slots": [
+        "渠道名",
+        "广告创意主张",
+        "页面当前主张",
+        "错位点"
+      ],
+      "execution": {
+        "kind": "skill",
+        "skill": "smart_landing_page",
+        "welcome": "帮我生成智能营销页",
+        "cannot": "现网只能新生成；已有落地页对不上时不要假装能按 URL 改版",
+        "prompt_template": [
+          "帮我生成智能营销页",
+          "",
+          "页面类型：产品营销页",
+          "给「{渠道名}」这条来路单独做一页。",
+          "广告/来路主张：{广告创意主张}",
+          "现在落到页上的主张：{页面当前主张}",
+          "错位点：{错位点}",
+          "首屏对象和卖点必须跟来路主张一致。"
+        ]
+      },
+      "review": {
+        "track": true,
+        "primary": [
+          "落地接住率@渠道×页"
+        ],
+        "site_control": [
+          "有效浏览率@全站"
+        ]
+      }
+    },
+    {
+      "id": "M-改页面文案-首屏对齐来意",
+      "type": "修改已有页面文案",
+      "boundary": "确认后交接",
+      "owner": "内容",
+      "brief": "改写该渠道落地页的首屏文案，使对象、卖点和该渠道访客的来意一致。",
+      "slots": [
+        "页面路径",
+        "渠道名",
+        "当前首屏文案",
+        "该渠道来意"
+      ],
+      "execution": {
+        "kind": "skill_by_page_type",
+        "by_page_type": {
+          "product_detail": {
+            "skill": "product_edit_flow",
+            "welcome": "帮我修改产品",
+            "prompt_template": [
+              "帮我修改产品",
+              "",
+              "产品详情页：{产品URL}",
+              "请做局部修改，不要整页重写，不要改标题。",
+              "具体改法：重写首屏，让对象和卖点对齐「{渠道名}」来路的来意（{该渠道来意}）。",
+              "现在首屏写的是：「{当前首屏文案}」，跟来意不一致。",
+              "保留正文原有配图。"
+            ]
+          },
+          "article": {
+            "skill": "content_product_edit_flow",
+            "welcome": "帮我修改内容",
+            "prompt_template": [
+              "帮我修改内容",
+              "",
+              "页面：{产品URL}",
+              "不要改标题和摘要。",
+              "具体改法：只改开头，使对象和卖点对齐「{渠道名}」来路的来意（{该渠道来意}）。",
+              "现在开头是：「{当前首屏文案}」。"
+            ]
+          },
+          "landing": {
+            "kind": "display_only",
+            "reason": "智能营销页只能新生成，不能按 URL 改已有落地页。若必须改这一页，请建站处理；或改走「生成智能营销页」另做一页。"
+          }
+        },
+        "default": {
+          "kind": "display_only",
+          "reason": "首页/列表/关于我们没有改页 Skill，请建站处理"
+        }
+      },
+      "review": {
+        "track": true,
+        "primary": [
+          "落地接住率@渠道×页"
+        ],
+        "corroborating": [
+          "落地停留均值@页面"
+        ],
+        "site_control": [
+          "有效浏览率@全站"
+        ]
+      }
+    },
+    {
+      "id": "M-改页面文案-按词意图重写",
+      "type": "修改已有页面文案",
+      "boundary": "确认后交接",
+      "owner": "内容",
+      "brief": "按该搜索词的意图改写落地页标题、首屏和正文，使页面回答客户搜这个词时想确认的问题。",
+      "slots": [
+        "页面路径",
+        "搜索词",
+        "该词想确认的问题",
+        "当前标题与首屏"
+      ],
+      "execution": {
+        "kind": "skill_by_page_type",
+        "by_page_type": {
+          "product_detail": {
+            "skill": "product_edit_flow",
+            "welcome": "帮我修改产品",
+            "prompt_template": [
+              "帮我修改产品",
+              "",
+              "产品详情页：{产品URL}",
+              "请做局部修改。用户明确要求：可以改标题。",
+              "具体改法：按搜索词「{搜索词}」改写标题、首屏和正文，让页面直接回答客户搜这个词时想确认的问题：{该词想确认的问题}。",
+              "现在标题与首屏：{当前标题与首屏}",
+              "保留正文原有配图。规格不确定写「待填写」。"
+            ]
+          },
+          "article": {
+            "skill": "content_product_edit_flow",
+            "welcome": "帮我修改内容",
+            "prompt_template": [
+              "帮我修改内容",
+              "",
+              "页面：{产品URL}",
+              "这页默认不改标题。请改正文开头和相关段落，回答搜索词「{搜索词}」想确认的问题：{该词想确认的问题}。",
+              "现在标题与首屏：{当前标题与首屏}"
+            ]
+          }
+        },
+        "default": {
+          "kind": "display_only",
+          "reason": "该页类型不能用修改产品/修改内容 Skill 按 URL 改写"
+        }
+      },
+      "review": {
+        "track": true,
+        "primary": [
+          "落地接住率@搜索词×页"
+        ],
+        "corroborating": [
+          "按词页面停留@搜索词×页"
+        ],
+        "site_control": [
+          "有效浏览率@全站"
+        ]
+      }
+    },
+    {
+      "id": "M-改页面文案-补详情页入口",
+      "type": "修改已有页面文案",
+      "boundary": "确认后交接",
+      "owner": "内容",
+      "brief": "在未转化页出口率异常的页面增加通往对应产品详情页的入口和引导。",
+      "slots": [
+        "出口页路径",
+        "目标详情页",
+        "引导文案位置"
+      ],
+      "must_not": [
+        "不改该页标题、摘要和版式"
+      ],
+      "execution": {
+        "kind": "skill_by_page_type",
+        "page_slot": "出口页路径",
+        "by_page_type": {
+          "article": {
+            "skill": "content_product_edit_flow",
+            "welcome": "帮我修改内容",
+            "prompt_template": [
+              "帮我修改内容",
+              "",
+              "页面：{产品URL}",
+              "不要改标题和摘要，不要改版式。",
+              "具体改法：在正文（{引导文案位置}）增加通往产品详情页的入口和引导：{目标详情页}。"
+            ]
+          },
+          "product_detail": {
+            "skill": "product_edit_flow",
+            "welcome": "帮我修改产品",
+            "prompt_template": [
+              "帮我修改产品",
+              "",
+              "产品详情页：{产品URL}",
+              "请做局部修改，不要改标题，不要整页重写。",
+              "具体改法：在可见区域增加通往 {目标详情页} 的入口和一句引导。保留原配图。"
+            ]
+          }
+        },
+        "default": {
+          "kind": "display_only",
+          "reason": "首页/列表的导航和筛选不在内容 Skill 内，请建站处理"
+        }
+      },
+      "review": {
+        "track": true,
+        "primary": [
+          "未转化页出口率@页面"
+        ],
+        "downstream": [
+          "详情页到达率@全站"
+        ],
+        "site_control": [
+          "转化交互率@全站"
+        ]
+      }
+    },
+    {
+      "id": "M-改产品详情-首屏前移",
+      "type": "修改已有产品详情",
+      "boundary": "确认后交接",
+      "owner": "内容",
+      "brief": "重写该页首屏卖点，并把主力型号的关键参数放到首屏可见区域，让客户不用下滚就能看到核心信息。",
+      "slots": [
+        "页面路径",
+        "主力型号",
+        "关键参数清单",
+        "当前首屏内容",
+        "参数当前所在位置"
+      ],
+      "must_not": [
+        "参数缺失时填「待填写」，不要编造"
+      ],
+      "execution": {
+        "kind": "skill",
+        "skill": "product_edit_flow",
+        "welcome": "帮我修改产品",
+        "mode": "局部修改",
+        "cannot": "不改文章、不选站分类、不改导航/筛选/表单模块/版式系统；先出方案再覆盖",
+        "prompt_template": [
+          "帮我修改产品",
+          "",
+          "产品详情页：{产品URL}",
+          "请做局部修改，不要按行业规范整页重写，不要改标题。",
+          "",
+          "具体改法：",
+          "1. 重写首屏概述。现在第一屏写的是「{当前首屏内容}」，这是公司介绍，不是产品。第一屏要让人立刻看出这是 {主力型号}、给谁用。",
+          "2. 把关键参数放到首屏可见区域（现在参数在{参数当前所在位置}）：{关键参数清单}。没有确切数字的项写「待填写」，不要编造。",
+          "3. 保留正文原有全部配图，不要删图。",
+          "",
+          "先出优化方案给我确认；确认后再覆盖上线。"
+        ]
+      },
+      "review": {
+        "track": true,
+        "primary": [
+          "落地接住率@页面"
+        ],
+        "corroborating": [
+          "落地停留均值@页面",
+          "滚动深度P75@页面"
+        ],
+        "downstream": [
+          "转化交互率@页面"
+        ],
+        "site_control": [
+          "有效浏览率@全站"
+        ]
+      }
+    },
+    {
+      "id": "M-改产品详情-补询价入口",
+      "type": "修改已有产品详情",
+      "boundary": "确认后交接",
+      "owner": "内容 / 建站",
+      "brief": "在转化交互率异常的产品详情页可见区域增加询价、报价或要样品入口，并配一句说明，让客户在看参数时就能发起询盘。",
+      "slots": [
+        "页面路径",
+        "拟放置位置",
+        "入口文案",
+        "说明句"
+      ],
+      "execution": {
+        "kind": "skill",
+        "skill": "product_edit_flow",
+        "welcome": "帮我修改产品",
+        "cannot": "只能在详情 HTML 里加询价文案/按钮文案；系统挂表单、挪模块做不到，那种改仅展示给建站",
+        "prompt_template": [
+          "帮我修改产品",
+          "",
+          "产品详情页：{产品URL}",
+          "请做局部修改，不要整页重写，不要改标题。",
+          "具体改法：在可见区域（{拟放置位置}）增加询价/报价/要样品入口，入口文案用「{入口文案}」，并配一句说明：「{说明句}」。",
+          "只改文案和入口提示，不要改版式系统，不要删原配图。",
+          "如果原页没有可挂的表单模块，在方案里如实说明，不要假装已经挂上表单。"
+        ]
+      },
+      "review": {
+        "track": true,
+        "primary": [
+          "转化交互率@页面"
+        ],
+        "site_control": [
+          "转化交互率@全站"
+        ]
+      }
+    },
+    {
+      "id": "M-改产品详情-补齐缺失项",
+      "type": "修改已有产品详情",
+      "boundary": "确认后交接",
+      "owner": "内容",
+      "brief": "按缺失项补齐内容：缺规格表则补规格；缺认证则补证书；没有报价信息则写清询价方式和需要对方提供的信息。",
+      "slots": [
+        "页面路径",
+        "缺失项清单",
+        "已有素材"
+      ],
+      "must_not": [
+        "没有证书则标注「待客户确认」，不要编造认证"
+      ],
+      "execution": {
+        "kind": "skill",
+        "skill": "product_edit_flow",
+        "welcome": "帮我修改产品",
+        "mode": "局部修改，补板块",
+        "prompt_template": [
+          "帮我修改产品",
+          "",
+          "产品详情页：{产品URL}",
+          "请做局部修改：按缺失项补板块，不要整页推倒重来，不要改标题，保留原配图。",
+          "缺失项：{缺失项清单}",
+          "已有素材：{已有素材}",
+          "缺规格就补规格表，没有数字写「待填写」。",
+          "缺认证：有证书才写；没有证书标注「待客户确认」，不要编造认证号。",
+          "缺怎么报价：写清询价方式和需要对方提供的信息，不要编价格。"
+        ]
+      },
+      "review": {
+        "track": true,
+        "primary": [
+          "转化交互率@页面"
+        ],
+        "site_control": [
+          "转化交互率@全站"
+        ]
+      }
+    },
+    {
+      "id": "M-站外建议-评估版式回滚",
+      "type": "站外或人工处理建议",
+      "boundary": "仅展示",
+      "owner": "设计",
+      "brief": "核对该页近期改版稿，评估是否把版式回滚到接住率正常的版本。",
+      "slots": [
+        "页面路径",
+        "改版时间点",
+        "改版前后接住率"
+      ],
+      "execution": {
+        "kind": "display_only",
+        "reason": "版式回滚不在内容 Skill 内；product_edit_flow 不能还原设计稿"
+      },
+      "review": {
+        "track": false,
+        "skip_repeat_while_observing": false,
+        "plain": "只出方案，不追踪执行效果。"
+      }
+    },
+    {
+      "id": "M-站外建议-挪模块改版式",
+      "type": "站外或人工处理建议",
+      "boundary": "仅展示",
+      "owner": "设计 / 建站",
+      "brief": "处理需要挪模块、改版式或系统无法挂表单的部分。",
+      "slots": [
+        "页面路径",
+        "受限原因"
+      ],
+      "execution": {
+        "kind": "display_only",
+        "reason": "挪模块/挂表单属于建站，内容 Skill 只改 HTML 文案"
+      },
+      "review": {
+        "track": false,
+        "skip_repeat_while_observing": false,
+        "plain": "只出方案，不追踪执行效果。"
+      }
+    },
+    {
+      "id": "M-站外建议-重排证书与报价图",
+      "type": "站外或人工处理建议",
+      "boundary": "仅展示",
+      "owner": "设计 / 建站",
+      "brief": "重新排版证书图、报价示意图。",
+      "slots": [
+        "页面路径",
+        "待排版素材"
+      ],
+      "execution": {
+        "kind": "display_only",
+        "reason": "product_edit_flow 不能识图、不能重排版式，只能保留原图 src"
+      },
+      "review": {
+        "track": false,
+        "skip_repeat_while_observing": false,
+        "plain": "只出方案，不追踪执行效果。"
+      }
+    },
+    {
+      "id": "M-站外建议-调导航与筛选",
+      "type": "站外或人工处理建议",
+      "boundary": "仅展示",
+      "owner": "建站 / 设计",
+      "brief": "调整导航和列表筛选，让客户从当前浏览路径能够进入对应产品详情页。",
+      "slots": [
+        "当前路径",
+        "断点位置",
+        "目标详情页"
+      ],
+      "execution": {
+        "kind": "display_only",
+        "reason": "导航和列表筛选没有对应 Skill"
+      },
+      "review": {
+        "track": false,
+        "skip_repeat_while_observing": false,
+        "plain": "只出方案，不追踪执行效果。"
+      }
+    },
+    {
+      "id": "M-站外建议-配同义词与筛选",
+      "type": "站外或人工处理建议",
+      "boundary": "仅展示",
+      "owner": "建站",
+      "brief": "为站内搜索配置同义词映射，并调整导航和列表筛选，使客户的叫法能对应到站内产品名称。",
+      "slots": [
+        "零结果词",
+        "站内对应命名"
+      ],
+      "execution": {
+        "kind": "display_only",
+        "reason": "站内搜索同义词不在 12 项 Skill 内；可并行交接「发布产品」补缺型号"
+      },
+      "review": {
+        "track": false,
+        "skip_repeat_while_observing": false,
+        "plain": "只出方案，不追踪执行效果。"
+      }
+    },
+    {
+      "id": "M-站外建议-核查刷量",
+      "type": "站外或人工处理建议",
+      "boundary": "仅展示",
+      "owner": "投放 / 渠道负责人",
+      "brief": "核查该渠道是否存在爬虫、刷量或其他无效访问。",
+      "slots": [
+        "渠道名",
+        "UV涨幅",
+        "秒退率"
+      ],
+      "execution": {
+        "kind": "display_only",
+        "reason": "投放反作弊不在运营助手 Skill 内"
+      },
+      "review": {
+        "track": false,
+        "skip_repeat_while_observing": false,
+        "plain": "只出方案，不追踪执行效果。"
+      }
+    },
+    {
+      "id": "M-站外建议-客服话术与知识库",
+      "type": "站外或人工处理建议",
+      "boundary": "仅展示",
+      "owner": "客服负责人",
+      "brief": "优化询盘话术，补全型号、起订量、交期等知识库，并调整跟进节奏，减少把已开聊客户劝退的情况。",
+      "slots": [
+        "开聊留资率",
+        "基线",
+        "高频掉线环节"
+      ],
+      "execution": {
+        "kind": "display_only",
+        "reason": "智能客服话术/知识库不在 12 项 Skill 内"
+      },
+      "review": {
+        "track": false,
+        "skip_repeat_while_observing": false,
+        "plain": "只出方案，不追踪执行效果。"
+      }
+    },
+    {
+      "id": "M-站外建议-单边通道修复",
+      "type": "站外或人工处理建议",
+      "boundary": "仅展示",
+      "owner": "表单/建站 或 客服负责人",
+      "brief": "表单完成率异常时优化表单；开聊留资率异常时优化询盘接待。",
+      "slots": [
+        "异常通道",
+        "该通道指标",
+        "另一通道指标"
+      ],
+      "must_not": [
+        "只处理出现异常的那一条通道"
+      ],
+      "execution": {
+        "kind": "display_only",
+        "reason": "表单字段与客服接待都不在内容 Skill 内"
+      },
+      "review": {
+        "track": false,
+        "skip_repeat_while_observing": false,
+        "plain": "只出方案，不追踪执行效果。"
+      }
+    },
+    {
+      "id": "M-系统-标记疑似无效流量",
+      "type": "系统内部标记",
+      "boundary": "系统动作",
+      "owner": "分析服务",
+      "brief": "把该渠道标记为「疑似无效流量」，本期其余假设不再使用该渠道数据，也不再计算该渠道的留资类指标。",
+      "slots": [
+        "渠道名"
+      ],
+      "effect": {
+        "exclude_channel_from_hypotheses": true,
+        "suppress_lead_metrics": true
+      },
+      "execution": {
+        "kind": "system",
+        "reason": "只改本期分析口径，不交接 Skill"
+      },
+      "review": {
+        "track": false,
+        "skip_repeat_while_observing": false,
+        "plain": "只出方案，不追踪执行效果。"
+      }
+    }
+  ]
+}

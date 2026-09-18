@@ -1,0 +1,503 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>AI 运营助手 · 界面该长什么样</title>
+  <style>
+    :root {
+      --line: #1a1a1a;
+      --muted: #5c5c5c;
+      --dash: #9a9a9a;
+      --fill: #f3f3f3;
+      --paper: #fff;
+      --note: #6b6b6b;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: "Microsoft YaHei", "PingFang SC", sans-serif;
+      background: #ececec;
+      color: var(--line);
+    }
+    header.page-head {
+      position: sticky;
+      top: 0;
+      z-index: 5;
+      background: #fff;
+      border-bottom: 1px solid #ddd;
+      padding: 12px 20px 8px;
+    }
+    header.page-head h1 { margin: 0 0 4px; font-size: 16px; font-weight: 700; }
+    header.page-head p { margin: 0 0 10px; font-size: 12px; color: var(--note); max-width: 920px; line-height: 1.5; }
+    nav { display: flex; flex-wrap: wrap; gap: 6px; }
+    nav a {
+      display: inline-block;
+      padding: 4px 8px;
+      border: 1px solid #ccc;
+      background: #fff;
+      color: #333;
+      text-decoration: none;
+      font-size: 12px;
+    }
+    nav a:hover, nav a.on { border-color: #111; background: #111; color: #fff; }
+    main { padding: 20px; max-width: 1180px; margin: 0 auto; }
+    .block { margin-bottom: 44px; }
+    .meta {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      gap: 12px;
+      margin-bottom: 8px;
+    }
+    .meta h2 { margin: 0; font-size: 15px; }
+    .meta span { font-size: 12px; color: var(--note); }
+    .callout {
+      font-size: 12px;
+      color: var(--note);
+      border-left: 3px solid #111;
+      padding: 6px 10px;
+      margin: 0 0 10px;
+      background: #fafafa;
+      line-height: 1.5;
+    }
+    .callout.bad { border-left-color: #888; }
+    .frame {
+      background: var(--paper);
+      border: 2px solid var(--line);
+      min-height: 540px;
+      display: flex;
+      flex-direction: column;
+    }
+    .topbar {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      padding: 8px 12px;
+      border-bottom: 2px solid var(--line);
+      font-size: 12px;
+      background: #1a1a1a;
+      color: #fff;
+    }
+    .topbar .brand { font-weight: 700; }
+    .topbar nav.portal { display: flex; gap: 12px; flex: 1; opacity: 0.85; }
+    .topbar nav.portal b { opacity: 1; font-weight: 700; text-decoration: underline; }
+    .shell { display: flex; flex: 1; min-height: 0; }
+    .left {
+      width: 200px;
+      flex-shrink: 0;
+      border-right: 1px solid var(--line);
+      padding: 10px;
+      font-size: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .left .ttl { font-weight: 700; }
+    .site-switch {
+      border: 2px solid var(--line);
+      padding: 8px;
+      background: #fff;
+    }
+    .site-switch b { display: block; margin-bottom: 2px; }
+    .tiny { font-size: 11px; color: var(--muted); line-height: 1.4; }
+    .btn {
+      border: 1px solid var(--line);
+      padding: 6px 8px;
+      text-align: center;
+    }
+    .btn.ghost { border-style: dashed; color: var(--muted); }
+    .btn.pri { background: #111; color: #fff; font-weight: 700; }
+    .todo {
+      border: 1px dashed var(--line);
+      padding: 6px 8px;
+      background: #fafafa;
+    }
+    .todo .row { display: flex; justify-content: space-between; gap: 6px; padding: 3px 0; }
+    .item {
+      border: 1px solid #ccc;
+      padding: 6px 8px;
+      color: var(--muted);
+    }
+    .item.on { border-color: var(--line); color: var(--line); font-weight: 600; }
+    .chat {
+      flex: 1;
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+    }
+    .chat-head {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 12px;
+      border-bottom: 1px solid var(--line);
+      font-size: 13px;
+    }
+    .chat-head .name { font-weight: 700; }
+    .chat-head .sub { font-size: 11px; color: var(--muted); }
+    .mark {
+      margin-left: auto;
+      border: 2px solid var(--line);
+      padding: 4px 10px;
+      font-size: 12px;
+      font-weight: 700;
+      background: #fff;
+    }
+    .msgs {
+      flex: 1;
+      padding: 12px 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      font-size: 13px;
+    }
+    .bubble {
+      border: 1px solid var(--line);
+      padding: 8px 10px;
+      max-width: 94%;
+      line-height: 1.45;
+    }
+    .bubble.user { align-self: flex-end; background: var(--fill); }
+    .think {
+      border: 1px dashed var(--dash);
+      padding: 6px 8px;
+      font-size: 11px;
+      color: var(--muted);
+      max-width: 94%;
+    }
+    .card {
+      border: 2px solid var(--line);
+      padding: 10px;
+      background: #fff;
+      max-width: 94%;
+    }
+    .card .h { font-weight: 700; margin-bottom: 6px; }
+    .chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
+    .chip {
+      border: 1px solid var(--line);
+      padding: 4px 8px;
+      font-size: 11px;
+    }
+    .chip.muted { border-style: dashed; color: var(--muted); }
+    .checks { display: flex; flex-direction: column; gap: 5px; margin: 8px 0; font-size: 12px; }
+    .btns { display: flex; gap: 8px; }
+    .btns span {
+      border: 1px solid var(--line);
+      padding: 4px 10px;
+      font-size: 12px;
+    }
+    .btns .pri { background: #111; color: #fff; }
+    .input {
+      margin: 0 12px 12px;
+      border: 1px solid var(--line);
+      min-height: 44px;
+      padding: 8px 10px;
+      color: var(--muted);
+      font-size: 12px;
+    }
+    .side {
+      width: 300px;
+      flex-shrink: 0;
+      border-left: 2px solid var(--line);
+      display: flex;
+      flex-direction: column;
+      background: #fafafa;
+    }
+    .side.closed {
+      width: 28px;
+      writing-mode: vertical-rl;
+      align-items: center;
+      justify-content: center;
+      font-size: 11px;
+      color: var(--muted);
+      letter-spacing: 2px;
+      padding: 12px 0;
+    }
+    .side-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 12px;
+      border-bottom: 1px solid var(--line);
+      font-size: 13px;
+      font-weight: 700;
+      background: #fff;
+    }
+    .side-body { padding: 10px 12px; font-size: 12px; display: flex; flex-direction: column; gap: 8px; }
+    .page-mock {
+      border: 1px solid var(--line);
+      background: #fff;
+      min-height: 280px;
+      padding: 10px;
+    }
+    .page-mock .bar { height: 18px; background: #111; color: #fff; font-size: 10px; padding: 2px 6px; margin: -10px -10px 10px; }
+    .page-mock .hero { height: 72px; border: 1px dashed var(--dash); display: flex; align-items: center; justify-content: center; color: var(--muted); font-size: 11px; margin-bottom: 8px; }
+    .page-mock .line { height: 8px; background: #ddd; margin-bottom: 6px; }
+    .page-mock .line.w60 { width: 60%; }
+    .compare {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+    .compare .frame { min-height: 420px; }
+    .x { color: var(--muted); font-weight: 400; }
+    .tag { font-size: 10px; border: 1px solid var(--line); padding: 1px 4px; margin-left: 4px; }
+    .principles {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin: 0 0 8px;
+    }
+    .principles div {
+      border: 1px solid var(--line);
+      background: #fff;
+      padding: 10px 12px;
+      font-size: 13px;
+      line-height: 1.5;
+    }
+    .principles b { display: block; margin-bottom: 4px; }
+    @media (max-width: 900px) {
+      .compare, .principles { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <header class="page-head">
+    <h1>B2B 官网后台 · AI 运营助手该长什么样</h1>
+    <p>
+      它不该是「会说话的搜索框」，而该是嵌在数字门户里的<strong>运营工作台</strong>：进来就知道在给哪几个站干活，对话负责推进任务，成果落到真后台页。下面是线框，不是视觉稿。
+    </p>
+    <nav>
+      <a href="#p0">0 先定调</a>
+      <a href="#p1">1 推荐默认态</a>
+      <a href="#p2">2 做事中</a>
+      <a href="#p3">3 点开产物</a>
+      <a href="#p4">4 不要做成这样</a>
+    </nav>
+  </header>
+
+  <main>
+    <section class="block" id="p0">
+      <div class="meta">
+        <h2>0 · 先定调：壳长什么样，取决于它是什么</h2>
+        <span>四个判断</span>
+      </div>
+      <div class="principles">
+        <div><b>1. 人是来干活的</b>发布产品、改详情、挖客户、发邮件、看数据。打开助手 = 开始一轮运营任务，不是逛知识库。</div>
+        <div><b>2. 对话是手，不是首页</b>中间永远是对话工作区。能力清单、网站档案、自动化，都是工作台零件，不要做成 12 个磁贴广场。</div>
+        <div><b>3. 必须看得见「给谁干」</b>B2B 客户经常中英两站。站点、待确认档案、失败任务要常驻，不能只挂在聊天头当装饰。</div>
+        <div><b>4. 过程在助手，成果在后台</b>聊天里短说明 + 确认卡；长页面、编辑器、报表打开右侧真页面。不要另造一套 AI 预览世界。</div>
+      </div>
+    </section>
+
+    <section class="block" id="p1">
+      <div class="meta">
+        <h2>1 · 推荐默认态：工作台，不是空白聊天</h2>
+        <span>进「运营助手」第一屏</span>
+      </div>
+      <p class="callout">左栏是工作队列：当前站点、待办、新对话、自动化、历史。中间按这个站的现状说话，不把 12 条能力一次性倒出来。右侧产物默认收起。</p>
+      <div class="frame">
+        <div class="topbar">
+          <span class="brand">数字门户</span>
+          <nav class="portal">概况 网站管理 营销管理 客户管理 数据分析 管理设置 <b>运营助手</b></nav>
+          <span>中企业测试有限公司</span>
+        </div>
+        <div class="shell">
+          <div class="left">
+            <div class="ttl">工作台</div>
+            <div class="site-switch">
+              <b>北京阀门 · 中文站</b>
+              <div class="tiny">www.bj-valve.com<br />另有英文站 en.bj-valve.com</div>
+            </div>
+            <div class="todo">
+              <div class="tiny" style="font-weight:700;color:#111;margin-bottom:4px;">待处理</div>
+              <div class="row"><span>档案待确认</span><b>1</b></div>
+              <div class="row"><span>获客任务失败</span><b>1</b></div>
+            </div>
+            <div class="btn">+ 新对话</div>
+            <div class="btn ghost">◎ 自动化任务</div>
+            <div class="ttl" style="margin-top:8px;">最近工作</div>
+            <div class="item on">发布法兰球阀详情</div>
+            <div class="item">获客 · 美国 848180</div>
+            <div class="item">本周询盘怎么掉的</div>
+          </div>
+          <div class="chat">
+            <div class="chat-head">
+              <div>
+                <div class="name">AI 运营助手</div>
+                <div class="sub">正在看 · 北京阀门中文站</div>
+              </div>
+              <span class="mark">网站档案</span>
+            </div>
+            <div class="msgs">
+              <div class="bubble">
+                这周中文站询盘比上周少 18%，主力球阀详情页停留也变短了。档案里主推型号还标着待确认。
+                <div class="chips">
+                  <span class="chip">先看询盘掉在哪</span>
+                  <span class="chip">改主力球阀详情</span>
+                  <span class="chip">确认网站档案</span>
+                  <span class="chip muted">其它任务…</span>
+                </div>
+              </div>
+            </div>
+            <div class="input">直接说要做什么，或点上面一件</div>
+          </div>
+          <div class="side closed">产物区 · 有结果再打开</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="block" id="p2">
+      <div class="meta">
+        <h2>2 · 做事中：气泡短、卡上决策、过程可折</h2>
+        <span>例：帮我发布这个球阀</span>
+      </div>
+      <p class="callout">用户上传产品图后，不要让人在输入框里写作文。思考块可折；选项、提纲、确认都落在任务卡上。生成完只出「产物入口卡」，先不抢右侧。</p>
+      <div class="frame">
+        <div class="topbar">
+          <span class="brand">数字门户</span>
+          <nav class="portal">概况 网站管理 营销管理 客户管理 数据分析 管理设置 <b>运营助手</b></nav>
+          <span>中企业测试有限公司</span>
+        </div>
+        <div class="shell">
+          <div class="left">
+            <div class="ttl">工作台</div>
+            <div class="site-switch">
+              <b>北京阀门 · 中文站</b>
+              <div class="tiny">发布时再确认上哪个站</div>
+            </div>
+            <div class="btn">+ 新对话</div>
+            <div class="btn ghost">◎ 自动化任务</div>
+            <div class="item on">发布法兰球阀详情</div>
+            <div class="item">获客 · 美国 848180</div>
+          </div>
+          <div class="chat">
+            <div class="chat-head">
+              <div>
+                <div class="name">AI 运营助手</div>
+                <div class="sub">任务进行中 · 生成产品详情</div>
+              </div>
+              <span class="mark">网站档案</span>
+            </div>
+            <div class="msgs">
+              <div class="bubble user">帮我发布这个球阀（3 张实拍）</div>
+              <div class="think">思考了 8s · 对照阀门行业规范，补口径 / 压力 / 材质 ▾</div>
+              <div class="card">
+                <div class="h">确认后再生成 <span class="tag">点选卡</span></div>
+                <div class="checks">
+                  <div>☑ 品名 Q41F-16P 不锈钢法兰球阀</div>
+                  <div>☑ 先出中文站详情，发布时再选站</div>
+                  <div>☐ 同步出英文站</div>
+                </div>
+                <div class="btns"><span class="pri">按这个生成</span><span>改两项</span></div>
+              </div>
+              <div class="card">
+                <div class="h">详情页已生成 <span class="tag">产物入口</span></div>
+                <div class="tiny">Q41F-16P · 可去后台页检查参数和首屏</div>
+                <div class="btns" style="margin-top:8px;"><span class="pri">打开产品页</span><span>继续改</span></div>
+              </div>
+            </div>
+            <div class="input">补充一句，或点卡上的按钮</div>
+          </div>
+          <div class="side closed">产物区 · 点入口卡再展开</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="block" id="p3">
+      <div class="meta">
+        <h2>3 · 点开产物：右侧是真后台页</h2>
+        <span>过程留在左边，编辑器/报表在右边</span>
+      </div>
+      <p class="callout">最终保存、发布、预览用平台页自带按钮。助手侧不再造一套主流程。关掉右侧，入口卡还在，对话不丢。</p>
+      <div class="frame">
+        <div class="topbar">
+          <span class="brand">数字门户</span>
+          <nav class="portal">概况 网站管理 营销管理 客户管理 数据分析 管理设置 <b>运营助手</b></nav>
+          <span>中企业测试有限公司</span>
+        </div>
+        <div class="shell">
+          <div class="left">
+            <div class="ttl">工作台</div>
+            <div class="site-switch"><b>北京阀门 · 中文站</b></div>
+            <div class="btn">+ 新对话</div>
+            <div class="item on">发布法兰球阀详情</div>
+          </div>
+          <div class="chat">
+            <div class="chat-head">
+              <div>
+                <div class="name">AI 运营助手</div>
+                <div class="sub">右侧已打开 · 网站管理 / 产品编辑</div>
+              </div>
+              <span class="mark">网站档案</span>
+            </div>
+            <div class="msgs">
+              <div class="card">
+                <div class="h">详情页已打开</div>
+                <div class="tiny">在右侧改参数、换图、点发布。有问题直接在下面说。</div>
+              </div>
+            </div>
+            <div class="input">首屏加上 DN50 和 PN16</div>
+          </div>
+          <div class="side">
+            <div class="side-head">产品编辑 <span class="x">收起</span></div>
+            <div class="side-body">
+              <div class="page-mock">
+                <div class="bar">网站管理 · 编辑产品 · Q41F-16P</div>
+                <div class="hero">产品首屏 / 实拍图</div>
+                <div class="line"></div>
+                <div class="line w60"></div>
+                <div class="tiny">这里是数字门户已有编辑页，不是助手自绘的预览。</div>
+                <div class="btns" style="margin-top:10px;"><span class="pri">保存并发布</span><span>预览</span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="block" id="p4">
+      <div class="meta">
+        <h2>4 · 不要做成这样</h2>
+        <span>左边是能力广场，右边是纯 ChatGPT</span>
+      </div>
+      <div class="compare">
+        <div>
+          <p class="callout bad">能力磁贴首页：人要先选工具，才知道自己能干什么。B2B 运营不是开应用商店。</p>
+          <div class="frame" style="min-height:360px;">
+            <div class="topbar"><span class="brand">数字门户</span><nav class="portal"><b>运营助手</b></nav></div>
+            <div class="msgs" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;padding:16px;">
+              <div class="chip" style="text-align:center;padding:16px 8px;">发布产品</div>
+              <div class="chip" style="text-align:center;padding:16px 8px;">发布内容</div>
+              <div class="chip" style="text-align:center;padding:16px 8px;">修改产品</div>
+              <div class="chip" style="text-align:center;padding:16px 8px;">挖客户</div>
+              <div class="chip" style="text-align:center;padding:16px 8px;">发邮件</div>
+              <div class="chip" style="text-align:center;padding:16px 8px;">看数据</div>
+            </div>
+          </div>
+        </div>
+        <div>
+          <p class="callout bad">纯聊天 + 欢迎语塞 12 条能力：站点、待办、自动化全藏起来。老板说的「藏得太深」就是这种。</p>
+          <div class="frame" style="min-height:360px;">
+            <div class="topbar"><span class="brand">数字门户</span><nav class="portal"><b>运营助手</b></nav></div>
+            <div class="shell">
+              <div class="left" style="width:140px;">
+                <div class="btn">+ 新对话</div>
+                <div class="item">昨天的会话</div>
+                <div class="item">前天的会话</div>
+              </div>
+              <div class="chat">
+                <div class="msgs">
+                  <div class="bubble">您好，我可以帮您：发布产品、发布内容、修改产品、修改内容、挖掘客户、生成邮件、创建发布计划、生成营销页、查找替换、查看数据、配置提醒、配置报告。</div>
+                </div>
+                <div class="input">请输入问题…</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+</body>
+</html>

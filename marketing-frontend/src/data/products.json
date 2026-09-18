@@ -1,0 +1,63 @@
+{
+  "site_id": "haigong-precision",
+  "updated_at": "2026-09-01",
+  "note": "档案只到品类。本文件给预制勾选和 generate 时的 selectedProducts。规格细节仍应走产品 URL，mock 里只放落地页够用的字段。",
+  "products": [
+    {
+      "id": "P001",
+      "name": "5-Axis CNC Machining Parts",
+      "name_zh": "五轴加工零件 OEM",
+      "model": "HG-5AXIS",
+      "category": "CNC OEM",
+      "imageUrl": "https://placehold.co/300x200/1E40AF/white?text=5-Axis",
+      "price": "按图纸报价",
+      "url": "https://www.haigong-precision.com/products/5-axis-cnc",
+      "certs": ["ISO 9001", "IATF 16949"],
+      "moq": "批量视图纸",
+      "delivery": "打样 48h / 批量 15–30 天",
+      "keywords": ["cnc oem", "5-axis", "machining", "oem"]
+    },
+    {
+      "id": "P002",
+      "name": "Aluminum Rapid Prototyping",
+      "name_zh": "铝合金快速打样",
+      "model": "HG-ALU-RP",
+      "category": "打样",
+      "imageUrl": "https://placehold.co/300x200/0C4A6E/white?text=Alu+Prototype",
+      "price": "按图纸报价",
+      "url": "https://www.haigong-precision.com/products/aluminum-prototype",
+      "certs": ["ISO 9001"],
+      "moq": "1 件",
+      "delivery": "48 小时出样",
+      "keywords": ["prototype", "aluminum", "48h", "rapid"]
+    },
+    {
+      "id": "P003",
+      "name": "Stainless Steel Precision Parts",
+      "name_zh": "不锈钢精密零件",
+      "model": "HG-SS",
+      "category": "精密零件",
+      "imageUrl": "https://placehold.co/300x200/334155/white?text=Stainless",
+      "price": "按图纸报价",
+      "url": "https://www.haigong-precision.com/products/stainless-steel",
+      "certs": ["ISO 9001", "ISO 14001"],
+      "moq": "批量视图纸",
+      "delivery": "批量 15–30 天",
+      "keywords": ["stainless", "precision", "iso"]
+    },
+    {
+      "id": "P004",
+      "name": "Custom Machining Fixtures",
+      "name_zh": "定制工装夹具",
+      "model": "HG-FIXTURE",
+      "category": "工装",
+      "imageUrl": "https://placehold.co/300x200/475569/white?text=Fixture",
+      "price": "按图纸报价",
+      "url": "https://www.haigong-precision.com/products/fixtures",
+      "certs": ["ISO 9001"],
+      "moq": "1 套",
+      "delivery": "视图纸",
+      "keywords": ["fixture", "jig", "custom"]
+    }
+  ]
+}

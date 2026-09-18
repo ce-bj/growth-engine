@@ -1,0 +1,177 @@
+{
+  "version": "1.0.0",
+  "scope": "user-agent-content-ab-only",
+  "description": "全库共用的 A+B 内容模块目录，Agent 查表前可先读此表理解各块输出形态",
+  "moduleCount": 19,
+  "modules": [
+    {
+      "id": 0,
+      "name": "产品概述",
+      "layer": "A",
+      "aiGeneratable": true,
+      "outputShape": "overview",
+      "fieldTarget": "layerA.overview",
+      "note": "表外 baseline，各行业默认包含"
+    },
+    {
+      "id": 1,
+      "name": "产品标题与核心卖点",
+      "layer": "A",
+      "aiGeneratable": true,
+      "outputShape": "title_selling_points",
+      "fieldTarget": "layerA.title"
+    },
+    {
+      "id": 2,
+      "name": "产品规格参数表",
+      "layer": "B",
+      "aiGeneratable": true,
+      "outputShape": "spec_table",
+      "fieldTarget": "layerB.sections[specs]"
+    },
+    {
+      "id": 3,
+      "name": "产品功能/性能介绍",
+      "layer": "B",
+      "aiGeneratable": true,
+      "outputShape": "text",
+      "fieldTarget": "layerB.sections[features]"
+    },
+    {
+      "id": 4,
+      "name": "应用场景/使用案例",
+      "layer": "B",
+      "aiGeneratable": true,
+      "outputShape": "scenario_cards",
+      "fieldTarget": "layerB.sections[scenarios]"
+    },
+    {
+      "id": 5,
+      "name": "产品图片/视频展示",
+      "layer": "A",
+      "aiGeneratable": true,
+      "outputShape": "image_meta",
+      "fieldTarget": "layerA.media",
+      "note": "生成 alt/说明文案，素材由用户上传"
+    },
+    {
+      "id": 6,
+      "name": "技术原理/工艺流程",
+      "layer": "B",
+      "aiGeneratable": true,
+      "outputShape": "text",
+      "fieldTarget": "layerB.sections[technology]"
+    },
+    {
+      "id": 7,
+      "name": "质量认证/检测报告",
+      "layer": "B",
+      "aiGeneratable": true,
+      "outputShape": "bullet_list",
+      "fieldTarget": "layerB.sections[certifications]"
+    },
+    {
+      "id": 11,
+      "name": "包装与物流信息",
+      "layer": "B",
+      "aiGeneratable": true,
+      "outputShape": "text",
+      "fieldTarget": "layerB.sections[packaging]"
+    },
+    {
+      "id": 12,
+      "name": "安装/使用指南",
+      "layer": "B",
+      "aiGeneratable": true,
+      "outputShape": "step_list",
+      "fieldTarget": "layerB.sections[installation]"
+    },
+    {
+      "id": 13,
+      "name": "常见问题FAQ",
+      "layer": "B",
+      "aiGeneratable": true,
+      "outputShape": "faq_list",
+      "fieldTarget": "layerB.sections[faq]"
+    },
+    {
+      "id": 15,
+      "name": "对比优势/竞品分析",
+      "layer": "B",
+      "aiGeneratable": true,
+      "outputShape": "comparison_table",
+      "fieldTarget": "layerB.sections[comparison]"
+    },
+    {
+      "id": 17,
+      "name": "安全注意事项",
+      "layer": "B",
+      "aiGeneratable": true,
+      "outputShape": "bullet_list",
+      "fieldTarget": "layerB.sections[safety]"
+    },
+    {
+      "id": 20,
+      "name": "技术文档下载",
+      "layer": "B",
+      "aiGeneratable": true,
+      "outputShape": "doc_links",
+      "fieldTarget": "layerB.sections[documents]",
+      "note": "富文本入口 + 产品附件占位"
+    },
+    {
+      "id": 24,
+      "name": "产品迭代/更新日志",
+      "layer": "B",
+      "aiGeneratable": true,
+      "outputShape": "changelog",
+      "fieldTarget": "layerB.sections[changelog]"
+    },
+    {
+      "id": 25,
+      "name": "兼容性/适配信息",
+      "layer": "B",
+      "aiGeneratable": true,
+      "outputShape": "spec_table",
+      "fieldTarget": "layerB.sections[compatibility]"
+    },
+    {
+      "id": 26,
+      "name": "维护保养指南",
+      "layer": "B",
+      "aiGeneratable": true,
+      "outputShape": "step_list",
+      "fieldTarget": "layerB.sections[maintenance]"
+    },
+    {
+      "id": 27,
+      "name": "营养成分/成分说明",
+      "layer": "B",
+      "aiGeneratable": true,
+      "outputShape": "spec_table",
+      "fieldTarget": "layerB.sections[ingredients]"
+    },
+    {
+      "id": 28,
+      "name": "适用人群/禁忌说明",
+      "layer": "B",
+      "aiGeneratable": true,
+      "outputShape": "bullet_list",
+      "fieldTarget": "layerB.sections[audience]"
+    }
+  ],
+  "outputShapeGlossary": {
+    "overview": "一段话产品总述",
+    "title_selling_points": "标题 + 3–5 条核心卖点",
+    "image_meta": "主图/视频 alt 与说明文案（不含二进制素材）",
+    "text": "富文本段落",
+    "spec_table": "键值对参数表",
+    "scenario_cards": "应用场景卡片（标题 + 简述）",
+    "bullet_list": "要点列表",
+    "step_list": "分步骤说明",
+    "faq_list": "问答对列表",
+    "comparison_table": "对比表或优劣条目",
+    "doc_links": "可下载文档说明与占位链接文案",
+    "changelog": "版本/更新记录条目"
+  }
+}

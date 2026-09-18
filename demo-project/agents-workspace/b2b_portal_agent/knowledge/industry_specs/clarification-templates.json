@@ -1,0 +1,70 @@
+{
+  "version": "1.0.0",
+  "description": "四维度澄清模板；按 industryType 回退，全行业通用 default。",
+  "byIndustryType": {
+    "default": {
+      "identity": {
+        "question": "请确认产品所属行业与品类",
+        "options": ["识图判断结果", "其他（自定义填写）"]
+      },
+      "specs_evidence": {
+        "question": "目前有哪些可引用的规格或资料？",
+        "options": ["仅有外观实拍图", "有参数表/铭牌图", "有PDF/Word手册", "暂无可核对参数"]
+      },
+      "scenarios": {
+        "question": "主打适用场景是？（可多选）",
+        "options": ["工业制造", "能源电力", "市政工程", "科研教育", "其他"]
+      },
+      "advantages": {
+        "question": "希望突出的优势与特点？（可多选）",
+        "options": ["性能参数", "可靠耐用", "易维护", "性价比", "认证合规", "其他"]
+      }
+    },
+    "机械设备": {
+      "scenarios": {
+        "question": "主要应用于哪些场景？（可多选）",
+        "options": [
+          { "id": "scenario-water", "title": "建筑给排水", "description": "楼宇供水、排水管网配套" },
+          { "id": "scenario-hvac", "title": "暖通空调", "description": "HVAC 管道系统阀门" },
+          { "id": "scenario-industrial", "title": "工业管道", "description": "工厂流体输送与工艺管路" },
+          { "id": "scenario-fire", "title": "消防系统", "description": "消防管道与喷淋系统" },
+          { "id": "scenario-other", "title": "其他", "description": "可在下方自定义填写" }
+        ]
+      },
+      "advantages": {
+        "question": "希望突出的优势与特点？（可多选）",
+        "options": [
+          { "id": "adv-seal", "title": "密封性能", "description": "启闭密封、泄漏控制" },
+          { "id": "adv-corrosion", "title": "耐腐蚀性", "description": "材质与介质适应性" },
+          { "id": "adv-life", "title": "启闭寿命", "description": "耐用性与操作次数" },
+          { "id": "adv-brand", "title": "品牌售后", "description": "品牌背书与服务保障" },
+          { "id": "adv-cert", "title": "认证合规", "description": "标准/检测/资质（如有）" }
+        ]
+      }
+    },
+    "材料化工": {
+      "scenarios": {
+        "options": ["石油化工", "涂料塑料", "水处理", "实验室研发", "其他"]
+      },
+      "advantages": {
+        "options": ["纯度/规格", "稳定性", "环保合规", "包装物流", "其他"]
+      }
+    },
+    "电子电气": {
+      "scenarios": {
+        "options": ["工业控制", "消费电子配套", "通信能源", "其他"]
+      },
+      "advantages": {
+        "options": ["接口兼容", "功耗/效率", "认证标准", "供货周期", "其他"]
+      }
+    },
+    "消费品食品": {
+      "scenarios": {
+        "options": ["零售渠道", "餐饮供应", "电商直销", "出口贸易", "其他"]
+      },
+      "advantages": {
+        "options": ["成分/营养", "包装规格", "口感/体验", "资质许可", "其他"]
+      }
+    }
+  }
+}

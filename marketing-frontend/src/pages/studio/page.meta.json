@@ -1,0 +1,103 @@
+{
+  "page": "MarketingStudio",
+  "mode": "frontend-mock-only",
+  "dataSources": [
+    {
+      "name": "mockTemplatesData",
+      "shape": "array",
+      "endpoint": {
+        "method": "GET",
+        "path": "/api/v1/marketing/templates"
+      }
+    },
+    {
+      "name": "mockMaterialsData",
+      "shape": "array",
+      "endpoint": {
+        "method": "GET",
+        "path": "/api/v1/marketing/materials"
+      }
+    },
+    {
+      "name": "mockPerformanceData",
+      "shape": "array",
+      "endpoint": {
+        "method": "GET",
+        "path": "/api/v1/marketing/performance"
+      }
+    },
+    {
+      "name": "mockLeadsData",
+      "shape": "array",
+      "endpoint": {
+        "method": "GET",
+        "path": "/api/v1/marketing/leads"
+      }
+    }
+  ],
+  "actions": [
+    {
+      "handler": "handleFetchTemplates",
+      "endpoint": {
+        "method": "GET",
+        "path": "/api/v1/marketing/templates"
+      },
+      "requestFrom": "param",
+      "responseShape": "array"
+    },
+    {
+      "handler": "handleGenerate",
+      "endpoint": {
+        "method": "POST",
+        "path": "/api/v1/marketing/generate"
+      },
+      "requestFrom": "param",
+      "responseShape": "object"
+    },
+    {
+      "handler": "handleValidate",
+      "endpoint": {
+        "method": "POST",
+        "path": "/api/v1/marketing/validate"
+      },
+      "requestFrom": "param",
+      "responseShape": "object"
+    },
+    {
+      "handler": "handleEdit",
+      "endpoint": {
+        "method": "PATCH",
+        "path": "/api/v1/marketing/draft"
+      },
+      "requestFrom": "param",
+      "responseShape": "object"
+    },
+    {
+      "handler": "handlePublish",
+      "endpoint": {
+        "method": "POST",
+        "path": "/api/v1/marketing/publish"
+      },
+      "requestFrom": "param",
+      "responseShape": "object"
+    },
+    {
+      "handler": "handleFetchPerformance",
+      "endpoint": {
+        "method": "GET",
+        "path": "/api/v1/marketing/performance"
+      },
+      "requestFrom": "param",
+      "responseShape": "array"
+    },
+    {
+      "handler": "handleFetchPages",
+      "endpoint": {
+        "method": "GET",
+        "path": "/api/v1/marketing/pages"
+      },
+      "requestFrom": "param",
+      "responseShape": "array"
+    }
+  ]
+}

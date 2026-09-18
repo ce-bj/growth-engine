@@ -1,0 +1,139 @@
+{
+  "site_id": "site_demo_cnc",
+  "site_name": "Demo Precision CNC（获客型）",
+  "metric_dict_version": "2026-08-01",
+  "period": { "start": "2026-07-28", "end": "2026-08-03", "grain": "cycle" },
+  "compare_period": { "label": "过去4周同期平均", "start": "2026-06-30", "end": "2026-07-27" },
+  "scan": {
+    "uv": { "current": 4200, "baseline": 4050, "wow": 0.037 },
+    "leads": { "current": 113, "baseline": 130, "wow": -0.131 },
+    "lead_rate": { "current": 0.0269, "baseline": 0.0321, "wow": -0.162, "pp": -0.0052 },
+    "bounce_rate": { "current": 0.58, "baseline": 0.49, "wow": 0.184 },
+    "avg_duration_sec": { "current": 38, "baseline": 46, "wow": -0.174 },
+    "core_page_reach": { "current": 0.09, "baseline": 0.095, "wow": -0.053 },
+    "health_score": 82,
+    "critical_issues": 0
+  },
+  "channels": [
+    {
+      "channel": "ads",
+      "uv": 1680,
+      "uv_share": 0.40,
+      "uv_share_baseline": 0.38,
+      "leads": 28,
+      "lead_rate": 0.0167,
+      "lead_rate_baseline": 0.028,
+      "bounce_rate": 0.61,
+      "avg_duration_sec": 26
+    },
+    {
+      "channel": "seo",
+      "uv": 1512,
+      "uv_share": 0.36,
+      "uv_share_baseline": 0.37,
+      "leads": 55,
+      "lead_rate": 0.0364,
+      "lead_rate_baseline": 0.035,
+      "bounce_rate": 0.44,
+      "avg_duration_sec": 52
+    },
+    {
+      "channel": "direct",
+      "uv": 1008,
+      "uv_share": 0.24,
+      "uv_share_baseline": 0.25,
+      "leads": 30,
+      "lead_rate": 0.0298,
+      "lead_rate_baseline": 0.031,
+      "bounce_rate": 0.47,
+      "avg_duration_sec": 48
+    }
+  ],
+  "pages": [
+    {
+      "page_path": "/campaign/cnc-oem-q3",
+      "uv": 980,
+      "bounce_rate": 0.62,
+      "avg_duration_sec": 24,
+      "exit_rate": 0.71,
+      "scroll_p75": 0.28,
+      "product_block_reach": 0.27
+    },
+    {
+      "page_path": "/product/aluminum-cnc-enclosure-x200",
+      "uv": 640,
+      "bounce_rate": 0.41,
+      "avg_duration_sec": 71,
+      "exit_rate": 0.38,
+      "scroll_p75": 0.72,
+      "product_block_reach": 0.68
+    },
+    {
+      "page_path": "/blog/cnc-machining-guide",
+      "uv": 520,
+      "bounce_rate": 0.48,
+      "avg_duration_sec": 55,
+      "exit_rate": 0.45,
+      "scroll_p75": 0.61,
+      "product_block_reach": 0.40
+    }
+  ],
+  "channel_x_page": [
+    {
+      "channel": "ads",
+      "page_path": "/campaign/cnc-oem-q3",
+      "uv": 720,
+      "bounce_rate": 0.52,
+      "avg_duration_sec": 28,
+      "scroll_p75": 0.25,
+      "product_block_reach": 0.22
+    },
+    {
+      "channel": "seo",
+      "page_path": "/campaign/cnc-oem-q3",
+      "uv": 160,
+      "bounce_rate": 0.42,
+      "avg_duration_sec": 41,
+      "scroll_p75": 0.48,
+      "product_block_reach": 0.44
+    },
+    {
+      "channel": "direct",
+      "page_path": "/campaign/cnc-oem-q3",
+      "uv": 100,
+      "bounce_rate": 0.40,
+      "avg_duration_sec": 44,
+      "scroll_p75": 0.50,
+      "product_block_reach": 0.46
+    },
+    {
+      "channel": "ads",
+      "page_path": "/product/aluminum-cnc-enclosure-x200",
+      "uv": 210,
+      "bounce_rate": 0.39,
+      "avg_duration_sec": 68,
+      "scroll_p75": 0.70,
+      "product_block_reach": 0.66
+    }
+  ],
+  "ad_creative_claim": "48小时打样 + ISO9001",
+  "landing_hero_claim": "工厂设备与产线介绍（未突出打样与认证）",
+  "timeseries": {
+    "lead_rate": [
+      0.033, 0.032, 0.031, 0.032, 0.030, 0.029, 0.028,
+      0.031, 0.030, 0.032, 0.031, 0.029, 0.028, 0.027,
+      0.030, 0.029, 0.028, 0.027, 0.026, 0.026, 0.025,
+      0.027, 0.026, 0.027, 0.026, 0.025, 0.027, 0.026, 0.027, 0.027
+    ],
+    "ads_x_cnc_bounce": [
+      0.43, 0.44, 0.42, 0.45, 0.44, 0.43, 0.45,
+      0.44, 0.46, 0.45, 0.47, 0.48, 0.49, 0.50,
+      0.49, 0.50, 0.51, 0.51, 0.52, 0.52, 0.53,
+      0.52, 0.52, 0.53, 0.52, 0.51, 0.52, 0.52, 0.52, 0.52
+    ]
+  },
+  "post_exec_mock": {
+    "ads_x_cnc_bounce": 0.44,
+    "site_lead_rate": 0.031
+  }
+}

@@ -1,0 +1,11 @@
+node_modules
+.env.server
+.agentrc.json
+logs/
+dist/
+web/
+.venv/
+build-log.txt
+**/__pycache__/
+.vercel
+agents-workspace/.demo_state

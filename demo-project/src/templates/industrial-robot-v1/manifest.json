@@ -1,0 +1,25 @@
+{
+  "templateId": "industrial-robot-v1",
+  "name": "工业机器人详情页 · 科技工业风",
+  "version": "2.0.0",
+  "industryType": "机械设备",
+  "industries": ["工业机器人"],
+  "productCategories": ["工业机器人", "六轴机器人", "协作机器人", "焊接机器人", "人形机器人"],
+  "description": "v2：A/B 由运营助手生成；C 来自 CMS；D 来自产品库关联。",
+  "layerModel": {
+    "A": { "template": "designer", "data": "agent" },
+    "B": { "template": "designer", "data": "agent" },
+    "C": { "template": "prefab", "data": "cms" },
+    "D": { "template": "prefab", "data": "product-relation" }
+  },
+  "slotOrderA": ["layerA.title", "layerA.overview", "layerA.media"],
+  "slotOrderB": ["layerB.body"],
+  "layerCApps": [
+    { "cmsAppKey": "breadcrumb", "placement": "header", "defaultVariant": "inline-light" },
+    { "cmsAppKey": "inquiry-form", "placement": "footer-cta", "defaultVariant": "split-form-industrial" },
+    { "cmsAppKey": "enterprise-profile", "placement": "pre-footer", "defaultVariant": "trust-bar-compact" }
+  ],
+  "layerDBlocks": [
+    { "blockId": "related-products", "placement": "post-content", "defaultVariant": "card-grid-3col", "defaultRule": "same-series" }
+  ]
+}

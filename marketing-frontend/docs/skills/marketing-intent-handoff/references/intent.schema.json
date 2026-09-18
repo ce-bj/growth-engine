@@ -1,0 +1,264 @@
+{
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "requestId",
+    "sourceAgent",
+    "siteId",
+    "intent",
+    "generation",
+    "resources",
+    "publication"
+  ],
+  "properties": {
+    "schemaVersion": {
+      "const": "1.0"
+    },
+    "requestId": {
+      "type": "string",
+      "minLength": 1
+    },
+    "sourceAgent": {
+      "type": "string",
+      "minLength": 1
+    },
+    "siteId": {
+      "type": "string",
+      "minLength": 1
+    },
+    "intent": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "fingerprint",
+        "topic",
+        "stage",
+        "audience",
+        "need"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "fingerprint": {
+          "type": "string",
+          "minLength": 1
+        },
+        "topic": {
+          "type": "string",
+          "minLength": 1
+        },
+        "stage": {
+          "type": "string",
+          "enum": [
+            "了解",
+            "对比",
+            "决策"
+          ]
+        },
+        "audience": {
+          "type": "string",
+          "minLength": 1
+        },
+        "need": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "generation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "pageType",
+        "templateId",
+        "conversionAction",
+        "market",
+        "language",
+        "primaryColor",
+        "fontStyle"
+      ],
+      "properties": {
+        "pageType": {
+          "type": "string",
+          "enum": [
+            "产品营销",
+            "线索获取",
+            "品牌介绍",
+            "促销活动",
+            "展会页面"
+          ]
+        },
+        "templateId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "conversionAction": {
+          "type": "string",
+          "enum": [
+            "获取报价",
+            "预约沟通",
+            "领取资料",
+            "发起咨询",
+            "提交需求",
+            "活动报名"
+          ]
+        },
+        "market": {
+          "type": "string",
+          "enum": [
+            "中国大陆",
+            "全球市场",
+            "亚太地区",
+            "欧洲地区"
+          ]
+        },
+        "language": {
+          "type": "string",
+          "enum": [
+            "中文简体",
+            "English",
+            "中文繁體"
+          ]
+        },
+        "primaryColor": {
+          "type": "string",
+          "pattern": "^#[0-9a-fA-F]{6}$"
+        },
+        "fontStyle": {
+          "type": "string",
+          "enum": [
+            "现代无衬线",
+            "经典衬线",
+            "技术等宽"
+          ]
+        }
+      }
+    },
+    "resources": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "knowledgeDirectories",
+        "productIds",
+        "imageAssetId"
+      ],
+      "properties": {
+        "knowledgeDirectories": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "enum": [
+              "企业与品牌",
+              "产品资料",
+              "行业解决方案",
+              "客户案例",
+              "活动与展会",
+              "服务与常见问题"
+            ]
+          }
+        },
+        "productIds": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "imageAssetId": {
+          "type": "string"
+        }
+      }
+    },
+    "publication": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "mode",
+        "authorizationRef",
+        "slug",
+        "placements",
+        "navigationPages",
+        "onMissingResources",
+        "minimumAiScore"
+      ],
+      "properties": {
+        "mode": {
+          "type": "string",
+          "enum": [
+            "automatic",
+            "draft"
+          ]
+        },
+        "authorizationRef": {
+          "type": "string"
+        },
+        "slug": {
+          "type": "string",
+          "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"
+        },
+        "placements": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "enum": [
+              "首屏 Banner",
+              "页中横幅",
+              "侧边广告位",
+              "底部弹出",
+              "智能客服推送"
+            ]
+          }
+        },
+        "navigationPages": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "enum": [
+              "首页",
+              "产品中心",
+              "解决方案",
+              "新闻资讯",
+              "公司介绍",
+              "联系我们"
+            ]
+          }
+        },
+        "onMissingResources": {
+          "const": "pause"
+        },
+        "minimumAiScore": {
+          "const": 80
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "mode": {
+                "const": "automatic"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "authorizationRef": {
+                "type": "string",
+                "minLength": 1
+              }
+            }
+          }
+        }
+      ]
+    }
+  },
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Marketing Intent Handoff v1.0"
+}

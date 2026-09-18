@@ -1,0 +1,1199 @@
+{
+  "site_id": "site_demo_b2b",
+  "site_label": "Demo · CNC 精密加工件外贸站",
+  "period": {
+    "current": {
+      "start": "2026-08-04",
+      "end": "2026-08-31",
+      "days": 28
+    },
+    "baseline": {
+      "method": "past_4w_same_period",
+      "start": "2026-07-07",
+      "end": "2026-08-03",
+      "days": 28
+    }
+  },
+  "case_note": "贯穿案例：UV 持平、有效浏览率 40%→30%、主力型号详情页落地接住率腰斩、五渠同步变差、转化交互率与留资完成率持平",
+  "headline": {
+    "询盘条数": {
+      "本期": 34,
+      "基线": 45,
+      "少了几条": 11,
+      "口径提醒": "落在死档（环比跌 20%~30%），按 fold_into_flat 处理"
+    },
+    "访客人数": {
+      "本期": 1650,
+      "基线": 1620
+    },
+    "卡在哪一步": "进来的人没看进去",
+    "问题页": {
+      "路径": "/products/cnc-6061-bracket",
+      "名称": "主力型号详情页 · CNC-6061 铝支架",
+      "完整URL": "https://www.demo-cnc-oem.com/products/cnc-6061-bracket",
+      "最近改版": "2026-08-02",
+      "当前首屏": "专业 CNC 加工服务商 · 20 年经验 · 全球交付"
+    },
+    "根因": [
+      "这一页的第一屏没接住客户，客户看了上半屏就走了"
+    ],
+    "并列因素": [],
+    "可交接任务数": 1,
+    "只能人工的事项数": 1,
+    "观察中任务数": 1,
+    "待复盘任务数": 0,
+    "观察中一句话": "修改已有产品详情（/products/cnc-6061-bracket，2026-09 出结论）",
+    "数据缺口条数": 8,
+    "数据缺口一句话": "这条来路开聊的人里有多少留了联系方式（分母 9 < 10（该渠道主动开聊访客 <10 不计算））；这条来路问价开聊的人里有多少留了联系方式（分母 6 < 10（该渠道转化交互访客 <10 不计算））；这条来路拿到的询盘条数（上期 3 ≤ 5（上期该渠道留资数 ≤5 不计算））；等8 项"
+  },
+  "scan": [
+    {
+      "ref": "留资数@全站",
+      "plain": "拿到的询盘条数",
+      "key": "__site__",
+      "value": 34,
+      "baseline": 45,
+      "pct_change": -0.244444,
+      "pp_change": -1100,
+      "state": "持平",
+      "data_status": "ok",
+      "labels": [
+        "落在死档（环比跌 20%~30%），按 fold_into_flat 处理"
+      ]
+    },
+    {
+      "ref": "留资率@全站",
+      "plain": "每 100 个访客里有几个留了联系方式",
+      "key": "__site__",
+      "value": 0.020606,
+      "baseline": 0.027778,
+      "pct_change": -0.25819,
+      "pp_change": -0.7172,
+      "state": "异常",
+      "data_status": "ok",
+      "labels": []
+    },
+    {
+      "ref": "UV@全站",
+      "plain": "一共来了多少人",
+      "key": "__site__",
+      "value": 1650,
+      "baseline": 1620,
+      "pct_change": 0.018519,
+      "pp_change": 3000,
+      "state": "持平",
+      "data_status": "ok",
+      "labels": []
+    },
+    {
+      "ref": "有效浏览率@全站",
+      "plain": "来的人里有多少真的看进去了",
+      "key": "__site__",
+      "value": 0.3,
+      "baseline": 0.4,
+      "pct_change": -0.25,
+      "pp_change": -10.0,
+      "state": "异常",
+      "data_status": "ok",
+      "labels": []
+    },
+    {
+      "ref": "转化交互率@全站",
+      "plain": "看进去的人里有多少动手问价或开聊",
+      "key": "__site__",
+      "value": 0.121212,
+      "baseline": 0.123457,
+      "pct_change": -0.018184,
+      "pp_change": -0.2245,
+      "state": "持平",
+      "data_status": "ok",
+      "labels": []
+    },
+    {
+      "ref": "留资完成率@全站",
+      "plain": "问价开聊的人里有多少最后留了联系方式",
+      "key": "__site__",
+      "value": 0.55,
+      "baseline": 0.55,
+      "pct_change": 0.0,
+      "pp_change": 0.0,
+      "state": "持平",
+      "data_status": "ok",
+      "labels": []
+    },
+    {
+      "ref": "秒退率@全站",
+      "plain": "打开就走的人占多少",
+      "key": "__site__",
+      "value": 0.420606,
+      "baseline": 0.330247,
+      "pct_change": 0.27361,
+      "pp_change": 9.0359,
+      "state": "异常",
+      "data_status": "ok",
+      "labels": []
+    },
+    {
+      "ref": "健康度待处理问题数@全站",
+      "plain": "网站待处理的技术问题条数",
+      "key": "__site__",
+      "value": 0,
+      "baseline": 0,
+      "pct_change": null,
+      "pp_change": 0,
+      "state": "不判",
+      "data_status": "ok",
+      "labels": []
+    },
+    {
+      "ref": "渠道UV占比@渠道",
+      "plain": "这条来路占全部访客的比例",
+      "key": "organic",
+      "value": 0.375758,
+      "baseline": 0.37037,
+      "pct_change": 0.014548,
+      "pp_change": 0.5388,
+      "state": "不判",
+      "data_status": "ok",
+      "labels": []
+    },
+    {
+      "ref": "渠道UV占比@渠道",
+      "plain": "这条来路占全部访客的比例",
+      "key": "paid",
+      "value": 0.260606,
+      "baseline": 0.262346,
+      "pct_change": -0.006632,
+      "pp_change": -0.174,
+      "state": "不判",
+      "data_status": "ok",
+      "labels": []
+    },
+    {
+      "ref": "渠道UV占比@渠道",
+      "plain": "这条来路占全部访客的比例",
+      "key": "direct",
+      "value": 0.181818,
+      "baseline": 0.185185,
+      "pct_change": -0.018182,
+      "pp_change": -0.3367,
+      "state": "不判",
+      "data_status": "ok",
+      "labels": []
+    },
+    {
+      "ref": "渠道UV占比@渠道",
+      "plain": "这条来路占全部访客的比例",
+      "key": "referral",
+      "value": 0.109091,
+      "baseline": 0.108025,
+      "pct_change": 0.009868,
+      "pp_change": 0.1066,
+      "state": "不判",
+      "data_status": "ok",
+      "labels": []
+    },
+    {
+      "ref": "渠道UV占比@渠道",
+      "plain": "这条来路占全部访客的比例",
+      "key": "social",
+      "value": 0.072727,
+      "baseline": 0.074074,
+      "pct_change": -0.018185,
+      "pp_change": -0.1347,
+      "state": "不判",
+      "data_status": "ok",
+      "labels": []
+    }
+  ],
+  "triggered": {
+    "triggered": true,
+    "on": [
+      {
+        "ref": "留资率@全站",
+        "plain": "每 100 个访客里有几个留了联系方式",
+        "key": "__site__",
+        "value": 0.020606,
+        "baseline": 0.027778,
+        "pct_change": -0.25819,
+        "pp_change": -0.7172,
+        "state": "异常",
+        "data_status": "ok",
+        "labels": []
+      }
+    ]
+  },
+  "locate": {
+    "loss_point": "流失点1",
+    "reason": "进来的人没看进去",
+    "evidence": [
+      {
+        "ref": "有效浏览率@全站",
+        "plain": "来的人里有多少真的看进去了",
+        "key": "__site__",
+        "value": 0.3,
+        "baseline": 0.4,
+        "pct_change": -0.25,
+        "pp_change": -10.0,
+        "state": "异常",
+        "data_status": "ok",
+        "labels": []
+      }
+    ],
+    "chain": [
+      {
+        "ref": "有效浏览率@全站",
+        "plain": "来的人里有多少真的看进去了",
+        "key": "__site__",
+        "value": 0.3,
+        "baseline": 0.4,
+        "pct_change": -0.25,
+        "pp_change": -10.0,
+        "state": "异常",
+        "data_status": "ok",
+        "labels": []
+      },
+      {
+        "ref": "转化交互率@全站",
+        "plain": "看进去的人里有多少动手问价或开聊",
+        "key": "__site__",
+        "value": 0.121212,
+        "baseline": 0.123457,
+        "pct_change": -0.018184,
+        "pp_change": -0.2245,
+        "state": "持平",
+        "data_status": "ok",
+        "labels": []
+      },
+      {
+        "ref": "留资完成率@全站",
+        "plain": "问价开聊的人里有多少最后留了联系方式",
+        "key": "__site__",
+        "value": 0.55,
+        "baseline": 0.55,
+        "pct_change": 0.0,
+        "pp_change": 0.0,
+        "state": "持平",
+        "data_status": "ok",
+        "labels": []
+      }
+    ],
+    "excluded": [
+      {
+        "ruled_out": "来量问题（访问入口）",
+        "why": "全站 UV 没掉",
+        "evidence": [
+          {
+            "ref": "UV@全站",
+            "plain": "一共来了多少人",
+            "key": "__site__",
+            "value": 1650,
+            "baseline": 1620,
+            "pct_change": 0.018519,
+            "pp_change": 3000,
+            "state": "持平",
+            "data_status": "ok",
+            "labels": []
+          }
+        ]
+      },
+      {
+        "ruled_out": "流失点2",
+        "why": "转化交互率@全站 没掉",
+        "evidence": [
+          {
+            "ref": "转化交互率@全站",
+            "plain": "看进去的人里有多少动手问价或开聊",
+            "key": "__site__",
+            "value": 0.121212,
+            "baseline": 0.123457,
+            "pct_change": -0.018184,
+            "pp_change": -0.2245,
+            "state": "持平",
+            "data_status": "ok",
+            "labels": []
+          }
+        ]
+      },
+      {
+        "ruled_out": "流失点3",
+        "why": "留资完成率@全站 没掉",
+        "evidence": [
+          {
+            "ref": "留资完成率@全站",
+            "plain": "问价开聊的人里有多少最后留了联系方式",
+            "key": "__site__",
+            "value": 0.55,
+            "baseline": 0.55,
+            "pct_change": 0.0,
+            "pp_change": 0.0,
+            "state": "持平",
+            "data_status": "ok",
+            "labels": []
+          }
+        ]
+      }
+    ],
+    "structure": {
+      "changed": false,
+      "channels": [],
+      "note": "各渠道占比没有明显变化"
+    }
+  },
+  "drill": {
+    "anomaly_points": [
+      {
+        "ref": "落地接住率@页面",
+        "plain": "从这一页进来的人，有多少留下来继续看",
+        "key": "/products/cnc-6061-bracket",
+        "value": 0.221053,
+        "baseline": 0.448925,
+        "pct_change": -0.507595,
+        "pp_change": -22.7872,
+        "state": "异常",
+        "data_status": "ok",
+        "labels": [],
+        "dim": "页面",
+        "label": "主力型号详情页 · CNC-6061 铝支架"
+      }
+    ],
+    "corroborating": [
+      {
+        "ref": "落地停留均值@页面",
+        "plain": "从这一页进来的人平均待了多少秒",
+        "key": "/products/cnc-6061-bracket",
+        "value": 18.0,
+        "baseline": 47.0,
+        "pct_change": -0.617021,
+        "pp_change": -2900.0,
+        "state": "异常",
+        "data_status": "ok",
+        "labels": [
+          "停留明显变短"
+        ],
+        "dim": "页面",
+        "label": "主力型号详情页 · CNC-6061 铝支架"
+      },
+      {
+        "ref": "滚动深度P75@页面",
+        "plain": "大部分人往下翻到了整页的百分之几",
+        "key": "/products/cnc-6061-bracket",
+        "value": 0.31,
+        "baseline": 0.62,
+        "pct_change": -0.5,
+        "pp_change": -31.0,
+        "state": "异常",
+        "data_status": "ok",
+        "labels": [
+          "多数人还在首屏附近"
+        ],
+        "dim": "页面",
+        "label": "主力型号详情页 · CNC-6061 铝支架"
+      },
+      {
+        "ref": "合格浏览率@页面",
+        "plain": "在这一页看够时间、也翻得够深的人占多少",
+        "key": "/products/cnc-6061-bracket",
+        "value": 0.295122,
+        "baseline": 0.594527,
+        "pct_change": -0.503602,
+        "pp_change": -29.9405,
+        "state": "异常",
+        "data_status": "ok",
+        "labels": [],
+        "dim": "页面",
+        "label": "主力型号详情页 · CNC-6061 铝支架"
+      },
+      {
+        "ref": "秒退率@渠道",
+        "plain": "这条来路打开就走的人占多少",
+        "key": "organic",
+        "value": 0.409677,
+        "baseline": 0.32,
+        "pct_change": 0.280241,
+        "pp_change": 8.9677,
+        "state": "异常",
+        "data_status": "ok",
+        "labels": [],
+        "dim": "渠道",
+        "label": "自然搜索"
+      },
+      {
+        "ref": "秒退率@渠道",
+        "plain": "这条来路打开就走的人占多少",
+        "key": "paid",
+        "value": 0.451163,
+        "baseline": 0.350588,
+        "pct_change": 0.286875,
+        "pp_change": 10.0575,
+        "state": "异常",
+        "data_status": "ok",
+        "labels": [],
+        "dim": "渠道",
+        "label": "付费搜索"
+      },
+      {
+        "ref": "秒退率@渠道",
+        "plain": "这条来路打开就走的人占多少",
+        "key": "direct",
+        "value": 0.38,
+        "baseline": 0.3,
+        "pct_change": 0.266667,
+        "pp_change": 8.0,
+        "state": "异常",
+        "data_status": "ok",
+        "labels": [],
+        "dim": "渠道",
+        "label": "直接访问"
+      },
+      {
+        "ref": "秒退率@渠道",
+        "plain": "这条来路打开就走的人占多少",
+        "key": "referral",
+        "value": 0.427778,
+        "baseline": 0.342857,
+        "pct_change": 0.247686,
+        "pp_change": 8.4921,
+        "state": "异常",
+        "data_status": "ok",
+        "labels": [],
+        "dim": "渠道",
+        "label": "外链"
+      },
+      {
+        "ref": "秒退率@渠道",
+        "plain": "这条来路打开就走的人占多少",
+        "key": "social",
+        "value": 0.458333,
+        "baseline": 0.366667,
+        "pct_change": 0.249998,
+        "pp_change": 9.1666,
+        "state": "异常",
+        "data_status": "ok",
+        "labels": [],
+        "dim": "渠道",
+        "label": "社媒"
+      }
+    ],
+    "cross_check": {
+      "ref": "落地接住率@渠道×页",
+      "pattern": "同步变差",
+      "note": "5 条渠道同向破线，不是单渠来路问题",
+      "anomaly_count": 5,
+      "usable_count": 5,
+      "anomaly_keys": [
+        "organic|/products/cnc-6061-bracket",
+        "paid|/products/cnc-6061-bracket",
+        "direct|/products/cnc-6061-bracket",
+        "referral|/products/cnc-6061-bracket",
+        "social|/products/cnc-6061-bracket"
+      ]
+    },
+    "scopes": {
+      "anomaly_page": [
+        "/products/cnc-6061-bracket"
+      ],
+      "anomaly_detail_page": [],
+      "anomaly_channel": [],
+      "uplift_channel": [],
+      "anomaly_keyword": [],
+      "anomaly_keyword_page": [
+        "cnc machined aluminum bracket|/products/cnc-6061-bracket",
+        "6061 aluminum cnc parts|/products/cnc-6061-bracket"
+      ]
+    }
+  },
+  "hypotheses": [
+    {
+      "id": "H-EN-01",
+      "seq": 1,
+      "layer": "访问入口",
+      "name": "某个渠道来的人少了（投放缩了、搜索引擎优化掉了、或外链少了）",
+      "result": "fail",
+      "in_scope": false,
+      "measures": [
+        "M-站外建议-渠道来量核查"
+      ],
+      "evidence": [],
+      "failed_on": {
+        "clause": "count UV@渠道 异常 {'gte': 1, 'lte': 2}",
+        "actual": 0,
+        "keys": [],
+        "usable_keys": [
+          "organic",
+          "paid",
+          "direct",
+          "referral",
+          "social"
+        ],
+        "reason": "计数为 0，不满足 {'gte': 1, 'lte': 2}"
+      },
+      "insufficient_on": null
+    },
+    {
+      "id": "H-EN-02",
+      "seq": 2,
+      "layer": "访问入口",
+      "name": "来的人总量差不多，但结构变差了",
+      "result": "fail",
+      "in_scope": false,
+      "measures": [
+        "M-持续内容发布-承接搜索意图",
+        "M-站外建议-预算配比调整"
+      ],
+      "evidence": [],
+      "failed_on": {
+        "clause": "count 渠道UV占比@渠道 异常 {'gte': 1}",
+        "actual": 0,
+        "keys": [],
+        "usable_keys": [
+          "organic",
+          "paid",
+          "direct",
+          "referral",
+          "social"
+        ],
+        "reason": "计数为 0，不满足 {'gte': 1}"
+      },
+      "insufficient_on": null
+    },
+    {
+      "id": "H-EN-03",
+      "seq": 3,
+      "layer": "访问入口",
+      "name": "能带来访客的搜索词的展现或点击量降低了",
+      "result": "fail",
+      "in_scope": false,
+      "measures": [
+        "M-持续内容发布-匹配词意图",
+        "M-生成产品详情页-补缺型号",
+        "M-生成或重做营销落地页-对口承接"
+      ],
+      "evidence": [],
+      "failed_on": {
+        "clause": "scope:anomaly_keyword",
+        "reason": "没有可绑定的 anomaly_keyword，该假设的「该×」不成立",
+        "actual": 0
+      },
+      "insufficient_on": null
+    },
+    {
+      "id": "H-L1-04",
+      "seq": 4,
+      "layer": "流失点1",
+      "name": "落地页和广告创意对不上，或和这个渠道来的人对不上",
+      "result": "fail",
+      "in_scope": true,
+      "measures": [
+        "M-改页面文案-首屏对齐来意",
+        "M-生成或重做营销落地页-按渠道来意"
+      ],
+      "evidence": [
+        {
+          "ref": "落地接住率@渠道×页",
+          "plain": "这条来路落到这一页，有多少人留下来继续看",
+          "key": "organic|/products/cnc-6061-bracket",
+          "value": 0.226667,
+          "baseline": 0.462585,
+          "pct_change": -0.509999,
+          "pp_change": -23.5918,
+          "state": "异常",
+          "data_status": "ok",
+          "labels": []
+        },
+        {
+          "ref": "落地接住率@渠道×页",
+          "plain": "这条来路落到这一页，有多少人留下来继续看",
+          "key": "paid|/products/cnc-6061-bracket",
+          "value": 0.209091,
+          "baseline": 0.444444,
+          "pct_change": -0.529545,
+          "pp_change": -23.5353,
+          "state": "异常",
+          "data_status": "ok",
+          "labels": []
+        },
+        {
+          "ref": "落地接住率@渠道×页",
+          "plain": "这条来路落到这一页，有多少人留下来继续看",
+          "key": "direct|/products/cnc-6061-bracket",
+          "value": 0.244444,
+          "baseline": 0.454545,
+          "pct_change": -0.462223,
+          "pp_change": -21.0101,
+          "state": "异常",
+          "data_status": "ok",
+          "labels": []
+        },
+        {
+          "ref": "落地接住率@渠道×页",
+          "plain": "这条来路落到这一页，有多少人留下来继续看",
+          "key": "referral|/products/cnc-6061-bracket",
+          "value": 0.225,
+          "baseline": 0.435897,
+          "pct_change": -0.483823,
+          "pp_change": -21.0897,
+          "state": "异常",
+          "data_status": "ok",
+          "labels": []
+        },
+        {
+          "ref": "落地接住率@渠道×页",
+          "plain": "这条来路落到这一页，有多少人留下来继续看",
+          "key": "social|/products/cnc-6061-bracket",
+          "value": 0.2,
+          "baseline": 0.411765,
+          "pct_change": -0.514286,
+          "pp_change": -21.1765,
+          "state": "异常",
+          "data_status": "ok",
+          "labels": []
+        }
+      ],
+      "failed_on": {
+        "clause": "count 落地接住率@渠道×页 异常 {'eq': 1}",
+        "actual": 5,
+        "keys": [
+          "organic|/products/cnc-6061-bracket",
+          "paid|/products/cnc-6061-bracket",
+          "direct|/products/cnc-6061-bracket",
+          "referral|/products/cnc-6061-bracket",
+          "social|/products/cnc-6061-bracket"
+        ],
+        "usable_keys": [
+          "organic|/products/cnc-6061-bracket",
+          "paid|/products/cnc-6061-bracket",
+          "direct|/products/cnc-6061-bracket",
+          "referral|/products/cnc-6061-bracket",
+          "social|/products/cnc-6061-bracket"
+        ],
+        "reason": "计数为 5，不满足 {'eq': 1}"
+      },
+      "insufficient_on": null
+    },
+    {
+      "id": "H-L1-05",
+      "seq": 5,
+      "layer": "流失点1",
+      "name": "页面内容和搜索意图对不上",
+      "result": "fail",
+      "in_scope": true,
+      "measures": [
+        "M-改页面文案-按词意图重写",
+        "M-持续内容发布-巩固该词承接"
+      ],
+      "evidence": [],
+      "failed_on": {
+        "clause": "来路关键词点击量@搜索词 anomaly_keyword state=异常",
+        "ref": "来路关键词点击量@搜索词",
+        "key": "6061 aluminum cnc parts",
+        "actual_state": "持平",
+        "actual_value": 95,
+        "reason": "期望 异常，实际 持平"
+      },
+      "insufficient_on": null
+    },
+    {
+      "id": "H-L1-06",
+      "seq": 6,
+      "layer": "流失点1",
+      "name": "这一页的第一屏没接住客户，客户看了上半屏就走了",
+      "result": "pass",
+      "in_scope": true,
+      "measures": [
+        "M-改产品详情-首屏前移",
+        "M-站外建议-评估版式回滚"
+      ],
+      "evidence": [
+        {
+          "ref": "落地接住率@页面",
+          "plain": "从这一页进来的人，有多少留下来继续看",
+          "key": "/products/cnc-6061-bracket",
+          "value": 0.221053,
+          "baseline": 0.448925,
+          "pct_change": -0.507595,
+          "pp_change": -22.7872,
+          "state": "异常",
+          "data_status": "ok",
+          "labels": []
+        },
+        {
+          "ref": "落地停留均值@页面",
+          "plain": "从这一页进来的人平均待了多少秒",
+          "key": "/products/cnc-6061-bracket",
+          "value": 18.0,
+          "baseline": 47.0,
+          "pct_change": -0.617021,
+          "pp_change": -2900.0,
+          "state": "异常",
+          "data_status": "ok",
+          "labels": [
+            "停留明显变短"
+          ]
+        },
+        {
+          "ref": "滚动深度P75@页面",
+          "plain": "大部分人往下翻到了整页的百分之几",
+          "key": "/products/cnc-6061-bracket",
+          "value": 0.31,
+          "baseline": 0.62,
+          "pct_change": -0.5,
+          "pp_change": -31.0,
+          "state": "异常",
+          "data_status": "ok",
+          "labels": [
+            "多数人还在首屏附近"
+          ]
+        }
+      ],
+      "failed_on": null,
+      "insufficient_on": null,
+      "bound": {
+        "page": "/products/cnc-6061-bracket",
+        "channel": null,
+        "keyword": null,
+        "keyword_page": null,
+        "detail_page": null,
+        "uplift": null
+      }
+    },
+    {
+      "id": "H-L1-07",
+      "seq": 7,
+      "layer": "流失点1",
+      "name": "无头浏览器或爬虫多次访问导致 UV 上升",
+      "result": "fail",
+      "in_scope": true,
+      "measures": [
+        "M-系统-标记疑似无效流量",
+        "M-站外建议-核查刷量"
+      ],
+      "evidence": [],
+      "failed_on": {
+        "clause": "scope:uplift_channel",
+        "reason": "没有可绑定的 uplift_channel，该假设的「该×」不成立",
+        "actual": 0
+      },
+      "insufficient_on": null
+    },
+    {
+      "id": "H-L2-08",
+      "seq": 8,
+      "layer": "流失点2",
+      "name": "没逛到产品详情页",
+      "result": "fail",
+      "in_scope": false,
+      "measures": [
+        "M-改页面文案-补详情页入口",
+        "M-生成产品详情页-补缺型号",
+        "M-站外建议-调导航与筛选"
+      ],
+      "evidence": [],
+      "failed_on": {
+        "clause": "详情页到达率@全站 site state=异常",
+        "ref": "详情页到达率@全站",
+        "key": "__site__",
+        "actual_state": "持平",
+        "actual_value": 0.646465,
+        "reason": "期望 异常，实际 持平"
+      },
+      "insufficient_on": null
+    },
+    {
+      "id": "H-L2-09",
+      "seq": 9,
+      "layer": "流失点2",
+      "name": "详情页上没有询价入口",
+      "result": "fail",
+      "in_scope": false,
+      "measures": [
+        "M-改产品详情-补询价入口",
+        "M-站外建议-挪模块改版式"
+      ],
+      "evidence": [],
+      "failed_on": {
+        "clause": "scope:anomaly_detail_page",
+        "reason": "没有可绑定的 anomaly_detail_page，该假设的「该×」不成立",
+        "actual": 0
+      },
+      "insufficient_on": null
+    },
+    {
+      "id": "H-L2-10",
+      "seq": 10,
+      "layer": "流失点2",
+      "name": "看完了仍写不出询盘（参数、认证、怎么报价）",
+      "result": "fail",
+      "in_scope": false,
+      "measures": [
+        "M-改产品详情-补齐缺失项",
+        "M-站外建议-重排证书与报价图"
+      ],
+      "evidence": [],
+      "failed_on": {
+        "clause": "scope:anomaly_detail_page",
+        "reason": "没有可绑定的 anomaly_detail_page，该假设的「该×」不成立",
+        "actual": 0
+      },
+      "insufficient_on": null
+    },
+    {
+      "id": "H-L2-11",
+      "seq": 11,
+      "layer": "流失点2",
+      "name": "客户搜了但没搜到：产品/型号叫法与站内命名不一致，导航或筛选与客户习惯对不上",
+      "result": "fail",
+      "in_scope": false,
+      "measures": [
+        "M-生成产品详情页-按搜不到的词",
+        "M-站外建议-配同义词与筛选"
+      ],
+      "evidence": [],
+      "failed_on": {
+        "clause": "详情页到达率@全站 site state=异常",
+        "ref": "详情页到达率@全站",
+        "key": "__site__",
+        "actual_state": "持平",
+        "actual_value": 0.646465,
+        "reason": "期望 异常，实际 持平"
+      },
+      "insufficient_on": null
+    },
+    {
+      "id": "H-L3-12",
+      "seq": 12,
+      "layer": "流失点3",
+      "name": "客服越聊越劝退",
+      "result": "fail",
+      "in_scope": false,
+      "measures": [
+        "M-站外建议-客服话术与知识库"
+      ],
+      "evidence": [],
+      "failed_on": {
+        "clause": "开聊留资率@全站 site state=异常",
+        "ref": "开聊留资率@全站",
+        "key": "__site__",
+        "actual_state": "持平",
+        "actual_value": 0.454545,
+        "reason": "期望 异常，实际 持平"
+      },
+      "insufficient_on": null
+    },
+    {
+      "id": "H-L3-13",
+      "seq": 13,
+      "layer": "流失点3",
+      "name": "表单和客服只有一边变差",
+      "result": "fail",
+      "in_scope": false,
+      "measures": [
+        "M-站外建议-单边通道修复"
+      ],
+      "evidence": [],
+      "failed_on": {
+        "clause": "any",
+        "reason": "任一子条件都不成立",
+        "tried": [
+          {
+            "clause": "表单完成率@全站 site state=异常",
+            "ref": "表单完成率@全站",
+            "key": "__site__",
+            "actual_state": "持平",
+            "actual_value": 0.545455,
+            "reason": "期望 异常，实际 持平"
+          },
+          {
+            "clause": "开聊留资率@全站 site state=异常",
+            "ref": "开聊留资率@全站",
+            "key": "__site__",
+            "actual_state": "持平",
+            "actual_value": 0.454545,
+            "reason": "期望 异常，实际 持平"
+          }
+        ]
+      },
+      "insufficient_on": null
+    }
+  ],
+  "tasks": [
+    {
+      "measure_id": "M-改产品详情-首屏前移",
+      "hypothesis_id": "H-L1-06",
+      "type": "修改已有产品详情",
+      "boundary": "确认后交接",
+      "owner": "内容",
+      "brief": "重写该页首屏卖点，并把主力型号的关键参数放到首屏可见区域，让客户不用下滚就能看到核心信息。",
+      "target": "/products/cnc-6061-bracket",
+      "page_type": "product_detail",
+      "slots": {
+        "页面路径": "/products/cnc-6061-bracket",
+        "主力型号": "CNC-6061 铝支架",
+        "关键参数清单": [
+          "材质 6061-T6",
+          "壁厚 待确认"
+        ],
+        "当前首屏内容": "专业 CNC 加工服务商 · 20 年经验 · 全球交付",
+        "参数当前所在位置": "首屏以下",
+        "产品URL": "https://www.demo-cnc-oem.com/products/cnc-6061-bracket"
+      },
+      "must_not": [
+        "参数缺失时填「待填写」，不要编造"
+      ],
+      "effect": null,
+      "execution": {
+        "kind": "skill",
+        "skill": "product_edit_flow",
+        "welcome": "帮我修改产品",
+        "then": null,
+        "cannot": "不改文章、不选站分类、不改导航/筛选/表单模块/版式系统；先出方案再覆盖"
+      },
+      "handoff_prompt": "帮我修改产品\n\n产品详情页：https://www.demo-cnc-oem.com/products/cnc-6061-bracket\n请做局部修改，不要按行业规范整页重写，不要改标题。\n\n具体改法：\n1. 重写首屏概述。现在第一屏写的是「专业 CNC 加工服务商 · 20 年经验 · 全球交付」，这是公司介绍，不是产品。第一屏要让人立刻看出这是 CNC-6061 铝支架、给谁用。\n2. 把关键参数放到首屏可见区域（现在参数在首屏以下）：材质 6061-T6；壁厚 待确认。没有确切数字的项写「待填写」，不要编造。\n3. 保留正文原有全部配图，不要删图。\n\n先出优化方案给我确认；确认后再覆盖上线。",
+      "status": "proposed",
+      "review": {
+        "track": true,
+        "window": "next_full_calendar_month",
+        "compare": "observe_month_vs_frozen_diagnosis_month",
+        "absolute_as": "daily_average",
+        "subtract_site_control": true,
+        "skip_repeat_while_observing": true,
+        "safety_check": "T+3_open_page_only",
+        "plain": "改动当月不算。下一个完整自然月，对照工单冻结的那个月；绝对数按日均，并减掉全站同期变化。观察中不重出同一张工单。",
+        "primary": [
+          "落地接住率@页面"
+        ],
+        "corroborating": [
+          "落地停留均值@页面",
+          "滚动深度P75@页面"
+        ],
+        "downstream": [
+          "转化交互率@页面"
+        ],
+        "site_control": [
+          "有效浏览率@全站"
+        ]
+      },
+      "trial": {
+        "executed_on": null,
+        "frozen_month": "2026-08",
+        "observe_month": null,
+        "snapshot_before": {
+          "落地接住率@页面": {
+            "key": "/products/cnc-6061-bracket",
+            "value": 0.221053,
+            "baseline": 0.448925,
+            "state": "异常",
+            "data_status": "ok"
+          },
+          "落地停留均值@页面": {
+            "key": "/products/cnc-6061-bracket",
+            "value": 18.0,
+            "baseline": 47.0,
+            "state": "异常",
+            "data_status": "ok"
+          },
+          "滚动深度P75@页面": {
+            "key": "/products/cnc-6061-bracket",
+            "value": 0.31,
+            "baseline": 0.62,
+            "state": "异常",
+            "data_status": "ok"
+          },
+          "转化交互率@页面": {
+            "key": "/products/cnc-6061-bracket",
+            "value": 0.178571,
+            "baseline": 0.185629,
+            "state": "持平",
+            "data_status": "ok"
+          },
+          "有效浏览率@全站": {
+            "key": "__site__",
+            "value": 0.3,
+            "baseline": 0.4,
+            "state": "异常",
+            "data_status": "ok"
+          }
+        }
+      }
+    },
+    {
+      "measure_id": "M-站外建议-评估版式回滚",
+      "hypothesis_id": "H-L1-06",
+      "type": "站外或人工处理建议",
+      "boundary": "仅展示",
+      "owner": "设计",
+      "brief": "核对该页近期改版稿，评估是否把版式回滚到接住率正常的版本。",
+      "target": "/products/cnc-6061-bracket",
+      "page_type": "product_detail",
+      "slots": {
+        "页面路径": "/products/cnc-6061-bracket",
+        "改版时间点": "2026-08-02",
+        "改版前后接住率": {
+          "current": 0.221053,
+          "baseline": 0.448925
+        },
+        "产品URL": "https://www.demo-cnc-oem.com/products/cnc-6061-bracket"
+      },
+      "must_not": [],
+      "effect": null,
+      "execution": {
+        "kind": "display_only",
+        "skill": null,
+        "welcome": null,
+        "then": null,
+        "cannot": "版式回滚不在内容 Skill 内；product_edit_flow 不能还原设计稿"
+      },
+      "handoff_prompt": null,
+      "status": "proposed",
+      "review": {
+        "track": false,
+        "window": "next_full_calendar_month",
+        "compare": "observe_month_vs_frozen_diagnosis_month",
+        "absolute_as": "daily_average",
+        "subtract_site_control": true,
+        "skip_repeat_while_observing": false,
+        "safety_check": "T+3_open_page_only",
+        "plain": "只出方案，不追踪执行效果。",
+        "primary": [],
+        "corroborating": [],
+        "downstream": [],
+        "site_control": []
+      },
+      "trial": null
+    }
+  ],
+  "observing": [
+    {
+      "id": "trial-202608-cta",
+      "measure_id": "M-改产品详情-补询价入口",
+      "hypothesis_id": "H-L2-09",
+      "target": "/products/cnc-6061-bracket",
+      "executed_on": "2026-08-12",
+      "frozen_month": "2026-07",
+      "observe_month": "2026-09",
+      "snapshot_before": {
+        "转化交互率@页面": {
+          "key": "/products/cnc-6061-bracket",
+          "value": 0.041,
+          "baseline": 0.04,
+          "state": "持平",
+          "data_status": "ok"
+        }
+      },
+      "status": "observing",
+      "brief": "在转化交互率异常的产品详情页可见区域增加询价、报价或要样品入口，并配一句说明，让客户在看参数时就能发起询盘。",
+      "type": "修改已有产品详情",
+      "review": {
+        "track": true,
+        "window": "next_full_calendar_month",
+        "compare": "observe_month_vs_frozen_diagnosis_month",
+        "absolute_as": "daily_average",
+        "subtract_site_control": true,
+        "skip_repeat_while_observing": true,
+        "safety_check": "T+3_open_page_only",
+        "plain": "改动当月不算。下一个完整自然月，对照工单冻结的那个月；绝对数按日均，并减掉全站同期变化。观察中不重出同一张工单。",
+        "primary": [
+          "转化交互率@页面"
+        ],
+        "corroborating": [],
+        "downstream": [],
+        "site_control": [
+          "转化交互率@全站"
+        ]
+      }
+    }
+  ],
+  "review_due": [],
+  "skipped_repeats": [],
+  "data_gaps": [
+    {
+      "ref": "开聊留资率@渠道",
+      "plain": "这条来路开聊的人里有多少留了联系方式",
+      "data_status": "below_base",
+      "reason": "分母 9 < 10（该渠道主动开聊访客 <10 不计算）",
+      "keys": [
+        "organic",
+        "paid",
+        "direct",
+        "referral",
+        "social"
+      ],
+      "usable_keys": 0
+    },
+    {
+      "ref": "留资完成率@渠道",
+      "plain": "这条来路问价开聊的人里有多少留了联系方式",
+      "data_status": "below_base",
+      "reason": "分母 6 < 10（该渠道转化交互访客 <10 不计算）",
+      "keys": [
+        "referral",
+        "social"
+      ],
+      "usable_keys": 3
+    },
+    {
+      "ref": "留资数@渠道",
+      "plain": "这条来路拿到的询盘条数",
+      "data_status": "below_base",
+      "reason": "上期 3 ≤ 5（上期该渠道留资数 ≤5 不计算）",
+      "keys": [
+        "referral",
+        "social"
+      ],
+      "usable_keys": 3
+    },
+    {
+      "ref": "表单完成率@渠道",
+      "plain": "这条来路开始填表单的人里有多少填完了",
+      "data_status": "below_base",
+      "reason": "分母 9 < 10（该渠道开始填写访客 <10 不计算）",
+      "keys": [
+        "direct",
+        "referral",
+        "social"
+      ],
+      "usable_keys": 2
+    },
+    {
+      "ref": "表单曝光率@页面",
+      "plain": "这一页的表单被看到的比例",
+      "data_status": "not_connected",
+      "reason": "埋点未接入",
+      "keys": [
+        "__site__"
+      ],
+      "usable_keys": 0
+    },
+    {
+      "ref": "转化交互率@渠道×页",
+      "plain": "这条来路在这一页问价或开聊的人占多少",
+      "data_status": "below_base",
+      "reason": "分母 9 < 10（该切面访客 <10 不计算）",
+      "keys": [
+        "referral|/products/cnc-6061-bracket",
+        "social|/products/cnc-6061-bracket"
+      ],
+      "usable_keys": 3
+    },
+    {
+      "ref": "页面留资率@页面",
+      "plain": "这一页带来的留资比例",
+      "data_status": "not_connected",
+      "reason": "现网无，二期留口",
+      "keys": [
+        "__site__"
+      ],
+      "usable_keys": 0
+    },
+    {
+      "ref": "高价值线索占比@全站",
+      "plain": "高价值询盘占全部询盘的比例",
+      "data_status": "not_in_phase1",
+      "reason": "一期不进本层",
+      "keys": [
+        "__site__"
+      ],
+      "usable_keys": 0
+    }
+  ]
+}

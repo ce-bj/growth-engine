@@ -1,0 +1,275 @@
+{
+  "projectTitle": "汽车服务营销页",
+  "projectId": "d7b20ff5-d54f-436f-b372-6c0465becdbb",
+  "taskExecutionId": "odnext_72771ecf3e754ecbb3637d8b1affb299",
+  "strategyVersion": "2.0.4",
+  "route": "full_plan",
+  "executionMode": "simple",
+  "promptBundleBytes": 99729,
+  "promptBundleSha256": "336824a98912b251b62a1f7fac020a4884ae7cef3873912f525ffcffe9f3168f",
+  "promptNodes": [
+    {
+      "tag": "execution_boundary",
+      "attributes": {},
+      "characters": 835
+    },
+    {
+      "tag": "native_execution",
+      "attributes": {
+        "profile": "filesystem"
+      },
+      "characters": 340
+    },
+    {
+      "tag": "discovery_and_planning_surface",
+      "attributes": {},
+      "characters": 3444
+    },
+    {
+      "tag": "core_strategy",
+      "attributes": {},
+      "characters": 21185
+    },
+    {
+      "tag": "output_contract",
+      "attributes": {},
+      "characters": 5749
+    },
+    {
+      "tag": "echo_guard",
+      "attributes": {},
+      "characters": 130
+    },
+    {
+      "tag": "general_orchestration_skill",
+      "attributes": {
+        "skill_name": "general_orchestration"
+      },
+      "characters": 29393
+    },
+    {
+      "tag": "task_type_skill",
+      "attributes": {
+        "skill_name": "prototype"
+      },
+      "characters": 18155
+    },
+    {
+      "tag": "atom",
+      "attributes": {
+        "name": "discovery-question-form"
+      },
+      "characters": 3778
+    },
+    {
+      "tag": "atom",
+      "attributes": {
+        "name": "direction-picker"
+      },
+      "characters": 1707
+    },
+    {
+      "tag": "atom",
+      "attributes": {
+        "name": "todo-write"
+      },
+      "characters": 765
+    },
+    {
+      "tag": "atom",
+      "attributes": {
+        "name": "file-write"
+      },
+      "characters": 0
+    },
+    {
+      "tag": "atom",
+      "attributes": {
+        "name": "live-artifact"
+      },
+      "characters": 0
+    },
+    {
+      "tag": "task_type",
+      "attributes": {},
+      "characters": 21
+    },
+    {
+      "tag": "task_configuration",
+      "attributes": {},
+      "characters": 267
+    },
+    {
+      "tag": "title_directive",
+      "attributes": {},
+      "characters": 347
+    },
+    {
+      "tag": "recipe_identity",
+      "attributes": {
+        "recipe": "od-next-plan-build-v2",
+        "strategy_id": "od-next-strategy",
+        "strategy_version": "2.0.4",
+        "applied_snapshot": "46d9f4dc-88aa-4b57-a35d-dce95ecc986a",
+        "task_profile_version": "2.2.0"
+      },
+      "characters": 0
+    },
+    {
+      "tag": "runtime_facts",
+      "attributes": {},
+      "characters": 567
+    },
+    {
+      "tag": "runtime_tool_environment",
+      "attributes": {},
+      "characters": 1533
+    },
+    {
+      "tag": "stable_request_context",
+      "attributes": {},
+      "characters": 4722
+    },
+    {
+      "tag": "client_system_prompt",
+      "attributes": {},
+      "characters": 4368
+    },
+    {
+      "tag": "user_first_prompt",
+      "attributes": {},
+      "characters": 65
+    }
+  ],
+  "coreDocumentComparison": {
+    "method": "strip surrounding whitespace; compare exact text against installed files",
+    "core_strategy": true,
+    "general_orchestration_skill": true,
+    "task_type_skill_prototype": true
+  },
+  "planContract": {
+    "schema": "open-design.plan-contract/v2",
+    "strategy": {
+      "id": "od-next-strategy",
+      "version": "2.0.4",
+      "packageHash": "dafe6762cb471c862f62eefda0c1905e8a9d2b5799c4b5995a8c022f24f68943",
+      "snapshotId": "46d9f4dc-88aa-4b57-a35d-dce95ecc986a"
+    },
+    "taskProfile": {
+      "schemaVersion": "2",
+      "taskType": "prototype",
+      "taskProfileVersion": "2.2.0",
+      "goal": "创建一个汽车行业单页营销页，介绍公司与车型，并收集客户保养周期信息以便后续推送。",
+      "contextAndAudience": "面向有购车、维保或周期性保养需求的车主，帮助本地汽车服务公司展示服务并获取可跟进的保养周期线索。",
+      "inputsAndReferences": [
+        "request"
+      ],
+      "constraints": [
+        "页面为单一营销页",
+        "不虚构具体品牌事实或未经确认的业务承诺",
+        "保养信息采集须明确说明其用于提醒与服务推送"
+      ],
+      "canonicalDeliverable": {
+        "id": "index.html",
+        "kind": "prototype",
+        "format": "html"
+      },
+      "requiredDeliverables": [
+        {
+          "id": "index.html",
+          "kind": "prototype"
+        }
+      ],
+      "designSpec": {
+        "source": "resolved-baseline",
+        "version": "1",
+        "decisions": {
+          "palette": "沉稳深蓝、石墨灰与高对比白色，辅以克制的琥珀色行动强调",
+          "typography": "中文系统无衬线正文，具有机械感的紧凑展示标题",
+          "spacing": "标准信息密度，采用 8px 间距节奏",
+          "components": "轻圆角表单、分层信息区块、线性图标与明确的主次操作",
+          "motion": "150–250ms 的状态反馈，并支持减少动态效果"
+        }
+      },
+      "buildRequirements": [
+        {
+          "id": "r1",
+          "text": "建立清晰的首屏价值主张、公司介绍、车型展示、服务保障和保养提醒登记内容层级。"
+        },
+        {
+          "id": "r2",
+          "text": "实现导航锚点、登记表单校验、提交反馈和可访问的键盘焦点状态。"
+        },
+        {
+          "id": "r3",
+          "text": "使用响应式布局，确保 375px 至宽屏环境下内容可读且无横向滚动。"
+        },
+        {
+          "id": "r4",
+          "text": "通过 CSS 变量集中管理深蓝、中性灰、间距、圆角和动效，保证后续可编辑性。"
+        }
+      ],
+      "assumptions": [
+        "使用通用的本地汽车服务公司场景与可替换示例车型。",
+        "登记提交后以页面内成功反馈模拟信息收集完成。"
+      ],
+      "risks": [
+        "真实品牌资产、车型图片及隐私政策链接尚未提供，页面将使用可替换内容与隐私提示占位。"
+      ],
+      "taskSpecific": {
+        "productSurface": "responsive web landing page",
+        "targetDevice": "web",
+        "primaryFlow": "浏览服务介绍与车型信息后，填写保养提醒登记并获得提交成功反馈",
+        "fidelity": "high"
+      }
+    },
+    "fullPlan": {
+      "executionMode": "simple",
+      "steps": [
+        {
+          "id": "build",
+          "objective": "构建可编辑的单页汽车服务营销原型，包含公司介绍、车型展示、服务价值与保养提醒登记交互。",
+          "outputs": [
+            "index.html"
+          ]
+        }
+      ],
+      "readinessArtifacts": [],
+      "buildPackages": []
+    },
+    "runManifest": {
+      "selectedAgentId": "codex",
+      "capabilitySnapshotHash": "c26a723855b7e47180523c63a7eb36f2be51fb097737b81f1175190a43a1f525",
+      "inputRefs": [
+        "request"
+      ],
+      "productionRoutes": [
+        "html",
+        "prototype-html"
+      ],
+      "preflight": {
+        "intake": "passed",
+        "execution": "passed"
+      }
+    },
+    "decisionSummary": {
+      "goal": "创建一个汽车行业单页营销页，介绍公司与车型，并收集客户保养周期信息以便后续推送。",
+      "deliverables": [
+        "index.html"
+      ],
+      "keyConstraints": [
+        "单一可编辑 HTML 页面",
+        "关键按钮、导航与登记表单需具备实际交互",
+        "适配移动端和桌面端"
+      ],
+      "assumptions": [
+        "未提供品牌资料，页面使用“您的公司”作为可编辑品牌占位。",
+        "保养提醒登记收集姓名、手机号、车型、上次保养时间及预计周期。"
+      ],
+      "risks": [
+        "未提供真实品牌、车型和门店资料，文案将采用可替换的通用示例。"
+      ],
+      "openDecisions": []
+    }
+  }
+}

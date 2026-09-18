@@ -1,0 +1,1035 @@
+{
+  "version": "1.0.0",
+  "source": "标准材料/行业产品详情页内容结构标准.md",
+  "derivedFrom": "specLibrary/generated.json",
+  "generatedAt": "2026-06-18T05:39:13.697Z",
+  "scope": "user-agent-content-ab-only",
+  "description": "200 行行业未命中时的 7 类母版回退",
+  "templateCount": 7,
+  "templates": {
+    "机械设备": {
+      "industryType": "机械设备",
+      "industryCount": 61,
+      "contentModuleIds": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        11,
+        12,
+        13,
+        15,
+        17,
+        20,
+        24,
+        25,
+        26
+      ],
+      "contentModules": [
+        {
+          "id": 0,
+          "name": "产品概述",
+          "layer": "A",
+          "priority": "required",
+          "outputShape": "overview",
+          "fieldTarget": "layerA.overview",
+          "guidance": null,
+          "note": "表外 baseline，各行业默认包含"
+        },
+        {
+          "id": 1,
+          "name": "产品标题与核心卖点",
+          "layer": "A",
+          "priority": "required",
+          "outputShape": "title_selling_points",
+          "fieldTarget": "layerA.title",
+          "guidance": "标题需包含各类自行车型号+核心功能+应用领域，突出技术参数优势"
+        },
+        {
+          "id": 2,
+          "name": "产品规格参数表",
+          "layer": "B",
+          "priority": "required",
+          "outputShape": "spec_table",
+          "fieldTarget": "layerB.sections[specs]",
+          "guidance": "必须包含：尺寸、重量、功率、精度、产能等关键技术参数，表格形式呈现"
+        },
+        {
+          "id": 3,
+          "name": "产品功能/性能介绍",
+          "layer": "B",
+          "priority": "required",
+          "outputShape": "text",
+          "fieldTarget": "layerB.sections[features]",
+          "guidance": "分点列出核心功能，突出性能指标，配性能曲线图或数据对比"
+        },
+        {
+          "id": 4,
+          "name": "应用场景/使用案例",
+          "layer": "B",
+          "priority": "required",
+          "outputShape": "scenario_cards",
+          "fieldTarget": "layerB.sections[scenarios]",
+          "guidance": "展示典型应用案例，配现场使用图片或视频"
+        },
+        {
+          "id": 5,
+          "name": "产品图片/视频展示",
+          "layer": "A",
+          "priority": "required",
+          "outputShape": "image_meta",
+          "fieldTarget": "layerA.media",
+          "guidance": "多角度高清图片（整体/细节/操作界面），产品运行视频",
+          "note": "生成 alt/说明文案，素材由用户上传"
+        },
+        {
+          "id": 6,
+          "name": "技术原理/工艺流程",
+          "layer": "B",
+          "priority": "required",
+          "outputShape": "text",
+          "fieldTarget": "layerB.sections[technology]",
+          "guidance": "用图解方式说明工作原理、工艺流程"
+        },
+        {
+          "id": 7,
+          "name": "质量认证/检测报告",
+          "layer": "B",
+          "priority": "required",
+          "outputShape": "bullet_list",
+          "fieldTarget": "layerB.sections[certifications]",
+          "guidance": "展示ISO、CE等认证，第三方检测数据"
+        },
+        {
+          "id": 11,
+          "name": "包装与物流信息",
+          "layer": "B",
+          "priority": "required",
+          "outputShape": "text",
+          "fieldTarget": "layerB.sections[packaging]",
+          "guidance": "说明包装方式、运输方式、交货周期"
+        },
+        {
+          "id": 12,
+          "name": "安装/使用指南",
+          "layer": "B",
+          "priority": "required",
+          "outputShape": "step_list",
+          "fieldTarget": "layerB.sections[installation]",
+          "guidance": "提供安装条件、调试流程、操作培训"
+        },
+        {
+          "id": 13,
+          "name": "常见问题FAQ",
+          "layer": "B",
+          "priority": "required",
+          "outputShape": "faq_list",
+          "fieldTarget": "layerB.sections[faq]",
+          "guidance": "列出选型、操作、维护等常见问题"
+        },
+        {
+          "id": 15,
+          "name": "对比优势/竞品分析",
+          "layer": "B",
+          "priority": "recommended",
+          "outputShape": "comparison_table",
+          "fieldTarget": "layerB.sections[comparison]",
+          "guidance": "与竞品对比，突出性价比、服务优势"
+        },
+        {
+          "id": 17,
+          "name": "安全注意事项",
+          "layer": "B",
+          "priority": "required",
+          "outputShape": "bullet_list",
+          "fieldTarget": "layerB.sections[safety]",
+          "guidance": "列出操作安全规范、防护装置"
+        },
+        {
+          "id": 20,
+          "name": "技术文档下载",
+          "layer": "B",
+          "priority": "recommended",
+          "outputShape": "doc_links",
+          "fieldTarget": "layerB.sections[documents]",
+          "guidance": "提供说明书、图纸下载",
+          "note": "富文本入口 + 产品附件占位"
+        },
+        {
+          "id": 24,
+          "name": "产品迭代/更新日志",
+          "layer": "B",
+          "priority": "recommended",
+          "outputShape": "changelog",
+          "fieldTarget": "layerB.sections[changelog]",
+          "guidance": "记录升级历史、改进点"
+        },
+        {
+          "id": 25,
+          "name": "兼容性/适配信息",
+          "layer": "B",
+          "priority": "recommended",
+          "outputShape": "spec_table",
+          "fieldTarget": "layerB.sections[compatibility]",
+          "guidance": "说明适配范围、配套件"
+        },
+        {
+          "id": 26,
+          "name": "维护保养指南",
+          "layer": "B",
+          "priority": "recommended",
+          "outputShape": "step_list",
+          "fieldTarget": "layerB.sections[maintenance]",
+          "guidance": "提供保养周期、易损件清单"
+        }
+      ]
+    },
+    "材料化工": {
+      "industryType": "材料化工",
+      "industryCount": 38,
+      "contentModuleIds": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        11,
+        13,
+        15,
+        17,
+        20,
+        25,
+        27,
+        28
+      ],
+      "contentModules": [
+        {
+          "id": 0,
+          "name": "产品概述",
+          "layer": "A",
+          "priority": "required",
+          "outputShape": "overview",
+          "fieldTarget": "layerA.overview",
+          "guidance": null,
+          "note": "表外 baseline，各行业默认包含"
+        },
+        {
+          "id": 1,
+          "name": "产品标题与核心卖点",
+          "layer": "A",
+          "priority": "required",
+          "outputShape": "title_selling_points",
+          "fieldTarget": "layerA.title",
+          "guidance": "标题包含化学试剂名称+纯度/规格+应用领域"
+        },
+        {
+          "id": 2,
+          "name": "产品规格参数表",
+          "layer": "B",
+          "priority": "required",
+          "outputShape": "spec_table",
+          "fieldTarget": "layerB.sections[specs]",
+          "guidance": "CAS号、分子式、纯度、外观、密度、熔点/沸点、包装规格"
+        },
+        {
+          "id": 3,
+          "name": "产品功能/性能介绍",
+          "layer": "B",
+          "priority": "required",
+          "outputShape": "text",
+          "fieldTarget": "layerB.sections[features]",
+          "guidance": "化学性能、反应特性、使用效果"
+        },
+        {
+          "id": 4,
+          "name": "应用场景/使用案例",
+          "layer": "B",
+          "priority": "required",
+          "outputShape": "scenario_cards",
+          "fieldTarget": "layerB.sections[scenarios]",
+          "guidance": "主要应用领域及典型客户案例"
+        },
+        {
+          "id": 5,
+          "name": "产品图片/视频展示",
+          "layer": "A",
+          "priority": "required",
+          "outputShape": "image_meta",
+          "fieldTarget": "layerA.media",
+          "guidance": "产品外观、包装、实验室检测",
+          "note": "生成 alt/说明文案，素材由用户上传"
+        },
+        {
+          "id": 6,
+          "name": "技术原理/工艺流程",
+          "layer": "B",
+          "priority": "required",
+          "outputShape": "text",
+          "fieldTarget": "layerB.sections[technology]",
+          "guidance": "生产工艺、合成路线、质量控制"
+        },
+        {
+          "id": 7,
+          "name": "质量认证/检测报告",
+          "layer": "B",
+          "priority": "required",
+          "outputShape": "bullet_list",
+          "fieldTarget": "layerB.sections[certifications]",
+          "guidance": "COA、MSDS、第三方检测、ISO"
+        },
+        {
+          "id": 11,
+          "name": "包装与物流信息",
+          "layer": "B",
+          "priority": "required",
+          "outputShape": "text",
+          "fieldTarget": "layerB.sections[packaging]",
+          "guidance": "包装规格、危险品运输、储存要求"
+        },
+        {
+          "id": 13,
+          "name": "常见问题FAQ",
+          "layer": "B",
+          "priority": "required",
+          "outputShape": "faq_list",
+          "fieldTarget": "layerB.sections[faq]",
+          "guidance": "选型、储存、安全使用问题"
+        },
+        {
+          "id": 15,
+          "name": "对比优势/竞品分析",
+          "layer": "B",
+          "priority": "recommended",
+          "outputShape": "comparison_table",
+          "fieldTarget": "layerB.sections[comparison]",
+          "guidance": "对比纯度、价格、供货稳定性"
+        },
+        {
+          "id": 17,
+          "name": "安全注意事项",
+          "layer": "B",
+          "priority": "required",
+          "outputShape": "bullet_list",
+          "fieldTarget": "layerB.sections[safety]",
+          "guidance": "MSDS、防护措施、应急处理"
+        },
+        {
+          "id": 20,
+          "name": "技术文档下载",
+          "layer": "B",
+          "priority": "recommended",
+          "outputShape": "doc_links",
+          "fieldTarget": "layerB.sections[documents]",
+          "guidance": "MSDS、TDS、COA下载",
+          "note": "富文本入口 + 产品附件占位"
+        },
+        {
+          "id": 25,
+          "name": "兼容性/适配信息",
+          "layer": "B",
+          "priority": "recommended",
+          "outputShape": "spec_table",
+          "fieldTarget": "layerB.sections[compatibility]",
+          "guidance": "与其他原料配伍性"
+        },
+        {
+          "id": 27,
+          "name": "营养成分/成分说明",
+          "layer": "B",
+          "priority": "required",
+          "outputShape": "spec_table",
+          "fieldTarget": "layerB.sections[ingredients]",
+          "guidance": "食品级产品列出成分含量"
+        },
+        {
+          "id": 28,
+          "name": "适用人群/禁忌说明",
+          "layer": "B",
+          "priority": "required",
+          "outputShape": "bullet_list",
+          "fieldTarget": "layerB.sections[audience]",
+          "guidance": "食品/医药级适用人群"
+        }
+      ]
+    },
+    "消费品食品": {
+      "industryType": "消费品食品",
+      "industryCount": 35,
+      "contentModuleIds": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        11,
+        13,
+        15,
+        17,
+        27,
+        28
+      ],
+      "contentModules": [
+        {
+          "id": 0,
+          "name": "产品概述",
+          "layer": "A",
+          "priority": "required",
+          "outputShape": "overview",
+          "fieldTarget": "layerA.overview",
+          "guidance": null,
+          "note": "表外 baseline，各行业默认包含"
+        },
+        {
+          "id": 1,
+          "name": "产品标题与核心卖点",
+          "layer": "A",
+          "priority": "required",
+          "outputShape": "title_selling_points",
+          "fieldTarget": "layerA.title",
+          "guidance": "标题包含品牌+金银首饰+核心卖点+规格"
+        },
+        {
+          "id": 2,
+          "name": "产品规格参数表",
+          "layer": "B",
+          "priority": "required",
+          "outputShape": "spec_table",
+          "fieldTarget": "layerB.sections[specs]",
+          "guidance": "规格、配料表、营养成分、保质期、储存条件、产地"
+        },
+        {
+          "id": 3,
+          "name": "产品功能/性能介绍",
+          "layer": "B",
+          "priority": "required",
+          "outputShape": "text",
+          "fieldTarget": "layerB.sections[features]",
+          "guidance": "口感、风味、营养价值、独特工艺"
+        },
+        {
+          "id": 4,
+          "name": "应用场景/使用案例",
+          "layer": "B",
+          "priority": "required",
+          "outputShape": "scenario_cards",
+          "fieldTarget": "layerB.sections[scenarios]",
+          "guidance": "食用场景（早餐、聚会、送礼等）"
+        },
+        {
+          "id": 5,
+          "name": "产品图片/视频展示",
+          "layer": "A",
+          "priority": "required",
+          "outputShape": "image_meta",
+          "fieldTarget": "layerA.media",
+          "guidance": "产品高清图、包装、开箱视频、场景图",
+          "note": "生成 alt/说明文案，素材由用户上传"
+        },
+        {
+          "id": 6,
+          "name": "技术原理/工艺流程",
+          "layer": "B",
+          "priority": "required",
+          "outputShape": "text",
+          "fieldTarget": "layerB.sections[technology]",
+          "guidance": "生产工艺、品质保障"
+        },
+        {
+          "id": 7,
+          "name": "质量认证/检测报告",
+          "layer": "B",
+          "priority": "required",
+          "outputShape": "bullet_list",
+          "fieldTarget": "layerB.sections[certifications]",
+          "guidance": "食品许可证、有机认证、质检报告"
+        },
+        {
+          "id": 11,
+          "name": "包装与物流信息",
+          "layer": "B",
+          "priority": "required",
+          "outputShape": "text",
+          "fieldTarget": "layerB.sections[packaging]",
+          "guidance": "包装、物流、保鲜、配送时效"
+        },
+        {
+          "id": 13,
+          "name": "常见问题FAQ",
+          "layer": "B",
+          "priority": "required",
+          "outputShape": "faq_list",
+          "fieldTarget": "layerB.sections[faq]",
+          "guidance": "保质期、储存、食用建议"
+        },
+        {
+          "id": 15,
+          "name": "对比优势/竞品分析",
+          "layer": "B",
+          "priority": "recommended",
+          "outputShape": "comparison_table",
+          "fieldTarget": "layerB.sections[comparison]",
+          "guidance": "对比原料、工艺、口感、价格"
+        },
+        {
+          "id": 17,
+          "name": "安全注意事项",
+          "layer": "B",
+          "priority": "required",
+          "outputShape": "bullet_list",
+          "fieldTarget": "layerB.sections[safety]",
+          "guidance": "过敏原、食用禁忌"
+        },
+        {
+          "id": 27,
+          "name": "营养成分/成分说明",
+          "layer": "B",
+          "priority": "required",
+          "outputShape": "spec_table",
+          "fieldTarget": "layerB.sections[ingredients]",
+          "guidance": "详细营养成分表"
+        },
+        {
+          "id": 28,
+          "name": "适用人群/禁忌说明",
+          "layer": "B",
+          "priority": "required",
+          "outputShape": "bullet_list",
+          "fieldTarget": "layerB.sections[audience]",
+          "guidance": "适用人群、禁忌、食用建议"
+        }
+      ]
+    },
+    "家居建材": {
+      "industryType": "家居建材",
+      "industryCount": 9,
+      "contentModuleIds": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        11,
+        12,
+        13,
+        15,
+        17,
+        20,
+        25,
+        26
+      ],
+      "contentModules": [
+        {
+          "id": 0,
+          "name": "产品概述",
+          "layer": "A",
+          "priority": "required",
+          "outputShape": "overview",
+          "fieldTarget": "layerA.overview",
+          "guidance": null,
+          "note": "表外 baseline，各行业默认包含"
+        },
+        {
+          "id": 1,
+          "name": "产品标题与核心卖点",
+          "layer": "A",
+          "priority": "required",
+          "outputShape": "title_selling_points",
+          "fieldTarget": "layerA.title",
+          "guidance": "标题包含品牌+智能照明+材质+规格+风格"
+        },
+        {
+          "id": 2,
+          "name": "产品规格参数表",
+          "layer": "B",
+          "priority": "required",
+          "outputShape": "spec_table",
+          "fieldTarget": "layerB.sections[specs]",
+          "guidance": "尺寸、材质、颜色、重量、承重、环保等级"
+        },
+        {
+          "id": 3,
+          "name": "产品功能/性能介绍",
+          "layer": "B",
+          "priority": "required",
+          "outputShape": "text",
+          "fieldTarget": "layerB.sections[features]",
+          "guidance": "功能分区、收纳容量、便利性、耐用性"
+        },
+        {
+          "id": 4,
+          "name": "应用场景/使用案例",
+          "layer": "B",
+          "priority": "required",
+          "outputShape": "scenario_cards",
+          "fieldTarget": "layerB.sections[scenarios]",
+          "guidance": "不同户型/风格效果图、VR体验"
+        },
+        {
+          "id": 5,
+          "name": "产品图片/视频展示",
+          "layer": "A",
+          "priority": "required",
+          "outputShape": "image_meta",
+          "fieldTarget": "layerA.media",
+          "guidance": "产品图、场景图、细节图、视频",
+          "note": "生成 alt/说明文案，素材由用户上传"
+        },
+        {
+          "id": 6,
+          "name": "技术原理/工艺流程",
+          "layer": "B",
+          "priority": "required",
+          "outputShape": "text",
+          "fieldTarget": "layerB.sections[technology]",
+          "guidance": "生产工艺、材料处理、环保工艺"
+        },
+        {
+          "id": 7,
+          "name": "质量认证/检测报告",
+          "layer": "B",
+          "priority": "required",
+          "outputShape": "bullet_list",
+          "fieldTarget": "layerB.sections[certifications]",
+          "guidance": "环保检测（甲醛）、材质检测"
+        },
+        {
+          "id": 11,
+          "name": "包装与物流信息",
+          "layer": "B",
+          "priority": "required",
+          "outputShape": "text",
+          "fieldTarget": "layerB.sections[packaging]",
+          "guidance": "包装、配送、上楼、安装服务"
+        },
+        {
+          "id": 12,
+          "name": "安装/使用指南",
+          "layer": "B",
+          "priority": "required",
+          "outputShape": "step_list",
+          "fieldTarget": "layerB.sections[installation]",
+          "guidance": "安装条件、流程、使用注意、保养"
+        },
+        {
+          "id": 13,
+          "name": "常见问题FAQ",
+          "layer": "B",
+          "priority": "required",
+          "outputShape": "faq_list",
+          "fieldTarget": "layerB.sections[faq]",
+          "guidance": "尺寸定制、颜色、安装、售后"
+        },
+        {
+          "id": 15,
+          "name": "对比优势/竞品分析",
+          "layer": "B",
+          "priority": "recommended",
+          "outputShape": "comparison_table",
+          "fieldTarget": "layerB.sections[comparison]",
+          "guidance": "对比材质、环保、价格、服务"
+        },
+        {
+          "id": 17,
+          "name": "安全注意事项",
+          "layer": "B",
+          "priority": "required",
+          "outputShape": "bullet_list",
+          "fieldTarget": "layerB.sections[safety]",
+          "guidance": "安装安全、承重限制、儿童安全"
+        },
+        {
+          "id": 20,
+          "name": "技术文档下载",
+          "layer": "B",
+          "priority": "recommended",
+          "outputShape": "doc_links",
+          "fieldTarget": "layerB.sections[documents]",
+          "guidance": "安装说明书、保养手册、CAD",
+          "note": "富文本入口 + 产品附件占位"
+        },
+        {
+          "id": 25,
+          "name": "兼容性/适配信息",
+          "layer": "B",
+          "priority": "recommended",
+          "outputShape": "spec_table",
+          "fieldTarget": "layerB.sections[compatibility]",
+          "guidance": "风格搭配、尺寸适配"
+        },
+        {
+          "id": 26,
+          "name": "维护保养指南",
+          "layer": "B",
+          "priority": "recommended",
+          "outputShape": "step_list",
+          "fieldTarget": "layerB.sections[maintenance]",
+          "guidance": "清洁方法、保养周期"
+        }
+      ]
+    },
+    "服务类": {
+      "industryType": "服务类",
+      "industryCount": 34,
+      "contentModuleIds": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        12,
+        13,
+        15,
+        17,
+        20,
+        25,
+        28
+      ],
+      "contentModules": [
+        {
+          "id": 0,
+          "name": "产品概述",
+          "layer": "A",
+          "priority": "required",
+          "outputShape": "overview",
+          "fieldTarget": "layerA.overview",
+          "guidance": null,
+          "note": "表外 baseline，各行业默认包含"
+        },
+        {
+          "id": 1,
+          "name": "产品标题与核心卖点",
+          "layer": "A",
+          "priority": "required",
+          "outputShape": "title_selling_points",
+          "fieldTarget": "layerA.title",
+          "guidance": "标题包含提供质量管理体系认证服务类型+核心优势+服务对象"
+        },
+        {
+          "id": 2,
+          "name": "产品规格参数表",
+          "layer": "B",
+          "priority": "required",
+          "outputShape": "spec_table",
+          "fieldTarget": "layerB.sections[specs]",
+          "guidance": "服务内容、周期、团队配置、交付成果"
+        },
+        {
+          "id": 3,
+          "name": "产品功能/性能介绍",
+          "layer": "B",
+          "priority": "required",
+          "outputShape": "text",
+          "fieldTarget": "layerB.sections[features]",
+          "guidance": "服务流程、价值、预期效果、优势"
+        },
+        {
+          "id": 4,
+          "name": "应用场景/使用案例",
+          "layer": "B",
+          "priority": "required",
+          "outputShape": "scenario_cards",
+          "fieldTarget": "layerB.sections[scenarios]",
+          "guidance": "不同行业/规模企业案例、前后对比"
+        },
+        {
+          "id": 5,
+          "name": "产品图片/视频展示",
+          "layer": "A",
+          "priority": "required",
+          "outputShape": "image_meta",
+          "fieldTarget": "layerA.media",
+          "guidance": "服务场景、团队、办公环境、现场",
+          "note": "生成 alt/说明文案，素材由用户上传"
+        },
+        {
+          "id": 6,
+          "name": "技术原理/工艺流程",
+          "layer": "B",
+          "priority": "required",
+          "outputShape": "text",
+          "fieldTarget": "layerB.sections[technology]",
+          "guidance": "服务方法论、工作流程、质量控制"
+        },
+        {
+          "id": 7,
+          "name": "质量认证/检测报告",
+          "layer": "B",
+          "priority": "required",
+          "outputShape": "bullet_list",
+          "fieldTarget": "layerB.sections[certifications]",
+          "guidance": "机构资质、人员资格、行业认可"
+        },
+        {
+          "id": 12,
+          "name": "安装/使用指南",
+          "layer": "B",
+          "priority": "required",
+          "outputShape": "step_list",
+          "fieldTarget": "layerB.sections[installation]",
+          "guidance": "服务启动、客户配合、交付标准"
+        },
+        {
+          "id": 13,
+          "name": "常见问题FAQ",
+          "layer": "B",
+          "priority": "required",
+          "outputShape": "faq_list",
+          "fieldTarget": "layerB.sections[faq]",
+          "guidance": "周期、价格、效果、退款"
+        },
+        {
+          "id": 15,
+          "name": "对比优势/竞品分析",
+          "layer": "B",
+          "priority": "recommended",
+          "outputShape": "comparison_table",
+          "fieldTarget": "layerB.sections[comparison]",
+          "guidance": "对比价格、效率、成功率"
+        },
+        {
+          "id": 17,
+          "name": "安全注意事项",
+          "layer": "B",
+          "priority": "required",
+          "outputShape": "bullet_list",
+          "fieldTarget": "layerB.sections[safety]",
+          "guidance": "数据保密、信息安全、合规"
+        },
+        {
+          "id": 20,
+          "name": "技术文档下载",
+          "layer": "B",
+          "priority": "recommended",
+          "outputShape": "doc_links",
+          "fieldTarget": "layerB.sections[documents]",
+          "guidance": "服务手册、案例集、白皮书",
+          "note": "富文本入口 + 产品附件占位"
+        },
+        {
+          "id": 25,
+          "name": "兼容性/适配信息",
+          "layer": "B",
+          "priority": "recommended",
+          "outputShape": "spec_table",
+          "fieldTarget": "layerB.sections[compatibility]",
+          "guidance": "适用企业规模、行业、系统"
+        },
+        {
+          "id": 28,
+          "name": "适用人群/禁忌说明",
+          "layer": "B",
+          "priority": "required",
+          "outputShape": "bullet_list",
+          "fieldTarget": "layerB.sections[audience]",
+          "guidance": "适用企业类型、不适用情况"
+        }
+      ]
+    },
+    "其他": {
+      "industryType": "其他",
+      "industryCount": 8,
+      "contentModuleIds": [
+        0
+      ],
+      "contentModules": [
+        {
+          "id": 0,
+          "name": "产品概述",
+          "layer": "A",
+          "priority": "required",
+          "outputShape": "overview",
+          "fieldTarget": "layerA.overview",
+          "guidance": null,
+          "note": "表外 baseline，各行业默认包含"
+        }
+      ]
+    },
+    "电子电气": {
+      "industryType": "电子电气",
+      "industryCount": 15,
+      "contentModuleIds": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        11,
+        12,
+        13,
+        15,
+        17,
+        20,
+        24,
+        25
+      ],
+      "contentModules": [
+        {
+          "id": 0,
+          "name": "产品概述",
+          "layer": "A",
+          "priority": "required",
+          "outputShape": "overview",
+          "fieldTarget": "layerA.overview",
+          "guidance": null,
+          "note": "表外 baseline，各行业默认包含"
+        },
+        {
+          "id": 1,
+          "name": "产品标题与核心卖点",
+          "layer": "A",
+          "priority": "required",
+          "outputShape": "title_selling_points",
+          "fieldTarget": "layerA.title",
+          "guidance": "标题包含扫地机器人型号+核心参数+应用场景，如'XX型号-1200V/600A-新能源专用'"
+        },
+        {
+          "id": 2,
+          "name": "产品规格参数表",
+          "layer": "B",
+          "priority": "required",
+          "outputShape": "spec_table",
+          "fieldTarget": "layerB.sections[specs]",
+          "guidance": "电气参数（电压/电流/功率）、尺寸、引脚定义、工作温度、封装"
+        },
+        {
+          "id": 3,
+          "name": "产品功能/性能介绍",
+          "layer": "B",
+          "priority": "required",
+          "outputShape": "text",
+          "fieldTarget": "layerB.sections[features]",
+          "guidance": "功能特性、性能曲线、效率、响应速度、可靠性指标"
+        },
+        {
+          "id": 4,
+          "name": "应用场景/使用案例",
+          "layer": "B",
+          "priority": "required",
+          "outputShape": "scenario_cards",
+          "fieldTarget": "layerB.sections[scenarios]",
+          "guidance": "典型应用电路、行业案例（新能源/工业/汽车）"
+        },
+        {
+          "id": 5,
+          "name": "产品图片/视频展示",
+          "layer": "A",
+          "priority": "required",
+          "outputShape": "image_meta",
+          "fieldTarget": "layerA.media",
+          "guidance": "产品外观、封装细节、应用电路图",
+          "note": "生成 alt/说明文案，素材由用户上传"
+        },
+        {
+          "id": 6,
+          "name": "技术原理/工艺流程",
+          "layer": "B",
+          "priority": "required",
+          "outputShape": "text",
+          "fieldTarget": "layerB.sections[technology]",
+          "guidance": "工作原理框图、内部结构、生产工艺"
+        },
+        {
+          "id": 7,
+          "name": "质量认证/检测报告",
+          "layer": "B",
+          "priority": "required",
+          "outputShape": "bullet_list",
+          "fieldTarget": "layerB.sections[certifications]",
+          "guidance": "AEC-Q100/Q200、RoHS、REACH、可靠性报告"
+        },
+        {
+          "id": 11,
+          "name": "包装与物流信息",
+          "layer": "B",
+          "priority": "required",
+          "outputShape": "text",
+          "fieldTarget": "layerB.sections[packaging]",
+          "guidance": "防静电包装、最小包装量、交货周期"
+        },
+        {
+          "id": 12,
+          "name": "安装/使用指南",
+          "layer": "B",
+          "priority": "required",
+          "outputShape": "step_list",
+          "fieldTarget": "layerB.sections[installation]",
+          "guidance": "引脚连接图、典型应用电路、PCB布局"
+        },
+        {
+          "id": 13,
+          "name": "常见问题FAQ",
+          "layer": "B",
+          "priority": "required",
+          "outputShape": "faq_list",
+          "fieldTarget": "layerB.sections[faq]",
+          "guidance": "选型指导、使用注意事项"
+        },
+        {
+          "id": 15,
+          "name": "对比优势/竞品分析",
+          "layer": "B",
+          "priority": "recommended",
+          "outputShape": "comparison_table",
+          "fieldTarget": "layerB.sections[comparison]",
+          "guidance": "与竞品对比性能、价格、供货"
+        },
+        {
+          "id": 17,
+          "name": "安全注意事项",
+          "layer": "B",
+          "priority": "required",
+          "outputShape": "bullet_list",
+          "fieldTarget": "layerB.sections[safety]",
+          "guidance": "ESD防护、操作规范"
+        },
+        {
+          "id": 20,
+          "name": "技术文档下载",
+          "layer": "B",
+          "priority": "recommended",
+          "outputShape": "doc_links",
+          "fieldTarget": "layerB.sections[documents]",
+          "guidance": "Datasheet、应用笔记、参考设计",
+          "note": "富文本入口 + 产品附件占位"
+        },
+        {
+          "id": 24,
+          "name": "产品迭代/更新日志",
+          "layer": "B",
+          "priority": "recommended",
+          "outputShape": "changelog",
+          "fieldTarget": "layerB.sections[changelog]",
+          "guidance": "版本更新、性能改进"
+        },
+        {
+          "id": 25,
+          "name": "兼容性/适配信息",
+          "layer": "B",
+          "priority": "recommended",
+          "outputShape": "spec_table",
+          "fieldTarget": "layerB.sections[compatibility]",
+          "guidance": "与主流系统兼容性、替代型号"
+        }
+      ]
+    }
+  }
+}

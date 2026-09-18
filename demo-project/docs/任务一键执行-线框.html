@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>任务一键执行 · 线框</title>
+  <style>
+    :root { --line:#1a1a1a; --muted:#5c5c5c; --fill:#f3f3f3; --note:#6b6b6b; }
+    * { box-sizing: border-box; }
+    body { margin:0; font-family:"Microsoft YaHei","PingFang SC",sans-serif; background:#ececec; color:var(--line); }
+    header.page-head { position:sticky; top:0; z-index:5; background:#fff; border-bottom:1px solid #ddd; padding:12px 20px 8px; }
+    header.page-head h1 { margin:0 0 4px; font-size:16px; font-weight:700; }
+    header.page-head p { margin:0 0 10px; font-size:12px; color:var(--note); max-width:920px; line-height:1.5; }
+    nav { display:flex; flex-wrap:wrap; gap:6px; }
+    nav a { display:inline-block; padding:4px 8px; border:1px solid #ccc; background:#fff; color:#333; text-decoration:none; font-size:12px; }
+    nav a:hover { background:#111; color:#fff; border-color:#111; }
+    main { padding:20px; max-width:1180px; margin:0 auto; }
+    .block { margin-bottom:40px; }
+    .meta { display:flex; justify-content:space-between; gap:12px; margin-bottom:8px; }
+    .meta h2 { margin:0; font-size:15px; }
+    .meta span { font-size:12px; color:var(--note); }
+    .callout { font-size:12px; color:var(--note); border-left:3px solid #111; padding:6px 10px; margin:0 0 10px; background:#fafafa; line-height:1.5; }
+    .frame { background:#fff; border:2px solid var(--line); min-height:520px; display:flex; flex-direction:column; }
+    .topbar { display:flex; gap:16px; padding:8px 12px; border-bottom:2px solid var(--line); font-size:12px; background:#111; color:#fff; }
+    .topbar b { text-decoration:underline; }
+    .shell { display:flex; flex:1; min-height:0; }
+    .left { width:168px; border-right:1px solid var(--line); padding:10px; font-size:12px; display:flex; flex-direction:column; gap:6px; }
+    .left .ttl { font-weight:700; }
+    .btn { border:1px solid var(--line); padding:6px 8px; text-align:center; }
+    .item { border:1px solid #ccc; padding:6px 8px; color:var(--muted); }
+    .item.on { border-color:var(--line); color:var(--line); font-weight:600; }
+    .chat { flex:1; min-width:0; display:flex; flex-direction:column; }
+    .chat-head { padding:10px 12px; border-bottom:1px solid var(--line); font-size:13px; font-weight:700; }
+    .msgs { flex:1; padding:12px 14px; display:flex; flex-direction:column; gap:10px; font-size:13px; }
+    .bubble { border:1px solid var(--line); padding:8px 10px; max-width:94%; line-height:1.45; }
+    .bubble.user { align-self:flex-end; background:var(--fill); }
+    .card { border:2px solid var(--line); padding:10px; background:#fff; max-width:94%; }
+    .card .h { font-weight:700; margin-bottom:6px; }
+    .tiny { font-size:11px; color:var(--muted); line-height:1.4; }
+    .row { display:flex; justify-content:space-between; gap:8px; font-size:12px; padding:3px 0; }
+    .btns { display:flex; gap:8px; margin-top:8px; }
+    .btns span { border:1px solid var(--line); padding:4px 10px; font-size:12px; }
+    .btns .pri { background:#111; color:#fff; }
+    .btns .ghost { border-style:dashed; color:var(--muted); }
+    .input { margin:0 12px 12px; border:1px solid var(--line); min-height:40px; padding:8px 10px; color:var(--muted); font-size:12px; }
+    .tag { font-size:10px; border:1px solid var(--line); padding:1px 4px; margin-left:4px; }
+    .side { width:280px; border-left:2px solid var(--line); background:#fafafa; font-size:12px; }
+    .side.closed { width:28px; writing-mode:vertical-rl; color:var(--muted); display:flex; align-items:center; justify-content:center; letter-spacing:2px; }
+    .side-head { padding:10px 12px; border-bottom:1px solid var(--line); font-weight:700; background:#fff; }
+    .side-body { padding:10px 12px; display:flex; flex-direction:column; gap:8px; }
+    .phone { width:280px; border:2px solid var(--line); background:#fff; margin:0 auto; }
+    .phone .bar { background:#111; color:#fff; padding:8px 10px; font-size:12px; }
+    .push { margin:10px; border:1px solid var(--line); padding:10px; font-size:13px; line-height:1.45; }
+    .compare { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+    .principles { display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px; }
+    .principles div { border:1px solid var(--line); background:#fff; padding:10px 12px; font-size:13px; line-height:1.5; }
+    .principles b { display:block; margin-bottom:4px; }
+    @media (max-width:900px) { .compare,.principles { grid-template-columns:1fr; } }
+  </style>
+</head>
+<body>
+  <header class="page-head">
+    <h1>诊断出任务之后，一键执行接在哪</h1>
+    <p>一键跳过的是「再把这件事从零说一遍」。一键停住的是「对外发出去」。任务必须是填好参数的工单，不能是一段建议。</p>
+    <nav>
+      <a href="#p0">0 一键是什么</a>
+      <a href="#p1">1 诊断出工单</a>
+      <a href="#p2">2 点执行之后</a>
+      <a href="#p3">3 手机上同一张单</a>
+      <a href="#p4">4 不要做成这样</a>
+    </nav>
+  </header>
+  <main>
+    <section class="block" id="p0">
+      <div class="meta"><h2>0 · 三种任务，三种「一键」</h2><span>不是所有任务都点一下就对外生效</span></div>
+      <div class="principles">
+        <div><b>确认后执行 · 内容/获客</b>一键 = 带着 URL 和改法开工，出草稿或名单。人再点「发布 / 发信」。这是原型主路径。</div>
+        <div><b>自动执行 · 技术止血</b>没有一键。sitemap、404、询盘链路，系统自己做完，手机只收结果。人不进后台。</div>
+        <div><b>只出方案 · 站外/花钱</b>没有执行键。投放、外链、改预算只给建议，避免假装能改。</div>
+      </div>
+    </section>
+
+    <section class="block" id="p1">
+      <div class="meta"><h2>1 · 诊断结束：出工单，不出作文</h2><span>每张卡已经绑好站点、页面、Skill、改法</span></div>
+      <p class="callout">现在增长诊断给的是「帮我修改产品 + 提示词」，人还要复制去聊天。一键要成立，卡上必须已经是可跑参数：对象 URL、改哪、用哪条 Skill、停在哪一档。</p>
+      <div class="frame">
+        <div class="topbar"><span>数字门户</span><span>概况 网站管理 营销管理 <b>运营助手</b></span></div>
+        <div class="shell">
+          <div class="left">
+            <div class="ttl">工作台</div>
+            <div class="btn">+ 新对话</div>
+            <div class="btn">◎ 自动化任务</div>
+            <div class="item on">询盘为什么掉了</div>
+            <div class="item">获客计划 · 美国</div>
+          </div>
+          <div class="chat">
+            <div class="chat-head">AI 运营助手 · 北京阀门中文站</div>
+            <div class="msgs">
+              <div class="bubble user">这周询盘怎么少了</div>
+              <div class="bubble">主力球阀详情页首屏没有口径和材质，访客看两眼就走。站内能做的就这一件；投放预算我动不了。</div>
+              <div class="card">
+                <div class="h">改主力球阀详情 <span class="tag">确认后执行</span></div>
+                <div class="row"><span>对象</span><b>…/q41f-16p.html</b></div>
+                <div class="row"><span>已填</span><span>首屏补 DN50 / PN16 / 不锈钢</span></div>
+                <div class="row"><span>走</span><span>修改产品 · 出草稿，不直接上线</span></div>
+                <div class="tiny">档案里主推型号、对外电话已带上，不用再问。</div>
+                <div class="btns"><span class="pri">执行</span><span>先看页面</span></div>
+              </div>
+              <div class="card">
+                <div class="h">投放文案和落地页对不齐 <span class="tag">只出方案</span></div>
+                <div class="tiny">要投放侧把落地地址切到新页。助手不改广告后台。</div>
+                <div class="btns"><span class="ghost">没有执行键</span></div>
+              </div>
+            </div>
+            <div class="input">直接说，或点卡上的执行</div>
+          </div>
+          <div class="side closed">产物区收起</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="block" id="p2">
+      <div class="meta"><h2>2 · 点「执行」：跳过重说，停在草稿</h2><span>同一条会话里开工，不新开欢迎语</span></div>
+      <p class="callout">执行 = 用这张工单的参数拉起已有 Skill。网站档案当事实。人看到的是「正在改这一页」，不是「您要发布产品还是挖客户」。</p>
+      <div class="frame">
+        <div class="topbar"><span>数字门户</span><span><b>运营助手</b></span></div>
+        <div class="shell">
+          <div class="left">
+            <div class="ttl">工作台</div>
+            <div class="item on">询盘为什么掉了</div>
+            <div class="tiny" style="padding:4px;">这次执行也记在这条会话里，不另开一轮从零聊。</div>
+          </div>
+          <div class="chat">
+            <div class="chat-head">正在执行 · 修改产品</div>
+            <div class="msgs">
+              <div class="tiny">任务已接上 · Q41F-16P · 局部改首屏</div>
+              <div class="bubble">首屏已补口径、压力、材质。还没发布。</div>
+              <div class="card">
+                <div class="h">草稿已出 <span class="tag">产物入口</span></div>
+                <div class="tiny">打开后台页检查。发布仍用产品页上的按钮。</div>
+                <div class="btns"><span class="pri">打开产品页</span><span>继续改</span></div>
+              </div>
+            </div>
+            <div class="input">首屏再加阀体材质</div>
+          </div>
+          <div class="side">
+            <div class="side-head">产品编辑</div>
+            <div class="side-body">
+              <div class="card" style="max-width:none;">
+                <div class="h">Q41F-16P</div>
+                <div class="tiny">DN50 · PN16 · 不锈钢 304</div>
+                <div class="btns"><span class="pri">保存并发布</span><span>预览</span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="block" id="p3">
+      <div class="meta"><h2>3 · 手机推送：还是这张工单</h2><span>老板/销售点执行，后台自己跑</span></div>
+      <p class="callout">推送不要另做一套按钮。点执行 = 云端跑同一张任务。草稿好了再推一次「请看一眼再上线」。群发邮件更是第二下才发出去。</p>
+      <div class="phone">
+        <div class="bar">消息 · 运营助手</div>
+        <div class="push">
+          <b>中文站询盘少了 11 条</b><br />
+          已备好任务：改主力球阀详情首屏。
+          <div class="btns"><span class="pri">执行</span><span>稍后</span></div>
+        </div>
+        <div class="push">
+          <b>草稿好了，还没上线</b><br />
+          Q41F-16P 首屏已补参数。点开发布，或进电脑后台看页。
+          <div class="btns"><span class="pri">打开发布确认</span></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="block" id="p4">
+      <div class="meta"><h2>4 · 不要把「一键」做成这两种</h2></div>
+      <div class="compare">
+        <div>
+          <p class="callout">一键直接群发 / 直接上线：对外不可逆，默认不能。获客计划里「自动发送」只发已经确认过的那封信。</p>
+          <div class="frame" style="min-height:220px;">
+            <div class="msgs">
+              <div class="card">
+                <div class="h">挖到 40 家采购商</div>
+                <div class="btns"><span class="pri">一键群发</span></div>
+                <div class="tiny">这键不要。人还没看过信。</div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div>
+          <p class="callout">一键只是把提示词贴进输入框：人还要回车、再确认 URL、再选改法。那不叫执行，叫帮你复制。</p>
+          <div class="frame" style="min-height:220px;">
+            <div class="msgs">
+              <div class="card">
+                <div class="h">建议你这样说</div>
+                <div class="tiny">帮我修改产品 https://… 把首屏加上材质</div>
+                <div class="btns"><span>复制口令</span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+</body>
+</html>

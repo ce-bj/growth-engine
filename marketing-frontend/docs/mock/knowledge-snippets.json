@@ -1,0 +1,24 @@
+{
+  "site_id": "haigong-precision",
+  "note": "知识库增强，不进档案。无命中则预制方案不得编造。",
+  "snippets": [
+    {
+      "id": "K001",
+      "topic": "认证",
+      "text": "Quality 页列出 ISO 9001、ISO 14001、IATF 16949 名称，未公布证书编号与发证日期。落地页只写名称，不写编号。",
+      "use_for": ["trust", "certs"]
+    },
+    {
+      "id": "K002",
+      "topic": "打样时效",
+      "text": "Capability 页：常规铝合金件 48 小时出样。复杂五轴件不作 48h 承诺。",
+      "use_for": ["lead_hook", "selling_points"]
+    },
+    {
+      "id": "K003",
+      "topic": "买家",
+      "text": "目标买家为欧美进口商与 OEM 工厂采购，决策因素：交期、图纸响应、IATF（汽车件）。",
+      "use_for": ["target_audience"]
+    }
+  ]
+}

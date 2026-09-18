@@ -1,0 +1,297 @@
+{
+  "version": "1.0.0",
+  "source": "指标字典与假设方案库.xlsx · 假设方案库",
+  "note": "运营改这里即可新增/调整假设，不需要改引擎代码。引擎中不允许出现 if 假设N。",
+  "scopes": {
+    "site": "全站",
+    "anomaly_page": "第 3 步钉出的异常页",
+    "anomaly_detail_page": "转化交互率异常的产品详情页",
+    "anomaly_channel": "钉出的异常渠道",
+    "anomaly_keyword": "钉出的异常搜索词",
+    "anomaly_keyword_page": "异常搜索词 × 其落地页",
+    "uplift_channel": "UV 判为提升的渠道",
+    "all_channels": "全体渠道切片",
+    "all_pages": "全体页面切片",
+    "all_keywords": "全体搜索词切片",
+    "channels_of(anomaly_page)": "该异常页下的各渠道切片",
+    "keywords_of(anomaly_page)": "落到该异常页的各搜索词切片",
+    "other_keywords_of(anomaly_page)": "落到该异常页、但不是异常词的其他词",
+    "channel_of(anomaly_keyword)": "该搜索词所属渠道",
+    "page_of(anomaly_keyword)": "该搜索词的落地页"
+  },
+  "hypotheses": [
+    {
+      "id": "H-EN-01",
+      "seq": 1,
+      "layer": "访问入口",
+      "name": "某个渠道来的人少了（投放缩了、搜索引擎优化掉了、或外链少了）",
+      "requires": ["UV@渠道"],
+      "when": {
+        "count": { "metric": "UV@渠道", "scope": "all_channels", "state": "异常" },
+        "gte": 1,
+        "lte": 2
+      },
+      "measures": ["M-站外建议-渠道来量核查"]
+    },
+    {
+      "id": "H-EN-02",
+      "seq": 2,
+      "layer": "访问入口",
+      "name": "来的人总量差不多，但结构变差了",
+      "requires": ["UV@全站", "渠道UV占比@渠道"],
+      "when": {
+        "all": [
+          { "metric": "UV@全站", "scope": "site", "state": "非异常" },
+          {
+            "count": { "metric": "渠道UV占比@渠道", "scope": "all_channels", "state": "异常" },
+            "gte": 1
+          }
+        ]
+      },
+      "measures": ["M-持续内容发布-承接搜索意图", "M-站外建议-预算配比调整"]
+    },
+    {
+      "id": "H-EN-03",
+      "seq": 3,
+      "layer": "访问入口",
+      "name": "能带来访客的搜索词的展现或点击量降低了",
+      "requires": [
+        "健康度待处理问题数@全站",
+        "来路关键词展现量@搜索词",
+        "来路关键词点击量@搜索词",
+        "UV@渠道",
+        "落地接住率@页面"
+      ],
+      "when": {
+        "all": [
+          { "metric": "健康度待处理问题数@全站", "scope": "site", "state": "非异常" },
+          {
+            "any": [
+              { "metric": "来路关键词展现量@搜索词", "scope": "anomaly_keyword", "state": "异常" },
+              { "metric": "来路关键词点击量@搜索词", "scope": "anomaly_keyword", "state": "异常" }
+            ]
+          },
+          {
+            "any": [
+              { "metric": "UV@渠道", "scope": "channel_of(anomaly_keyword)", "state": "异常" },
+              { "metric": "落地接住率@页面", "scope": "page_of(anomaly_keyword)", "state": "异常" }
+            ]
+          }
+        ]
+      },
+      "measures": [
+        "M-持续内容发布-匹配词意图",
+        "M-生成产品详情页-补缺型号",
+        "M-生成或重做营销落地页-对口承接"
+      ]
+    },
+    {
+      "id": "H-L1-04",
+      "seq": 4,
+      "layer": "流失点1",
+      "name": "落地页和广告创意对不上，或和这个渠道来的人对不上",
+      "requires": ["落地接住率@渠道×页"],
+      "when": {
+        "count": {
+          "metric": "落地接住率@渠道×页",
+          "scope": "channels_of(anomaly_page)",
+          "state": "异常"
+        },
+        "eq": 1
+      },
+      "measures": ["M-改页面文案-首屏对齐来意", "M-生成或重做营销落地页-按渠道来意"]
+    },
+    {
+      "id": "H-L1-05",
+      "seq": 5,
+      "layer": "流失点1",
+      "name": "页面内容和搜索意图对不上",
+      "requires": [
+        "落地接住率@搜索词×页",
+        "来路关键词点击量@搜索词",
+        "落地接住率@渠道×页"
+      ],
+      "when": {
+        "all": [
+          { "metric": "落地接住率@搜索词×页", "scope": "anomaly_keyword_page", "state": "异常" },
+          { "metric": "来路关键词点击量@搜索词", "scope": "anomaly_keyword", "state": "异常" },
+          {
+            "count": {
+              "metric": "落地接住率@渠道×页",
+              "scope": "channels_of(anomaly_page)",
+              "state": "异常"
+            },
+            "eq": 0
+          },
+          {
+            "count": {
+              "metric": "落地接住率@搜索词×页",
+              "scope": "other_keywords_of(anomaly_page)",
+              "state": "异常"
+            },
+            "eq": 0
+          }
+        ]
+      },
+      "measures": ["M-改页面文案-按词意图重写", "M-持续内容发布-巩固该词承接"]
+    },
+    {
+      "id": "H-L1-06",
+      "seq": 6,
+      "layer": "流失点1",
+      "name": "这一页的第一屏没接住客户，客户看了上半屏就走了",
+      "requires": ["落地接住率@页面", "落地停留均值@页面", "滚动深度P75@页面"],
+      "when": {
+        "all": [
+          { "metric": "落地接住率@页面", "scope": "anomaly_page", "state": "异常" },
+          { "metric": "落地停留均值@页面", "scope": "anomaly_page", "state": "异常" },
+          {
+            "any": [
+              { "metric": "滚动深度P75@页面", "scope": "anomaly_page", "state": "异常" },
+              { "metric": "滚动深度P75@页面", "scope": "anomaly_page", "lt": 0.4 }
+            ]
+          }
+        ]
+      },
+      "measures": ["M-改产品详情-首屏前移", "M-站外建议-评估版式回滚"]
+    },
+    {
+      "id": "H-L1-07",
+      "seq": 7,
+      "layer": "流失点1",
+      "name": "无头浏览器或爬虫多次访问导致 UV 上升",
+      "requires": ["UV@渠道", "秒退率@渠道", "落地停留均值@页面"],
+      "when": {
+        "all": [
+          { "metric": "UV@渠道", "scope": "uplift_channel", "state": "提升" },
+          {
+            "any": [
+              { "metric": "秒退率@渠道", "scope": "uplift_channel", "state": "异常" },
+              { "metric": "落地停留均值@页面", "scope": "anomaly_page", "state": "异常" }
+            ]
+          }
+        ]
+      },
+      "measures": ["M-系统-标记疑似无效流量", "M-站外建议-核查刷量"]
+    },
+    {
+      "id": "H-L2-08",
+      "seq": 8,
+      "layer": "流失点2",
+      "name": "没逛到产品详情页",
+      "requires": ["详情页到达率@全站", "未转化页出口率@页面"],
+      "when": {
+        "all": [
+          { "metric": "详情页到达率@全站", "scope": "site", "state": "异常" },
+          {
+            "count": { "metric": "未转化页出口率@页面", "scope": "all_pages", "state": "异常" },
+            "gte": 1
+          }
+        ]
+      },
+      "measures": [
+        "M-改页面文案-补详情页入口",
+        "M-生成产品详情页-补缺型号",
+        "M-站外建议-调导航与筛选"
+      ]
+    },
+    {
+      "id": "H-L2-09",
+      "seq": 9,
+      "layer": "流失点2",
+      "name": "详情页上没有询价入口",
+      "requires": ["详情页到达率@全站", "转化交互率@页面", "询价入口个数@页面"],
+      "when": {
+        "all": [
+          { "metric": "详情页到达率@全站", "scope": "site", "state": "非异常" },
+          { "metric": "转化交互率@页面", "scope": "anomaly_detail_page", "state": "异常" },
+          { "metric": "询价入口个数@页面", "scope": "anomaly_detail_page", "eq": 0 }
+        ]
+      },
+      "measures": ["M-改产品详情-补询价入口", "M-站外建议-挪模块改版式"]
+    },
+    {
+      "id": "H-L2-10",
+      "seq": 10,
+      "layer": "流失点2",
+      "name": "看完了仍写不出询盘（参数、认证、怎么报价）",
+      "requires": ["详情页到达率@全站", "转化交互率@页面", "页面内容@页面"],
+      "when": {
+        "all": [
+          { "metric": "详情页到达率@全站", "scope": "site", "state": "非异常" },
+          { "metric": "转化交互率@页面", "scope": "anomaly_detail_page", "state": "异常" },
+          {
+            "content_missing": {
+              "metric": "页面内容@页面",
+              "scope": "anomaly_detail_page",
+              "of": ["规格表", "认证", "怎么报价"]
+            },
+            "gte": 1
+          }
+        ]
+      },
+      "measures": ["M-改产品详情-补齐缺失项", "M-站外建议-重排证书与报价图"]
+    },
+    {
+      "id": "H-L2-11",
+      "seq": 11,
+      "layer": "流失点2",
+      "name": "客户搜了但没搜到：产品/型号叫法与站内命名不一致，导航或筛选与客户习惯对不上",
+      "requires": ["详情页到达率@全站", "站内搜索0结果率@全站", "搜后离站率@搜索词"],
+      "when": {
+        "all": [
+          { "metric": "详情页到达率@全站", "scope": "site", "state": "异常" },
+          {
+            "any": [
+              { "metric": "站内搜索0结果率@全站", "scope": "site", "state": "异常" },
+              {
+                "count": { "metric": "搜后离站率@搜索词", "scope": "all_keywords", "state": "异常" },
+                "gte": 1
+              }
+            ]
+          }
+        ]
+      },
+      "measures": ["M-生成产品详情页-按搜不到的词", "M-站外建议-配同义词与筛选"]
+    },
+    {
+      "id": "H-L3-12",
+      "seq": 12,
+      "layer": "流失点3",
+      "name": "客服越聊越劝退",
+      "requires": ["开聊留资率@全站", "表单完成率@全站"],
+      "when": {
+        "all": [
+          { "metric": "开聊留资率@全站", "scope": "site", "state": "异常" },
+          { "metric": "表单完成率@全站", "scope": "site", "state": "非异常" }
+        ]
+      },
+      "measures": ["M-站外建议-客服话术与知识库"]
+    },
+    {
+      "id": "H-L3-13",
+      "seq": 13,
+      "layer": "流失点3",
+      "name": "表单和客服只有一边变差",
+      "requires": ["表单完成率@全站", "开聊留资率@全站"],
+      "when": {
+        "any": [
+          {
+            "all": [
+              { "metric": "表单完成率@全站", "scope": "site", "state": "异常" },
+              { "metric": "开聊留资率@全站", "scope": "site", "state": "非异常" }
+            ]
+          },
+          {
+            "all": [
+              { "metric": "表单完成率@全站", "scope": "site", "state": "非异常" },
+              { "metric": "开聊留资率@全站", "scope": "site", "state": "异常" }
+            ]
+          }
+        ]
+      },
+      "measures": ["M-站外建议-单边通道修复"],
+      "note": "与 H-L3-12 在「开聊异常+表单正常」时会同时通过，属源表设计。并列时由 Agent 判共因还是独立。"
+    }
+  ]
+}

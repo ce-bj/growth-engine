@@ -1,0 +1,99 @@
+{
+  "schemaVersion": "0.1",
+  "requestId": "audit-request-001",
+  "projectId": "portal-001",
+  "pageId": "landing-001",
+  "contentRevision": "draft-revision-008",
+  "phase": "initial",
+  "previousReportId": null,
+  "requestedBy": "analysis-agent",
+  "targetAgent": "website-audit-agent",
+  "scope": "current-page-with-site-context",
+  "ruleSet": {
+    "id": "digital-portal-content-operations",
+    "version": "prd-v1.4",
+    "mechanisms": [
+      "A",
+      "B"
+    ]
+  },
+  "businessContext": {
+    "pageType": "产品营销",
+    "conversionAction": "获取报价",
+    "targetMarket": "中国大陆",
+    "language": "zh-CN",
+    "visitorIntent": null
+  },
+  "page": {
+    "title": "闸门产品与选型服务",
+    "summary": "根据应用需求提供产品信息与选型咨询。",
+    "contentRef": "artifact://landing-001/draft-revision-008/page.html",
+    "previewUrl": null,
+    "publishedUrl": null,
+    "seo": {
+      "title": "闸门产品与选型服务",
+      "description": "了解产品参数、应用范围与咨询方式。",
+      "structuredData": []
+    },
+    "sections": [
+      {
+        "id": "hero",
+        "type": "hero",
+        "title": "闸门产品与选型服务",
+        "body": "根据应用需求提供产品信息与选型咨询。",
+        "sourceIds": [
+          "knowledge-product-001"
+        ],
+        "containsPlaceholder": false
+      },
+      {
+        "id": "parameters",
+        "type": "parameter-table",
+        "fields": [],
+        "sourceIds": [],
+        "containsPlaceholder": true
+      }
+    ],
+    "assets": [
+      {
+        "assetId": "asset-001",
+        "type": "image",
+        "alt": "产品结构图",
+        "sourceId": "product-001"
+      }
+    ],
+    "internalLinks": [],
+    "contentModifiedAt": "2026-09-16T10:00:00+08:00"
+  },
+  "knowledgeContext": {
+    "directoryIds": [
+      "products",
+      "company"
+    ],
+    "productIds": [
+      "product-001"
+    ],
+    "sources": [
+      {
+        "id": "knowledge-product-001",
+        "title": "产品手册",
+        "type": "knowledge-document",
+        "contentRef": "knowledge://product-001/manual",
+        "verifiedAt": null,
+        "factsUpdatedAt": null
+      }
+    ],
+    "knownGaps": [
+      "产品规格与型号",
+      "认证编号及验证依据"
+    ]
+  },
+  "siteContext": {
+    "siteId": "site-001",
+    "baseUrl": "https://example.com",
+    "llmsTxtRef": null,
+    "sitemapRef": null,
+    "contentManifestRef": null,
+    "crawlabilityReportRef": null
+  }
+}

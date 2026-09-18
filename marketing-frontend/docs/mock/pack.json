@@ -1,0 +1,18 @@
+{
+  "id": "haigong-precision-2026-09",
+  "title": "智能落地页出页 mock 包",
+  "company": "宁波海工精密机械有限公司",
+  "domain": "www.haigong-precision.com",
+  "files": {
+    "site_profile": "网站档案.md",
+    "products": "products.json",
+    "knowledge": "knowledge-snippets.json",
+    "candidates": "intent-candidates.json",
+    "plans": "prefab-plans.json"
+  },
+  "how_to_use": {
+    "ui": "选词读 intent-candidates；点一条用 intent_id 取 prefab-plans.plans[]。can_start=false 则禁用「开始生成」，展示 blockers。",
+    "generate": "can_start=true 时把该 plan.context_message 作为本地 POST /chat/ 第一条用户消息；setup 的 page_type 用 plan.page_type。",
+    "do_not": "不要把本包替换进 backend/tools/backend_tools.py 的中企动力电源 mock，除非同一轮改工具。本包是向导合同。"
+  }
+}

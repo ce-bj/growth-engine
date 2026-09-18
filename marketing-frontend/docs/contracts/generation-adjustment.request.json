@@ -1,0 +1,29 @@
+{
+  "schemaVersion": "0.1",
+  "taskId": "adjustment-001",
+  "pageId": "landing-001",
+  "baseContentRevision": "draft-revision-008",
+  "sourceReportId": "audit-report-001",
+  "targetAgent": "generation-agent",
+  "actions": [
+    {
+      "findingId": "finding-001",
+      "sectionId": "faq",
+      "operation": "rewrite-from-sources",
+      "instruction": "结论前置，答案自包含，保留原始事实与来源。",
+      "sourceIds": [
+        "knowledge-product-001"
+      ]
+    }
+  ],
+  "deferredFindings": [
+    "finding-002"
+  ],
+  "constraints": {
+    "preserveTemplate": true,
+    "preserveConversionAction": true,
+    "allowUnsupportedFacts": false,
+    "allowAutomaticPublishing": false
+  },
+  "nextAction": "request-website-reaudit"
+}
