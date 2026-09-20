@@ -3,12 +3,12 @@
 export const PERIOD = {
   siteName: "Demo · CNC 精密加工件外贸站",
   origin: "https://www.demo-cnc-oem.com",
-  label: "2026年8月",
-  range: "2026-08-01 ~ 2026-08-31",
-  baseline: "2026年7月",
-  schedule: "每月 1 日 02:00 自动跑上一自然月",
+  label: "近 28 天",
+  range: "2026-08-04 ~ 2026-08-31",
+  baseline: "对照：过去 4 周同期",
+  schedule: "窗口滚动，每日 02:00 刷新",
   lastRun: "2026-09-01 02:14",
-  nextRun: "2026-10-01 02:00",
+  nextRun: "2026-09-02 02:00",
   sampleNote: "样例数，非现网",
 };
 
@@ -52,16 +52,242 @@ export const AUTH_SOURCES = [
   {
     key: "gsc",
     name: "Google Search Console",
-    use: "搜索来路词对到人",
+    use: "自然搜索词的展示与点击，对不到具体访客",
     status: "ok",
     statusText: "已授权",
   },
   {
     key: "ads",
     name: "Google Ads",
-    use: "广告词回接到人",
+    use: "广告实际搜索词的点击与花费，对不到具体访客",
     status: "missing",
     statusText: "未授权",
+  },
+];
+
+export const SOURCE_AUTH_PAGES = {
+  ads: {
+    name: "Google Ads",
+    title: "授权 Google Ads",
+    hint: "授权后，访客搜索词会按词列出广告实际搜索词、点击、展示和花费。不对接到具体访客，也不指定落地页。",
+    scopes: ["搜索词报告", "点击、展示与花费"],
+    cta: "连接 Google Ads",
+  },
+  gsc: {
+    name: "Google Search Console",
+    title: "授权 Google Search Console",
+    hint: "授权后列出自然搜索查询词的展示、点击和平均排名。不对接到具体访客，也不按词指定落地页。",
+    scopes: ["网站查询词", "展示、点击与排名"],
+    cta: "连接 Search Console",
+  },
+};
+
+/** 对外仍叫「意图」：窗口访客深度四档互斥，流失是叠加标记。 */
+export const DEPTH_INTENTS = [
+  {
+    id: "browse",
+    name: "浏览型",
+    meaning: "扫一眼就走",
+    count: 627,
+    percent: 38,
+    color: "#78716c",
+  },
+  {
+    id: "explore",
+    name: "探索型",
+    meaning: "在了解，还没选型",
+    count: 512,
+    percent: 31,
+    color: "#e85d04",
+  },
+  {
+    id: "compare",
+    name: "比较型",
+    meaning: "在纠结哪个适合",
+    count: 297,
+    percent: 18,
+    color: "#1d4ed8",
+  },
+  {
+    id: "decide",
+    name: "决策型",
+    meaning: "快动手了",
+    count: 214,
+    percent: 13,
+    color: "#2f6b3a",
+  },
+];
+
+export const CHURN_MARK = {
+  percent: 12,
+  count: 198,
+  label: "带流失信号",
+  hint: "流失不覆盖深度。上周到过决策、这次表单放弃的人，仍算决策型。",
+};
+
+export const PHENOMENA = [
+  {
+    id: "ph-hero",
+    intent: "browse",
+    loss: "流失点 1",
+    title: "主力铝支架详情第一屏没接住，多数人看了上半屏就走",
+    page: "CNC-6061 铝支架详情",
+    stat: "落地接住率 53.8% → 21.9% · 停留约 11 秒",
+    causeKey: "B-01",
+  },
+  {
+    id: "ph-ads",
+    intent: "browse",
+    loss: "流失点 1",
+    title: "广告来的人也停在同一页首屏，不像单渠创意事故",
+    page: "Q3 OEM 营销落地页 / 铝支架详情",
+    stat: "广告渠有效浏览同步变差 · Ads 词还对不上人",
+    causeKey: "B-03",
+  },
+  {
+    id: "ph-explore",
+    intent: "explore",
+    loss: "流失点 2",
+    title: "了解的人到了详情，仍很少开表单或开聊",
+    page: "CNC-6061 铝支架详情",
+    stat: "探索型占有效浏览 31% · 页内转化交互偏低",
+    causeKey: "A-04",
+  },
+  {
+    id: "ph-compare",
+    intent: "compare",
+    loss: "流失点 2",
+    title: "在几个型号之间来回看，站内没有对比页帮他做决定",
+    page: "铝支架相关详情组",
+    stat: "比较型 18% · 同类页来回切换",
+    causeKey: "A-05",
+  },
+  {
+    id: "ph-decide",
+    intent: "decide",
+    loss: "流失点 2",
+    title: "确认供应商的人去了关于我们，看完资质仍有一部分没开填",
+    page: "关于我们 / 铝支架详情",
+    stat: "决策型 13% · 资质页停留够，转化交互未跟上",
+    causeKey: "A-04",
+  },
+];
+
+export const ROOT_CAUSES = {
+  hits: [
+    {
+      key: "B-01",
+      role: "主因",
+      axis: "轴二 · 页面表现",
+      layer: "流失点 1",
+      page: "主力型号详情页 · CNC-6061 铝支架",
+      title: "这页第一屏没吸引人往下看，多数人停在首屏附近就走了",
+      evidence:
+        "落地接住率 53.8% → 21.9%，落地停留约 11 秒，滚动深度 P75 停在首屏附近。搜索、直接、外链、广告四渠同步变差。",
+    },
+    {
+      key: "A-01",
+      role: "佐证",
+      axis: "轴一 · 访客意图",
+      layer: "流失点 1",
+      page: "主力型号详情页 · CNC-6061 铝支架",
+      title: "浏览型占比偏高，第一屏没回答「你是谁、有什么、跟我什么关系」",
+      evidence: "该页浏览型访客占比 38%，警戒线 55% 未破、但与落地接住断崖同向，作为首屏没接住的人群旁证。",
+    },
+    {
+      key: "B-03",
+      role: "佐证",
+      axis: "轴二 · 页面表现",
+      layer: "流失点 1",
+      page: "主力型号详情页 · CNC-6061 铝支架",
+      title: "秒退升高，入口完全没接住人",
+      evidence: "广告渠秒退同步变差，且人集中落在该详情。不像单渠刷量：全站 UV 持平，其它渠同一落地也变差。",
+    },
+  ],
+  excluded: [
+    {
+      key: "H-01",
+      layer: "访问入口",
+      title: "不是某个渠道来少了",
+      evidence: "全站 UV 与上期持平，搜索、直接、外链、广告都没有单独掉量。",
+    },
+    {
+      key: "H-08",
+      layer: "流失点 2",
+      title: "不是没逛到产品详情",
+      evidence: "转化交互层未破线。人不是卡在文章、列表出不去。",
+    },
+    {
+      key: "H-17",
+      layer: "流失点 3",
+      title: "不是表单填一半就走",
+      evidence: "表单开始后完成率未破线。本期不精简字段。",
+    },
+  ],
+};
+
+export const TASKS = [
+  {
+    key: "t-detail",
+    kind: "task",
+    type: "修改产品详情页",
+    adoptAction: "edit_product",
+    priority: "P0",
+    title: "把主力铝支架详情第一屏改成型号、给谁用、核心参数，询价入口留在首屏",
+    goal: "主力铝支架详情页首屏没接住访客，卡在流失点 1。落地接住率 53.8%→21.9%，停留约 11 秒。把首屏从公司介绍改为产品直答。",
+    object: "https://www.demo-cnc-oem.com/products/cnc-6061-bracket",
+    requirements: [
+      "标题别改；第一屏改成型号 CNC-6061、给谁用、核心参数（材质、公差、表面处理、起订、打样周期）",
+      "询价入口留在首屏；公司介绍 / 品牌故事下移，不要占第一屏",
+      "对着 aluminum bracket oem、cnc 6061 quote 来写，别空喊实力强",
+    ],
+    constraints: ["局部修改，不整页重写", "不改标题", "保留原文配图，这次不换封面"],
+    confirms: ["壁厚 1.5–3.0mm、起订量 50 标「待客户确认」，不编造", "首屏方案确认后再覆盖上线"],
+    previewTitle: "产品详情 · CNC-6061 铝支架",
+    previewHint: "对应页面暂未接入，仅作跳转占位。",
+    listTitle: "CNC-6061 铝支架详情 · 改第一屏",
+    listMeta: "任务说明 · 来源：落地接住率 53.8%→21.9%",
+    listTitle: "CNC-6061 铝支架详情 · 改第一屏",
+    listMeta: "任务说明 · 来源：落地接住率 53.8%→21.9%",
+  },
+  {
+    key: "t-landing",
+    kind: "task",
+    type: "生成营销页",
+    adoptAction: "generate_landing",
+    priority: "P0",
+    title: "按询价意图生成 CNC OEM 留资获客页，首屏对齐型号、打样周期和询价入口",
+    goal: "为铝支架采购来意生成询价型营销页，减轻详情页第一屏压力。生成后建议把询价意图流量切到新页。",
+    object: "目标网站 = 当前站点；新建 /campaign/cnc-oem-quote",
+    requirements: [
+      "页面类型 = 留资获客页；语言英语；市场美国 / 欧洲",
+      "首屏必须出现型号 CNC-6061、「48 小时打样」和询价入口；广告没说过的免模 / 零起订别写",
+      "表单收集公司名、邮箱、图纸/规格、数量、期望交期",
+    ],
+    constraints: ["卖点从现有页面提取，页上没有的不编", "买家写不出标「待填写」"],
+    confirms: ["买家画像与联系方式请客户补充", "落地是否切到新页，由客户确认"],
+    banner: {
+      when: "探索型达成 · 当次访问第 2 个合格浏览的产品详情页",
+      where: "页底非遮挡横幅",
+      copy: "还在看？3 分钟弄清哪个型号适合您 →",
+    },
+    previewTitle: "智能营销页 · CNC OEM 询价留资页",
+    previewHint: "对应页面暂未接入，仅作跳转占位。",
+    listTitle: "CNC OEM 询价留资页",
+    listMeta: "任务说明 · 来源：询价来意无专属承接页",
+  },
+  {
+    key: "t-ads",
+    kind: "display",
+    type: "站外建议",
+    priority: "P1",
+    title: "广告渠有效浏览同步变差，核对该词落地是否仍指向该详情",
+    reason:
+      "Google Ads 尚未授权，广告搜索词还列不出来。广告渠与详情页第一屏问题同向，请投放侧核对落地地址，或把询价类广告切到新生成的留资页。",
+    suggest: "内容智能体改不了投放设置。可与「生成营销页」「改产品详情」一起看，客户可两边都做或只做一边。",
+    object: "该活动对应的广告创意与落地地址",
+    listTitle: "核对广告落地是否仍指向该详情",
+    listMeta: "站外建议 · 投放侧核对",
   },
 ];
 
@@ -249,7 +475,7 @@ export const MEASURES = [
     adoptAction: "",
     title: "广告渠有效浏览同步变差，核对该词落地是否仍指向该详情",
     targetObject: "该活动对应的广告创意与落地地址",
-    expected: "仅展示，不交运营助手执行。Google Ads 尚未授权，词暂时对不上人",
+    expected: "仅展示，不交运营助手执行。Google Ads 尚未授权，广告搜索词还列不出来",
     previewTitle: "投放侧建议 · 落地地址核对",
     previewHint: "对应页面暂未接入，仅作跳转占位。",
     taskBrief: [
@@ -257,7 +483,7 @@ export const MEASURES = [
       "建议做什么：把广告文案和落地页说的对齐；或把询价类广告落地地址切到新生成的留资获客页",
       "核对范围：当前广告落地是否仍指向 https://www.demo-cnc-oem.com/products/cnc-6061-bracket",
       "和站内任务的关系：可与「生成营销页」「改产品详情」一起看，客户可两边都做或只做一边",
-      "限制：Google Ads 未授权，本期不能按人对上广告词，只能按进站第一页统计",
+      "限制：Google Ads 未授权，本期不能列出广告搜索词，只能按进站第一页统计",
     ],
     evidenceCard: {
       currentValue: "广告渠有效浏览同步变差，与详情页第一屏问题同向，不像单渠创意事故",

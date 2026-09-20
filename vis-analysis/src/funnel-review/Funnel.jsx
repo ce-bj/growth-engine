@@ -109,7 +109,7 @@ export default function Funnel({ stages, gates, selectedLoss, onSelectLoss }) {
                 transform: "translateY(-50%)",
               }}
               aria-pressed={selected}
-              onClick={() => onSelectLoss(selected ? null : loss.id)}
+              onClick={() => onSelectLoss(loss.id)}
             >
               <span className="loss-stamp">流失点 {loss.seq}</span>
               <span className="loss-drop">

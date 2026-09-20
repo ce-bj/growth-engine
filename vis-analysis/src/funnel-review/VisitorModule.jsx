@@ -1,31 +1,31 @@
 import { useEffect, useState } from "react";
-import VisitorPath from "./VisitorPath.jsx";
+import WalkDetail, { Steps } from "./VisitorPath.jsx";
 import {
   CHANNELS,
   INTENTS,
-  LAYERS,
-  arrivedLabel,
-  arrivedLayer,
-  channelLabel,
+  fmtInt,
   intentLabel,
-  pathStats,
-  visitorIntents,
-  visitorsListed,
+  pct,
+  walksListed,
 } from "./data.js";
 
-export default function VisitorModule({ channelId, onChannel, visitorId, onPick, embedded }) {
-  const [layerId, setLayerId] = useState(null);
-  const [intentId, setIntentId] = useState(null);
-  const rows = visitorsListed(channelId, layerId, intentId);
-  const active = rows.find((v) => v.id === visitorId) ?? null;
-  const fullRoster = Boolean(embedded);
+export default function VisitorModule({
+  channelId,
+  onChannel,
+  embedded,
+  intentId,
+  onIntent,
+}) {
+  const rows = walksListed(channelId, intentId);
+  const total = rows.reduce((sum, row) => sum + row.count, 0);
+  const [walkId, setWalkId] = useState(null);
 
   useEffect(() => {
-    const list = visitorsListed(channelId, layerId, intentId);
-    if (!list.some((v) => v.id === visitorId)) {
-      onPick(list[0]?.id ?? null);
+    const list = walksListed(channelId, intentId);
+    if (walkId && !list.some((row) => row.id === walkId)) {
+      setWalkId(null);
     }
-  }, [channelId, layerId, intentId, visitorId, onPick]);
+  }, [channelId, intentId, walkId]);
 
   return (
     <section className="visitor-mod" aria-labelledby={embedded ? undefined : "path-title"}>
@@ -34,155 +34,113 @@ export default function VisitorModule({ channelId, onChannel, visitorId, onPick,
           <p className="kicker">子模块</p>
           <h2 id="path-title">访客路径</h2>
           <p className="lead">
-            抽样看人当天怎么走。一人一天一条路径，按访问顺序排，重复页不去重、不拆成多次访问。
-            当天到达是漏斗四层里最远走到的那一层。意图可以多个：来路词、广告词、站内搜先按词（一条词可中多类），页停留满 15 秒再按页类补；不明不和其他类并存。
-            当前 {rows.length} 人。
+            一期按页序聚合，不展示个人。相同页面类型序列算一条。意图筛的是人，同一条页序可以有好几档。点开链路看具体页。人数不足 5 不出。
           </p>
         </header>
       )}
 
-      <div className="channel-bar" role="tablist" aria-label="路径渠道">
-        {CHANNELS.map((c) => (
-          <button
-            key={c.id}
-            type="button"
-            role="tab"
-            aria-selected={channelId === c.id}
-            className={channelId === c.id ? "is-on" : ""}
-            onClick={() => onChannel(c.id)}
-          >
-            {c.label}
-          </button>
-        ))}
-      </div>
-
       <div className="filter-row">
-        <span className="filter-label">{fullRoster ? "到达漏斗层" : "当天到达"}</span>
-        <div className="sub-tabs" role="tablist" aria-label={fullRoster ? "到达漏斗层" : "当天到达"}>
-          <button
-            type="button"
-            role="tab"
-            aria-selected={!layerId}
-            className={!layerId ? "is-on" : ""}
-            onClick={() => setLayerId(null)}
-          >
-            全部
-          </button>
-          {LAYERS.map((layer) => (
+        <span className="filter-label">渠道</span>
+        <div className="channel-bar" role="tablist" aria-label="路径渠道">
+          {CHANNELS.map((c) => (
             <button
-              key={layer.id}
+              key={c.id}
               type="button"
               role="tab"
-              aria-selected={layerId === layer.id}
-              className={layerId === layer.id ? "is-on" : ""}
-              onClick={() => setLayerId(layer.id)}
+              aria-selected={channelId === c.id}
+              className={channelId === c.id ? "is-on" : ""}
+              onClick={() => onChannel(c.id)}
             >
-              {layer.name}
+              {c.label}
             </button>
           ))}
         </div>
       </div>
 
       <div className="filter-row">
-        <span className="filter-label">意图</span>
-        <div className="sub-tabs" role="tablist" aria-label="意图">
+        <span className="filter-label">看哪类人</span>
+        <div className="channel-bar" role="tablist" aria-label="按访客意图筛走过这些页序的人">
           <button
             type="button"
             role="tab"
             aria-selected={!intentId}
             className={!intentId ? "is-on" : ""}
-            onClick={() => setIntentId(null)}
+            onClick={() => onIntent(null)}
           >
             全部
           </button>
-          {INTENTS.map((intent) => (
+          {INTENTS.map((item) => (
             <button
-              key={intent.id}
+              key={item.id}
               type="button"
               role="tab"
-              aria-selected={intentId === intent.id}
-              className={intentId === intent.id ? "is-on" : ""}
-              onClick={() => setIntentId(intent.id)}
+              aria-selected={intentId === item.id}
+              className={intentId === item.id ? "is-on" : ""}
+              onClick={() => onIntent(item.id)}
             >
-              {intent.name}
+              {item.name}
             </button>
           ))}
         </div>
       </div>
 
-      <div className="path-workspace">
-        <div className="table-wrap">
-          {rows.length ? (
-            <table className="grid path-grid">
-              <thead>
-                <tr>
-                  <th>{fullRoster ? "访客IP" : "访客"}</th>
-                  <th>渠道</th>
-                  <th>{fullRoster ? "所属企业" : "来路词"}</th>
-                  <th>意图</th>
-                  <th>落地页</th>
-                  {fullRoster ? null : <th>页序</th>}
-                  <th>页数</th>
-                  <th>总停留</th>
-                  <th>{fullRoster ? "到达漏斗层" : "当天到达"}</th>
-                </tr>
-              </thead>
-              <tbody>
-                {rows.map((v) => {
-                  const s = pathStats(v);
-                  const layer = arrivedLayer(v);
-                  return (
-                    <tr
-                      key={v.id}
-                      className={active?.id === v.id ? "is-active" : ""}
-                      tabIndex={0}
-                      role="button"
-                      aria-pressed={active?.id === v.id}
-                      onClick={() => onPick(v.id)}
-                      onKeyDown={(e) => {
-                        if (e.key === "Enter" || e.key === " ") {
-                          e.preventDefault();
-                          onPick(v.id);
-                        }
-                      }}
-                    >
-                      <td className="num">{fullRoster ? v.ip || "—" : v.id.toUpperCase()}</td>
-                      <td>{channelLabel(v.channel)}</td>
-                      <td>{fullRoster ? v.company || "未识别" : v.inbound || "—"}</td>
-                      <td className="intent-cell">
-                        <span className="itag-list">
-                          {visitorIntents(v).map((id) => (
-                            <span key={id} className={`itag is-${id}`}>
-                              {intentLabel(id)}
-                            </span>
-                          ))}
+      <p className="slice-hint">
+        {rows.length
+          ? intentId
+            ? `${intentLabel(intentId)}走过 ${rows.length} 条页序，共 ${fmtInt(total)} 人。点一条看具体页。`
+            : `当前 ${fmtInt(total)} 人、${rows.length} 条页序。意图筛的是人，同一条页序可以有好几档。`
+          : "这个筛选下没有满 5 人的页序。"}
+      </p>
+
+      <ol className="walk-list">
+        {rows.map((row, index) => {
+          const on = walkId === row.id;
+          const share = total ? row.count / total : 0;
+          const panelId = `walk-detail-${row.id}`;
+          return (
+            <li key={row.id} className={`walk-item${on ? " is-on" : ""}`}>
+              <button
+                type="button"
+                className={`walk-row${on ? " is-on" : ""}`}
+                aria-expanded={on}
+                aria-controls={panelId}
+                onClick={() => setWalkId(on ? null : row.id)}
+              >
+                <span className="walk-rank">{index + 1}</span>
+                <div className="walk-main">
+                  <Steps types={row.types} compact />
+                  <p className="walk-read">{row.implied}</p>
+                  {!intentId && row.mix.length > 1 ? (
+                    <p className="walk-mix">
+                      {row.mix.map((item) => (
+                        <span key={item.id}>
+                          {item.name}{" "}
+                          <b className="num">{fmtInt(item.count)}</b>
                         </span>
-                      </td>
-                      <td>
-                        <div className="page-name">{s.landName}</div>
-                        <div className="page-meta">{s.landType}</div>
-                      </td>
-                      {fullRoster ? null : <td className="path-line">{s.line}</td>}
-                      <td className="num">{s.pageCount}</td>
-                      <td className="num">{s.totalStay}s</td>
-                      <td>
-                        <span className={`vtag is-${layer}`}>{arrivedLabel(v)}</span>
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          ) : (
-            <p className="empty">{fullRoster ? "这个筛选下没有访客。" : "这个筛选下没有抽到样例访客。"}</p>
-          )}
-        </div>
-        {active ? (
-          <VisitorPath visitor={active} identity={fullRoster ? "company" : "sample"} />
-        ) : (
-          <p className="empty aside">表里点一位访客，看当天每一页的停留和滚动。</p>
-        )}
-      </div>
+                      ))}
+                    </p>
+                  ) : null}
+                </div>
+                <div className="walk-n">
+                  <b className="num">{fmtInt(row.count)}</b>
+                  <span>人 · {pct(share)}</span>
+                  <span className="walk-bar" aria-hidden="true">
+                    <i style={{ width: `${Math.max(8, share * 100)}%` }} />
+                  </span>
+                </div>
+                <span className="walk-caret" aria-hidden="true">
+                  {on ? "▲" : "▼"}
+                </span>
+              </button>
+              {on ? (
+                <div id={panelId} className="walk-detail-wrap">
+                  <WalkDetail walk={row} />
+                </div>
+              ) : null}
+            </li>
+          );
+        })}
+      </ol>
     </section>
   );
 }
