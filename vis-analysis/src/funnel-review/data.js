@@ -49,7 +49,7 @@ export const LOSSES = [
       { name: "有效浏览率", role: "定位主指标", group: "layer" },
       { name: "合格浏览率", role: "这一页自己停够没有", group: "page" },
       { name: "页面平均停留时长", role: "不限是否落地", group: "page" },
-      { name: "平均滚动深度P75", role: "旁证 · 多数人还在首屏附近", group: "page" },
+      { name: "平均滚动深度", role: "旁证 · 多数人还在首屏附近", group: "page" },
       { name: "落地接住率", role: "只衡量进站第一页", group: "land" },
       { name: "落地平均停留时长", role: "只看进站第一页", group: "land" },
       { name: "秒退率", role: "升是坏 · 只看 1 页且停不够", group: "land" },
@@ -67,7 +67,7 @@ export const LOSSES = [
     failed: "看进去了，但没填表、没开聊",
     metrics: [
       { name: "转化交互率", role: "定位主指标" },
-      { name: "详情页到达率", role: "逛没逛到产品详情" },
+      { name: "产品详情页到达率", role: "逛没逛到产品详情" },
       { name: "表单开始率", role: "通道拆分" },
       { name: "开聊率", role: "通道拆分" },
     ],
@@ -86,7 +86,6 @@ export const LOSSES = [
       { name: "留资访客 / 转化交互访客", role: "漏斗层间" },
       { name: "表单完成率", role: "开始填的人交没交" },
       { name: "开聊留资率", role: "开聊的人留下没" },
-      { name: "表单留资占比", role: "通道结构，不单独钉点" },
     ],
   },
 ];
@@ -287,12 +286,19 @@ export const PAGE_META = {
     type: "产品列表页",
     url: "https://www.demo-cnc-oem.com/products",
   },
+  "/contact": {
+    name: "联系/询价页",
+    title: "Request a Quote | CNC OEM Machining | Demo CNC",
+    type: "联系/询价页",
+    url: "https://www.demo-cnc-oem.com/contact",
+  },
 };
 
 function pageFields(path) {
   const meta = PAGE_META[path] || {};
   return {
     path,
+    name: meta.name || path,
     title: meta.title || meta.name || path,
     type: meta.type || "未归类",
     url: meta.url || `https://${SITE.origin}${path === "/" ? "/" : path}`,
@@ -520,17 +526,27 @@ export function walksListed(channelId = "site", intentId = null) {
 }
 
 function withMeta(list) {
-  return list.map((row) => ({ ...PAGE_META[row.path], ...row }));
+  return list.map((row) => {
+    const fields = pageFields(row.path);
+    return { ...fields, ...PAGE_META[row.path], ...row };
+  });
 }
 
-function splitChannel(siteRows, patches) {
+/** onlyPatched：渠道只保留显式写出的页。落地页必须用，否则会把全站清单原样拷到每个渠道。 */
+function splitChannel(siteRows, patches, { onlyPatched = false } = {}) {
   const pack = { site: siteRows };
   for (const ch of ["search", "direct", "referral", "ads"]) {
     const patch = patches[ch] || {};
     pack[ch] = siteRows
       .map((row) => {
-        if (patch[row.path] === false) return null;
-        return { ...row, ...(patch[row.path] || {}) };
+        const extra = patch[row.path];
+        if (extra === false) return null;
+        if (onlyPatched && extra == null) return null;
+        const next = { ...row, ...(extra || {}) };
+        if (extra && extra.land != null && extra.pv == null) {
+          next.pv = Math.round(extra.land * 1.16);
+        }
+        return next;
       })
       .filter(Boolean);
   }
@@ -585,61 +601,83 @@ export const PAGES = {
   l1: {
     page: splitChannel(L1_PAGE_SITE, {
       search: {
-        "/products/cnc-6061-bracket": { qualifyRate: 0.18, pageStay: 11, p75: 0.14 },
-        "/campaign/cnc-oem-q3": { qualifyRate: 0.19, qualifyRatePrev: 0.2, pageStay: 11, p75: 0.16 },
-        "/": { qualifyRate: 0.6, pageStay: 34, p75: 0.52 },
-        "/blog/cnc-tolerance-guide": { qualifyRate: 0.79, pageStay: 54, p75: 0.76 },
-        "/about": { qualifyRate: 0.55, pageStay: 28, p75: 0.46 },
+        "/products/cnc-6061-bracket": { pv: 340, uv: 248, qualifyRate: 0.18, pageStay: 11, p75: 0.14 },
+        "/campaign/cnc-oem-q3": { pv: 62, uv: 48, qualifyRate: 0.19, qualifyRatePrev: 0.2, pageStay: 11, p75: 0.16 },
+        "/": { pv: 198, uv: 148, qualifyRate: 0.6, pageStay: 34, p75: 0.52 },
+        "/blog/cnc-tolerance-guide": { pv: 132, uv: 112, qualifyRate: 0.79, pageStay: 54, p75: 0.76 },
+        "/about": { pv: 48, uv: 38, qualifyRate: 0.55, pageStay: 28, p75: 0.46 },
+        "/products": { pv: 98, uv: 76, qualifyRate: 0.42, pageStay: 20, p75: 0.34 },
+        "/cases/oem-bracket": { pv: 44, uv: 38, qualifyRate: 0.7, pageStay: 42, p75: 0.64 },
+        "/contact": { pv: 16, uv: 14, qualifyRate: 0.68, pageStay: 38, p75: 0.58 },
       },
       direct: {
-        "/products/cnc-6061-bracket": { qualifyRate: 0.56, pageStay: 38, p75: 0.58 },
-        "/campaign/cnc-oem-q3": { qualifyRate: 0.48, pageStay: 28, p75: 0.44 },
-        "/": { qualifyRate: 0.64, pageStay: 40, p75: 0.56 },
-        "/blog/cnc-tolerance-guide": { qualifyRate: 0.8, pageStay: 56, p75: 0.76 },
-        "/about": { qualifyRate: 0.6, pageStay: 34, p75: 0.52 },
+        "/products/cnc-6061-bracket": { pv: 88, uv: 68, qualifyRate: 0.56, pageStay: 38, p75: 0.58 },
+        "/campaign/cnc-oem-q3": { pv: 18, uv: 14, qualifyRate: 0.48, pageStay: 28, p75: 0.44 },
+        "/": { pv: 155, uv: 118, qualifyRate: 0.64, pageStay: 40, p75: 0.56 },
+        "/blog/cnc-tolerance-guide": { pv: 28, uv: 24, qualifyRate: 0.8, pageStay: 56, p75: 0.76 },
+        "/about": { pv: 42, uv: 34, qualifyRate: 0.6, pageStay: 34, p75: 0.52 },
+        "/products": { pv: 48, uv: 36, qualifyRate: 0.46, pageStay: 24, p75: 0.38 },
+        "/cases/oem-bracket": { pv: 20, uv: 16, qualifyRate: 0.72, pageStay: 46, p75: 0.68 },
+        "/contact": { pv: 24, uv: 22, qualifyRate: 0.76, pageStay: 44, p75: 0.66 },
       },
       referral: {
-        "/products/cnc-6061-bracket": { qualifyRate: 0.32, pageStay: 18, p75: 0.26 },
-        "/campaign/cnc-oem-q3": { qualifyRate: 0.4, pageStay: 22, p75: 0.36 },
+        "/products/cnc-6061-bracket": { pv: 108, uv: 82, qualifyRate: 0.32, pageStay: 18, p75: 0.26 },
+        "/campaign/cnc-oem-q3": { pv: 24, uv: 18, qualifyRate: 0.4, pageStay: 22, p75: 0.36 },
+        "/": { pv: 68, uv: 50, qualifyRate: 0.58, pageStay: 32, p75: 0.5 },
+        "/blog/cnc-tolerance-guide": { pv: 34, uv: 28, qualifyRate: 0.76, pageStay: 48, p75: 0.7 },
+        "/about": { pv: 16, uv: 12, qualifyRate: 0.54, pageStay: 28, p75: 0.46 },
+        "/products": { pv: 32, uv: 24, qualifyRate: 0.44, pageStay: 21, p75: 0.35 },
+        "/cases/oem-bracket": { pv: 42, uv: 36, qualifyRate: 0.7, pageStay: 42, p75: 0.64 },
+        "/contact": { pv: 8, uv: 6, qualifyRate: 0.7, pageStay: 36, p75: 0.56 },
       },
       ads: {
-        "/products/cnc-6061-bracket": { qualifyRate: 0.22, qualifyRatePrev: 0.23, pageStay: 14, p75: 0.2 },
-        "/campaign/cnc-oem-q3": { qualifyRate: 0.17, pageStay: 10, p75: 0.15 },
-        "/": { qualifyRate: 0.5, pageStay: 28, p75: 0.42 },
-        "/blog/cnc-tolerance-guide": { qualifyRate: 0.7, pageStay: 44, p75: 0.62 },
-        "/about": { qualifyRate: 0.52, pageStay: 26, p75: 0.4 },
+        "/products/cnc-6061-bracket": { pv: 142, uv: 110, qualifyRate: 0.22, qualifyRatePrev: 0.23, pageStay: 14, p75: 0.2 },
+        "/campaign/cnc-oem-q3": { pv: 210, uv: 175, qualifyRate: 0.17, pageStay: 10, p75: 0.15 },
+        "/": { pv: 48, uv: 36, qualifyRate: 0.5, pageStay: 28, p75: 0.42 },
+        "/blog/cnc-tolerance-guide": { pv: 16, uv: 12, qualifyRate: 0.7, pageStay: 44, p75: 0.62 },
+        "/about": { pv: 10, uv: 8, qualifyRate: 0.52, pageStay: 26, p75: 0.4 },
+        "/products": { pv: 26, uv: 20, qualifyRate: 0.4, pageStay: 18, p75: 0.3 },
+        "/cases/oem-bracket": { pv: 8, uv: 6, qualifyRate: 0.66, pageStay: 38, p75: 0.58 },
+        "/contact": { pv: 6, uv: 5, qualifyRate: 0.64, pageStay: 32, p75: 0.5 },
       },
     }),
     land: splitChannel(L1_LAND_SITE, {
+      // 搜索：SEO 详情 + 文章 + 列表为主，营销页很少
       search: {
-        "/products/cnc-6061-bracket": { land: 310, catchRate: 0.155, stay: 8, p75: 0.11, bounce: 0.72 },
-        "/campaign/cnc-oem-q3": { land: 95, catchRate: 0.168, catchRatePrev: 0.17, stay: 9, p75: 0.14, bounce: 0.68 },
-        "/": { land: 165, catchRate: 0.55, stay: 31, p75: 0.5, bounce: 0.24 },
-        "/blog/cnc-tolerance-guide": { land: 130, catchRate: 0.62, stay: 51, p75: 0.73, bounce: 0.16 },
-        "/about": { land: 50, catchRate: 0.52, stay: 26, p75: 0.44, bounce: 0.28 },
+        "/products/cnc-6061-bracket": { land: 310, catchRate: 0.155, stay: 8, p75: 0.11, bounce: 0.72, leads: 1 },
+        "/": { land: 165, catchRate: 0.55, stay: 31, p75: 0.5, bounce: 0.24, leads: 2 },
+        "/blog/cnc-tolerance-guide": { land: 130, catchRate: 0.62, stay: 51, p75: 0.73, bounce: 0.16, leads: 1 },
+        "/products": { land: 70, catchRate: 0.48, stay: 20, p75: 0.34, bounce: 0.22, leads: 0 },
+        "/about": { land: 50, catchRate: 0.52, stay: 26, p75: 0.44, bounce: 0.28, leads: 1 },
+        "/campaign/cnc-oem-q3": { land: 40, catchRate: 0.168, catchRatePrev: 0.17, stay: 9, p75: 0.14, bounce: 0.68, leads: 0 },
+        "/cases/oem-bracket": { land: 15, catchRate: 0.58, stay: 40, p75: 0.62, bounce: 0.2, leads: 0 },
       },
+      // 直接访问：书签首页/关于/询价，几乎不落营销页
       direct: {
-        "/products/cnc-6061-bracket": { land: 70, catchRate: 0.54, stay: 29, p75: 0.55, bounce: 0.2 },
-        "/campaign/cnc-oem-q3": { land: 15, catchRate: 0.47, stay: 24, p75: 0.42, bounce: 0.26 },
-        "/": { land: 140, catchRate: 0.63, stay: 36, p75: 0.54, bounce: 0.18 },
-        "/blog/cnc-tolerance-guide": { land: 25, catchRate: 0.64, stay: 46, p75: 0.7, bounce: 0.16 },
-        "/about": { land: 35, catchRate: 0.6, stay: 32, p75: 0.5, bounce: 0.2 },
+        "/": { land: 140, catchRate: 0.63, stay: 36, p75: 0.54, bounce: 0.18, leads: 3 },
+        "/products/cnc-6061-bracket": { land: 55, catchRate: 0.54, stay: 29, p75: 0.55, bounce: 0.2, leads: 1 },
+        "/about": { land: 40, catchRate: 0.6, stay: 32, p75: 0.5, bounce: 0.2, leads: 2 },
+        "/products": { land: 25, catchRate: 0.5, stay: 22, p75: 0.36, bounce: 0.2, leads: 0 },
+        "/contact": { land: 20, catchRate: 0.72, stay: 40, p75: 0.6, bounce: 0.12, leads: 5 },
+        "/blog/cnc-tolerance-guide": { land: 10, catchRate: 0.64, stay: 46, p75: 0.7, bounce: 0.16, leads: 0 },
       },
+      // 外链：详情 + 案例目录站为主
       referral: {
-        "/products/cnc-6061-bracket": { land: 95, catchRate: 0.28, stay: 12, p75: 0.2, bounce: 0.52 },
-        "/campaign/cnc-oem-q3": { land: 20, catchRate: 0.4, stay: 20, p75: 0.34, bounce: 0.32 },
-        "/": { land: 55, catchRate: 0.58, stay: 32, p75: 0.5, bounce: 0.22 },
-        "/blog/cnc-tolerance-guide": { land: 25, catchRate: 0.6, stay: 44, p75: 0.68, bounce: 0.18 },
-        "/about": { land: 12, catchRate: 0.5, stay: 27, p75: 0.46, bounce: 0.26 },
+        "/products/cnc-6061-bracket": { land: 80, catchRate: 0.28, stay: 12, p75: 0.2, bounce: 0.52, leads: 1 },
+        "/cases/oem-bracket": { land: 45, catchRate: 0.58, stay: 40, p75: 0.62, bounce: 0.2, leads: 1 },
+        "/": { land: 40, catchRate: 0.58, stay: 32, p75: 0.5, bounce: 0.22, leads: 1 },
+        "/blog/cnc-tolerance-guide": { land: 25, catchRate: 0.6, stay: 44, p75: 0.68, bounce: 0.18, leads: 0 },
+        "/about": { land: 12, catchRate: 0.5, stay: 27, p75: 0.46, bounce: 0.26, leads: 0 },
+        "/campaign/cnc-oem-q3": { land: 8, catchRate: 0.4, stay: 20, p75: 0.34, bounce: 0.32, leads: 0 },
       },
+      // 广告：营销落地页第一，一部分仍投到铝支架详情
       ads: {
-        "/products/cnc-6061-bracket": { land: 110, catchRate: 0.2, catchRatePrev: 0.21, stay: 10, p75: 0.16, bounce: 0.62 },
-        "/campaign/cnc-oem-q3": { land: 190, catchRate: 0.147, stay: 8, p75: 0.13, bounce: 0.71 },
-        "/": { land: 45, catchRate: 0.49, stay: 26, p75: 0.4, bounce: 0.3 },
-        "/blog/cnc-tolerance-guide": { land: 15, catchRate: 0.53, stay: 36, p75: 0.55, bounce: 0.22 },
-        "/about": { land: 8, catchRate: 0.5, stay: 24, p75: 0.38, bounce: 0.28 },
+        "/campaign/cnc-oem-q3": { land: 210, catchRate: 0.147, stay: 8, p75: 0.13, bounce: 0.71, leads: 1 },
+        "/products/cnc-6061-bracket": { land: 120, catchRate: 0.2, catchRatePrev: 0.21, stay: 10, p75: 0.16, bounce: 0.62, leads: 1 },
+        "/": { land: 28, catchRate: 0.49, stay: 26, p75: 0.4, bounce: 0.3, leads: 0 },
+        "/products": { land: 12, catchRate: 0.4, stay: 16, p75: 0.28, bounce: 0.28, leads: 0 },
       },
-    }),
+    }, { onlyPatched: true }),
   },
   l2: splitChannel(L2_SITE, {
     search: {
@@ -837,7 +875,7 @@ export const PAGE_COLS = {
       { key: "uv", label: "独立访客UV" },
       { key: "pageStay", label: "页面平均停留时长", fmt: "sec" },
       { key: "qualifyRate", label: "合格浏览率", fmt: "pct", prevKey: "qualifyRatePrev" },
-      { key: "p75", label: "平均滚动深度P75", fmt: "pct" },
+      { key: "p75", label: "平均滚动深度", fmt: "pct" },
     ],
     land: [
       { key: "pv", label: "浏览次数PV" },
@@ -846,14 +884,13 @@ export const PAGE_COLS = {
       { key: "bounce", label: "秒退率", fmt: "pct" },
       { key: "catchRate", label: "落地接住率", fmt: "pct", prevKey: "catchRatePrev" },
       { key: "stay", label: "落地平均停留时长", fmt: "sec" },
-      { key: "p75", label: "平均滚动P75", fmt: "pct" },
+      { key: "p75", label: "平均滚动深度", fmt: "pct" },
       { key: "leads", label: "落地页留资数" },
     ],
   },
   l2: [
     { key: "viewed", label: "有效浏览访客" },
     { key: "interactRate", label: "页面转化交互率", fmt: "pct", prevKey: "interactRatePrev" },
-    { key: "detailReach", label: "详情到达", fmt: "pct" },
   ],
   l3: [
     { key: "started", label: "开始交互访客" },
@@ -876,10 +913,9 @@ export const PAGE_CATALOG_COLS = {
     { key: "uv", label: "独立访客UV" },
     { key: "pageStay", label: "页面平均停留时长", fmt: "sec" },
     { key: "qualifyRate", label: "合格浏览率", fmt: "pct", prevKey: "qualifyRatePrev" },
-    { key: "p75", label: "平均滚动深度P75", fmt: "pct" },
+    { key: "p75", label: "平均滚动深度", fmt: "pct" },
     { key: "viewed", label: "有效浏览访客" },
     { key: "interactRate", label: "页面转化交互率", fmt: "pct", prevKey: "interactRatePrev" },
-    { key: "detailReach", label: "详情到达", fmt: "pct" },
     { key: "started", label: "开始交互访客" },
     { key: "formDone", label: "表单完成率", fmt: "pct", prevKey: "formDonePrev" },
     { key: "chatLead", label: "开聊留资率", fmt: "pct" },
@@ -892,7 +928,7 @@ export const PAGE_CATALOG_COLS = {
     { key: "bounce", label: "秒退率", fmt: "pct" },
     { key: "catchRate", label: "落地接住率", fmt: "pct", prevKey: "catchRatePrev" },
     { key: "landStay", label: "落地平均停留时长", fmt: "sec" },
-    { key: "landP75", label: "平均滚动P75", fmt: "pct" },
+    { key: "landP75", label: "平均滚动深度", fmt: "pct" },
     { key: "landLeads", label: "落地页留资数" },
   ],
 };
@@ -900,7 +936,7 @@ export const PAGE_CATALOG_COLS = {
 export const PAGE_METRIC_GROUPS = {
   page: [
     { label: "浏览", keys: ["pv", "uv", "pageStay", "qualifyRate", "p75"] },
-    { label: "转化", keys: ["viewed", "interactRate", "detailReach"] },
+    { label: "转化", keys: ["viewed", "interactRate"] },
     { label: "留资", keys: ["started", "formDone", "chatLead", "pageLeads"] },
   ],
   land: [{ label: "落地", keys: PAGE_CATALOG_COLS.land.map((col) => col.key) }],
@@ -1619,9 +1655,11 @@ export function catalogRows(slice = "page", channelId = "site", intentId = null)
   if (slice === "land") {
     rows = rows.filter((row) => row.landUv != null || row.landPv != null);
   }
-  return rows.sort(
-    (a, b) => (b.uv || b.landUv || 0) - (a.uv || a.landUv || 0)
-  );
+  return rows.sort((a, b) => {
+    const primary = slice === "land" ? "landUv" : "uv";
+    const secondary = slice === "land" ? "landPv" : "landUv";
+    return (b[primary] || b[secondary] || 0) - (a[primary] || a[secondary] || 0);
+  });
 }
 
 export function channelLabel(id) {
@@ -1682,7 +1720,7 @@ const STRIP = {
     site: {
       合格浏览率: { v: 0.36, fmt: "pct" },
       页面平均停留时长: { v: 22, fmt: "sec" },
-      平均滚动深度P75: { v: 0.28, fmt: "pct" },
+      平均滚动深度: { v: 0.28, fmt: "pct" },
       落地接住率: { v: 0.33, fmt: "pct" },
       落地平均停留时长: { v: 18, fmt: "sec" },
       秒退率: { v: 0.42, fmt: "pct" },
@@ -1690,7 +1728,7 @@ const STRIP = {
     search: {
       合格浏览率: { v: 0.28, fmt: "pct" },
       页面平均停留时长: { v: 16, fmt: "sec" },
-      平均滚动深度P75: { v: 0.18, fmt: "pct" },
+      平均滚动深度: { v: 0.18, fmt: "pct" },
       落地接住率: { v: 0.24, fmt: "pct" },
       落地平均停留时长: { v: 11, fmt: "sec" },
       秒退率: { v: 0.55, fmt: "pct" },
@@ -1698,7 +1736,7 @@ const STRIP = {
     direct: {
       合格浏览率: { v: 0.6, fmt: "pct" },
       页面平均停留时长: { v: 36, fmt: "sec" },
-      平均滚动深度P75: { v: 0.5, fmt: "pct" },
+      平均滚动深度: { v: 0.5, fmt: "pct" },
       落地接住率: { v: 0.58, fmt: "pct" },
       落地平均停留时长: { v: 33, fmt: "sec" },
       秒退率: { v: 0.21, fmt: "pct" },
@@ -1706,7 +1744,7 @@ const STRIP = {
     referral: {
       合格浏览率: { v: 0.42, fmt: "pct" },
       页面平均停留时长: { v: 24, fmt: "sec" },
-      平均滚动深度P75: { v: 0.36, fmt: "pct" },
+      平均滚动深度: { v: 0.36, fmt: "pct" },
       落地接住率: { v: 0.4, fmt: "pct" },
       落地平均停留时长: { v: 22, fmt: "sec" },
       秒退率: { v: 0.36, fmt: "pct" },
@@ -1714,7 +1752,7 @@ const STRIP = {
     ads: {
       合格浏览率: { v: 0.26, fmt: "pct" },
       页面平均停留时长: { v: 15, fmt: "sec" },
-      平均滚动深度P75: { v: 0.2, fmt: "pct" },
+      平均滚动深度: { v: 0.2, fmt: "pct" },
       落地接住率: { v: 0.22, fmt: "pct" },
       落地平均停留时长: { v: 12, fmt: "sec" },
       秒退率: { v: 0.54, fmt: "pct" },
@@ -1722,7 +1760,7 @@ const STRIP = {
     browse: {
       合格浏览率: { v: 0.16, fmt: "pct" },
       页面平均停留时长: { v: 10, fmt: "sec" },
-      平均滚动深度P75: { v: 0.14, fmt: "pct" },
+      平均滚动深度: { v: 0.14, fmt: "pct" },
       落地接住率: { v: 0.15, fmt: "pct" },
       落地平均停留时长: { v: 8, fmt: "sec" },
       秒退率: { v: 0.7, fmt: "pct" },
@@ -1730,7 +1768,7 @@ const STRIP = {
     explore: {
       合格浏览率: { v: 0.62, fmt: "pct" },
       页面平均停留时长: { v: 38, fmt: "sec" },
-      平均滚动深度P75: { v: 0.58, fmt: "pct" },
+      平均滚动深度: { v: 0.58, fmt: "pct" },
       落地接住率: { v: 0.52, fmt: "pct" },
       落地平均停留时长: { v: 34, fmt: "sec" },
       秒退率: { v: 0.22, fmt: "pct" },
@@ -1738,7 +1776,7 @@ const STRIP = {
     compare: {
       合格浏览率: { v: 0.5, fmt: "pct" },
       页面平均停留时长: { v: 32, fmt: "sec" },
-      平均滚动深度P75: { v: 0.44, fmt: "pct" },
+      平均滚动深度: { v: 0.44, fmt: "pct" },
       落地接住率: { v: 0.5, fmt: "pct" },
       落地平均停留时长: { v: 26, fmt: "sec" },
       秒退率: { v: 0.2, fmt: "pct" },
@@ -1746,7 +1784,7 @@ const STRIP = {
     decide: {
       合格浏览率: { v: 0.64, fmt: "pct" },
       页面平均停留时长: { v: 44, fmt: "sec" },
-      平均滚动深度P75: { v: 0.56, fmt: "pct" },
+      平均滚动深度: { v: 0.56, fmt: "pct" },
       落地接住率: { v: 0.6, fmt: "pct" },
       落地平均停留时长: { v: 36, fmt: "sec" },
       秒退率: { v: 0.15, fmt: "pct" },
@@ -1754,35 +1792,35 @@ const STRIP = {
   },
   l2: {
     site: {
-      详情页到达率: { v: 0.58, fmt: "pct" },
+      产品详情页到达率: { v: 0.58, fmt: "pct" },
       表单开始率: { v: 0.1, fmt: "pct" },
       开聊率: { v: 0.049, fmt: "pct" },
       未转化页出口率: { v: 0.41, fmt: "pct" },
       询价入口个数: { v: 1, fmt: "int" },
     },
     search: {
-      详情页到达率: { v: 0.52, fmt: "pct" },
+      产品详情页到达率: { v: 0.52, fmt: "pct" },
       表单开始率: { v: 0.09, fmt: "pct" },
       开聊率: { v: 0.054, fmt: "pct" },
       未转化页出口率: { v: 0.48, fmt: "pct" },
       询价入口个数: { v: 1, fmt: "int" },
     },
     direct: {
-      详情页到达率: { v: 0.68, fmt: "pct" },
+      产品详情页到达率: { v: 0.68, fmt: "pct" },
       表单开始率: { v: 0.12, fmt: "pct" },
       开聊率: { v: 0.048, fmt: "pct" },
       未转化页出口率: { v: 0.2, fmt: "pct" },
       询价入口个数: { v: 1, fmt: "int" },
     },
     referral: {
-      详情页到达率: { v: 0.55, fmt: "pct" },
+      产品详情页到达率: { v: 0.55, fmt: "pct" },
       表单开始率: { v: 0.1, fmt: "pct" },
       开聊率: { v: 0.043, fmt: "pct" },
       未转化页出口率: { v: 0.3, fmt: "pct" },
       询价入口个数: { v: 1, fmt: "int" },
     },
     ads: {
-      详情页到达率: { v: 0.48, fmt: "pct" },
+      产品详情页到达率: { v: 0.48, fmt: "pct" },
       表单开始率: { v: 0.08, fmt: "pct" },
       开聊率: { v: 0.061, fmt: "pct" },
       未转化页出口率: { v: 0.45, fmt: "pct" },
@@ -1793,27 +1831,22 @@ const STRIP = {
     site: {
       表单完成率: { v: 0.44, fmt: "pct" },
       开聊留资率: { v: 0.5, fmt: "pct" },
-      表单留资占比: { v: 0.61, fmt: "pct" },
     },
     search: {
       表单完成率: { v: 0.38, fmt: "pct" },
       开聊留资率: { v: 0.42, fmt: "pct" },
-      表单留资占比: { v: 0.58, fmt: "pct" },
     },
     direct: {
       表单完成率: { v: 0.5, fmt: "pct" },
       开聊留资率: { v: 0.55, fmt: "pct" },
-      表单留资占比: { v: 0.62, fmt: "pct" },
     },
     referral: {
       表单完成率: { v: 0.46, fmt: "pct" },
       开聊留资率: { v: 0.5, fmt: "pct" },
-      表单留资占比: { v: 0.6, fmt: "pct" },
     },
     ads: {
       表单完成率: { v: 0.33, fmt: "pct" },
       开聊留资率: { v: 0.4, fmt: "pct" },
-      表单留资占比: { v: 0.55, fmt: "pct" },
     },
   },
 };

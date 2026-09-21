@@ -718,7 +718,13 @@ html.funnel-standalone body::before {
 }
 
 .grid.is-catalog.is-terms,
-.funnel-embed .grid.is-catalog.is-terms,
+.funnel-embed .grid.is-catalog.is-terms {
+  width: 100%;
+  min-width: 0;
+  max-width: none;
+  table-layout: fixed;
+}
+
 .grid.is-catalog.is-terms.is-all,
 .funnel-embed .grid.is-catalog.is-terms.is-all {
   width: 100%;
@@ -735,6 +741,11 @@ html.funnel-standalone body::before {
   width: auto;
 }
 
+.grid.is-catalog.is-terms.is-all .col-term,
+.grid.is-catalog.is-terms.is-all .col-src {
+  width: 50%;
+}
+
 .grid.is-catalog.is-terms .col-metric {
   width: auto;
 }
@@ -748,6 +759,17 @@ html.funnel-standalone body::before {
 
 .grid.is-catalog.is-terms td:not(.is-name):not(.num) {
   text-align: left;
+}
+
+.grid.is-catalog.is-terms.is-all th:last-child,
+.grid.is-catalog.is-terms.is-all td:last-child {
+  text-align: left;
+  white-space: nowrap;
+}
+
+.grid.is-catalog.is-terms.is-all th:last-child .sort-head {
+  width: auto;
+  justify-content: flex-start;
 }
 
 .grid.is-catalog.is-terms th.num,
@@ -813,8 +835,14 @@ html.funnel-standalone body::before {
   font-size: 13px;
 }
 
-.auth-banner button {
+.auth-banner-actions {
+  display: flex;
+  align-items: center;
   flex: none;
+  gap: 6px;
+}
+
+.auth-banner-go {
   margin: 0;
   padding: 6px 14px;
   border: 0;
@@ -825,6 +853,35 @@ html.funnel-standalone body::before {
   font-size: 13px;
   font-weight: 650;
   cursor: pointer;
+}
+
+.auth-banner-close {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: #9a3412;
+  font: inherit;
+  font-size: 20px;
+  font-weight: 400;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.auth-banner-close:hover,
+.auth-banner-close:focus-visible {
+  background: rgba(154, 52, 18, 0.1);
+}
+
+.auth-banner-close:focus-visible {
+  outline: 2px solid #e85d04;
+  outline-offset: 1px;
 }
 
 .auth-empty {

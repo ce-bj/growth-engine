@@ -71,11 +71,16 @@ const DEFAULT_SORT = {
 export default function SearchTerms({ authMap, onAuthorize, preferSource }) {
   const [source, setSource] = useState(preferSource || "all");
   const [sort, setSort] = useState(DEFAULT_SORT[preferSource] ?? DEFAULT_SORT.all);
+  const [hiddenBanners, setHiddenBanners] = useState([]);
   const current = SEARCH_TERM_SOURCES.find((item) => item.key === source) ?? SEARCH_TERM_SOURCES[0];
   const unauthorized =
     current.authKey && authMap && authMap[current.authKey] === false;
   const missing = SEARCH_TERM_SOURCES.filter(
-    (item) => item.authKey && authMap && authMap[item.authKey] === false,
+    (item) =>
+      item.authKey &&
+      authMap &&
+      authMap[item.authKey] === false &&
+      !hiddenBanners.includes(item.key),
   );
 
   useEffect(() => {
@@ -127,9 +132,28 @@ export default function SearchTerms({ authMap, onAuthorize, preferSource }) {
               <span>
                 {item.label}未授权，这一来源的搜索词还列不出来。
               </span>
-              <button type="button" onClick={() => onAuthorize?.(item.authKey)}>
-                去授权
-              </button>
+              <div className="auth-banner-actions">
+                <button
+                  type="button"
+                  className="auth-banner-go"
+                  onClick={() => onAuthorize?.(item.authKey)}
+                >
+                  去授权
+                </button>
+                <button
+                  type="button"
+                  className="auth-banner-close"
+                  aria-label="关闭提示"
+                  title="关闭"
+                  onClick={() =>
+                    setHiddenBanners((prev) =>
+                      prev.includes(item.key) ? prev : [...prev, item.key],
+                    )
+                  }
+                >
+                  <span aria-hidden="true">×</span>
+                </button>
+              </div>
             </div>
           ))
         : null}
