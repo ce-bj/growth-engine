@@ -11,7 +11,7 @@ function nextAction(step: number): { label: string; target: 'workbench' | Conten
     case 1: return { label: '补充资料', target: 'workbench', workbenchStep: 1, hint: '知识库资料尚未补齐' }
     case 2: return { label: '进入生产', target: 'workbench', workbenchStep: 2, hint: '等待生成或完善母稿' }
     case 3: return { label: '去审核', target: 'review', hint: '在内容审核页处理质量与合规' }
-    case 4: return { label: '查看审核', target: 'workbench', workbenchStep: 4, hint: '处理内容质量与合规结论' }
+    case 4: return { label: '查看审核', target: 'workbench', workbenchStep: 4, hint: '处理 EEAT 四维质量与合规结论' }
     case 5: return { label: '预览内容', target: 'workbench', workbenchStep: 5, hint: '逐渠道确认最终呈现' }
     case 6: return { label: '去发布', target: 'publishing', hint: '在发布管理页审批与排期' }
     default: return { label: '查看效果', target: 'performance', hint: '内容已发布，可查看多渠道表现' }

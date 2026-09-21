@@ -33,6 +33,14 @@ export function ContentPlan({ tasks, seriesPlans, opportunities, planItems, onOp
   const activePlanItems = planItems.filter((item) => item.status === 'proposed' || item.status === 'accepted')
 
   return <div className="content-page-stack">
+    <section className="content-panel content-ratio-panel">
+      <div className="content-panel__head"><div><span className="content-eyebrow">CONTENT RATIO</span><h3>内容目标配比（4:3:3）</h3><p className="content-panel__desc">按营销目标切资源；与内容类型维度正交。可漂移：复盘若某类持续低效，经人工确认后调整（如品牌内容长期滚动深度低 → 下调至 25%、引流升至 45%）。</p></div></div>
+      <div className="content-channel-performance">
+        <div><b>引流内容</b><strong>40%</strong><span>拉新曝光 · 曝光量 / 排名 / 新访客占比</span><i style={{ width: '40%' }} /></div>
+        <div><b>品牌内容</b><strong>30%</strong><span>建立调性与信任 · 停留时长 / 滚动深度 / 品牌词搜索</span><i style={{ width: '30%' }} /></div>
+        <div><b>深度阅读</b><strong>30%</strong><span>推动深度消费 · 滚动深度 / 下一页跳转率 / CTA 点击</span><i style={{ width: '30%' }} /></div>
+      </div>
+    </section>
     {seriesPlans.length > 0 && <section className="content-plan-stage content-series-stage">
       <div className="content-plan-stage__head"><div><span className="content-eyebrow">DIAGNOSIS INTAKE</span><h3>诊断接入 · 周期内容计划</h3><p>诊断报告中的一串内容先形成父计划，再按期实例化单篇任务；不会把多个主题压进同一篇内容。</p></div><strong>{seriesPlans.length} 个</strong></div>
       <div className="content-series-list">{seriesPlans.map((plan) => {

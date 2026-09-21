@@ -53,12 +53,21 @@ export function ContentOverview({ tasks, publications, knowledgeRisks, onNavigat
     <section className="content-panel">
       <div className="content-panel__head"><div><span className="content-eyebrow">MULTI-CHANNEL PERFORMANCE</span><h3>多渠道内容表现</h3></div><Button size="sm" variant="text" onClick={() => onNavigate('performance')}>查看效果分析</Button></div>
       <div className="content-channel-performance">
-        <div><b>企业网站</b><strong>46%</strong><span>有效阅读率</span><i style={{ width: '46%' }} /></div>
+        <div><b>企业网站</b><strong>46%</strong><span>滚动深度</span><i style={{ width: '46%' }} /></div>
         <div><b>LinkedIn</b><strong>8.2K</strong><span>曝光 · 互动率 5.1%</span><i style={{ width: '78%' }} /></div>
         <div><b>Facebook</b><strong>4.3K</strong><span>曝光 · 互动率 3.4%</span><i style={{ width: '48%' }} /></div>
         <div><b>X / Twitter</b><strong>2.8K</strong><span>曝光 · 互动率 2.9%</span><i style={{ width: '34%' }} /></div>
       </div>
-      <div className="content-ai-insight"><span>AI 建议</span><p>“工业机器人选型”主题在网站和 LinkedIn 表现最好，建议继续生产“负载选择”和“工作半径选择”两个子主题。</p><Button size="sm" onClick={() => onNavigate('performance')}>查看并加入计划</Button></div>
+        <div className="content-ai-insight"><span>AI 建议</span><p>"工业机器人选型"主题在网站和 LinkedIn 表现最好，建议继续生产"负载选择"和"工作半径选择"两个子主题。</p><Button size="sm" onClick={() => onNavigate('performance')}>查看并加入计划</Button></div>
+    </section>
+    <section className="content-panel content-evolution-panel">
+      <div className="content-panel__head"><div><span className="content-eyebrow">AGENT EVOLUTION</span><h3>智能体进化机制 · 工作记忆</h3><p className="content-panel__desc">本产品只存经验（写法好坏规律），不存事实；置信度随验证次数指数平滑更新，证伪即降权 / 移除。</p></div></div>
+      <div className="content-evolution-body">
+        <div><b>写入格式</b><p>{'{ 规律描述, 适用语种/类目, 效果证据, 来源任务, 置信度, 有效期 }'}</p></div>
+        <div><b>置信度公式</b><p>置信度_new = (n×旧 + 本次) / (n+1)；被证伪连续失败跌破 0.3 自动移除</p></div>
+        <div><b>三个触发点</b><p>生产日历优先排好写法 · 质检追加检查项 · 基线标准随表现上调</p></div>
+        <div><b>提交边界</b><p>置信度 &gt;0.9 且跨多站验证 → 候选提交知识库（经验归经验，事实归事实）</p></div>
+      </div>
     </section>
   </div>
 }

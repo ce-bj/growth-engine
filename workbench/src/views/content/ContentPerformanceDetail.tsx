@@ -27,7 +27,7 @@ export function ContentPerformanceDetail({ stat, onBack, onOpenTask }: {
       <MetricCard label="官网发布计数" value={stat.websiteCount} sub="含更新重发" tone="good" />
       <MetricCard label="社媒发布计数" value={stat.socialCount} sub={`覆盖 ${socialChannels.filter((item) => item.count > 0).length} 个社媒渠道`} tone="good" />
       <MetricCard label="网站 UV" value={stat.uv.toLocaleString()} sub={`平均停留 ${stat.avgDuration}`} />
-      <MetricCard label="有效阅读率" value={`${stat.effectiveReadRate}%`} sub="读完核心章节占比" tone={stat.effectiveReadRate >= 50 ? 'good' : 'warning'} />
+      <MetricCard label="滚动深度" value={`${stat.scrollDepth}%`} sub="滚屏读完比例" tone={stat.scrollDepth >= 40 ? 'good' : 'warning'} />
       <MetricCard label="社媒曝光" value={stat.impressions.toLocaleString()} sub={`互动 ${stat.engagements} · 互动率 ${stat.engagementRate}%`} />
       <MetricCard label="链接点击" value={stat.linkClicks.toLocaleString()} sub="社媒回流网站" />
     </div>
@@ -45,7 +45,7 @@ export function ContentPerformanceDetail({ stat, onBack, onOpenTask }: {
     </section>
 
     <section className="content-performance-overview">
-      <div className="content-performance-funnel"><h3>官网消费路径</h3><div><span><Globe size={16} />内容访问<b>{stat.uv.toLocaleString()}</b></span><i /><span><Globe size={16} />有效阅读<b>{Math.round(stat.uv * (stat.effectiveReadRate / 100)).toLocaleString()}</b></span><i /><span><MousePointerClick size={16} />继续阅读<b>{Math.round(stat.uv * 0.12).toLocaleString()}</b></span></div></div>
+      <div className="content-performance-funnel"><h3>官网消费路径</h3><div><span><Globe size={16} />内容访问<b>{stat.uv.toLocaleString()}</b></span><i /><span><Globe size={16} />滚动深度<b>{Math.round(stat.uv * (stat.scrollDepth / 100)).toLocaleString()}</b></span><i /><span><MousePointerClick size={16} />继续阅读<b>{Math.round(stat.uv * 0.12).toLocaleString()}</b></span></div></div>
       <div className="content-performance-funnel"><h3>社媒回流路径</h3><div><span><Share2 size={16} />曝光<b>{stat.impressions.toLocaleString()}</b></span><i /><span><Share2 size={16} />互动<b>{stat.engagements.toLocaleString()}</b></span><i /><span><MousePointerClick size={16} />回流点击<b>{stat.linkClicks.toLocaleString()}</b></span></div></div>
     </section>
 

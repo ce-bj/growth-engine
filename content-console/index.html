@@ -6,19 +6,19 @@
 <title>AI内容运营智能体 · 数字门户控制台</title>
 <style>
 :root{
-  --brand-600:#2563eb; --brand-500:#3b82f6; --brand-400:#60a5fa; --brand-50:#eff6ff;
-  --ai-1:#6366f1; --ai-2:#8b5cf6; --ai-3:#06b6d4;
-  --ai-grad:linear-gradient(135deg,#6366f1 0%,#8b5cf6 50%,#06b6d4 100%);
+  --brand-600:#4f46e5; --brand-500:#6366f1; --brand-400:#818cf8; --brand-50:#eef2ff;
+  --ai-1:#6366f1; --ai-2:#818cf8; --ai-3:#4338ca;
+  --ai-grad:linear-gradient(135deg,#6366f1 0%,#818cf8 50%,#4338ca 100%);
   --bg:#f5f7fb; --panel:#ffffff; --panel-2:#fbfcfe;
   --line:#e7ebf3; --line-2:#eef2f8;
   --txt:#0f172a; --txt-2:#475569; --txt-3:#94a3b8;
   --ok:#10b981; --ok-bg:#ecfdf5;
   --warn:#f59e0b; --warn-bg:#fffbeb;
   --danger:#ef4444; --danger-bg:#fef2f2;
-  --info:#3b82f6;
+  --info:#6366f1;
   --sh-sm:0 1px 2px rgba(15,23,42,.05);
   --sh-md:0 6px 18px -6px rgba(15,23,42,.12);
-  --sh-lg:0 18px 40px -16px rgba(37,99,235,.22);
+  --sh-lg:0 18px 40px -16px rgba(99,102,241,.22);
   --sh-ai:0 10px 30px -10px rgba(99,102,241,.45);
   --r-sm:8px; --r-md:12px; --r-lg:16px; --r-xl:22px;
   --ease:cubic-bezier(.4,0,.2,1);
@@ -37,7 +37,7 @@ button{font-family:inherit;cursor:pointer;border:none;background:none}
 .shell{display:flex;height:100vh}
 .sidenav{width:210px;flex:0 0 210px;background:#0f1729;color:#cbd5e1;display:flex;flex-direction:column;padding:18px 12px}
 .sidenav .logo{display:flex;align-items:center;gap:9px;color:#fff;font-weight:700;font-size:15px;padding:4px 8px 16px}
-.sidenav .logo .d{width:26px;height:26px;border-radius:8px;background:linear-gradient(135deg,#3b82f6,#8b5cf6);display:grid;place-items:center;font-size:14px}
+.sidenav .logo .d{width:26px;height:26px;border-radius:8px;background:linear-gradient(135deg,#6366f1,#818cf8);display:grid;place-items:center;font-size:14px}
 .navgroup{font-size:11px;letter-spacing:.08em;color:#64748b;padding:14px 10px 6px}
 .navitem{display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:9px;color:#cbd5e1;font-size:13.5px;margin-bottom:2px;transition:.18s}
 .navitem:hover{background:rgba(255,255,255,.06);color:#fff}
@@ -165,7 +165,7 @@ button{font-family:inherit;cursor:pointer;border:none;background:none}
 .day.today .dh .dname{color:var(--ai-1)}
 .chip-task{padding:6px 8px;border-radius:8px;font-size:11.5px;margin-bottom:6px;line-height:1.35;transition:.15s}
 .chip-task.auto{background:#eef2ff;color:var(--brand-600)}
-.chip-task.sch{background:#f3e8ff;color:#8b5cf6}
+.chip-task.sch{background:#eef2ff;color:#6366f1}
 .chip-task.rev{background:var(--warn-bg);color:var(--warn)}
 .chip-task .nt{display:block;font-size:10.5px;opacity:.8;margin-top:2px}
 .plan-foot{margin-top:16px;font-size:12px;color:var(--txt-3);background:var(--panel);border:1px dashed var(--line);border-radius:var(--r-md);padding:13px 16px}
@@ -191,6 +191,7 @@ button{font-family:inherit;cursor:pointer;border:none;background:none}
 .stat.s-ok{background:var(--ok-bg);color:var(--ok)} .stat.s-build{background:var(--warn-bg);color:var(--warn)} .stat.s-wait{background:#f1f5f9;color:var(--txt-3)}
 .memory-note{background:linear-gradient(135deg,rgba(99,102,241,.06),rgba(6,182,212,.05));border:1px solid rgba(99,102,241,.18);border-radius:var(--r-md);padding:14px 16px;font-size:12.5px;color:var(--txt-2);margin-top:12px}
 .memory-note b{color:var(--ai-1)}
+.set-note{font-size:12px;color:var(--txt-3);margin-top:10px;padding-top:10px;border-top:1px dashed var(--line-2)}
 
 /* ===== 通用抽屉（右滑） ===== */
 .drawer-mask{position:fixed;inset:0;background:rgba(15,23,42,.36);opacity:0;pointer-events:none;transition:.25s;z-index:40}
@@ -280,6 +281,25 @@ button{font-family:inherit;cursor:pointer;border:none;background:none}
 html[data-embed] .sidenav{display:none}
 html[data-embed] .shell{height:100%}
 html[data-embed] .topbar .crumbs{display:none}
+
+/* ===== 内容生产 / 发布 框架确认闸门 ===== */
+.frame-confirm{margin-top:16px;padding:14px 16px;border:1px dashed var(--ai-1);border-radius:12px;background:#eef2ff;display:flex;flex-direction:column;gap:10px;align-items:flex-start}
+.frame-confirm p{margin:0;font-size:13px;color:var(--txt-2);line-height:1.6}
+.frame-locked{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:56px 24px;text-align:center}
+.frame-locked .lk-ic{width:54px;height:54px;border-radius:50%;background:#eef2ff;color:var(--ai-1);display:grid;place-items:center;font-size:24px}
+.frame-locked b{font-size:16px;color:var(--txt)}
+.frame-locked p{margin:0;font-size:13px;color:var(--txt-2);line-height:1.7;max-width:380px}
+.frame-locked .btn{margin-top:6px}
+.frame-card{border:1px solid var(--line);border-radius:14px;overflow:hidden;background:#fff}
+.frame-head{padding:14px 18px;background:#eef2ff;border-bottom:1px solid var(--line);display:flex;flex-direction:column;gap:4px}
+.frame-head b{font-size:14px;color:var(--txt)}
+.frame-tag{display:inline-block;align-self:flex-start;font-size:11px;font-weight:700;letter-spacing:.4px;color:var(--ai-1);background:#fff;border:1px solid var(--ai-1);border-radius:6px;padding:2px 8px}
+.frame-sec{display:flex;gap:14px;padding:11px 18px;border-bottom:1px solid var(--line)}
+.frame-sec:last-of-type{border-bottom:none}
+.frame-k{flex:0 0 84px;color:var(--txt-2);font-size:13px;font-weight:600}
+.frame-v{flex:1;color:var(--txt);font-size:13px;line-height:1.6;word-break:break-word}
+.frame-note{margin:0;padding:12px 18px;background:#fff7ed;color:#9a3412;font-size:12.5px;line-height:1.6;border-top:1px solid var(--line)}
+.frame-actions{padding:14px 18px;display:flex;justify-content:flex-end;gap:10px;background:#fff}
 </style>
 </head>
 <body>
@@ -350,7 +370,7 @@ if (new URLSearchParams(location.search).has('embed')) {
             <div class="row"><span class="tk ok"></span><div><div class="tx"><b>自检通过并发布</b> —《SDPH 系列全国产大电流型产品介绍》EEAT 96 分</div><div class="tm">09-15 11:20</div></div></div>
             <div class="row"><span class="tk"></span><div><div class="tx"><b>主动补强</b> — PT100 温度指南 402 天未更新，已重写并比对品牌词库</div><div class="tm">09-15 09:05</div></div></div>
             <div class="row"><span class="tk ai"></span><div><div class="tx"><b>环境感知</b> — 监测到行业新标准发布，已加入选题候选</div><div class="tm">09-14 22:40</div></div></div>
-            <div class="row"><span class="tk ai"></span><div><div class="tx"><b>自我进化</b> — 深度阅读率周环比 +6%，将"参数实测"写法置信度上调至 0.82（全自动，无需你操作）</div><div class="tm">09-14 06:00 · M7 复盘</div></div></div>
+            <div class="row"><span class="tk ai"></span><div><div class="tx"><b>自我进化</b> — 滚动深度周环比 +6%，将"参数实测"写法置信度上调至 0.82（全自动，无需你操作）</div><div class="tm">09-14 06:00 · 复盘</div></div></div>
           </div>
         </details>
 
@@ -379,14 +399,14 @@ if (new URLSearchParams(location.search).has('embed')) {
             <span data-f="rev" onclick="planFilter('rev',this)">待审核</span>
           </div>
           <div class="legend">
-            <span><i style="background:#3b82f6"></i>自动</span>
-            <span><i style="background:#8b5cf6"></i>排期</span>
+            <span><i style="background:#6366f1"></i>自动</span>
+            <span><i style="background:#4338ca"></i>排期</span>
             <span><i style="background:#16a34a"></i>手动</span>
             <span><i style="background:#f59e0b"></i>待审核</span>
           </div>
         </div>
         <div class="week" id="weekGrid"></div>
-        <div class="plan-foot">说明：<b>自动</b>任务在触发条件满足时由智能体自行发起（如某篇深度阅读率跌破基线即补强）；<b>排期</b>任务按你设定的节奏运行；<b>待审核</b>是已写好、等你确认发布的队列。三者均由智能体调度，<b>无需你每天操作</b>。</div>
+        <div class="plan-foot">说明：<b>自动</b>任务在触发条件满足时由智能体自行发起（如某篇滚动深度跌破基线即补强）；<b>排期</b>任务按你设定的节奏运行；<b>待审核</b>是已写好、等你确认发布的队列。三者均由智能体调度，<b>无需你每天操作</b>。</div>
       </section>
 
       <!-- 设置 -->
@@ -403,14 +423,33 @@ if (new URLSearchParams(location.search).has('embed')) {
             <div class="h">品牌语气与红线</div>
             <div class="d">语气由你定义；红线是智能体不可逾越的硬边界（命中即退回重写，任何策略下不破例）。</div>
             <div class="field"><div class="k">品牌语气</div><div class="v"><span class="tag">专业克制</span><span class="tag">数据说话</span><span class="tag">有出处</span><span class="tag">不夸大</span></div></div>
-            <div class="redline">虚构客户案例或应用故事</div>
-            <div class="redline">虚构资质、认证或奖项</div>
-            <div class="redline">承诺"保证收录 / 保证排名"</div>
+            <div class="redline">事实错误（参数错）<span class="stat s-ok" style="margin-left:auto">✅ 能自动</span></div>
+            <div class="redline">禁用词命中<span class="stat s-ok" style="margin-left:auto">✅ 能自动</span></div>
+            <div class="redline">抄袭 ≥15%<span class="stat s-ok" style="margin-left:auto">✅ 能自动</span></div>
+            <div class="redline">品牌词不一致<span class="stat s-ok" style="margin-left:auto">✅ 能自动</span></div>
+            <div class="redline">虚构案例<span class="stat s-build" style="margin-left:auto">🟡 部分 · 抽样人工</span></div>
+            <div class="redline">虚构资质<span class="stat s-build" style="margin-left:auto">🟡 部分 · 需人核对</span></div>
+            <p class="set-note">适用边界：不承诺收录 / 排名 / 曝光 / 询盘等外部效果（仅把内容本身做到位：专业、有据、可信）。</p>
           </div>
           <div class="set-card">
             <div class="h">质量基线（按站点独立配置）</div>
-            <div class="d">深度阅读率低于基线即触发补强；基线由本站点过去 90 天滚动数据自动校准。</div>
-            <div class="baseline">深度阅读率基线 <input value="40" /> % &nbsp;·&nbsp; 跳出率上限 <input value="65" /> % &nbsp;·&nbsp; 环比下滑预警 <input value="15" /> %</div>
+            <div class="d">滚动深度低于基线即触发补强；基线由本站点过去 90 天滚动数据自动校准。</div>
+            <div class="baseline">滚动深度基线 <input value="40" /> % &nbsp;·&nbsp; 跳出率上限 <input value="65" /> % &nbsp;·&nbsp; 环比下滑预警 <input value="15" /> %</div>
+          </div>
+          <div class="set-card">
+            <div class="h">GEO 适配检查（4 项量化）</div>
+            <div class="d">让内容易被 AI 搜索（豆包 / DeepSeek / ChatGPT 等）摘引推荐；逐项过 / 不过，缺项→自动补 FAQ 或提示人补。</div>
+            <div class="field"><span class="k">① 结构清晰</span><span class="v">自动检测 H2/H3 无跳级（H1→H3 跳级即不通过）</span></div>
+            <div class="field"><span class="k">② 结论明确</span><span class="v">首段 ≤120 字内含判断句（"是 / 指 / 即 / 核心"），半自动判，存疑交人</span></div>
+            <div class="field"><span class="k">③ 含 FAQ</span><span class="v">≥3 组 Q&amp;A（正则检测 Q:/A: 或结构化块）硬阈值</span></div>
+            <div class="field"><span class="k">④ 可引用短句</span><span class="v">存在 ≤40 字结论句（NLP 抽取，如"PT100 在 -200~850°C 线性度优于热电偶"）</span></div>
+          </div>
+          <div class="set-card">
+            <div class="h">内容目标配比（4:3:3）</div>
+            <div class="d">按营销目标切资源；与内容类型维度正交。可漂移：复盘若某类持续低效，经人工确认后调整（如品牌内容长期滚动深度低 → 下调至 25%、引流升至 45%）。</div>
+            <div class="field"><span class="k">引流内容 40%</span><span class="v">拉新曝光 · 曝光量 / 排名 / 新访客占比</span></div>
+            <div class="field"><span class="k">品牌内容 30%</span><span class="v">建立调性与信任 · 停留时长 / 滚动深度 / 品牌词搜索</span></div>
+            <div class="field"><span class="k">深度阅读 30%</span><span class="v">推动深度消费 · 滚动深度 / 下一页跳转率 / CTA 点击</span></div>
           </div>
           <div class="set-card">
             <div class="h">信源与接口状态</div>
@@ -421,7 +460,7 @@ if (new URLSearchParams(location.search).has('embed')) {
             <div class="src-row"><span class="nm">竞品 sitemap / RSS</span><span class="stat s-wait">⚪ 暂未接入</span></div>
             <div class="src-row"><span class="nm">媒体权威度库</span><span class="stat s-build">🟡 待自建</span></div>
             <div class="memory-note">⚠️ <b>GEO 探针与竞品源暂未接入</b>：接入前，GEO 引用率改以"结构合规 + 人工抽检"判定，竞品比对任务暂缓；其余能力不受影响，接口就绪后自动恢复。</div>
-            <div class="memory-note">🧠 <b>工作记忆（智能体自沉淀，全自动）</b>：已积累 <b>18 条</b>有效规律，置信度均值 <b>0.79</b>，本周新增 <b>3 条</b>。由 M7 每周复盘自动更新，<b>无需你操作</b>——这正是智能体越用越准的方式。</div>
+            <div class="memory-note">🧠 <b>工作记忆（智能体自沉淀，全自动）</b>：已积累 <b>18 条</b>有效规律，置信度均值 <b>0.79</b>，本周新增 <b>3 条</b>。写入格式 {规律描述, 适用语种/类目, 效果证据, 来源任务, 置信度, 有效期}；置信度按指数平滑更新（置信度_new = (n×旧 + 本次) / (n+1)），被证伪连续失败跌破 <b>0.3</b> 自动移除；高置信规律（<b>&gt;0.9</b> 且跨多站验证）作为候选提交知识库。由 每周复盘自动更新，<b>无需你操作</b>——这正是智能体越用越准的方式。</div>
           </div>
         </div>
       </section>
@@ -552,9 +591,10 @@ if (new URLSearchParams(location.search).has('embed')) {
     </div>
 
   </div>
+  <div class="db" id="taskFrame" style="display:none"></div>
   <div class="dw-foot">
     <button class="btn ghost" onclick="closeTask()">取消</button>
-    <button class="btn approve" onclick="createTask()">创建并加入计划</button>
+    <button class="btn approve" onclick="showPublishFrame()">生成内容框架</button>
   </div>
 </div>
 
@@ -562,20 +602,20 @@ if (new URLSearchParams(location.search).has('embed')) {
 /* ===================== 数据（mock） ===================== */
 const REVIEW = [
   {id:'r1', title:'SDPH 系列全国产大电流型 — 产品介绍', sub:'自动补强 · 来源：产品详情页 71', score:96, why:'用户指令触发：按 sunwaycontrols.com 真实参数撰写，零虚构', ref:['官网参数表','高新技术企业自述'], self:['经验23 专业25 权威23 可信25','连续50A/峰值125A 已区分','红线0命中'], now:'待你确认发布'},
-  {id:'r2', title:'PT100 温度传感器选型指南（英文站）', sub:'主动补强 · 402 天未更新', score:88, why:'监控触发：深度阅读率低于基线 12 个百分点', ref:['旧文比对','品牌词库 EN'], self:['EEAT 88 分','补入实测偏差 0.3°C','GEO 5 项全过'], now:'待你确认发布'}
+  {id:'r2', title:'PT100 温度传感器选型指南（英文站）', sub:'主动补强 · 402 天未更新', score:88, why:'监控触发：滚动深度低于基线 12 个百分点', ref:['旧文比对','品牌词库 EN'], self:['EEAT 88 分','补入实测偏差 0.3°C','GEO 4 项全过'], now:'待你确认发布'}
 ];
 const CONTENTS = [
   {id:'c1', title:'SDPH 系列全国产大电流型 — 产品介绍', st:'rev', stT:'待审核', desc:'基于官网真实参数撰写，连续50A/峰值125A，全国产自主可控，附生产逻辑卡。', pv:'1.2k', dr:'—', src:'指令', body:`<h3>产品定位</h3><p>SDPH 系列是南京三慧控制技术有限公司推出的全国产大电流伺服驱动器，面向精密运动控制场景，强调“全链国产、自主可控”。</p><h3>核心技术参数</h3><ul><li>供电电压：24 ~ 72 VDC</li><li>额定连续电流：50 A（SDPH-4850）</li><li>峰值电流：125 A</li><li>适配功率：3000 W</li><li>电机类型：有刷 / 无刷 / 力矩 / 伺服电机</li><li>反馈接口：旋变、增量编码器、绝对值编码器</li><li>通讯协议：EtherCAT、CANopen、RS485</li><li>工作温度：-40 ~ +55 ℃</li></ul><h3>全国产自主可控</h3><p>该系列在软硬件架构、底层算法及配置工具层面全自主研发，关键元器件实现国产化替代，彻底摆脱海外技术与供应链依赖。</p><h3>典型应用场景</h3><p>可应用于航空航天、船舶、半导体设备、机器人、精密机床等对可靠性要求较高的领域。</p>`},
   {id:'c2', title:'PT100 温度传感器选型指南（英文站）', st:'rev', stT:'待审核', desc:'主动补强旧文，补齐实测偏差与选型对照，对标品牌词库。', pv:'860', dr:'—', src:'自动', body:`<h3>选型核心指标</h3><p>PT100 铂电阻是工业温度测量中最常用的元件之一。选型时应重点关注温度范围、精度等级、响应时间及安装方式。</p><h3>关键参数对照</h3><ul><li>测温范围：-200 ~ +850 ℃</li><li>精度等级：A 级 ±0.15 ℃ / B 级 ±0.30 ℃</li><li>实测偏差：在 -50 ℃ 典型工况下偏差可控制在 0.3 ℃ 以内</li></ul><h3>安装建议</h3><p>根据被测介质选择铠装式、插入式或表面贴装结构，并确保热传导路径最短。</p>`},
   {id:'c3', title:'工业温度传感器校准白皮书解读', st:'pub', stT:'已发布', desc:'环境感知触发：行业新标准发布，转化为科普增信内容。', pv:'3.4k', dr:'52%', src:'自动', body:`<h3>新标准要点</h3><p>2026 版校准规范对工业温度传感器的溯源链、不确定度评定和现场校准提出了更高要求。</p><h3>对企业的实际影响</h3><p>制造企业需要在出厂检验环节增加至少一个温度点的溯源记录，并保留至少 5 年。</p>`},
-  {id:'c4', title:'servo 驱动器散热设计要点', st:'pub', stT:'已发布', desc:'周排程生成，EEAT 91 分，已发布 6 天。', pv:'2.1k', dr:'47%', src:'排程', body:`<h3>为什么散热决定伺服寿命</h3><p>大电流伺服驱动器在峰值输出时会产生显著热量，散热设计直接影响连续工作能力和长期可靠性。</p><h3>设计三原则</h3><ul><li>保证足够散热面积</li><li>避免热区集中</li><li>预留 20% 以上余量</li></ul>`},
+  {id:'c4', title:'servo 驱动器散热设计要点', st:'pub', stT:'已发布', desc:'排程生成，EEAT 91 分，已发布 6 天。', pv:'2.1k', dr:'47%', src:'排程', body:`<h3>为什么散热决定伺服寿命</h3><p>大电流伺服驱动器在峰值输出时会产生显著热量，散热设计直接影响连续工作能力和长期可靠性。</p><h3>设计三原则</h3><ul><li>保证足够散热面积</li><li>避免热区集中</li><li>预留 20% 以上余量</li></ul>`},
   {id:'c5', title:'全国产运动控制方案（半导体场景）', st:'auto', stT:'自主生成', desc:'监控驱动选题，起草中，预计今日完成自检。', pv:'—', dr:'—', src:'自动', body:'<p>内容正在由智能体生成中，完成后将显示完整正文。</p>'},
-  {id:'c6', title:'SDM 系列调试软件使用说明', st:'run', stT:'起草中', desc:'依据知识库只读资料组装，四维起草阶段。', pv:'—', dr:'—', src:'排程', body:'<p>内容正在由智能体生成中，完成后将显示完整正文。</p>'}
+  {id:'c6', title:'SDM 系列调试软件使用说明', st:'run', stT:'起草中', desc:'依据知识库只读资料组装，EEAT 四维起草阶段。', pv:'—', dr:'—', src:'排程', body:'<p>内容正在由智能体生成中，完成后将显示完整正文。</p>'}
 ];
 const WEEK = [
   {d:'周一', dt:'9/15', today:true, tasks:[
     {t:'趋势解读 ×3', type:'sch'},
-    {t:'PT100 指南补强', type:'auto', nt:'深度阅读率<基线时触发'},
+    {t:'PT100 指南补强', type:'auto', nt:'滚动深度<基线时触发'},
     {t:'SDPH 产品介绍', type:'rev', nt:'待你审核'}
   ]},
   {d:'周二', dt:'9/16', tasks:[
@@ -590,7 +630,7 @@ const WEEK = [
     {t:'半导体场景方案', type:'auto', nt:'监控触发补强'}
   ]},
   {d:'周五', dt:'9/19', tasks:[
-    {t:'周报复盘 M7', type:'auto', nt:'每周五自动进化'},
+    {t:'周报复盘', type:'auto', nt:'每周五自动进化'},
     {t:'趋势解读 ×2', type:'sch'}
   ]},
   {d:'周六', dt:'9/20', tasks:[
@@ -627,7 +667,7 @@ function renderContent(){
       <div class="top"><span class="st ${c.st}">${c.stT}</span><span style="font-size:11px;color:var(--txt-3)">· ${c.src}</span></div>
       <div class="ti">${c.title}</div>
       <div class="desc">${c.desc}</div>
-      <div class="ft"><span>PV <b>${c.pv}</b></span><span>深度阅读率 <b>${c.dr}</b></span></div>
+      <div class="ft"><span>PV <b>${c.pv}</b></span><span>滚动深度 <b>${c.dr}</b></span></div>
       <div class="acts2">
         <button class="btn ghost" onclick="openDrawer('${c.id}')">生产逻辑</button>
         <button class="btn line" onclick="viewArticle('${c.id}')">查看内容</button>
@@ -651,9 +691,9 @@ function planFilter(f, el){
 }
 
 /* ===================== 抽屉：生产逻辑 / 正文 ===================== */
-let curId=null, curTab='logic';
+let curId=null, curTab='logic', logicConfirmed=false;
 function openDrawer(id){
-  curId=id; curTab='logic';
+  curId=id; curTab='logic'; logicConfirmed=false;
   const o=findById(id); if(!o) return;
   document.getElementById('drTitle').textContent=o.title;
   renderLogic(id);
@@ -662,7 +702,7 @@ function openDrawer(id){
   document.getElementById('drawer').classList.add('on');
 }
 function viewArticle(id){
-  curId=id; curTab='article';
+  curId=id; curTab='article'; logicConfirmed=false;
   const o=findById(id); if(!o) return;
   document.getElementById('drTitle').textContent=o.title;
   renderArticle(id);
@@ -683,21 +723,36 @@ function renderLogic(id){
   const o=r||c; if(!o) return;
   const why=r?r.why:'监控/排程触发，按站点基线与策略自动生成';
   const ref=r?r.ref:['知识库只读','品牌词库','站点基线'];
-  const self=r?r.self:['EEAT 进行中','四维起草','风险红线实时查'];
+  const self=r?r.self:['EEAT 四维评分','GEO 4 项结构','风险红线实时查'];
   const now=r?r.now:(o.stT||'进行中');
   const steps=[
     {h:'为什么写', b:why},
     {h:'依据什么', b:`<span class="chip">${ref.join('</span><span class="chip">')}</span>`},
-    {h:'怎么写', b:'调取资料（只读）→ 四维起草（经验/专业/权威/可信）→ GEO 5 项结构 → 成稿'},
+    {h:'怎么写', b:'调取资料（只读）→ EEAT 四维起草（经验/专业/权威/可信）→ GEO 4 项结构 → 成稿'},
     {h:'自检了什么', b:`<span class="chip">${self.join('</span><span class="chip">')}</span>`},
     {h:'现在怎样', b:now}
   ];
   document.getElementById('drLogic').innerHTML = steps.map((s,i)=>`
-    <div class="lc-step"><div class="h"><span class="ix">${i+1}</span>${s.h}</div><div class="b">${s.b}</div></div>`).join('');
+    <div class="lc-step"><div class="h"><span class="ix">${i+1}</span>${s.h}</div><div class="b">${s.b}</div></div>`).join('') + `
+    <div class="frame-confirm">
+      <p>以上为智能体将执行的内容生产框架（含改写/产出要点）。<b>确认后，你才能查看成稿正文。</b></p>
+      <button class="btn approve" onclick="confirmLogicFrame()">确认内容生产框架，进入正文</button>
+    </div>`;
 }
+function confirmLogicFrame(){ logicConfirmed=true; tabDrawer('article'); }
 function renderArticle(id){
   const o=findById(id); if(!o) return;
-  const meta=`创建：${o.src} · 状态：${o.stT} · PV ${o.pv} · 深度阅读率 ${o.dr}`;
+  if(!logicConfirmed){
+    document.getElementById('drArticle').innerHTML = `
+      <div class="frame-locked">
+        <div class="lk-ic">🔒</div>
+        <b>正文已锁定</b>
+        <p>请先在「生产逻辑」中确认内容生产框架（为什么写 / 依据什么 / 怎么写 / 自检项）。确认后，智能体才会向你展示成稿正文。</p>
+        <button class="btn ghost" onclick="switchTab('logic')">返回生产逻辑并确认</button>
+      </div>`;
+    return;
+  }
+  const meta=`创建：${o.src} · 状态：${o.stT} · PV ${o.pv} · 滚动深度 ${o.dr}`;
   document.getElementById('drArticle').innerHTML = `
     <div class="art-head">
       <div class="art-ti">${o.title}</div>
@@ -733,6 +788,10 @@ function resetTaskForm(){
   STATE.topic=[]; STATE.kw=[];
   renderTags('topic'); renderTags('kw');
   imgOn=false; document.getElementById('imgSwitch').classList.remove('on');
+  const body=document.getElementById('taskBody'), frame=document.getElementById('taskFrame'), foot=document.querySelector('#taskDrawer .dw-foot');
+  if(body) body.style.display='block';
+  if(frame) frame.style.display='none';
+  if(foot) foot.style.display='flex';
 }
 function toggleImg(){ imgOn=!imgOn; document.getElementById('imgSwitch').classList.toggle('on',imgOn); }
 function addTag(e, kind){
@@ -750,7 +809,8 @@ function renderTags(kind){
   setTimeout(()=>document.getElementById(kind+'Input').focus(),0);
 }
 function removeTag(kind,v){ STATE[kind]=STATE[kind].filter(x=>x!==v); renderTags(kind); }
-function createTask(){
+let PENDING_FRAME=null;
+function showPublishFrame(){
   const title=document.getElementById('fTitle').value.trim();
   if(!title){ flashVoice('请填写任务标题'); return; }
   if(STATE.topic.length===0){ flashVoice('请至少选择一个任务主题'); return; }
@@ -759,13 +819,53 @@ function createTask(){
   const countText=document.getElementById('fCount').options[document.getElementById('fCount').selectedIndex].text;
   const status=document.getElementById('fStatus').value;
   const isSch=freqText!=='仅一次';
-  const topicList=STATE.topic.join(' / ');
-
+  PENDING_FRAME={
+    title, topicList:STATE.topic.join(' / '), kwList:STATE.kw.slice(),
+    app:document.getElementById('fApp').value, col:document.getElementById('fCol').value,
+    freqText, countText, isSch, status, imgOn,
+    start:document.getElementById('fStart').value, note:document.getElementById('fNote').value.trim()
+  };
+  document.getElementById('taskBody').style.display='none';
+  const foot=document.querySelector('#taskDrawer .dw-foot'); if(foot) foot.style.display='none';
+  const box=document.getElementById('taskFrame');
+  box.style.display='block';
+  box.innerHTML=publishFrameHTML(PENDING_FRAME);
+}
+function publishFrameHTML(f){
+  const publishMode = f.status==='review' ? '生成后进入待审核队列（你确认后再发布）' : '校验通过后直接发布';
+  const cadence = f.isSch ? `${f.freqText} · 每次 ${f.countText}` : `仅一次 · ${f.countText}`;
+  return `
+    <div class="frame-card">
+      <div class="frame-head"><span class="frame-tag">发布内容框架</span><b>请确认以下框架，确认后智能体才会开始生成内容</b></div>
+      <div class="frame-sec"><span class="frame-k">任务标题</span><span class="frame-v">${escapeHtml(f.title)}</span></div>
+      <div class="frame-sec"><span class="frame-k">内容主题</span><span class="frame-v">${escapeHtml(f.topicList)}</span></div>
+      <div class="frame-sec"><span class="frame-k">关键词</span><span class="frame-v">${escapeHtml(f.kwList.join('、'))}</span></div>
+      <div class="frame-sec"><span class="frame-k">推送位置</span><span class="frame-v">${escapeHtml(f.app)} · ${escapeHtml(f.col)}</span></div>
+      <div class="frame-sec"><span class="frame-k">发布节奏</span><span class="frame-v">${escapeHtml(cadence)} · 起始 ${escapeHtml(f.start)}</span></div>
+      <div class="frame-sec"><span class="frame-k">配图</span><span class="frame-v">${f.imgOn?'开启（生成后需人工审核）':'不开启'}</span></div>
+      <div class="frame-sec"><span class="frame-k">发布方式</span><span class="frame-v">${publishMode}</span></div>
+      ${f.note?`<div class="frame-sec"><span class="frame-k">任务说明</span><span class="frame-v">${escapeHtml(f.note)}</span></div>`:''}
+      <div class="frame-note">⚠️ 框架确认后，智能体将按以上约束起草正文（EEAT 四维 + GEO 4 项 + 风险红线门禁），确认前不会生成任何内容。</div>
+      <div class="frame-actions">
+        <button class="btn ghost" onclick="backToTaskForm()">返回修改</button>
+        <button class="btn approve" onclick="createTask()">确认框架，开始生成内容</button>
+      </div>
+    </div>`;
+}
+function escapeHtml(s){ return String(s).replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+function backToTaskForm(){
+  document.getElementById('taskFrame').style.display='none';
+  document.getElementById('taskBody').style.display='block';
+  const foot=document.querySelector('#taskDrawer .dw-foot'); if(foot) foot.style.display='flex';
+}
+function createTask(){
+  const f=PENDING_FRAME; if(!f) return;
+  const { title, topicList, kwList, app, col, freqText, countText, isSch, status, imgOn, note } = f;
   WEEK[0].tasks.push({t:title, type:'man', nt:`${freqText} · ${countText}${isSch?'':' · 立即执行'}`});
   const newId='c'+Date.now();
   CONTENTS.unshift({
-    id:newId, title:`${topicList} · ${STATE.kw[0]}`, st:'run', stT:'起草中',
-    desc:`手动任务：${title}。关键词：${STATE.kw.join(' / ')}。${imgOn?'已开启配图；':''}推送至 ${document.getElementById('fApp').value} · ${document.getElementById('fCol').value}。`,
+    id:newId, title:`${topicList} · ${kwList[0]}`, st:'run', stT:'起草中',
+    desc:`手动任务：${title}。关键词：${kwList.join(' / ')}。${imgOn?'已开启配图；':''}推送至 ${app} · ${col}。`,
     pv:'—', dr:'—', src:'手动',
     body:'<p>智能体已接收任务，正在按主题、关键词与推送规则起草正文，完成后将进入'+ (status==='review'?'待审核队列。':'立即发布。') +'</p>'
   });

@@ -39,7 +39,7 @@ export function ContentPerformance({ performance, weeks, publishStats, onCreateT
       <MetricCard label="官网发布条数" value={totalWebsite} sub={scope === 'week' ? '本周发布到企业网站' : '全部周累计'} tone="good" />
       <MetricCard label="社媒发布条数" value={totalSocial} sub={scope === 'week' ? '本周社媒渠道版本' : '全部周累计'} tone="good" />
       <MetricCard label="网站内容 UV" value={websiteUv.toLocaleString()} sub={scope === 'week' ? delta(week?.websiteUv ?? 0, previous?.websiteUv) ?? '本周累计' : '全部周累计'} />
-      <MetricCard label="有效阅读率" value={`${week?.effectiveReadRate ?? 0}%`} sub={scope === 'week' ? delta(week?.effectiveReadRate ?? 0, previous?.effectiveReadRate) ?? '本周均值' : '最近一周均值'} tone="good" />
+      <MetricCard label="滚动深度" value={`${week?.scrollDepth ?? 0}%`} sub={scope === 'week' ? delta(week?.scrollDepth ?? 0, previous?.scrollDepth) ?? '本周均值' : '最近一周均值'} tone="good" />
       <MetricCard label="社媒总曝光" value={impressions.toLocaleString()} sub={`互动率 ${week?.engagementRate ?? 0}%`} />
       <MetricCard label="内容链接点击" value={linkClicks.toLocaleString()} sub={scope === 'week' ? delta(week?.linkClicks ?? 0, previous?.linkClicks) ?? '本周累计' : '全部周累计'} />
     </div>
@@ -55,7 +55,7 @@ export function ContentPerformance({ performance, weeks, publishStats, onCreateT
     </section>
 
     <section className="content-performance-overview">
-      <div className="content-performance-funnel"><h3>网站内容消费</h3><div><span><BookOpenCheck size={16} />内容访问<b>{websiteUv.toLocaleString()}</b></span><i /><span><BookOpenCheck size={16} />有效阅读<b>{Math.round(websiteUv * ((week?.effectiveReadRate ?? 0) / 100)).toLocaleString()}</b></span><i /><span><MousePointerClick size={16} />继续阅读<b>{Math.round(websiteUv * 0.11).toLocaleString()}</b></span></div></div>
+      <div className="content-performance-funnel"><h3>网站内容消费</h3><div><span><BookOpenCheck size={16} />内容访问<b>{websiteUv.toLocaleString()}</b></span><i /><span><BookOpenCheck size={16} />滚动深度<b>{Math.round(websiteUv * ((week?.scrollDepth ?? 0) / 100)).toLocaleString()}</b></span><i /><span><MousePointerClick size={16} />继续阅读<b>{Math.round(websiteUv * 0.11).toLocaleString()}</b></span></div></div>
       <div className="content-performance-funnel"><h3>社媒内容互动</h3><div><span><Share2 size={16} />内容曝光<b>{impressions.toLocaleString()}</b></span><i /><span><Share2 size={16} />互动用户<b>{Math.round(impressions * ((week?.engagementRate ?? 0) / 100)).toLocaleString()}</b></span><i /><span><MousePointerClick size={16} />链接点击<b>{linkClicks.toLocaleString()}</b></span></div></div>
     </section>
 
@@ -69,7 +69,7 @@ export function ContentPerformance({ performance, weeks, publishStats, onCreateT
           <td><span className="content-count-pill is-website"><Globe size={12} />{stat.websiteCount} 次</span></td>
           <td><span className="content-count-pill is-social"><Share2 size={12} />{stat.socialCount} 条</span></td>
           <td><div className="content-channel-cell">{stat.channelCounts.filter((item) => item.count > 0).map((item) => <ChannelBadge key={item.channel} channel={item.channel} />)}</div></td>
-          <td><b>{stat.uv} UV</b><span>有效阅读 {stat.effectiveReadRate}%</span></td>
+          <td><b>{stat.uv} UV</b><span>滚动深度 {stat.scrollDepth}%</span></td>
           <td><b>{stat.impressions.toLocaleString()} 曝光</b><span>互动率 {stat.engagementRate}% · 点击 {stat.linkClicks}</span></td>
           <td><div className="content-row-actions"><Button size="sm" variant="text" onClick={() => onOpenDetail(stat.id)}>查看详情<ArrowUpRight size={13} /></Button></div></td>
         </tr>)}
@@ -81,7 +81,7 @@ export function ContentPerformance({ performance, weeks, publishStats, onCreateT
       <div className="content-theme-performance">{performance.map((item) => <article key={item.id}>
         <header><div><h4>{item.theme}</h4><p>{item.conclusion}</p></div><span className={`is-${item.action}`}>{item.action === 'expand' ? '建议扩展' : item.action === 'optimize' ? '建议优化' : item.action === 'refresh' ? '建议更新' : '定期复核'}</span></header>
         <div className="content-theme-metrics">
-          <div><b>企业网站</b><dl><span><dt>UV</dt><dd>{item.website.uv}</dd></span><span><dt>有效阅读</dt><dd>{item.website.effectiveReadRate}%</dd></span><span><dt>停留</dt><dd>{item.website.avgDuration}</dd></span><span><dt>跳出</dt><dd>{item.website.bounceRate}%</dd></span></dl></div>
+          <div><b>企业网站</b><dl><span><dt>UV</dt><dd>{item.website.uv}</dd></span><span><dt>滚动深度</dt><dd>{item.website.scrollDepth}%</dd></span><span><dt>停留</dt><dd>{item.website.avgDuration}</dd></span><span><dt>跳出</dt><dd>{item.website.bounceRate}%</dd></span></dl></div>
           <div><b>社媒汇总</b><dl><span><dt>曝光</dt><dd>{item.social.impressions.toLocaleString()}</dd></span><span><dt>互动</dt><dd>{item.social.engagements}</dd></span><span><dt>互动率</dt><dd>{item.social.engagementRate}%</dd></span><span><dt>点击</dt><dd>{item.social.linkClicks}</dd></span></dl></div>
         </div>
         <footer><Button size="sm" variant="secondary" onClick={() => onCreateTask(item)}><Sparkles size={13} />加入下一轮计划</Button>{publishStats.some((stat) => stat.taskId === item.taskId) && <button onClick={() => onOpenDetail(publishStats.find((stat) => stat.taskId === item.taskId)!.id)}>查看内容详情<ArrowUpRight size={13} /></button>}</footer>

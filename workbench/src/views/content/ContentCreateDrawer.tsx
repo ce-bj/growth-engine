@@ -2,7 +2,7 @@ import { Sparkles, X } from 'lucide-react'
 import { useState } from 'react'
 import { Button } from '../../components/Button'
 import type { ContentChannel, ContentKnowledgeScope, ContentSeriesPlan, ContentSourceContext, ContentTask, ContentTaskKind, ContentTaskSource, ContentType } from '../../types'
-import { KIND_LABEL, TYPE_LABEL } from './ContentPrimitives'
+import { KIND_LABEL, TYPE_LABEL, CHANNEL_META } from './ContentPrimitives'
 
 export interface ContentCreatePayload {
   demandSource: ContentTaskSource
@@ -47,7 +47,7 @@ const BUSINESS_GOALS: Record<NonNullable<ContentTask['businessGoal']>, string> =
 }
 
 const GOAL_DEFAULTS: Record<NonNullable<ContentTask['businessGoal']>, { metric: string; action: string; stage: NonNullable<ContentTask['journeyStage']>; audience: string }> = {
-  awareness: { metric: '有效阅读率 ≥ 55%', action: '继续阅读相关主题内容', stage: 'discover', audience: '正在了解该主题的潜在用户' },
+  awareness: { metric: '滚动深度 ≥ 55%', action: '继续阅读相关主题内容', stage: 'discover', audience: '正在了解该主题的潜在用户' },
   traffic: { metric: '自然搜索有效访问持续增长', action: '进入相关产品或方案页面', stage: 'evaluate', audience: '通过搜索寻找解决办法的用户' },
   decision: { metric: '内容辅助咨询或选型判断', action: '查看资料或咨询专业方案', stage: 'compare', audience: '正在比较方案的业务与技术决策者' },
   conversion: { metric: '咨询 CTA 点击率 ≥ 3%', action: '提交需求或预约咨询', stage: 'decide', audience: '已有明确需求的采购决策者' },
@@ -62,6 +62,23 @@ export const KNOWLEDGE_SCOPE_OPTIONS: { id: ContentKnowledgeScope; label: string
   { id: 'case', label: '案例证据', description: '客户案例、结果与授权' },
   { id: 'industry', label: '行业知识', description: '场景、标准与专业方法' },
 ]
+
+const CONTENT_OUTLINE: Record<ContentType, string[]> = {
+  product: ['产品定位与适用场景', '核心技术参数对照', '与竞品的差异点', '选型/使用注意事项', '典型应用与下一步'],
+  solution: ['问题背景与痛点', '方案构成与交付范围', '关键能力 / 流程', '落地边界与承诺', '案例佐证与行动建议'],
+  scenario: ['场景描述与需求', '行业方法与标准', '实操步骤 / 要点', '风险与边界', '总结与延伸阅读'],
+  case: ['客户背景与痛点', '采用的方案 / 产品', '实施结果与数据', '可复用经验', '授权说明与联系'],
+  guide: ['背景与问题定义', '核心概念 / 原理', '步骤 / 方法', '注意事项与边界', '总结与下一步'],
+  faq: ['高频问题清单', '直接回答（含依据）', '边界与例外', '相关链接 / 延伸'],
+  insight: ['现象 / 数据洞察', '原因拆解', '对业务的影响', '行动建议'],
+}
+
+function recommendedChannelsFor(goal: NonNullable<ContentTask['businessGoal']>): ContentChannel[] {
+  if (goal === 'awareness') return ['website', 'linkedin']
+  if (goal === 'traffic') return ['website']
+  if (goal === 'conversion') return ['website', 'linkedin']
+  return ['website']
+}
 
 const DEFAULT_SCOPES: Record<ContentType, ContentKnowledgeScope[]> = {
   product: ['product', 'company'], solution: ['service', 'product', 'case'], scenario: ['industry', 'product', 'case'],
@@ -119,6 +136,7 @@ export function ContentCreateDrawer({ onClose, onSubmit }: { onClose: () => void
   const [dueDate, setDueDate] = useState('2026-08-15')
   const [sourceId, setSourceId] = useState<typeof SOURCE_PRESETS[number]['id']>('manual')
   const [reason, setReason] = useState<string>('')
+  const [confirming, setConfirming] = useState(false)
 
   const pickSource = (preset: typeof SOURCE_PRESETS[number]) => {
     setSourceId(preset.id); setReason(preset.reason)
@@ -196,7 +214,7 @@ export function ContentCreateDrawer({ onClose, onSubmit }: { onClose: () => void
         <button type="button" className="drawer-close" onClick={onClose} aria-label="关闭"><X size={18} /></button>
       </div>
 
-      <div className="drawer-body content-create-form">
+      <div className="drawer-body content-create-form" style={confirming ? { display: 'none' } : undefined}>
         <div className="content-create-intro"><Sparkles size={18} /><div><b>先锁定知识检索边界，再让 Agent 补全创作策略</b><span>蓝色区域决定 ResearchAgent 去哪里找、找什么，必须明确；灰色区域可留空，由 Agent 推荐。</span></div></div>
 
         <div className="content-form-section"><b>01 · 需求来源</b><span>用于回链诊断、洞察或人工需求，不作为自由文本猜测。</span></div>
@@ -228,9 +246,45 @@ export function ContentCreateDrawer({ onClose, onSubmit }: { onClose: () => void
         <div className="content-note"><Sparkles size={16} /><p>创建后主 Agent 会生成核心主张、成功指标、CTA 与建议渠道；ResearchAgent 只在上面选定的知识域内检索，不会擅自扩大范围。</p></div>
       </div>
 
+      {confirming && (
+        <div className="drawer-body">
+          <section className="content-frame-confirm">
+            <div className="content-frame-head">
+              <span className="content-eyebrow">CONTENT PRODUCTION FRAMEWORK</span>
+              <h3>内容生产框架 · 请确认</h3>
+              <p>确认后 Agent 才会开始生成内容；确认前不会产出任何正文。框架依据你填写的检索契约推导。</p>
+            </div>
+            <div className="content-frame-grid">
+              <div><span>内容对象</span><b>{contentSubject || '—'}</b></div>
+              <div><span>内容类型</span><b>{TYPE_LABEL[type]}</b></div>
+              <div><span>业务目标</span><b>{BUSINESS_GOALS[businessGoal]}</b></div>
+              <div><span>目标受众</span><b>{audience || '—'}</b></div>
+              <div><span>知识检索域</span><b>{knowledgeScopes.map((id) => KNOWLEDGE_SCOPE_OPTIONS.find((o) => o.id === id)?.label ?? id).join('、')}</b></div>
+              <div><span>建议渠道</span><b>{recommendedChannelsFor(businessGoal).map((c) => CHANNEL_META[c]?.label ?? c).join('、')}</b></div>
+              <div style={{ gridColumn: '1 / -1' }}><span>核心问题</span><b>{userQuestion || '—'}</b></div>
+              <div style={{ gridColumn: '1 / -1' }}><span>成功指标</span><b>{GOAL_DEFAULTS[businessGoal].metric} · 期望动作：{GOAL_DEFAULTS[businessGoal].action}</b></div>
+            </div>
+            <div className="content-frame-outline">
+              <span className="content-eyebrow">成稿结构大纲（示意）</span>
+              <ol>{CONTENT_OUTLINE[type].map((item) => <li key={item}>{item}</li>)}</ol>
+            </div>
+            <p className="content-frame-note">⚠️ 智能体将按以上框架起草正文（EEAT 四维质量 + GEO 4 项 + 风险红线门禁），确认前不生成任何内容。</p>
+          </section>
+        </div>
+      )}
+
       <div className="drawer-footer">
-        <Button disabled={!valid} onClick={submit}><Sparkles size={14} />{sourceId === 'attribution' ? '确认接收并创建计划' : '生成任务简报'}</Button>
-        <Button variant="secondary" onClick={onClose}>取消</Button>
+        {confirming ? (
+          <>
+            <Button variant="secondary" onClick={() => setConfirming(false)}>返回修改</Button>
+            <Button disabled={!valid} onClick={submit}><Sparkles size={14} />{sourceId === 'attribution' ? '确认框架，创建计划' : '确认框架，开始生成'}</Button>
+          </>
+        ) : (
+          <>
+            <Button variant="secondary" onClick={onClose}>取消</Button>
+            <Button disabled={!valid} onClick={() => setConfirming(true)}><Sparkles size={14} />{sourceId === 'attribution' ? '预览生产框架' : '生成任务简报'}</Button>
+          </>
+        )}
       </div>
     </aside>
   </div>

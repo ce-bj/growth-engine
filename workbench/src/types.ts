@@ -389,12 +389,14 @@ export type PublicationStatus = 'pending_approval' | 'scheduled' | 'published' |
 
 export interface ContentQualityScore {
   overall: number
-  relevance: number
-  accuracy: number
-  completeness: number
-  readability: number
-  authenticity: number
-  channelFit: number
+  /** 经验 Experience —— 真实案例 / 实测数据 / 一线细节（0–25） */
+  experience: number
+  /** 专业 Expertise —— 术语准确 / 参数正确 / 行业认证引用（0–25） */
+  expertise: number
+  /** 权威 Authoritativeness —— 作者署名 / 引用来源 / 第三方背书（0–25） */
+  authority: number
+  /** 可信 Trustworthiness —— 结构化标记 / 信源可点击 / 更新日期（0–25） */
+  trustworthiness: number
 }
 
 export interface ComplianceIssue {
@@ -709,7 +711,7 @@ export interface ContentAsset {
   updatedAt: string
   expiresAt: string
   uv: number
-  effectiveReadRate: number
+  scrollDepth: number
 }
 
 export interface PublicationRecord {
@@ -728,7 +730,7 @@ export interface ContentThemePerformance {
   taskId: string
   website: {
     uv: number
-    effectiveReadRate: number
+    scrollDepth: number
     avgDuration: string
     scrollRate: number
     bounceRate: number
@@ -990,7 +992,7 @@ export interface ContentWeeklyPerformance {
   weekStart: string
   label: string
   websiteUv: number
-  effectiveReadRate: number
+  scrollDepth: number
   socialImpressions: number
   engagementRate: number
   linkClicks: number
@@ -1013,7 +1015,7 @@ export interface ContentPublishStat {
   socialCount: number
   channelCounts: Array<{ channel: ContentChannel; count: number; url?: string; lastPublishedAt: string }>
   uv: number
-  effectiveReadRate: number
+  scrollDepth: number
   avgDuration: string
   impressions: number
   engagements: number

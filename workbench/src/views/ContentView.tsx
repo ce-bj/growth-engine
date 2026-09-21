@@ -20,7 +20,7 @@ import { ContentReview } from './content/ContentReview'
 import { ContentTabs } from './content/ContentTabs'
 import { ContentWorkbench } from './content/ContentWorkbench'
 
-const QUALITY_MAX = { relevance: 20, accuracy: 20, completeness: 20, readability: 15, authenticity: 15, channelFit: 10 } as const
+const QUALITY_MAX = { experience: 25, expertise: 25, authority: 25, trustworthiness: 25 } as const
 const PRIORITY_MULTIPLIER = { P0: 0.92, P1: 0.85, P2: 0.78 } as const
 
 export function ContentView() {
@@ -112,7 +112,7 @@ export function ContentView() {
       },
       parentPlanId, sourceItemIds: payload.sourceItemIds, occurrenceIndex,
       materialBudget: deriveMaterialBudget(payload.type, payload.theme),
-      quality: { overall: 0, relevance: 0, accuracy: 0, completeness: 0, readability: 0, authenticity: 0, channelFit: 0 },
+      quality: { overall: 0, experience: 0, expertise: 0, authority: 0, trustworthiness: 0 },
       compliance: [], channelVersions: [],
     })
 
@@ -133,7 +133,7 @@ export function ContentView() {
     const invalidatesGeneration = ['type', 'kind', 'contentSubject', 'knowledgeScopes', 'audience', 'userQuestion', 'theme', 'locales', 'channels', 'businessGoal', 'coreMessage', 'mustInclude', 'mustAvoid'].some((key) => key in patch)
     setContentTasks((current) => current.map((task) => task.id !== taskId ? task : invalidatesGeneration ? {
       ...task, ...patch, status: 'ready', masterDraft: '', channelVersions: [], previewConfirmations: [],
-      quality: { overall: 0, relevance: 0, accuracy: 0, completeness: 0, readability: 0, authenticity: 0, channelFit: 0 }, compliance: [],
+      quality: { overall: 0, experience: 0, expertise: 0, authority: 0, trustworthiness: 0 }, compliance: [],
     } : { ...task, ...patch }))
   }
 
@@ -194,7 +194,7 @@ export function ContentView() {
       missingMaterials: [],
       origin: item.opportunityId ? { source: 'opportunity', sourceLabel: '内容洞察 · 本期计划', opportunityId: item.opportunityId } : { source: 'manual', sourceLabel: '运营人员手动创建' },
       materialBudget: deriveMaterialBudget(item.type, item.theme),
-      quality: { overall: 0, relevance: 0, accuracy: 0, completeness: 0, readability: 0, authenticity: 0, channelFit: 0 },
+      quality: { overall: 0, experience: 0, expertise: 0, authority: 0, trustworthiness: 0 },
       compliance: [], channelVersions: [],
     }
     setContentTasks((current) => [task, ...current])
@@ -346,7 +346,7 @@ export function ContentView() {
     setPublications((current) => current.map((item) => item.id === id ? { ...item, status: 'published', channels: item.channels.map((version) => ({ ...version, status: 'published', url: version.url ?? `https://www.example.com/content/${item.taskId}/${version.channel}` })) } : item))
     setContentTasks((current) => current.map((item) => item.id === record.taskId ? { ...item, status: 'published', channelVersions: item.channelVersions.map((version) => ({ ...version, status: 'published', url: version.url ?? `https://www.example.com/content/${item.id}/${version.channel}` })) } : item))
     if (task && !assets.some((asset) => asset.taskId === task.id)) {
-      setAssets((current) => [{ id: `ca-${task.id}`, taskId: task.id, title: task.title, type: task.type, language: task.locales?.length ? task.locales.join(' / ').toUpperCase() : '中文', status: 'published', qualityScore: task.quality.overall, compliance: task.compliance.some((issue) => !issue.resolved && (issue.level === 'blocking' || issue.level === 'high')) ? 'high' : 'pass', channels: task.channels, updatedAt: publishedAt, expiresAt: '2027-02-07', uv: 0, effectiveReadRate: 0 }, ...current])
+      setAssets((current) => [{ id: `ca-${task.id}`, taskId: task.id, title: task.title, type: task.type, language: task.locales?.length ? task.locales.join(' / ').toUpperCase() : '中文', status: 'published', qualityScore: task.quality.overall, compliance: task.compliance.some((issue) => !issue.resolved && (issue.level === 'blocking' || issue.level === 'high')) ? 'high' : 'pass', channels: task.channels, updatedAt: publishedAt, expiresAt: '2027-02-07', uv: 0, scrollDepth: 0 }, ...current])
     }
     pushToast('success', '发布成功，已生成内容资产并进入效果观察', true)
   }

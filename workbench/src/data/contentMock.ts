@@ -28,7 +28,7 @@ export const contentTasksData: ContentTask[] = [
     audience: '制造企业自动化负责人',
     userQuestion: '负载、工作半径和精度要求不同，应该如何选择机器人？',
     businessGoal: 'decision',
-    successMetric: '有效阅读率 ≥ 55%，选型咨询 CTA 点击率 ≥ 3%',
+    successMetric: '滚动深度 ≥ 55%，选型咨询 CTA 点击率 ≥ 3%',
     journeyStage: 'compare',
     coreMessage: '工业机器人选型必须基于工况、末端负载、工作半径、节拍与环境条件综合校核，不能只比较额定负载。',
     desiredAction: '下载选型检查清单，或提交工况参数咨询选型',
@@ -52,7 +52,7 @@ export const contentTasksData: ContentTask[] = [
       { id: 'kr-10', category: '行业数据', title: '2026 年工业机器人节拍基准数据', source: '第三方行业报告', verified: false },
     ],
     missingMaterials: ['焊接案例的实施前后节拍对比数据（待客户授权）'],
-    quality: { overall: 86, relevance: 19, accuracy: 18, completeness: 18, readability: 14, authenticity: 9, channelFit: 8 },
+    quality: { overall: 86, experience: 21, expertise: 22, authority: 22, trustworthiness: 21 },
     compliance: [
       { id: 'ci-1', level: 'high', category: 'fact', title: '效率提升 40% 缺少可公开来源', detail: '建议改为案例中已确认的节拍变化，或删除百分比。', resolved: false },
       { id: 'ci-2', level: 'medium', category: 'advertising', title: '“行业第一”属于绝对化表达', detail: 'LinkedIn 版本中存在无法证明的绝对化表述。', resolved: false },
@@ -74,21 +74,21 @@ export const contentTasksData: ContentTask[] = [
     ],
   },
   {
-    id: 'ct-002', title: '汽车零部件焊接应用案例', kind: 'create', type: 'case', status: 'needs_material', priority: 'P1', theme: '汽车焊接自动化', contentSubject: '汽车零部件焊接工作站', knowledgeScopes: ['case', 'product', 'industry'], audience: '汽车零部件工厂技术与生产负责人', userQuestion: '同类型工厂如何部署焊接工作站，实际改善了什么？', businessGoal: 'decision', successMetric: '案例页有效阅读率 ≥ 55%，项目咨询 ≥ 5 条/月', journeyStage: 'evaluate', coreMessage: '焊接工作站的真实价值必须由项目约束、实施过程和授权后的前后数据共同证明。', desiredAction: '查看方案能力并提交项目工况', mustInclude: '客户授权、实施前后数据、适用边界', mustAvoid: '未授权客户名、Logo、现场图片和无法证明的提升比例', owner: '行业内容组 · 王晨', channels: ['website', 'linkedin'], dueDate: '2026-08-06', reason: '网站缺少可证明项目交付能力的真实案例。', origin: { source: 'manual', sourceLabel: '运营人员手动创建', evidence: { currentValue: '网站暂无客户案例', benchmark: '竞品平均 3+ 案例', action: '补一篇可证明交付能力的真实案例' } }, outline: ['客户背景', '原有问题', '方案设计', '实施过程', '结果数据', '适用企业'], masterDraft: '', knowledge: [{ id: 'kr-4', category: '项目资料', title: '焊接线交付记录', source: '项目中心 PJ-106', verified: true }], missingMaterials: ['客户公开授权', '实施前后节拍数据'], materialBudget: [
+    id: 'ct-002', title: '汽车零部件焊接应用案例', kind: 'create', type: 'case', status: 'needs_material', priority: 'P1', theme: '汽车焊接自动化', contentSubject: '汽车零部件焊接工作站', knowledgeScopes: ['case', 'product', 'industry'], audience: '汽车零部件工厂技术与生产负责人', userQuestion: '同类型工厂如何部署焊接工作站，实际改善了什么？', businessGoal: 'decision', successMetric: '案例页滚动深度 ≥ 55%，项目咨询 ≥ 5 条/月', journeyStage: 'evaluate', coreMessage: '焊接工作站的真实价值必须由项目约束、实施过程和授权后的前后数据共同证明。', desiredAction: '查看方案能力并提交项目工况', mustInclude: '客户授权、实施前后数据、适用边界', mustAvoid: '未授权客户名、Logo、现场图片和无法证明的提升比例', owner: '行业内容组 · 王晨', channels: ['website', 'linkedin'], dueDate: '2026-08-06', reason: '网站缺少可证明项目交付能力的真实案例。', origin: { source: 'manual', sourceLabel: '运营人员手动创建', evidence: { currentValue: '网站暂无客户案例', benchmark: '竞品平均 3+ 案例', action: '补一篇可证明交付能力的真实案例' } }, outline: ['客户背景', '原有问题', '方案设计', '实施过程', '结果数据', '适用企业'], masterDraft: '', knowledge: [{ id: 'kr-4', category: '项目资料', title: '焊接线交付记录', source: '项目中心 PJ-106', verified: true }], missingMaterials: ['客户公开授权', '实施前后节拍数据'], materialBudget: [
       { id: 'mb-1', templateKey: 'auth', name: '客户公开授权', status: 'pending_auth', note: '需法务 / 客户确认' },
       { id: 'mb-2', templateKey: 'before_after', name: '实施前后数据', status: 'missing', note: '需项目中心提供' },
       { id: 'mb-3', templateKey: 'quote', name: '客户证言', status: 'ready', source: '案例库' },
       { id: 'mb-4', templateKey: 'photo', name: '现场图片授权', status: 'pending_auth', note: '需确认可公开' },
-    ], quality: { overall: 48, relevance: 16, accuracy: 7, completeness: 7, readability: 10, authenticity: 3, channelFit: 5 }, compliance: [{ id: 'ci-4', level: 'blocking', category: 'privacy', title: '客户案例尚未获得公开授权', detail: '客户名称、Logo和现场图片均不可发布。', resolved: false }], channelVersions: [],
+    ], quality: { overall: 48, experience: 12, expertise: 12, authority: 12, trustworthiness: 12 }, compliance: [{ id: 'ci-4', level: 'blocking', category: 'privacy', title: '客户案例尚未获得公开授权', detail: '客户名称、Logo和现场图片均不可发布。', resolved: false }], channelVersions: [],
   },
   {
-    id: 'ct-003', title: '工业机器人产品能力完整介绍', kind: 'create', type: 'product', status: 'generating', priority: 'P1', theme: '工业机器人产品', audience: '首次了解产品的技术与采购人员', userQuestion: '产品有哪些能力、适用场景和限制？', channels: ['website', 'linkedin', 'facebook'], locales: ['en'], missingTerms: ['末端执行器', '防护等级'], dueDate: '2026-08-04', reason: '当前产品页只有参数表，缺少应用说明、限制条件和型号差异。', outline: ['核心能力', '型号矩阵', '应用场景', '集成条件', '限制说明', '常见问题'], masterDraft: '正在基于已验证产品资料生成母稿…', knowledge: [{ id: 'kr-5', category: '产品参数', title: '工业机器人全系列规格', source: 'PIM', verified: true }], missingMaterials: [], quality: { overall: 72, relevance: 17, accuracy: 17, completeness: 12, readability: 12, authenticity: 8, channelFit: 6 }, compliance: [], channelVersions: [],
+    id: 'ct-003', title: '工业机器人产品能力完整介绍', kind: 'create', type: 'product', status: 'generating', priority: 'P1', theme: '工业机器人产品', audience: '首次了解产品的技术与采购人员', userQuestion: '产品有哪些能力、适用场景和限制？', channels: ['website', 'linkedin', 'facebook'], locales: ['en'], missingTerms: ['末端执行器', '防护等级'], dueDate: '2026-08-04', reason: '当前产品页只有参数表，缺少应用说明、限制条件和型号差异。', outline: ['核心能力', '型号矩阵', '应用场景', '集成条件', '限制说明', '常见问题'], masterDraft: '正在基于已验证产品资料生成母稿…', knowledge: [{ id: 'kr-5', category: '产品参数', title: '工业机器人全系列规格', source: 'PIM', verified: true }], missingMaterials: [], quality: { overall: 72, experience: 18, expertise: 18, authority: 18, trustworthiness: 18 }, compliance: [], channelVersions: [],
   },
   {
-    id: 'ct-004', title: '工业机器人常见问题', kind: 'create', type: 'faq', status: 'ready', priority: 'P2', theme: '工业机器人使用', audience: '正在评估部署条件的工程师', userQuestion: '部署、维护、环境和培训方面有哪些要求？', channels: ['website', 'x'], dueDate: '2026-08-08', reason: '客服与站内搜索中反复出现相同问题，现有页面没有集中回答。', outline: ['部署条件', '维护周期', '人员培训', '环境要求', '备件与服务'], masterDraft: '', knowledge: [], missingMaterials: [], quality: { overall: 0, relevance: 0, accuracy: 0, completeness: 0, readability: 0, authenticity: 0, channelFit: 0 }, compliance: [], channelVersions: [],
+    id: 'ct-004', title: '工业机器人常见问题', kind: 'create', type: 'faq', status: 'ready', priority: 'P2', theme: '工业机器人使用', audience: '正在评估部署条件的工程师', userQuestion: '部署、维护、环境和培训方面有哪些要求？', channels: ['website', 'x'], dueDate: '2026-08-08', reason: '客服与站内搜索中反复出现相同问题，现有页面没有集中回答。', outline: ['部署条件', '维护周期', '人员培训', '环境要求', '备件与服务'], masterDraft: '', knowledge: [], missingMaterials: [], quality: { overall: 0, experience: 0, expertise: 0, authority: 0, trustworthiness: 0 }, compliance: [], channelVersions: [],
   },
   {
-    id: 'ct-005', title: '码垛机器人应用白皮书社媒拆解', kind: 'repurpose', type: 'insight', status: 'pending_approval', priority: 'P2', theme: '码垛自动化', audience: '食品与物流行业运营负责人', userQuestion: '码垛自动化有哪些典型收益和实施条件？', channels: ['linkedin', 'facebook', 'x'], dueDate: '2026-08-01', reason: '网站白皮书阅读表现良好，可拆解为连续社媒内容扩大触达。', outline: ['行业问题', '方案摘要', '三项实施条件', '案例数据'], masterDraft: '基于已发布白皮书整理的社媒母稿。', knowledge: [], missingMaterials: [], quality: { overall: 88, relevance: 18, accuracy: 19, completeness: 18, readability: 15, authenticity: 10, channelFit: 8 }, compliance: [], channelVersions: [
+    id: 'ct-005', title: '码垛机器人应用白皮书社媒拆解', kind: 'repurpose', type: 'insight', status: 'pending_approval', priority: 'P2', theme: '码垛自动化', audience: '食品与物流行业运营负责人', userQuestion: '码垛自动化有哪些典型收益和实施条件？', channels: ['linkedin', 'facebook', 'x'], dueDate: '2026-08-01', reason: '网站白皮书阅读表现良好，可拆解为连续社媒内容扩大触达。', outline: ['行业问题', '方案摘要', '三项实施条件', '案例数据'], masterDraft: '基于已发布白皮书整理的社媒母稿。', knowledge: [], missingMaterials: [], quality: { overall: 88, experience: 22, expertise: 22, authority: 22, trustworthiness: 22 }, compliance: [], channelVersions: [
       { channel: 'linkedin', title: '码垛自动化落地前，先确认这三件事', body: '稳定节拍、现场空间与来料一致性，是码垛项目能否稳定运行的三个前提。本文结合白皮书中的项目经验逐项说明。', account: 'Example Automation', status: 'ready' },
       { channel: 'facebook', title: '码垛自动化的 3 个实施前提', body: '准备引入码垛机器人？先确认节拍、空间和来料稳定性。完整白皮书已经整理好。', account: 'Example Automation Global', status: 'ready' },
       { channel: 'x', title: '码垛自动化实施清单', body: '码垛项目落地前确认：节拍稳定、现场空间、来料一致性。缺一项，后续调试成本都可能显著增加。', account: '@ExampleAuto', status: 'ready' },
@@ -100,13 +100,13 @@ export const contentTasksData: ContentTask[] = [
     ],
   },
   {
-    id: 'ct-006', title: '喷涂机器人安全说明更新', kind: 'compliance', type: 'product', status: 'scheduled', priority: 'P0', theme: '喷涂机器人安全', audience: '喷涂产线技术与安全负责人', userQuestion: '设备在易燃环境下有哪些安全前提？', channels: ['website'], dueDate: '2026-07-31', reason: '原页面引用的安全规范版本已更新，需要同步免责声明和适用条件。', outline: ['适用环境', '防护要求', '安装限制', '安全声明'], masterDraft: '已更新安全规范引用和设备适用边界。', knowledge: [], missingMaterials: [], quality: { overall: 91, relevance: 19, accuracy: 20, completeness: 19, readability: 14, authenticity: 10, channelFit: 9 }, compliance: [], channelVersions: [{ channel: 'website', title: '喷涂机器人安全与适用条件', body: '更新后的安全说明与适用边界。', account: 'www.example.com', scheduledAt: '2026-07-31 18:00', status: 'scheduled' }],
+    id: 'ct-006', title: '喷涂机器人安全说明更新', kind: 'compliance', type: 'product', status: 'scheduled', priority: 'P0', theme: '喷涂机器人安全', audience: '喷涂产线技术与安全负责人', userQuestion: '设备在易燃环境下有哪些安全前提？', channels: ['website'], dueDate: '2026-07-31', reason: '原页面引用的安全规范版本已更新，需要同步免责声明和适用条件。', outline: ['适用环境', '防护要求', '安装限制', '安全声明'], masterDraft: '已更新安全规范引用和设备适用边界。', knowledge: [], missingMaterials: [], quality: { overall: 91, experience: 23, expertise: 23, authority: 22, trustworthiness: 23 }, compliance: [], channelVersions: [{ channel: 'website', title: '喷涂机器人安全与适用条件', body: '更新后的安全说明与适用边界。', account: 'www.example.com', scheduledAt: '2026-07-31 18:00', status: 'scheduled' }],
   },
   {
-    id: 'ct-007', title: 'PLC 故障排查指南更新', kind: 'refresh', type: 'guide', status: 'observing', priority: 'P2', theme: 'PLC 故障排查', audience: '设备维护工程师', userQuestion: '常见通信与程序故障如何快速定位？', channels: ['website', 'linkedin'], dueDate: '2026-07-24', reason: '旧文章跳出率较高，已补充故障路径图和分步检查清单。', outline: ['故障分类', '排查路径', '常见错误', '检查清单'], masterDraft: '已发布的更新版本。', knowledge: [], missingMaterials: [], quality: { overall: 84, relevance: 18, accuracy: 18, completeness: 17, readability: 14, authenticity: 9, channelFit: 8 }, compliance: [], channelVersions: [{ channel: 'website', title: 'PLC 常见故障排查指南', body: '已发布', account: 'www.example.com', status: 'published', url: 'https://www.example.com/guides/plc-troubleshooting' }, { channel: 'linkedin', title: 'PLC 故障排查：先确认通信还是程序', body: '已发布', account: 'Example Automation', status: 'published', url: 'https://linkedin.com/posts/example-plc' }],
+    id: 'ct-007', title: 'PLC 故障排查指南更新', kind: 'refresh', type: 'guide', status: 'observing', priority: 'P2', theme: 'PLC 故障排查', audience: '设备维护工程师', userQuestion: '常见通信与程序故障如何快速定位？', channels: ['website', 'linkedin'], dueDate: '2026-07-24', reason: '旧文章跳出率较高，已补充故障路径图和分步检查清单。', outline: ['故障分类', '排查路径', '常见错误', '检查清单'], masterDraft: '已发布的更新版本。', knowledge: [], missingMaterials: [], quality: { overall: 84, experience: 21, expertise: 21, authority: 21, trustworthiness: 21 }, compliance: [], channelVersions: [{ channel: 'website', title: 'PLC 常见故障排查指南', body: '已发布', account: 'www.example.com', status: 'published', url: 'https://www.example.com/guides/plc-troubleshooting' }, { channel: 'linkedin', title: 'PLC 故障排查：先确认通信还是程序', body: '已发布', account: 'Example Automation', status: 'published', url: 'https://linkedin.com/posts/example-plc' }],
   },
   {
-    id: 'ct-008', title: '广告渠道落地页 · 重写版', kind: 'optimize', type: 'solution', status: 'ready', priority: 'P0', theme: '广告渠道落地页内容重写', contentSubject: '广告承诺对应的工业机器人方案', knowledgeScopes: ['product', 'service', 'case'], audience: '通过广告到达落地页的采购决策者', userQuestion: '广告承诺的能力与落地页内容为什么不匹配？', businessGoal: 'conversion', successMetric: '落地页跳出率从 52% 降至 ≤42%，咨询 CTA 点击率 ≥4%', journeyStage: 'decide', coreMessage: '首屏应直接承接广告承诺，并用可验证能力、案例与适用边界支持采购判断。', desiredAction: '提交方案咨询', mustInclude: '广告承诺、方案能力、证据、适用边界', mustAvoid: '无法证明的效果保证', owner: '增长内容组 · 陈可', channels: ['website'], dueDate: '2026-08-08', reason: '归因分析发现广告渠道落地页跳出率 52%，高于行业基准 42%。', origin: { source: 'attribution', sourceLabel: '归因分析 · 广告渠道落地页跳出率', attributionRef: { changeId: 'chg-1', measureId: 'm-1-1', reviewPeriod: 'T+7' }, evidence: { currentValue: '广告渠道落地页跳出率 52%', benchmark: '高于行业平均 42%', action: '按搜索意图重写落地页内容，匹配创意承诺' } }, outline: ['首屏对齐创意承诺', '痛点-方案-案例结构', '产品能力上移'], masterDraft: '', knowledge: [], missingMaterials: [], quality: { overall: 0, relevance: 0, accuracy: 0, completeness: 0, readability: 0, authenticity: 0, channelFit: 0 }, compliance: [], channelVersions: [],
+    id: 'ct-008', title: '广告渠道落地页 · 重写版', kind: 'optimize', type: 'solution', status: 'ready', priority: 'P0', theme: '广告渠道落地页内容重写', contentSubject: '广告承诺对应的工业机器人方案', knowledgeScopes: ['product', 'service', 'case'], audience: '通过广告到达落地页的采购决策者', userQuestion: '广告承诺的能力与落地页内容为什么不匹配？', businessGoal: 'conversion', successMetric: '落地页跳出率从 52% 降至 ≤42%，咨询 CTA 点击率 ≥4%', journeyStage: 'decide', coreMessage: '首屏应直接承接广告承诺，并用可验证能力、案例与适用边界支持采购判断。', desiredAction: '提交方案咨询', mustInclude: '广告承诺、方案能力、证据、适用边界', mustAvoid: '无法证明的效果保证', owner: '增长内容组 · 陈可', channels: ['website'], dueDate: '2026-08-08', reason: '归因分析发现广告渠道落地页跳出率 52%，高于行业基准 42%。', origin: { source: 'attribution', sourceLabel: '归因分析 · 广告渠道落地页跳出率', attributionRef: { changeId: 'chg-1', measureId: 'm-1-1', reviewPeriod: 'T+7' }, evidence: { currentValue: '广告渠道落地页跳出率 52%', benchmark: '高于行业平均 42%', action: '按搜索意图重写落地页内容，匹配创意承诺' } }, outline: ['首屏对齐创意承诺', '痛点-方案-案例结构', '产品能力上移'], masterDraft: '', knowledge: [], missingMaterials: [], quality: { overall: 0, experience: 0, expertise: 0, authority: 0, trustworthiness: 0 }, compliance: [], channelVersions: [],
   },
 ]
 
@@ -153,12 +153,12 @@ export const glossaryTermsData: GlossaryTerm[] = [
 ]
 
 export const contentAssetsData: ContentAsset[] = [
-  { id: 'ca-1', taskId: 'ct-007', title: 'PLC 常见故障排查指南', type: 'guide', language: '中文', status: 'published', qualityScore: 84, compliance: 'pass', channels: ['website', 'linkedin'], updatedAt: '2026-07-24', expiresAt: '2027-01-24', uv: 268, effectiveReadRate: 61 },
-  { id: 'ca-2', taskId: 'ct-005', title: '码垛机器人应用白皮书', type: 'insight', language: '中文', status: 'published', qualityScore: 88, compliance: 'pass', channels: ['website'], updatedAt: '2026-07-18', expiresAt: '2027-01-18', uv: 326, effectiveReadRate: 68 },
-  { id: 'ca-3', taskId: 'ct-001', title: '工业机器人选型指南 2026', type: 'guide', language: '中文', status: 'reviewing', qualityScore: 86, compliance: 'high', channels: ['website', 'linkedin', 'facebook', 'x'], updatedAt: '2026-07-29', expiresAt: '2027-01-29', uv: 0, effectiveReadRate: 0 },
-  { id: 'ca-4', taskId: 'ct-003', title: '工业机器人产品能力完整介绍', type: 'product', language: '中文', status: 'draft', qualityScore: 72, compliance: 'low', channels: ['website', 'linkedin', 'facebook'], updatedAt: '2026-07-29', expiresAt: '2027-01-29', uv: 0, effectiveReadRate: 0 },
-  { id: 'ca-5', taskId: 'ct-006', title: '喷涂机器人安全与适用条件', type: 'product', language: '中文', status: 'published', qualityScore: 91, compliance: 'pass', channels: ['website'], updatedAt: '2026-07-29', expiresAt: '2026-10-29', uv: 142, effectiveReadRate: 56 },
-  { id: 'ca-6', taskId: 'ct-002', title: '汽车零部件焊接应用案例', type: 'case', language: '中文', status: 'needs_update', qualityScore: 48, compliance: 'blocking', channels: ['website', 'linkedin'], updatedAt: '2026-07-28', expiresAt: '2026-08-15', uv: 0, effectiveReadRate: 0 },
+  { id: 'ca-1', taskId: 'ct-007', title: 'PLC 常见故障排查指南', type: 'guide', language: '中文', status: 'published', qualityScore: 84, compliance: 'pass', channels: ['website', 'linkedin'], updatedAt: '2026-07-24', expiresAt: '2027-01-24', uv: 268, scrollDepth: 61 },
+  { id: 'ca-2', taskId: 'ct-005', title: '码垛机器人应用白皮书', type: 'insight', language: '中文', status: 'published', qualityScore: 88, compliance: 'pass', channels: ['website'], updatedAt: '2026-07-18', expiresAt: '2027-01-18', uv: 326, scrollDepth: 68 },
+  { id: 'ca-3', taskId: 'ct-001', title: '工业机器人选型指南 2026', type: 'guide', language: '中文', status: 'reviewing', qualityScore: 86, compliance: 'high', channels: ['website', 'linkedin', 'facebook', 'x'], updatedAt: '2026-07-29', expiresAt: '2027-01-29', uv: 0, scrollDepth: 0 },
+  { id: 'ca-4', taskId: 'ct-003', title: '工业机器人产品能力完整介绍', type: 'product', language: '中文', status: 'draft', qualityScore: 72, compliance: 'low', channels: ['website', 'linkedin', 'facebook'], updatedAt: '2026-07-29', expiresAt: '2027-01-29', uv: 0, scrollDepth: 0 },
+  { id: 'ca-5', taskId: 'ct-006', title: '喷涂机器人安全与适用条件', type: 'product', language: '中文', status: 'published', qualityScore: 91, compliance: 'pass', channels: ['website'], updatedAt: '2026-07-29', expiresAt: '2026-10-29', uv: 142, scrollDepth: 56 },
+  { id: 'ca-6', taskId: 'ct-002', title: '汽车零部件焊接应用案例', type: 'case', language: '中文', status: 'needs_update', qualityScore: 48, compliance: 'blocking', channels: ['website', 'linkedin'], updatedAt: '2026-07-28', expiresAt: '2026-08-15', uv: 0, scrollDepth: 0 },
 ]
 
 export const publicationRecordsData: PublicationRecord[] = [
@@ -187,18 +187,18 @@ export const knowledgeRiskEventsData: KnowledgeRiskEvent[] = [
 ]
 
 export const themePerformanceData: ContentThemePerformance[] = [
-  { id: 'perf-1', theme: '工业机器人选型', taskId: 'ct-001', website: { uv: 428, effectiveReadRate: 64, avgDuration: '2m 18s', scrollRate: 71, bounceRate: 42, relatedClicks: 86 }, social: { impressions: 8200, engagements: 418, engagementRate: 5.1, linkClicks: 162 }, conclusion: '网站有效阅读和 LinkedIn 互动均高于平均值，建议扩展“负载选择”和“工作半径选择”两个子主题。', action: 'expand' },
-  { id: 'perf-2', theme: 'PLC 故障排查', taskId: 'ct-007', website: { uv: 268, effectiveReadRate: 61, avgDuration: '1m 54s', scrollRate: 66, bounceRate: 46, relatedClicks: 49 }, social: { impressions: 4300, engagements: 146, engagementRate: 3.4, linkClicks: 72 }, conclusion: '更新后的故障路径图改善了阅读深度，可继续补充通信故障专题。', action: 'expand' },
-  { id: 'perf-3', theme: '机器人维护保养', taskId: 'ct-004', website: { uv: 196, effectiveReadRate: 28, avgDuration: '0m 46s', scrollRate: 31, bounceRate: 72, relatedClicks: 12 }, social: { impressions: 2800, engagements: 81, engagementRate: 2.9, linkClicks: 26 }, conclusion: '访问后快速离开，现有内容缺少分步骤检查表和常见故障说明，建议重构。', action: 'optimize' },
-  { id: 'perf-4', theme: '喷涂机器人安全', taskId: 'ct-006', website: { uv: 142, effectiveReadRate: 56, avgDuration: '1m 36s', scrollRate: 58, bounceRate: 49, relatedClicks: 22 }, social: { impressions: 0, engagements: 0, engagementRate: 0, linkClicks: 0 }, conclusion: '内容专业度稳定，但安全规范将在三个月后复核，建议保留复核任务。', action: 'review' },
+  { id: 'perf-1', theme: '工业机器人选型', taskId: 'ct-001', website: { uv: 428, scrollDepth: 64, avgDuration: '2m 18s', scrollRate: 71, bounceRate: 42, relatedClicks: 86 }, social: { impressions: 8200, engagements: 418, engagementRate: 5.1, linkClicks: 162 }, conclusion: '网站滚动深度和 LinkedIn 互动均高于平均值，建议扩展“负载选择”和“工作半径选择”两个子主题。', action: 'expand' },
+  { id: 'perf-2', theme: 'PLC 故障排查', taskId: 'ct-007', website: { uv: 268, scrollDepth: 61, avgDuration: '1m 54s', scrollRate: 66, bounceRate: 46, relatedClicks: 49 }, social: { impressions: 4300, engagements: 146, engagementRate: 3.4, linkClicks: 72 }, conclusion: '更新后的故障路径图改善了阅读深度，可继续补充通信故障专题。', action: 'expand' },
+  { id: 'perf-3', theme: '机器人维护保养', taskId: 'ct-004', website: { uv: 196, scrollDepth: 28, avgDuration: '0m 46s', scrollRate: 31, bounceRate: 72, relatedClicks: 12 }, social: { impressions: 2800, engagements: 81, engagementRate: 2.9, linkClicks: 26 }, conclusion: '访问后快速离开，现有内容缺少分步骤检查表和常见故障说明，建议重构。', action: 'optimize' },
+  { id: 'perf-4', theme: '喷涂机器人安全', taskId: 'ct-006', website: { uv: 142, scrollDepth: 56, avgDuration: '1m 36s', scrollRate: 58, bounceRate: 49, relatedClicks: 22 }, social: { impressions: 0, engagements: 0, engagementRate: 0, linkClicks: 0 }, conclusion: '内容专业度稳定，但安全规范将在三个月后复核，建议保留复核任务。', action: 'review' },
 ]
 
 /** 效果分析：按周维度的总统计（周一为一周起点） */
 export const weeklyPerformanceData: ContentWeeklyPerformance[] = [
-  { weekStart: '2026-07-27', label: '07/27 - 08/02', websiteUv: 612, effectiveReadRate: 48, socialImpressions: 7400, engagementRate: 4.6, linkClicks: 148, websitePublished: 2, socialPublished: 4 },
-  { weekStart: '2026-07-20', label: '07/20 - 07/26', websiteUv: 528, effectiveReadRate: 45, socialImpressions: 6100, engagementRate: 4.1, linkClicks: 126, websitePublished: 2, socialPublished: 3 },
-  { weekStart: '2026-07-13', label: '07/13 - 07/19', websiteUv: 274, effectiveReadRate: 42, socialImpressions: 3200, engagementRate: 3.6, linkClicks: 62, websitePublished: 1, socialPublished: 1 },
-  { weekStart: '2026-07-06', label: '07/06 - 07/12', websiteUv: 146, effectiveReadRate: 38, socialImpressions: 1900, engagementRate: 3.1, linkClicks: 22, websitePublished: 1, socialPublished: 0 },
+  { weekStart: '2026-07-27', label: '07/27 - 08/02', websiteUv: 612, scrollDepth: 48, socialImpressions: 7400, engagementRate: 4.6, linkClicks: 148, websitePublished: 2, socialPublished: 4 },
+  { weekStart: '2026-07-20', label: '07/20 - 07/26', websiteUv: 528, scrollDepth: 45, socialImpressions: 6100, engagementRate: 4.1, linkClicks: 126, websitePublished: 2, socialPublished: 3 },
+  { weekStart: '2026-07-13', label: '07/13 - 07/19', websiteUv: 274, scrollDepth: 42, socialImpressions: 3200, engagementRate: 3.6, linkClicks: 62, websitePublished: 1, socialPublished: 1 },
+  { weekStart: '2026-07-06', label: '07/06 - 07/12', websiteUv: 146, scrollDepth: 38, socialImpressions: 1900, engagementRate: 3.1, linkClicks: 22, websitePublished: 1, socialPublished: 0 },
 ]
 
 /** 效果分析：单条已发布内容的官网 / 社媒发布计数与效果明细 */
@@ -211,7 +211,7 @@ export const contentPublishStatsData: ContentPublishStat[] = [
       { channel: 'linkedin', count: 2, url: 'https://linkedin.com/posts/example-plc', lastPublishedAt: '2026-07-24 10:30' },
       { channel: 'x', count: 1, url: 'https://x.com/ExampleAuto/status/007', lastPublishedAt: '2026-07-25 09:00' },
     ],
-    uv: 268, effectiveReadRate: 61, avgDuration: '1m 54s', impressions: 4300, engagements: 146, engagementRate: 3.4, linkClicks: 72,
+    uv: 268, scrollDepth: 61, avgDuration: '1m 54s', impressions: 4300, engagements: 146, engagementRate: 3.4, linkClicks: 72,
   },
   {
     id: 'cps-2', taskId: 'ct-005', weekStart: '2026-07-13', title: '码垛机器人应用白皮书', publishedAt: '2026-07-18 09:00',
@@ -220,7 +220,7 @@ export const contentPublishStatsData: ContentPublishStat[] = [
       { channel: 'website', count: 1, url: 'https://www.example.com/whitepaper/palletizing', lastPublishedAt: '2026-07-18 09:00' },
       { channel: 'linkedin', count: 1, url: 'https://linkedin.com/posts/example-palletizing', lastPublishedAt: '2026-07-19 10:00' },
     ],
-    uv: 326, effectiveReadRate: 68, avgDuration: '2m 42s', impressions: 5200, engagements: 268, engagementRate: 5.2, linkClicks: 104,
+    uv: 326, scrollDepth: 68, avgDuration: '2m 42s', impressions: 5200, engagements: 268, engagementRate: 5.2, linkClicks: 104,
   },
   {
     id: 'cps-3', taskId: 'ct-001', weekStart: '2026-07-27', title: '工业机器人选型指南 2026（预发布）', publishedAt: '2026-07-28 09:00',
@@ -231,7 +231,7 @@ export const contentPublishStatsData: ContentPublishStat[] = [
       { channel: 'x', count: 1, url: 'https://x.com/ExampleAuto/status/001', lastPublishedAt: '2026-07-28 09:20' },
       { channel: 'facebook', count: 0, lastPublishedAt: '—' },
     ],
-    uv: 428, effectiveReadRate: 64, avgDuration: '2m 18s', impressions: 8200, engagements: 418, engagementRate: 5.1, linkClicks: 162,
+    uv: 428, scrollDepth: 64, avgDuration: '2m 18s', impressions: 8200, engagements: 418, engagementRate: 5.1, linkClicks: 162,
   },
   {
     id: 'cps-4', taskId: 'ct-006', weekStart: '2026-07-27', title: '喷涂机器人安全与适用条件', publishedAt: '2026-07-29 16:00',
@@ -239,7 +239,7 @@ export const contentPublishStatsData: ContentPublishStat[] = [
     channelCounts: [
       { channel: 'website', count: 1, url: 'https://www.example.com/products/painting-safety', lastPublishedAt: '2026-07-29 16:00' },
     ],
-    uv: 142, effectiveReadRate: 56, avgDuration: '1m 36s', impressions: 0, engagements: 0, engagementRate: 0, linkClicks: 0,
+    uv: 142, scrollDepth: 56, avgDuration: '1m 36s', impressions: 0, engagements: 0, engagementRate: 0, linkClicks: 0,
   },
   {
     id: 'cps-5', taskId: 'ct-004', weekStart: '2026-07-06', title: '机器人维护保养常见问题（旧版）', publishedAt: '2026-07-08 11:00',
@@ -248,14 +248,14 @@ export const contentPublishStatsData: ContentPublishStat[] = [
       { channel: 'website', count: 1, url: 'https://www.example.com/faq/maintenance', lastPublishedAt: '2026-07-08 11:00' },
       { channel: 'x', count: 1, url: 'https://x.com/ExampleAuto/status/004', lastPublishedAt: '2026-07-09 09:00' },
     ],
-    uv: 196, effectiveReadRate: 28, avgDuration: '0m 46s', impressions: 2800, engagements: 81, engagementRate: 2.9, linkClicks: 26,
+    uv: 196, scrollDepth: 28, avgDuration: '0m 46s', impressions: 2800, engagements: 81, engagementRate: 2.9, linkClicks: 26,
   },
 ]
 
 /** 内容洞察：内容运营 Agent 工作方法论 §2.3 第①段"内容洞察"产出，尚未被采纳前不属于计划 */
 export const contentOpportunitiesData: ContentOpportunity[] = [
   { id: 'op-1', source: 'inventory', evidence: '内容盘点发现「装配机器人」产品线缺少 FAQ，客服工单中相关问题占比 18%。', suggestedTitle: '装配机器人常见问题', suggestedTheme: '装配机器人使用', suggestedChannels: ['website'], suggestedPriority: 'P1', inferredAudience: '正在评估装配自动化的工程师', status: 'open' },
-  { id: 'op-2', source: 'read_performance', evidence: '「机器人维护保养」内容近 30 天有效阅读率降至 28%，跳出率 72%，明显低于同类内容均值。', suggestedTitle: '机器人维护保养指南重构', suggestedTheme: '机器人维护保养', suggestedChannels: ['website'], suggestedPriority: 'P1', relatedTaskId: 'ct-004', inferredAudience: '设备维护工程师', status: 'open' },
+  { id: 'op-2', source: 'read_performance', evidence: '「机器人维护保养」内容近 30 天滚动深度降至 28%，跳出率 72%，明显低于同类内容均值。', suggestedTitle: '机器人维护保养指南重构', suggestedTheme: '机器人维护保养', suggestedChannels: ['website'], suggestedPriority: 'P1', relatedTaskId: 'ct-004', inferredAudience: '设备维护工程师', status: 'open' },
   { id: 'op-3', source: 'social_performance', evidence: '「工业机器人选型指南」LinkedIn 版本互动率 5.1%，显著高于账号均值，具备扩展为系列内容的潜力。', suggestedTitle: '选型系列：负载与工作半径深度拆解', suggestedTheme: '工业机器人选型', suggestedChannels: ['linkedin', 'facebook'], suggestedPriority: 'P2', relatedTaskId: 'ct-001', inferredAudience: '制造企业自动化负责人', status: 'open' },
   { id: 'op-4', source: 'business_focus', evidence: '业务侧新增中东市场拓展计划，官网与社媒尚无面向该地区的本地化内容。', suggestedTitle: '中东市场喷涂自动化应用介绍', suggestedTheme: '喷涂机器人海外拓展', suggestedChannels: ['website', 'facebook'], suggestedPriority: 'P2', inferredAudience: '中东地区喷涂自动化决策者', status: 'open' },
 ]
