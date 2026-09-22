@@ -1,77 +1,65 @@
 import type { ThemeConfig } from 'antd'
 
-/** 数字门户品牌青 + 冰蓝控制台 token */
-export const ICE = {
+/** 与数字门户 demo-project/src/theme.js 对齐 */
+export const PORTAL = {
   brand: '#3B9FD0',
   brandHover: '#2F8BB8',
   brandActive: '#2779A3',
   brandSoft: 'rgba(59, 159, 208, 0.12)',
-  glow: '#7DD3F0',
-  navy: '#0B1F33',
-  navy2: '#0E2A45',
-  canvas: '#F3F8FC',
+  canvas: '#F5F7FA',
   surface: '#FFFFFF',
-  border: '#D7E6F0',
+  border: '#E2E8F0',
   text: '#1E293B',
-  textSecondary: '#64748B',
+  textSecondary: '#475569',
+  textDim: '#94A3B8',
 } as const
 
-export const iceTheme: ThemeConfig = {
+export const portalTheme: ThemeConfig = {
   token: {
-    colorPrimary: ICE.brand,
-    colorInfo: ICE.brand,
-    colorBgLayout: ICE.canvas,
-    colorBgContainer: ICE.surface,
-    colorBorder: ICE.border,
-    colorText: ICE.text,
-    colorTextSecondary: ICE.textSecondary,
-    borderRadius: 8,
-    borderRadiusLG: 12,
+    colorPrimary: PORTAL.brand,
+    colorInfo: PORTAL.brand,
+    colorBgLayout: PORTAL.canvas,
+    colorBgContainer: PORTAL.surface,
+    colorBorder: PORTAL.border,
+    colorText: PORTAL.text,
+    colorTextSecondary: PORTAL.textSecondary,
+    borderRadius: 6,
+    borderRadiusLG: 8,
     fontFamily:
       '"PingFang SC", "Microsoft YaHei", "Noto Sans SC", "Segoe UI", sans-serif',
-    fontFamilyCode: '"IBM Plex Mono", "Cascadia Mono", "SF Mono", Consolas, monospace',
     controlOutline: 'rgba(59, 159, 208, 0.28)',
   },
   components: {
     Layout: {
-      siderBg: 'transparent',
-      triggerBg: 'rgba(11, 31, 51, 0.55)',
-      triggerColor: '#7DD3F0',
-      headerBg: ICE.surface,
-      headerColor: ICE.text,
-      headerHeight: 72,
-      headerPadding: '0 28px',
-      bodyBg: ICE.canvas,
+      headerBg: PORTAL.brand,
+      headerColor: '#ffffff',
+      headerHeight: 56,
+      headerPadding: '0 20px',
+      siderBg: PORTAL.surface,
+      lightSiderBg: PORTAL.surface,
+      bodyBg: PORTAL.canvas,
+      triggerBg: PORTAL.canvas,
+      triggerColor: PORTAL.brand,
+      lightTriggerBg: PORTAL.canvas,
+      lightTriggerColor: PORTAL.brand,
     },
     Menu: {
-      darkItemBg: 'transparent',
-      darkSubMenuItemBg: 'transparent',
-      darkItemColor: 'rgba(186, 220, 236, 0.82)',
-      darkItemHoverBg: 'rgba(125, 211, 240, 0.08)',
-      darkItemHoverColor: '#E8F7FC',
-      darkItemSelectedBg: 'rgba(59, 159, 208, 0.22)',
-      darkItemSelectedColor: ICE.glow,
-      itemBorderRadius: 8,
-      itemMarginInline: 4,
-      itemMarginBlock: 4,
-      itemHeight: 42,
+      itemBg: 'transparent',
+      itemColor: PORTAL.textSecondary,
+      itemHoverBg: PORTAL.brandSoft,
+      itemHoverColor: PORTAL.brand,
+      itemSelectedBg: PORTAL.brandSoft,
+      itemSelectedColor: PORTAL.brand,
+      itemActiveBg: PORTAL.brandSoft,
+      itemBorderRadius: 6,
+      itemMarginInline: 8,
+      itemMarginBlock: 2,
+      itemHeight: 40,
       iconSize: 16,
-    },
-    Button: {
-      primaryShadow: '0 4px 12px rgba(59, 159, 208, 0.28)',
     },
   },
 }
 
-export const iceSelectTheme: ThemeConfig = {
-  token: {
-    colorPrimary: ICE.brand,
-    colorBgContainer: 'rgba(14, 42, 69, 0.72)',
-    colorBorder: 'rgba(125, 211, 240, 0.2)',
-    colorText: '#E8F7FC',
-    colorTextPlaceholder: '#7AA3B8',
-    colorBgElevated: ICE.navy2,
-    colorTextQuaternary: '#7AA3B8',
-    borderRadius: 8,
-  },
-}
+/** @deprecated 旧冰蓝主题名，指向门户主题 */
+export const iceTheme = portalTheme
+export const ICE = PORTAL

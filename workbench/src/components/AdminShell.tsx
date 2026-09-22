@@ -15,17 +15,17 @@ import { COMPANY_NAME, OPERATOR_NAME, OPERATOR_ROLE, PLATFORM_NAME } from '../da
 import { useWorkbench } from '../context/WorkbenchContext'
 import type { ViewId } from '../types'
 import { OpsAssistantPanel } from './OpsAssistantPanel'
-import { iceSelectTheme } from '../theme'
 
 const { Sider, Header, Content } = Layout
 
 function portalHref() {
   const explicit = import.meta.env.VITE_PORTAL_URL as string | undefined
   const host = window.location.hostname || '127.0.0.1'
-  const url = new URL(explicit || `http://${host}:5174/#数据分析-新`, window.location.origin)
+  const url = new URL(explicit || `http://${host}:5174/`, window.location.origin)
   if (url.hostname === '127.0.0.1' || url.hostname === 'localhost') {
     url.hostname = host
   }
+  url.hash = '概况'
   return url.toString()
 }
 
@@ -106,64 +106,102 @@ export function AdminShell({ children }: { children: ReactNode }) {
 
   return (
     <Layout
-      hasSider
       className={`admin-shell${assistantOpen ? ' has-assistant' : ''}${embedView ? ' is-embed-view' : ''}${collapsed ? ' is-sider-collapsed' : ''}`}
     >
-      <Sider
-        width={240}
-        collapsedWidth={72}
-        collapsible
-        collapsed={collapsed}
-        onCollapse={(value) => setCollapsed(value)}
-        theme="dark"
-        classNames={{ root: 'admin-sider', body: 'admin-sider__body' }}
-      >
-        <Tooltip title={collapsed ? '数字门户 · 增长工作台' : undefined} placement="right">
+      <Header className={`admin-topbar${embedView ? ' is-embed' : ''}`}>
+        <div className="admin-topbar__left">
           <div className="admin-brand">
             <span className="admin-brand__mark" aria-hidden>
               <Hexagon size={16} strokeWidth={2.2} />
             </span>
-            {collapsed ? null : (
-              <div>
-                <strong>{PLATFORM_NAME}</strong>
-                <small>增长工作台</small>
-              </div>
-            )}
+            <div>
+              <strong>{PLATFORM_NAME}</strong>
+              <small>增长工作台</small>
+            </div>
           </div>
-        </Tooltip>
-
-        <Tooltip title={collapsed ? '返回数字门户后台' : undefined} placement="right">
-          <Button
-            block
-            size="small"
-            variant="outlined"
-            color="default"
-            className="admin-back-portal"
-            icon={<ArrowLeft size={14} />}
-            aria-label="返回数字门户后台"
-            onClick={() => window.location.assign(portalHref())}
-          >
-            {collapsed ? null : '返回数字门户后台'}
-          </Button>
-        </Tooltip>
-
-        {collapsed ? (
-          <Tooltip title={`${currentSite.name} · ${currentSite.url}`} placement="right">
-            <button
-              type="button"
-              className="admin-site-mini"
-              aria-label={`当前站点 ${currentSite.name}`}
-              onClick={() => setCollapsed(false)}
+          <div className="admin-topbar__actions">
+            <Button
+              size="small"
+              className="admin-topbar__btn"
+              icon={<ArrowLeft size={14} />}
+              onClick={() => window.location.assign(portalHref())}
             >
-              <Globe size={16} />
-            </button>
-          </Tooltip>
-        ) : (
-          <div className="admin-site-box">
-            <label className="admin-site-box__label" htmlFor="admin-site-select">
-              当前站点
-            </label>
-            <ConfigProvider theme={iceSelectTheme}>
+              返回数字门户
+            </Button>
+            <Button
+              size="small"
+              className={`admin-topbar__btn${assistantOpen ? ' is-on' : ''}`}
+              icon={<MessageSquare size={14} />}
+              onClick={toggleAssistant}
+              aria-pressed={assistantOpen}
+            >
+              AI运营助手
+            </Button>
+          </div>
+          <ConfigProvider
+            theme={{
+              components: {
+                Breadcrumb: {
+                  itemColor: 'rgba(255,255,255,0.72)',
+                  lastItemColor: '#ffffff',
+                  linkColor: 'rgba(255,255,255,0.72)',
+                  linkHoverColor: '#ffffff',
+                  separatorColor: 'rgba(255,255,255,0.45)',
+                },
+              },
+            }}
+          >
+            <Breadcrumb
+              className="admin-breadcrumb"
+              items={[
+                { title: '增长工作台' },
+                { title: meta.crumb },
+                { title: meta.title },
+              ]}
+            />
+          </ConfigProvider>
+        </div>
+        <div className="admin-topbar__right">
+          <div className="admin-user">
+            <Avatar size={32} className="admin-user__avatar">
+              {OPERATOR_NAME.slice(0, 1)}
+            </Avatar>
+            <div>
+              <b>{OPERATOR_NAME}</b>
+              <small>
+                {OPERATOR_ROLE} · {COMPANY_NAME}
+              </small>
+            </div>
+          </div>
+        </div>
+      </Header>
+
+      <Layout hasSider className="admin-body-row">
+        <Sider
+          width={220}
+          collapsedWidth={72}
+          collapsible
+          collapsed={collapsed}
+          onCollapse={(value) => setCollapsed(value)}
+          theme="light"
+          classNames={{ root: 'admin-sider', body: 'admin-sider__body' }}
+        >
+          {collapsed ? (
+            <Tooltip title={`${currentSite.name} · ${currentSite.url}`} placement="right">
+              <button
+                type="button"
+                className="admin-site-mini"
+                aria-label={`当前站点 ${currentSite.name}`}
+                onClick={() => setCollapsed(false)}
+              >
+                <Globe size={16} />
+              </button>
+            </Tooltip>
+          ) : (
+            <div className="admin-site-box">
+              <label className="admin-site-box__label" htmlFor="admin-site-select">
+                当前站点
+              </label>
               <Select
                 id="admin-site-select"
                 aria-label="切换站点"
@@ -173,100 +211,55 @@ export function AdminShell({ children }: { children: ReactNode }) {
                 className="admin-site-select"
                 popupMatchSelectWidth
               />
-            </ConfigProvider>
-            <div className="admin-site-box__url">{currentSite.url}</div>
-          </div>
-        )}
+              <div className="admin-site-box__url">{currentSite.url}</div>
+            </div>
+          )}
 
-        {collapsed ? null : <div className="admin-nav-label-text">工作台</div>}
-        <Menu
-          mode="inline"
-          theme="dark"
-          selectedKeys={selectedKey === 'settings' ? [] : [selectedKey]}
-          items={menuItems}
-          tooltip={{ placement: 'right' }}
-          classNames={{ root: 'admin-menu', item: 'admin-menu__item' }}
-          onClick={({ key }) => navigate(key as ViewId)}
-        />
-
-        <div className="admin-sidebar__foot">
+          {collapsed ? null : <div className="admin-nav-label-text">工作台</div>}
           <Menu
             mode="inline"
-            theme="dark"
-            selectedKeys={selectedKey === 'settings' ? ['settings'] : []}
-            items={settingsItems}
+            theme="light"
+            selectedKeys={selectedKey === 'settings' ? [] : [selectedKey]}
+            items={menuItems}
             tooltip={{ placement: 'right' }}
-            classNames={{ root: 'admin-menu admin-menu--foot', item: 'admin-menu__item' }}
+            classNames={{ root: 'admin-menu', item: 'admin-menu__item' }}
             onClick={({ key }) => navigate(key as ViewId)}
           />
-        </div>
-      </Sider>
 
-      <Layout className="admin-main">
-        <Header className={`admin-topbar${embedView ? ' is-embed' : ''}`}>
-          <div>
-            <Breadcrumb
-              className="admin-breadcrumb"
-              items={[
-                { title: '增长工作台' },
-                { title: meta.crumb },
-                { title: meta.title },
-              ]}
+          <div className="admin-sidebar__foot">
+            <Menu
+              mode="inline"
+              theme="light"
+              selectedKeys={selectedKey === 'settings' ? ['settings'] : []}
+              items={settingsItems}
+              tooltip={{ placement: 'right' }}
+              classNames={{ root: 'admin-menu admin-menu--foot', item: 'admin-menu__item' }}
+              onClick={({ key }) => navigate(key as ViewId)}
             />
-            {embedView || view === 'dashboard' ? null : (
-              <h1 className="admin-page-title">{meta.title}</h1>
-            )}
           </div>
-          <div className="admin-topbar__right">
-            <Button
-              size="small"
-              icon={<ArrowLeft size={14} />}
-              onClick={() => window.location.assign(portalHref())}
-            >
-              返回数字门户
-            </Button>
-            <Button
-              size="small"
-              type={assistantOpen ? 'primary' : 'default'}
-              icon={<MessageSquare size={14} />}
-              onClick={toggleAssistant}
-              aria-pressed={assistantOpen}
-            >
-              运营助手
-            </Button>
-            <div className="admin-user">
-              <Avatar size={32} className="admin-user__avatar">
-                {OPERATOR_NAME.slice(0, 1)}
-              </Avatar>
-              <div>
-                <b>{OPERATOR_NAME}</b>
-                <small>
-                  {OPERATOR_ROLE} · {COMPANY_NAME}
-                </small>
-              </div>
+        </Sider>
+
+        <Layout className="admin-main">
+          {scanning && view !== 'scanning' ? (
+            <div className="admin-scan-banner">
+              <strong>后台检测进行中</strong>
+              <span className="muted">可继续使用智能体，完成后将返回概览</span>
             </div>
-          </div>
-        </Header>
+          ) : null}
 
-        {scanning && view !== 'scanning' ? (
-          <div className="admin-scan-banner">
-            <strong>后台检测进行中</strong>
-            <span className="muted">可继续使用智能体，完成后将返回概览</span>
-          </div>
-        ) : null}
-
-        <Content className="admin-body">
-          <div
-            className={`admin-content${embedView ? ' is-embed' : ''}${view === 'dashboard' ? ' is-overview' : ''}`}
-          >
-            {children}
-          </div>
-          <OpsAssistantPanel
-            open={assistantOpen}
-            loaded={assistantLoaded}
-            onClose={() => setAssistantOpen(false)}
-          />
-        </Content>
+          <Content className="admin-body">
+            <div
+              className={`admin-content${embedView ? ' is-embed' : ''}${view === 'dashboard' ? ' is-overview' : ''}`}
+            >
+              {children}
+            </div>
+            <OpsAssistantPanel
+              open={assistantOpen}
+              loaded={assistantLoaded}
+              onClose={() => setAssistantOpen(false)}
+            />
+          </Content>
+        </Layout>
       </Layout>
     </Layout>
   )

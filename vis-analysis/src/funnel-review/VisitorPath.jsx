@@ -1,108 +1,89 @@
-import { arrivedLabel, arrivedLayer, channelLabel, intentLabel, pathStats, visitorIntents } from "./data.js";
+import { fmtInt } from "./data.js";
 
-export default function VisitorPath({ visitor, identity = "sample" }) {
-  if (!visitor) return null;
-  const stats = pathStats(visitor);
-  const layer = arrivedLayer(visitor);
-  const intents = visitorIntents(visitor);
-  const maxStay = Math.max(...visitor.pages.map((p) => p.stay), 1);
-  const companyView = identity === "company";
-  const who = companyView ? visitor.ip || "—" : visitor.id.toUpperCase();
-  const belong = companyView
-    ? visitor.company
-      ? ` · ${visitor.company}`
-      : " · 所属企业未识别"
-    : visitor.inbound
-      ? ` · 来路词「${visitor.inbound}」`
-      : " · 来路词空";
-
+function Steps({ types, compact }) {
   return (
-    <article className="path-card">
-      <header>
-        <h3>{who} · 当日路径</h3>
-        <p>
-          {channelLabel(visitor.channel)}
-          {belong}
-          {` · ${intents.map(intentLabel).join(" / ")}`}
-          {visitor.siteSearch.length
-            ? ` · 站内搜 ${visitor.siteSearch.join(" / ")}`
-            : " · 未站内搜索"}
-        </p>
-      </header>
+    <ol className={`walk-steps${compact ? " is-compact" : ""}`}>
+      {types.map((type, index) => (
+        <li key={`${type}-${index}`}>
+          {index ? <span className="walk-arr" aria-hidden="true">→</span> : null}
+          <span className="walk-chip">{type}</span>
+        </li>
+      ))}
+    </ol>
+  );
+}
 
-      <dl className="path-facts">
+function PageCard({ page, step }) {
+  return (
+    <article className="walk-page">
+      <span className="walk-page-i">{step}</span>
+      <dl>
         <div>
-          <dt>{companyView ? "到达漏斗层" : "当天到达"}</dt>
+          <dt>Title（TDK）</dt>
+          <dd>{page.title}</dd>
+        </div>
+        <div>
+          <dt>页面类型</dt>
+          <dd>{page.type}</dd>
+        </div>
+        <div>
+          <dt>URL</dt>
           <dd>
-            <span className={`vtag is-${layer}`}>{arrivedLabel(visitor)}</span>
+            <code>{page.url}</code>
           </dd>
-        </div>
-        <div>
-          <dt>意图</dt>
-          <dd>
-            <span className="itag-list">
-              {intents.map((id) => (
-                <span key={id} className={`itag is-${id}`}>
-                  {intentLabel(id)}
-                </span>
-              ))}
-            </span>
-          </dd>
-        </div>
-        <div>
-          <dt>落地页</dt>
-          <dd>{stats.landName}</dd>
-        </div>
-        {companyView ? null : (
-          <div className="span-2">
-            <dt>页序</dt>
-            <dd>{stats.line}</dd>
-          </div>
-        )}
-        <div>
-          <dt>当天页数</dt>
-          <dd className="num">{stats.pageCount}</dd>
-        </div>
-        <div>
-          <dt>总停留</dt>
-          <dd className="num">{stats.totalStay}s</dd>
         </div>
       </dl>
-
-      <ol className="path">
-        {visitor.pages.map((p, i) => (
-          <li key={`${p.path}-${i}`}>
-            <span className="idx">{i + 1}</span>
-            <div>
-              <div className="pname">{p.name}</div>
-              <div className="purl">{p.path}</div>
-              <div className="stay-bar" aria-hidden="true">
-                <i style={{ width: `${Math.max(8, (p.stay / maxStay) * 100)}%` }} />
-              </div>
-            </div>
-            <div className="pmeta">
-              <b>{p.stay}s</b>
-              <span>滚动 {(p.scroll * 100).toFixed(0)}%</span>
-            </div>
-          </li>
-        ))}
-      </ol>
-      <p className="path-note">{visitor.note}</p>
-      <ul className="flags">
-        <li className={visitor.caught ? "ok" : "no"}>
-          落地{visitor.caught ? "接住" : "没接住"}
-        </li>
-        <li className={visitor.viewed ? "ok" : "no"}>
-          {visitor.viewed ? "有效浏览" : "未有效浏览"}
-        </li>
-        <li className={visitor.bounced ? "no" : "ok"}>
-          {visitor.bounced ? "秒退" : "非秒退"}
-        </li>
-        <li className={visitor.interacted ? "ok" : "no"}>
-          {visitor.interacted ? "已转化交互" : "未动手"}
-        </li>
-        <li className={visitor.led ? "ok" : "no"}>{visitor.led ? "已留资" : "未留资"}</li>
-      </ul>
     </article>
   );
 }
+
+export default function WalkDetail({ walk }) {
+  if (!walk) return null;
+  if (!walk.urls.length) {
+    return (
+      <div className="walk-detail">
+        <p className="path-note">这条走法散在很多具体页上，没有哪一组 URL 满 5 人。</p>
+      </div>
+    );
+  }
+  return (
+    <div className="walk-detail">
+      {walk.mix.length > 1 ? (
+        <p className="walk-mix-line">
+          走过这条的人：
+          {walk.mix.map((item, index) => (
+            <span key={item.id}>
+              {index ? " · " : null}
+              {item.name} {fmtInt(item.count)}
+            </span>
+          ))}
+        </p>
+      ) : null}
+      {walk.urls.map((row, combo) => (
+        <section
+          key={row.pages.map((page) => page.path).join(">")}
+          className="walk-combo"
+        >
+          <p className="walk-combo-k">
+            {walk.urls.length > 1 ? `具体页 ${combo + 1}` : "具体页"}
+            {` · ${fmtInt(row.count)} 人`}
+          </p>
+          <ol className="walk-page-chain">
+            {row.pages.map((page, index) => (
+              <li key={`${page.path}-${index}`}>
+                {index ? (
+                  <span className="walk-page-arr" aria-hidden="true">
+                    ↓
+                  </span>
+                ) : null}
+                <PageCard page={page} step={index + 1} />
+              </li>
+            ))}
+          </ol>
+        </section>
+      ))}
+    </div>
+  );
+}
+
+export { Steps };

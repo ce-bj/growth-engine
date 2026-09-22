@@ -1,9 +1,11 @@
 import { useMemo, useState } from "react";
 import Funnel, { FunnelLegend } from "./Funnel.jsx";
 import DrillPanel from "./DrillPanel.jsx";
+import PageCatalog from "./PageCatalog.jsx";
 import VisitorModule from "./VisitorModule.jsx";
 import {
   CHANNELS,
+  INTENTS,
   SITE,
   STUCK_LABEL,
   bottleneck,
@@ -12,6 +14,7 @@ import {
   getStages,
   pct,
   rate,
+  sliceCaption,
   stateOfThrough,
   through,
 } from "./data.js";
@@ -21,17 +24,18 @@ const MODULES = [
   { id: "path", label: "访客路径" },
 ];
 
-export default function App({ variant = "full" }) {
+export default function App({ variant = "full", intentId = null, onIntent }) {
   const [mod, setMod] = useState("funnel");
   const [channel, setChannel] = useState("site");
+  const [innerIntent, setInnerIntent] = useState(null);
   const [lossId, setLossId] = useState("l1");
-  const [visitorId, setVisitorId] = useState(null);
   const hideChrome = variant !== "full";
   const showPath = variant === "path" || (variant === "full" && mod === "path");
+  const intent = onIntent ? intentId : innerIntent;
 
-  const stages = useMemo(() => getStages(channel), [channel]);
+  const stages = useMemo(() => getStages(channel, intent), [channel, intent]);
   const gates = useMemo(() => through(stages), [stages]);
-  const leads = getLeadCount(channel);
+  const leads = getLeadCount(channel, intent);
   const viewRate = rate(stages[1].cur, stages[0].cur);
   const viewPrev = rate(stages[1].prev, stages[0].prev);
   const l1 = gates[0];
@@ -41,11 +45,16 @@ export default function App({ variant = "full" }) {
 
   function switchChannel(id) {
     setChannel(id);
-    setVisitorId(null);
+  }
+
+  function switchIntent(id) {
+    const next = id === intent ? null : id;
+    if (onIntent) onIntent(next);
+    else setInnerIntent(next);
   }
 
   function selectLoss(id) {
-    setLossId(id);
+    if (id) setLossId(id);
   }
 
   return (
@@ -90,14 +99,14 @@ export default function App({ variant = "full" }) {
           embedded={hideChrome}
           channelId={channel}
           onChannel={switchChannel}
-          visitorId={visitorId}
-          onPick={setVisitorId}
+          intentId={intent}
+          onIntent={switchIntent}
         />
       ) : (
         <>
           {hideChrome ? null : (
           <section
-            className={`headline${channel === "site" ? "" : " is-channel"}`}
+            className={`headline${channel === "site" && !intent ? "" : " is-channel"}`}
             aria-label="本期结论"
           >
             <div>
@@ -116,7 +125,7 @@ export default function App({ variant = "full" }) {
                 上期 {pct(viewPrev)} · {l1State}
               </span>
             </div>
-            {channel === "site" ? (
+            {channel === "site" && !intent ? (
               <div>
                 <span className="hl-k">卡在哪</span>
                 <strong>{stuck ? STUCK_LABEL[stuck.lossId] : "没有明显卡层"}</strong>
@@ -135,20 +144,52 @@ export default function App({ variant = "full" }) {
           </section>
           )}
 
-          <div className="channel-bar" role="tablist" aria-label="漏斗视角">
-            {CHANNELS.map((c) => (
+          <div className="filter-row">
+            <span className="filter-label">渠道</span>
+            <div className="channel-bar" role="tablist" aria-label="按渠道切漏斗">
+              {CHANNELS.map((c) => (
+                <button
+                  key={c.id}
+                  type="button"
+                  role="tab"
+                  aria-selected={channel === c.id}
+                  className={channel === c.id ? "is-on" : ""}
+                  onClick={() => switchChannel(c.id)}
+                >
+                  {c.label}
+                </button>
+              ))}
+            </div>
+          </div>
+          <div className="filter-row">
+            <span className="filter-label">访客意图</span>
+            <div className="channel-bar" role="tablist" aria-label="按访客意图切漏斗">
               <button
-                key={c.id}
                 type="button"
                 role="tab"
-                aria-selected={channel === c.id}
-                className={channel === c.id ? "is-on" : ""}
-                onClick={() => switchChannel(c.id)}
+                aria-selected={!intent}
+                className={!intent ? "is-on" : ""}
+                onClick={() => switchIntent(null)}
               >
-                {c.label}
+                全部
               </button>
-            ))}
+              {INTENTS.map((item) => (
+                <button
+                  key={item.id}
+                  type="button"
+                  role="tab"
+                  aria-selected={intent === item.id}
+                  className={intent === item.id ? "is-on" : ""}
+                  onClick={() => switchIntent(item.id)}
+                >
+                  {item.name}
+                </button>
+              ))}
+            </div>
           </div>
+          <p className="slice-hint">
+            当前 {sliceCaption(channel, intent)}。意图按窗口最深一级计。
+          </p>
 
           <FunnelLegend />
 
@@ -160,11 +201,18 @@ export default function App({ variant = "full" }) {
               onSelectLoss={selectLoss}
             />
             {lossId ? (
-              <DrillPanel lossId={lossId} channelId={channel} gate={gate} />
+              <DrillPanel
+                lossId={lossId}
+                channelId={channel}
+                intentId={intent}
+                gate={gate}
+              />
             ) : (
-              <p className="hint drill-placeholder">点左侧流失点，右侧看这一层拆到哪些页。</p>
+              <p className="hint drill-placeholder">点左侧流失点，右侧看这一层关键指标。</p>
             )}
           </div>
+
+          <PageCatalog channelId={channel} intentId={intent} />
         </>
       )}
     </div>

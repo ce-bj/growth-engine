@@ -87,7 +87,7 @@ export function ValueFlywheel({ onOpen }: { onOpen: (view: AgentView) => void })
   const reduced = useReducedMotion()
 
   return (
-    <section className="fw hud-frame" aria-label="智能体价值飞轮">
+    <section className="fw" aria-label="智能体价值飞轮">
       <header className="fw__head">
         <div>
           <h3>价值飞轮 · 多智能体自动闭环</h3>
@@ -143,12 +143,12 @@ export function ValueFlywheel({ onOpen }: { onOpen: (view: AgentView) => void })
         <svg className="fw__svg" viewBox="0 0 1000 240" aria-hidden="true">
           <defs>
             <linearGradient id="fwStroke" x1="0%" y1="0%" x2="100%" y2="0%">
-              <stop offset="0%" stopColor="#7DD3F0" />
+              <stop offset="0%" stopColor="#2F8BB8" />
               <stop offset="50%" stopColor="#3B9FD0" />
-              <stop offset="100%" stopColor="#7DD3F0" />
+              <stop offset="100%" stopColor="#2F8BB8" />
             </linearGradient>
             <filter id="fwGlow" x="-40%" y="-40%" width="180%" height="180%">
-              <feGaussianBlur stdDeviation="3.5" result="blur" />
+              <feGaussianBlur stdDeviation="1.2" result="blur" />
               <feMerge>
                 <feMergeNode in="blur" />
                 <feMergeNode in="SourceGraphic" />
@@ -166,7 +166,7 @@ export function ValueFlywheel({ onOpen }: { onOpen: (view: AgentView) => void })
           {reduced
             ? null
             : [0, 2.6, 5.2].map((begin) => (
-                <circle key={begin} r="5" fill="#7DD3F0" filter="url(#fwGlow)">
+                <circle key={begin} r="4" fill="#3B9FD0">
                   <animateMotion dur="8s" begin={`${begin}s`} repeatCount="indefinite">
                     <mpath href="#fwLoop" />
                   </animateMotion>

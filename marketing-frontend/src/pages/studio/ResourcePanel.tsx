@@ -1,9 +1,9 @@
+import { generateId } from '@/lib/utils'
 import { useState } from 'react'
 import { Folder, FileText, Upload, X, ExternalLink, ImageIcon, Search } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/ui/table'
-import { generateId } from '@/lib/utils'
 import { mockProductsData } from './blocks'
 import type { Draft } from './MarketingStudio'
 export const KNOWLEDGE_DIRS=['企业与品牌','产品资料','行业解决方案','客户案例','活动与展会','服务与常见问题']

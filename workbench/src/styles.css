@@ -1261,6 +1261,45 @@ a:hover {
   white-space: nowrap;
 }
 
+/* 顶栏左右分区（来自远端 920 版 AdminShell 结构，配色按本地浅色顶栏适配） */
+.admin-topbar__left {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+  flex: 1;
+  gap: 16px;
+  overflow: hidden;
+}
+
+.admin-topbar__actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.admin-topbar__btn.ant-btn {
+  height: 28px;
+  padding-inline: 12px;
+  color: var(--color-primary) !important;
+  border-color: var(--color-border) !important;
+  background: #fff !important;
+  box-shadow: none !important;
+}
+
+.admin-topbar__btn.ant-btn:hover,
+.admin-topbar__btn.ant-btn:focus-visible {
+  color: #fff !important;
+  background: var(--color-primary) !important;
+  border-color: var(--color-primary) !important;
+}
+
+.admin-topbar__btn.is-on.ant-btn {
+  color: #fff !important;
+  background: var(--color-primary) !important;
+  border-color: var(--color-primary) !important;
+}
+
 .admin-user {
   display: flex;
   align-items: center;
@@ -2265,6 +2304,14 @@ a:hover {
   min-height: 0;
   overflow: auto;
   align-items: stretch;
+}
+
+/* 顶栏下方主行：撑满剩余高度、内部各自滚动（来自远端 920 版 AdminShell 结构） */
+.admin-body-row {
+  flex: 1;
+  min-height: 0;
+  height: 0;
+  overflow: hidden;
 }
 
 .admin-shell.has-assistant {

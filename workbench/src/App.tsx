@@ -10,7 +10,7 @@ import {
 import { FixDrawer } from './components/FixDrawer'
 import { ToastStack } from './components/ToastStack'
 import { WorkbenchProvider, useWorkbench } from './context/WorkbenchContext'
-import { iceTheme } from './theme'
+import { portalTheme } from './theme'
 import { AgentOverviewView } from './views/AgentOverviewView'
 import { ScanProgressView } from './views/ScanProgressView'
 import { SettingsView } from './views/WeeklySettingsViews'
@@ -42,7 +42,7 @@ function Pages() {
 
 export default function App() {
   return (
-    <ConfigProvider locale={zhCN} theme={iceTheme}>
+    <ConfigProvider locale={zhCN} theme={portalTheme}>
       <WorkbenchProvider>
         <Pages />
       </WorkbenchProvider>

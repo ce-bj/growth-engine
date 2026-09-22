@@ -27,7 +27,7 @@ export function AgentOverviewView() {
 
   return (
     <div className="agent-overview">
-      <section className="ov-hero hud-frame">
+      <section className="ov-hero" aria-label="运行状态">
         <div className="agent-overview__mark">
           <Hexagon size={18} strokeWidth={2.2} />
         </div>
@@ -70,16 +70,6 @@ export function AgentOverviewView() {
         <Card size="small" classNames={{ root: 'ov-panel' }}>
           <Statistic title="已完成任务" value={overviewWork.closedTickets} suffix="项" />
           <p className="ov-work__hint">sitemap、死链等系统已做完</p>
-        </Card>
-        <Card size="small" classNames={{ root: 'ov-panel ov-panel--next' }}>
-          <div className="ov-next">
-            <span className="ov-next__label">下次自动执行</span>
-            <strong>{overviewPeriod.nextRun}</strong>
-            <p>
-              {overviewPeriod.nextTask}
-              <small> · {overviewPeriod.baseline}</small>
-            </p>
-          </div>
         </Card>
       </section>
 

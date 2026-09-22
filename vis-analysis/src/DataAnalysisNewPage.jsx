@@ -1,10 +1,9 @@
 /** 访客行为分析智能体（Growth/vis-analysis）。与数字门户「数据分析-新」已拆开。 */
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   App as AntApp,
   Button,
   ConfigProvider,
-  Segmented,
   Select,
   Tag,
 } from "antd";
@@ -15,32 +14,25 @@ import {
   DownOutlined,
   ExportOutlined,
   FunnelPlotOutlined,
-  PlayCircleOutlined,
   SearchOutlined,
-  SolutionOutlined,
   ThunderboltOutlined,
+  UnorderedListOutlined,
 } from "@ant-design/icons";
 import FunnelReviewApp from "./funnel-review/App.jsx";
 import "./funnel-review/styles.css";
 import "./data-analysis-new.css";
 import {
-  INTENTS,
-  getLeadCount,
-  getStages,
-  intentLabel,
-  pct,
-  rate,
-  visitorIntents,
-  visitorsListed,
-} from "./funnel-review/data.js";
-import {
   AUTH_SOURCES,
-  CAUSES,
-  MEASURES,
-  OBSERVING,
+  CHURN_MARK,
+  DEPTH_INTENTS,
   PERIOD,
+  PHENOMENA,
+  ROOT_CAUSES,
   SITES,
+  SOURCE_AUTH_PAGES,
+  TASKS,
 } from "./diagnosisPeriod.js";
+import SearchTerms from "./funnel-review/SearchTerms.jsx";
 
 const THEME = {
   token: {
@@ -57,8 +49,8 @@ const THEME = {
     borderRadius: 14,
     fontFamily: "'Noto Sans SC', sans-serif",
     fontSize: 15,
-    controlHeight: 44,
-    controlHeightLG: 52,
+    controlHeight: 40,
+    controlHeightLG: 48,
   },
   components: {
     Button: {
@@ -68,39 +60,51 @@ const THEME = {
     Select: {
       optionSelectedBg: "#fff4e5",
     },
-    Segmented: {
-      itemSelectedBg: "#fff4e5",
-      itemSelectedColor: "#c2410c",
-      trackBg: "#f0f2f6",
-    },
   },
 };
 
-const INTENT_COLOR = {
-  product: "#e85d04",
-  spec: "#0f766e",
-  supplier: "#1d4ed8",
-  quote: "#be123c",
-  content: "#7c3aed",
-  unclear: "#78716c",
-};
-
-function intentDistribution() {
-  const rows = visitorsListed("site");
-  const counts = Object.fromEntries(INTENTS.map((item) => [item.id, 0]));
-  for (const visitor of rows) {
-    for (const id of visitorIntents(visitor)) {
-      counts[id] += 1;
-    }
-  }
-  return {
-    total: rows.length,
-    rows: INTENTS.map((item) => ({
-      ...item,
-      count: counts[item.id],
-      percent: rows.length ? Math.round((counts[item.id] / rows.length) * 100) : 0,
-    })),
+function AuthConnect({ sourceKey, onBack, onDone }) {
+  const { message } = AntApp.useApp();
+  const [busy, setBusy] = useState(false);
+  const copy = SOURCE_AUTH_PAGES[sourceKey] || {
+    name: sourceKey,
+    title: `授权 ${sourceKey}`,
+    hint: "授权后，对应来源的搜索词会出现在明细里。不对接到具体访客。",
+    scopes: ["搜索词明细"],
+    cta: "去授权",
   };
+
+  async function connect() {
+    setBusy(true);
+    await new Promise((resolve) => setTimeout(resolve, 640));
+    message.success(`${copy.name}已授权，搜索词已写入明细`);
+    onDone(sourceKey);
+  }
+
+  return (
+    <div className="dan-blank">
+      <div className="dan-blank-bar">
+        <Button icon={<ArrowLeftOutlined />} onClick={onBack}>
+          返回明细数据
+        </Button>
+      </div>
+      <div className="dan-blank-body">
+        <div className="dan-blank-card dan-auth-card">
+          <p className="dan-kicker">数据源授权</p>
+          <h1>{copy.title}</h1>
+          <p>{copy.hint}</p>
+          <ul>
+            {copy.scopes.map((line) => (
+              <li key={line}>{line}</li>
+            ))}
+          </ul>
+          <Button type="primary" size="large" loading={busy} onClick={connect}>
+            {copy.cta}
+          </Button>
+        </div>
+      </div>
+    </div>
+  );
 }
 
 function BlankPreview({ title, hint, onBack }) {
@@ -122,21 +126,99 @@ function BlankPreview({ title, hint, onBack }) {
   );
 }
 
+function TaskBrief({ row }) {
+  if (row.kind !== "task") {
+    return (
+      <div className="dan-display">
+        <p>
+          <b>原因</b>
+          {row.reason}
+        </p>
+        <p>
+          <b>建议</b>
+          {row.suggest}
+        </p>
+        <p className="dan-kpi-h">{row.object}</p>
+      </div>
+    );
+  }
+  return (
+    <dl className="dan-brief-dl">
+      <div>
+        <dt>任务目标</dt>
+        <dd>{row.goal}</dd>
+      </div>
+      <div>
+        <dt>任务对象</dt>
+        <dd>{row.object}</dd>
+      </div>
+      <div>
+        <dt>内容要求</dt>
+        <dd>
+          <ul>
+            {row.requirements.map((line) => (
+              <li key={line}>{line}</li>
+            ))}
+          </ul>
+        </dd>
+      </div>
+      <div>
+        <dt>约束</dt>
+        <dd>{row.constraints.join("；")}</dd>
+      </div>
+      <div>
+        <dt>确认点</dt>
+        <dd>{row.confirms.join("；")}</dd>
+      </div>
+      {row.banner ? (
+        <div>
+          <dt>横幅时机</dt>
+          <dd>
+            {row.banner.when} · {row.banner.where}
+            <br />
+            「{row.banner.copy}」
+          </dd>
+        </div>
+      ) : null}
+    </dl>
+  );
+}
+
+function scrollToId(id) {
+  document.getElementById(id)?.scrollIntoView({ behavior: "smooth", block: "start" });
+}
+
 function Workbench() {
   const { message } = AntApp.useApp();
-  const [measureState, setMeasureState] = useState({});
-  const [openKey, setOpenKey] = useState(MEASURES[0]?.key ?? null);
+  const [taskState, setTaskState] = useState({});
+  const [openKey, setOpenKey] = useState(null);
   const [preview, setPreview] = useState(null);
+  const [authKey, setAuthKey] = useState(null);
+  const [granted, setGranted] = useState({});
+  const [preferSource, setPreferSource] = useState(null);
+  const [scrollSearch, setScrollSearch] = useState(false);
   const [adoptingKey, setAdoptingKey] = useState("");
   const [siteId, setSiteId] = useState(SITES[0].id);
+  const [intentId, setIntentId] = useState(null);
+  const [mainTab, setMainTab] = useState("agent");
   const site = SITES.find((item) => item.id === siteId) ?? SITES[0];
-  const mix = useMemo(() => intentDistribution(), []);
-  const stages = getStages("site");
-  const leads = getLeadCount("site");
-  const viewRate = rate(stages[1].cur, stages[0].cur);
-  const viewPrev = rate(stages[1].prev, stages[0].prev);
-  const leadRate = rate(leads.cur, stages[0].cur);
-  const leadRatePrev = rate(leads.prev, stages[0].prev);
+  const authMap = useMemo(() => {
+    const map = {};
+    AUTH_SOURCES.forEach((item) => {
+      map[item.key] = item.status === "ok" || Boolean(granted[item.key]);
+    });
+    return map;
+  }, [granted]);
+  const missingAuth = AUTH_SOURCES.filter((item) => !authMap[item.key]);
+  const executable = TASKS.filter((item) => item.kind === "task");
+  const displayTasks = TASKS.filter((item) => item.kind === "display");
+  const pending = executable.filter((item) => !taskState[item.key]);
+  const adopted = executable.filter((item) => taskState[item.key] === "adopted");
+  const produced = TASKS.length;
+  const phenomena = useMemo(
+    () => (intentId ? PHENOMENA.filter((item) => item.intent === intentId) : PHENOMENA),
+    [intentId],
+  );
 
   function openPreview(row) {
     setPreview({
@@ -145,20 +227,53 @@ function Workbench() {
     });
   }
 
-  async function adoptMeasure(row) {
-    if (row.kind !== "skill") return;
+  async function adoptTask(row) {
+    if (row.kind !== "task") return;
     setAdoptingKey(row.key);
-    await new Promise((resolve) => setTimeout(resolve, 480));
-    setMeasureState((prev) => ({ ...prev, [row.key]: "adopted" }));
+    await new Promise((resolve) => setTimeout(resolve, 420));
+    setTaskState((prev) => ({ ...prev, [row.key]: "adopted" }));
     setAdoptingKey("");
-    if (row.adoptAction === "generate_landing") {
-      message.success("已按任务说明调用智能营销页生成。对应页面暂未接入。");
-    } else if (row.adoptAction === "edit_product") {
-      message.success("已按任务说明交给运营助手修改产品。对应页面暂未接入。");
-    } else {
-      message.success("已确认执行。");
-    }
-    openPreview(row);
+    if (openKey === row.key) setOpenKey(null);
+    message.success("已确认，已交给对应子智能体。");
+  }
+
+  function skipTask(row) {
+    setTaskState((prev) => ({ ...prev, [row.key]: "skipped" }));
+    if (openKey === row.key) setOpenKey(null);
+    message.info("这条先不执行。");
+  }
+
+  function openAuth(key) {
+    setPreview(null);
+    setMainTab("data");
+    setAuthKey(key);
+  }
+
+  function finishAuth(key) {
+    setGranted((prev) => ({ ...prev, [key]: true }));
+    setAuthKey(null);
+    setMainTab("data");
+    setPreferSource(key === "gsc" || key === "ads" || key === "site" ? key : "all");
+    setScrollSearch(true);
+  }
+
+  useEffect(() => {
+    if (mainTab !== "data" || authKey || !scrollSearch) return undefined;
+    const timer = window.setTimeout(() => {
+      scrollToId("dan-search-terms");
+      setScrollSearch(false);
+    }, 60);
+    return () => window.clearTimeout(timer);
+  }, [mainTab, authKey, scrollSearch]);
+
+  if (authKey) {
+    return (
+      <AuthConnect
+        sourceKey={authKey}
+        onBack={() => setAuthKey(null)}
+        onDone={finishAuth}
+      />
+    );
   }
 
   if (preview) {
@@ -176,116 +291,234 @@ function Workbench() {
       <div className="dan-inner">
         <header className="dan-hero">
           <div>
-            <p className="dan-kicker">诊断层 · 自然月自动诊断</p>
+            <p className="dan-kicker">诊断层 · 28 天窗口</p>
             <h1 className="dan-title">AI 访客行为分析智能体</h1>
-            <p className="dan-sub">
-              {site.name} · {site.origin.replace(/^https:\/\//, "")}
-            </p>
           </div>
-          <div className="dan-pills">
-            <span className="dan-pill is-on">本期 {PERIOD.label}</span>
-            <span className="dan-pill">对照 {PERIOD.baseline}</span>
-            <span className="dan-pill">{PERIOD.sampleNote}</span>
+          <div className="dan-hero-tools">
+            <Select
+              className="dan-site-select"
+              size="middle"
+              value={siteId}
+              showSearch={false}
+              allowClear={false}
+              suffixIcon={<DownOutlined />}
+              aria-label="已绑定网站"
+              style={{ minWidth: 280 }}
+              options={SITES.map((item) => ({
+                value: item.id,
+                label: `${item.name.replace("Demo · ", "")}`,
+              }))}
+              onChange={(id) => setSiteId(id)}
+            />
+            <span className="dan-pill is-on">{PERIOD.label}</span>
+            <span className="dan-pill">{PERIOD.range}</span>
+            {missingAuth.map((item) => (
+              <button
+                key={item.key}
+                type="button"
+                className="dan-pill is-miss"
+                title={`${item.use}。点击去授权`}
+                onClick={() => openAuth(item.key)}
+              >
+                {item.name}未授权
+              </button>
+            ))}
           </div>
         </header>
 
-        <section className="dan-kpis" aria-label="本期关键数">
-          {[
-            {
-              label: "线索数",
-              value: `${leads.cur} 条`,
-              hint: `上期 ${leads.prev} · 少 ${leads.prev - leads.cur} 条`,
-              alert: true,
-            },
-            {
-              label: "来了多少人",
-              value: stages[0].cur.toLocaleString(),
-              hint: "与上期持平",
-            },
-            {
-              label: "有效浏览率",
-              value: pct(viewRate),
-              hint: `上期 ${pct(viewPrev)} · 异常`,
-              alert: true,
-            },
-            {
-              label: "留资率",
-              value: pct(leadRate),
-              hint: `上期 ${pct(leadRatePrev)} · 线索÷UV`,
-              alert: true,
-            },
-          ].map((item) => (
-            <article key={item.label} className="dan-kpi">
-              <div className="dan-kpi-k">{item.label}</div>
-              <div className={`dan-kpi-v${item.alert ? " is-alert" : ""}`}>{item.value}</div>
-              <div className="dan-kpi-h">{item.hint}</div>
-            </article>
-          ))}
-        </section>
+        <nav className="dan-tabs" role="tablist" aria-label="页面视图">
+          <button
+            type="button"
+            role="tab"
+            aria-selected={mainTab === "agent"}
+            className={mainTab === "agent" ? "is-on" : ""}
+            onClick={() => setMainTab("agent")}
+          >
+            智能体分析
+          </button>
+          <button
+            type="button"
+            role="tab"
+            aria-selected={mainTab === "data"}
+            className={mainTab === "data" ? "is-on" : ""}
+            onClick={() => setMainTab("data")}
+          >
+            明细数据
+          </button>
+        </nav>
 
-        <section className="dan-card" aria-labelledby="dan-run-title">
-          <div className="dan-head">
-            <div className="dan-head-l">
-              <span className="dan-ico" aria-hidden="true">
-                <PlayCircleOutlined />
-              </span>
-              <h2 id="dan-run-title">运行控制</h2>
-            </div>
-            <span className="dan-live">
-              <i />
-              上次 {PERIOD.lastRun}
+        {mainTab === "agent" ? (
+          <>
+        <section className="dan-run" aria-label="任务概览">
+          <div className="dan-run-banner">
+            <span className="dan-run-ico" aria-hidden="true">
+              ✦
             </span>
-          </div>
-          <div className="dan-run">
             <div>
-              <span className="dan-field-l">网站 URL</span>
-              <Select
-                className="dan-site-select"
-                size="large"
-                value={siteId}
-                showSearch={false}
-                allowClear={false}
-                suffixIcon={<DownOutlined />}
-                placeholder="选择已绑定网站"
-                aria-label="网站 URL"
-                style={{ width: "100%" }}
-                options={SITES.map((item) => ({
-                  value: item.id,
-                  label: `${item.name} · ${item.origin.replace(/^https:\/\//, "")}`,
-                }))}
-                onChange={(id) => setSiteId(id)}
-              />
-            </div>
-            <div>
-              <span className="dan-field-l">诊断窗口</span>
-              <Segmented
-                block
-                size="large"
-                shape="round"
-                value="aug"
-                options={[
-                  { label: PERIOD.label, value: "aug" },
-                  { label: "对照 7月", value: "jul", disabled: true },
-                ]}
-              />
+              <p className="dan-run-kicker">访客行为分析智能体 · 自主运行中</p>
+              <p className="dan-run-copy">
+                本窗口已扫描近 28 天行为并完成诊断，产出
+                <b> {executable.length} </b>
+                份任务说明、
+                <b> {displayTasks.length} </b>
+                条站外建议
+                {adopted.length ? (
+                  <>
+                    ；其中
+                    <b> {adopted.length} </b>
+                    份已确认执行
+                  </>
+                ) : null}
+                ；目前有
+                <b> {pending.length} </b>
+                份正在等你确认执行。诊断我会按窗口继续跑，你只需在确认这一步把关。
+              </p>
             </div>
           </div>
-          <div className="dan-auth">
-            {AUTH_SOURCES.map((item) => (
-              <span
-                key={item.key}
-                className={`dan-chip${item.status === "ok" ? "" : " is-miss"}`}
-                title={item.use}
-              >
-                <i className="dan-dot" />
-                <b>{item.name}</b>
-                {item.statusText}
-              </span>
-            ))}
+          <div className="dan-run-stats">
+            <article className="dan-run-stat is-pending">
+              <div className="dan-run-n">{pending.length}</div>
+              <div className="dan-run-l">待你确认</div>
+              <div className="dan-run-h">这是今天唯一需要你做的事</div>
+            </article>
+            <article className="dan-run-stat is-made">
+              <div className="dan-run-n">{produced}</div>
+              <div className="dan-run-l">本窗口产出</div>
+              <div className="dan-run-h">无需你介入的扫描与诊断</div>
+            </article>
           </div>
-          <p className="dan-note">
-            Google Ads 未授权，广告词暂不能按人对上。广告渠仍按进站第一页统计。调度：{PERIOD.schedule}。
-          </p>
+          <div className="dan-inbox">
+            <div className="dan-inbox-head">
+              <h2>
+                待你确认
+                <span>{pending.length}</span>
+              </h2>
+              <p>智能体已写好任务说明，确认后交给对应子智能体</p>
+            </div>
+            {pending.length ? (
+              <ul className="dan-inbox-list">
+                {pending.map((row) => {
+                  const open = openKey === row.key;
+                  return (
+                    <li key={row.key} className={`dan-inbox-item${open ? " is-open" : ""}`}>
+                      <div className="dan-inbox-row">
+                        <div className="dan-inbox-copy">
+                          <h3>{row.listTitle || row.title}</h3>
+                          <p>{row.listMeta || row.type}</p>
+                        </div>
+                        <div className="dan-inbox-actions">
+                          <Button
+                            onClick={() => setOpenKey(open ? null : row.key)}
+                          >
+                            {open ? "收起说明" : "看任务说明"}
+                          </Button>
+                          <Button
+                            icon={<ExportOutlined />}
+                            onClick={() => openPreview(row)}
+                          >
+                            查看页面
+                          </Button>
+                          <Button danger onClick={() => skipTask(row)}>
+                            暂不处理
+                          </Button>
+                          <Button
+                            type="primary"
+                            className="dan-inbox-go"
+                            loading={adoptingKey === row.key}
+                            onClick={() => adoptTask(row)}
+                          >
+                            确认执行
+                          </Button>
+                        </div>
+                      </div>
+                      {open ? (
+                        <div className="dan-inbox-detail">
+                          <p className="dan-inbox-full">{row.title}</p>
+                          <TaskBrief row={row} />
+                        </div>
+                      ) : null}
+                    </li>
+                  );
+                })}
+              </ul>
+            ) : (
+              <p className="dan-inbox-empty">没有需要你确认的任务说明。</p>
+            )}
+            <div className="dan-inbox-done">
+              <div className="dan-inbox-head is-done">
+                <h2>
+                  本期已确认
+                  <span>{adopted.length}</span>
+                </h2>
+                <p>已交给对应子智能体，可回看任务说明</p>
+              </div>
+              {adopted.length ? (
+                <ul className="dan-inbox-list is-done">
+                  {adopted.map((row) => {
+                    const open = openKey === row.key;
+                    return (
+                      <li key={row.key} className={`dan-inbox-item${open ? " is-open" : ""}`}>
+                        <div className="dan-inbox-row">
+                          <div className="dan-inbox-copy">
+                            <h3>{row.listTitle || row.title}</h3>
+                            <p>已交给对应子智能体 · {row.listMeta || row.type}</p>
+                          </div>
+                          <div className="dan-inbox-actions">
+                            <Button onClick={() => setOpenKey(open ? null : row.key)}>
+                              {open ? "收起说明" : "看任务说明"}
+                            </Button>
+                            <Button
+                              icon={<ExportOutlined />}
+                              onClick={() => openPreview(row)}
+                            >
+                              查看页面
+                            </Button>
+                          </div>
+                        </div>
+                        {open ? (
+                          <div className="dan-inbox-detail">
+                            <p className="dan-inbox-full">{row.title}</p>
+                            <TaskBrief row={row} />
+                          </div>
+                        ) : null}
+                      </li>
+                    );
+                  })}
+                </ul>
+              ) : (
+                <p className="dan-inbox-empty">本窗口还没有确认过任务。</p>
+              )}
+            </div>
+            {displayTasks.length ? (
+              <div className="dan-inbox-display">
+                <ul className="dan-inbox-list is-quiet">
+                  {displayTasks.map((row) => {
+                    const open = openKey === row.key;
+                    return (
+                      <li key={row.key} className={`dan-inbox-item${open ? " is-open" : ""}`}>
+                        <div className="dan-inbox-row">
+                          <div className="dan-inbox-copy">
+                            <h3>{row.listTitle || row.title}</h3>
+                            <p>{row.listMeta || row.type}</p>
+                          </div>
+                          <div className="dan-inbox-actions">
+                            <Button onClick={() => setOpenKey(open ? null : row.key)}>
+                              {open ? "收起" : "看建议"}
+                            </Button>
+                          </div>
+                        </div>
+                        {open ? (
+                          <div className="dan-inbox-detail">
+                            <TaskBrief row={row} />
+                          </div>
+                        ) : null}
+                      </li>
+                    );
+                  })}
+                </ul>
+              </div>
+            ) : null}
+          </div>
         </section>
 
         <section className="dan-card" aria-labelledby="dan-intent-title">
@@ -296,201 +529,181 @@ function Workbench() {
               </span>
               <h2 id="dan-intent-title">本期访客意图分布</h2>
             </div>
+            <span className="dan-churn" title={CHURN_MARK.hint}>
+              其中 {CHURN_MARK.percent}% {CHURN_MARK.label}
+            </span>
           </div>
           <p className="dan-path-note">
-            一人一天可以多个意图。柱长是「含此类」的人数，加总可以超过访客人数。不是实时在线，是 {PERIOD.label} 这一期。
+            按近 28 天窗口最深一级计，一人只算一个。点某一档，现象跟着切；漏斗和路径在「明细数据」里看。流失是叠加标记，不占第五档。
           </p>
-          <div className="dan-intents">
-            {mix.rows.map((item) => (
-              <article key={item.id} className="dan-intent">
-                <div className="dan-intent-top">
-                  <span className="dan-intent-name">
-                    <i style={{ background: INTENT_COLOR[item.id] }} />
-                    {intentLabel(item.id)}
-                  </span>
-                  <span className="dan-intent-n">
-                    {item.count} 人 · {item.percent}%
-                  </span>
+          <div className="dan-intents is-depth">
+            {DEPTH_INTENTS.map((item) => {
+              const on = intentId === item.id;
+              return (
+                <button
+                  key={item.id}
+                  type="button"
+                  className={`dan-intent is-btn${on ? " is-on" : ""}`}
+                  aria-pressed={on}
+                  onClick={() => setIntentId(on ? null : item.id)}
+                >
+                  <div className="dan-intent-top">
+                    <span className="dan-intent-name">
+                      <i style={{ background: item.color }} />
+                      {item.name}
+                    </span>
+                    <span className="dan-intent-n">
+                      {item.count} 人 · {item.percent}%
+                    </span>
+                  </div>
+                  <div className="dan-bar" aria-hidden="true">
+                    <span style={{ width: `${item.percent}%`, background: item.color }} />
+                  </div>
+                  <p className="dan-intent-hint">{item.meaning}</p>
+                </button>
+              );
+            })}
+          </div>
+        </section>
+
+        <section className="dan-card" aria-labelledby="dan-phen-title">
+          <div className="dan-head">
+            <div className="dan-head-l">
+              <span className="dan-ico" aria-hidden="true">
+                <UnorderedListOutlined />
+              </span>
+              <h2 id="dan-phen-title">网站访客现象</h2>
+            </div>
+            <Button type="link" onClick={() => scrollToId("dan-diagnose")}>
+              看为什么、怎么改
+            </Button>
+          </div>
+          {!site.diagnosed ? (
+            <p className="dan-path-note">该站尚未出过诊断。下面仍展示 CNC Demo 贯穿案例，便于看界面。</p>
+          ) : null}
+          <div className="dan-phenomena">
+            {phenomena.map((item) => (
+              <button
+                key={item.id}
+                type="button"
+                className="dan-phen"
+                onClick={() => scrollToId("dan-diagnose")}
+              >
+                <div className="dan-phen-top">
+                  <Tag>{item.loss}</Tag>
+                  <span className="dan-kpi-k">{item.page}</span>
                 </div>
-                <div className="dan-bar" aria-hidden="true">
-                  <span
-                    style={{
-                      width: `${item.percent}%`,
-                      background: INTENT_COLOR[item.id],
-                    }}
-                  />
-                </div>
-              </article>
+                <h3>{item.title}</h3>
+                <p>{item.stat}</p>
+              </button>
             ))}
           </div>
         </section>
 
-        <section className="dan-card" aria-labelledby="dan-path-title">
-          <div className="dan-head">
-            <div className="dan-head-l">
-              <span className="dan-ico" aria-hidden="true">
-                <ClusterOutlined />
-              </span>
-              <h2 id="dan-path-title">本期访客路径</h2>
-            </div>
-          </div>
-          <div className="funnel-embed is-antd">
-            <FunnelReviewApp variant="path" />
-          </div>
-        </section>
-
-        <section className="dan-card" aria-labelledby="dan-funnel-title">
-          <div className="dan-head">
-            <div className="dan-head-l">
-              <span className="dan-ico" aria-hidden="true">
-                <FunnelPlotOutlined />
-              </span>
-              <h2 id="dan-funnel-title">本期转化漏斗</h2>
-            </div>
-          </div>
-          <div className="funnel-embed is-antd">
-            <FunnelReviewApp variant="funnel" />
-          </div>
-        </section>
-
-        <section className="dan-card" aria-labelledby="dan-cause-title">
+        <section id="dan-diagnose" className="dan-card" aria-labelledby="dan-cause-title">
           <div className="dan-head">
             <div className="dan-head-l">
               <span className="dan-ico" aria-hidden="true">
                 <SearchOutlined />
               </span>
-              <h2 id="dan-cause-title">主要根因归类</h2>
+              <h2 id="dan-cause-title">诊断原因</h2>
             </div>
           </div>
           <p className="dan-path-note">
-            对照假设方案库逐条核对。命中的才往下出活，排除的写清为什么不下手。
+            只展示本窗口已命中的原因。同页多规则已合并；轴二优先出主因，轴一、秒退作佐证。
           </p>
           <div className="dan-causes">
-            {CAUSES.map((item) => (
+            {ROOT_CAUSES.hits.map((item) => (
               <article
                 key={item.key}
-                className={`dan-cause${item.state === "命中" ? " is-hot" : ""}`}
+                className={`dan-cause${item.role === "主因" ? " is-hot" : ""}`}
               >
                 <div className="dan-cause-top">
-                  <Tag color={item.state === "命中" ? "error" : "default"}>{item.state}</Tag>
+                  <Tag color={item.role === "主因" ? "error" : "default"}>{item.role}</Tag>
                   <span className="dan-kpi-k">{item.key}</span>
+                  <span className="dan-kpi-k">{item.axis}</span>
                   <span className="dan-kpi-k">{item.layer}</span>
-                  {item.page ? <span className="dan-kpi-k">{item.page}</span> : null}
                 </div>
-                <h3>{item.hypothesis}</h3>
+                <h3>{item.title}</h3>
                 <p>{item.evidence}</p>
+                <p className="dan-cause-page">{item.page}</p>
               </article>
             ))}
           </div>
         </section>
-
-        <section className="dan-card" aria-labelledby="dan-act-title">
-          <div className="dan-head">
-            <div className="dan-head-l">
-              <span className="dan-ico" aria-hidden="true">
-                <SolutionOutlined />
-              </span>
-              <h2 id="dan-act-title">改进建议</h2>
-            </div>
+          </>
+        ) : (
+          <div className="dan-data-tab">
+            {intentId ? (
+              <p className="dan-path-note dan-data-filter">
+                当前按「{DEPTH_INTENTS.find((item) => item.id === intentId)?.name ?? ""}」切开。切回「智能体分析」可改档。
+              </p>
+            ) : null}
+            <section className="dan-card">
+              <div className="dan-head">
+                <div className="dan-head-l">
+                  <span className="dan-ico" aria-hidden="true">
+                    <FunnelPlotOutlined />
+                  </span>
+                  <h2>转化漏斗</h2>
+                </div>
+              </div>
+              <p className="dan-path-note">
+                用来讲流失点。按渠道或访客意图切开，不驱动诊断。点某一档意图，能看到这类人主要看了哪些页、漏斗掉在哪一层。
+              </p>
+              <div className="funnel-embed is-antd">
+                <FunnelReviewApp
+                  variant="funnel"
+                  intentId={intentId}
+                  onIntent={setIntentId}
+                />
+              </div>
+            </section>
+            <section id="dan-search-terms" className="dan-card">
+              <div className="dan-head">
+                <div className="dan-head-l">
+                  <span className="dan-ico" aria-hidden="true">
+                    <SearchOutlined />
+                  </span>
+                  <h2>访客搜索词</h2>
+                </div>
+              </div>
+              <p className="dan-path-note">
+                主键是搜索词，按来源分开看：站内搜索、Google 自然搜索、谷歌广告。不对接到人。
+                {missingAuth.length
+                  ? "没授权的来源显示未授权，可从这里一键去授权。"
+                  : null}
+              </p>
+              <div className="funnel-embed is-antd">
+                <SearchTerms
+                  authMap={authMap}
+                  preferSource={preferSource}
+                  onAuthorize={openAuth}
+                />
+              </div>
+            </section>
+            <section className="dan-card">
+              <div className="dan-head">
+                <div className="dan-head-l">
+                  <span className="dan-ico" aria-hidden="true">
+                    <ClusterOutlined />
+                  </span>
+                  <h2>访客路径</h2>
+                </div>
+              </div>
+              <p className="dan-path-note">
+                一期按页序聚合，不展示个人。相同页面类型序列算一条。意图筛的是人，同一条页序里可以有好几档。点开链路，下方展开具体页的 Title、页面类型和 URL。人数不足 5 不出。
+              </p>
+              <div className="funnel-embed is-antd">
+                <FunnelReviewApp
+                  variant="path"
+                  intentId={intentId}
+                  onIntent={setIntentId}
+                />
+              </div>
+            </section>
           </div>
-          <p className="dan-path-note">点开一条看任务说明。参数按现网 Skill 一次写全，确认后再交接。</p>
-          <div className="dan-measures">
-            {MEASURES.map((row, index) => {
-              const state = measureState[row.key];
-              const open = openKey === row.key;
-              return (
-                <article
-                  key={row.key}
-                  className={`dan-measure${open ? " is-open" : ""}`}
-                >
-                  <button
-                    type="button"
-                    className="dan-measure-head"
-                    aria-expanded={open}
-                    onClick={() => setOpenKey(open ? null : row.key)}
-                  >
-                    <div className="dan-rank">#{index + 1}</div>
-                    <div>
-                      <div className="dan-measure-meta">
-                        <Tag color={row.priority === "P0" ? "red" : "gold"}>{row.priority}</Tag>
-                        <Tag color={row.kind === "skill" ? "orange" : "default"}>
-                          {row.kind === "skill" ? "可执行" : "仅展示"}
-                        </Tag>
-                        <Tag>{row.type}</Tag>
-                        {state === "adopted" ? <Tag color="success">已确认执行</Tag> : null}
-                      </div>
-                      <h3>{row.title}</h3>
-                      <p className="dan-kpi-h">{row.expected}</p>
-                    </div>
-                    <DownOutlined className={`dan-chevron${open ? " is-up" : ""}`} />
-                  </button>
-                  {open ? (
-                    <div className="dan-measure-body">
-                      <p className="dan-target">
-                        <b>目标对象</b>
-                        {row.targetObject}
-                      </p>
-                      <div className="dan-brief">
-                        <div className="dan-brief-k">任务说明</div>
-                        <ul>
-                          {row.taskBrief.map((line) => (
-                            <li key={line}>{line}</li>
-                          ))}
-                        </ul>
-                      </div>
-                      <div className="dan-evidence">
-                        <div className="dan-evidence-k">依据</div>
-                        <div className="dan-evidence-row">
-                          <b>现状</b>
-                          <span>{row.evidenceCard.currentValue}</span>
-                        </div>
-                        <div className="dan-evidence-row">
-                          <b>对照</b>
-                          <span>{row.evidenceCard.benchmark}</span>
-                        </div>
-                        <div className="dan-evidence-row">
-                          <b>动作</b>
-                          <span>{row.evidenceCard.action}</span>
-                        </div>
-                      </div>
-                      {row.kind === "skill" ? (
-                        <div className="dan-measure-actions">
-                          {state === "adopted" ? (
-                            <Button
-                              size="large"
-                              className="dan-btn-view"
-                              icon={<ExportOutlined />}
-                              onClick={() => openPreview(row)}
-                            >
-                              去查看
-                            </Button>
-                          ) : (
-                            <Button
-                              type="primary"
-                              size="large"
-                              loading={adoptingKey === row.key}
-                              onClick={() => adoptMeasure(row)}
-                            >
-                              {row.adoptAction === "generate_landing"
-                                ? "一键采纳并生成营销页"
-                                : "一键采纳"}
-                            </Button>
-                          )}
-                        </div>
-                      ) : null}
-                    </div>
-                  ) : null}
-                </article>
-              );
-            })}
-          </div>
-          {OBSERVING.map((item) => (
-            <div key={item.key} className="dan-observe">
-              <b>观察中 · {item.title}</b>
-              <p>{item.note}</p>
-            </div>
-          ))}
-        </section>
+        )}
       </div>
     </div>
   );

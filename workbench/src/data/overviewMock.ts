@@ -2,9 +2,6 @@
 
 export const overviewPeriod = {
   label: '2026-08-04 ~ 2026-08-31 · 28 天',
-  baseline: '对比过去 4 周同期',
-  nextRun: '10月1日 09:00',
-  nextTask: '月度指标体检',
 }
 
 export const overviewKpis = [
