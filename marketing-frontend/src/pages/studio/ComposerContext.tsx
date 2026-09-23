@@ -13,7 +13,7 @@ export default function ComposerContext({draft,onOpen}:{draft:Draft;onOpen:(targ
  ...products.map(p=>({target:'products' as const,label:p.name,detail:`关联产品：${p.name}`})),
  ...(documents.length?[{target:'documents' as const,label:`资料：${documents.length} 个文档`,detail:documents.map(a=>a.name).join('、')}]:[]),
  ...(images.length?[{target:'images' as const,label:`图片：${images.length} 张`,detail:images.map(a=>a.name).join('、')}]:[]),
- ...(draft.visitorIntent?[{target:'settings' as const,label:'已同步访客意图',detail:draft.visitorIntent.root}]:[])
+ ...(draft.visitorIntent?[{target:'settings' as const,label:`意图：${draft.visitorIntent.root}`,detail:`${draft.visitorIntent.stage} · ${draft.visitorIntent.persona}`}]:[])
  ];
  return <section className="composer-context" aria-label="当前生效配置" aria-live="polite"><span className="composer-context-label">当前生效</span><div>{items.map(item=><Button key={`${item.target}-${item.label}`} size="sm" variant="ghost" title={item.detail} onClick={()=>onOpen(item.target)}><Check size={11}/><span>{item.label}</span></Button>)}</div></section>
 }
