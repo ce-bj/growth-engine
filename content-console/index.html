@@ -33,31 +33,17 @@ button{font-family:inherit;cursor:pointer;border:none;background:none}
 ::-webkit-scrollbar-track{background:transparent}
 
 .shell{display:flex;height:100vh}
-.sidenav{width:210px;flex:0 0 210px;background:#0f1729;color:#cbd5e1;display:flex;flex-direction:column;padding:18px 12px}
-.sidenav .logo{display:flex;align-items:center;gap:9px;color:#fff;font-weight:700;font-size:15px;padding:4px 8px 16px}
-.sidenav .logo .d{width:26px;height:26px;border-radius:8px;background:linear-gradient(135deg,#6366f1,#818cf8);display:grid;place-items:center;font-size:14px}
-.navgroup{font-size:11px;letter-spacing:.08em;color:#64748b;padding:14px 10px 6px}
-.navitem{display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:9px;color:#cbd5e1;font-size:13.5px;margin-bottom:2px;transition:.18s;cursor:pointer}
-.navitem:hover{background:rgba(255,255,255,.06);color:#fff}
-.navitem.active{background:linear-gradient(90deg,rgba(99,102,241,.28),rgba(99,102,241,.05));color:#fff;box-shadow:inset 2px 0 0 var(--ai-1)}
+.sidenav{width:210px;flex:0 0 210px;background:#ffffff;color:#334155;display:flex;flex-direction:column;padding:18px 12px;border-right:1px solid var(--line)}
+.sidenav .logo{display:flex;align-items:center;gap:9px;color:var(--txt);font-weight:700;font-size:15px;padding:4px 8px 16px}
+.sidenav .logo .d{width:26px;height:26px;border-radius:8px;background:linear-gradient(158deg,#34adbb 0%,#448bc9 100%);display:grid;place-items:center;font-size:14px;box-shadow:0 3px 10px rgba(52,173,187,.35)}
+.navgroup{font-size:11px;letter-spacing:.08em;color:#94a3b8;padding:14px 10px 6px}
+.navitem{display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:9px;color:#334155;font-size:13.5px;margin-bottom:2px;transition:.18s;cursor:pointer}
+.navitem:hover{background:#f1f5f9;color:var(--txt)}
+.navitem.active{background:linear-gradient(90deg,rgba(52,173,187,.14),rgba(68,139,201,.04));color:#2B6F8F;font-weight:600;box-shadow:inset 2px 0 0 var(--ai-1)}
 .navitem .ic{width:18px;text-align:center;opacity:.85}
 .navitem.badge::after{content:attr(data-badge);margin-left:auto;background:var(--ai-2);color:#fff;font-size:11px;font-weight:700;padding:1px 7px;border-radius:9px}
 
 .main{flex:1;display:flex;flex-direction:column;min-width:0}
-.topbar{height:58px;flex:0 0 58px;background:var(--panel);border-bottom:1px solid var(--line);display:flex;align-items:center;padding:0 22px;gap:14px}
-.crumbs{font-size:13px;color:var(--txt-3)}
-.crumbs b{color:var(--txt-2)}
-.crumbs .ai{color:var(--ai-1);font-weight:600}
-.topbar .sp{flex:1}
-.agent-switch{display:flex;align-items:center;gap:9px;background:linear-gradient(135deg,rgba(99,102,241,.10),rgba(6,182,212,.08));border:1px solid rgba(99,102,241,.25);padding:6px 12px;border-radius:30px}
-.agent-switch .dot{width:9px;height:9px;border-radius:50%;background:var(--ok);box-shadow:0 0 0 4px rgba(16,185,129,.18);animation:pulse 2s infinite}
-@keyframes pulse{0%,100%{box-shadow:0 0 0 4px rgba(16,185,129,.18)}50%{box-shadow:0 0 0 7px rgba(16,185,129,.04)}}
-.agent-switch .lab{font-size:12.5px;color:var(--txt-2);font-weight:600}
-.toggle{width:42px;height:23px;border-radius:20px;background:var(--ai-grad);position:relative;transition:.25s;flex:0 0 auto}
-.toggle::after{content:"";position:absolute;top:2.5px;left:21px;width:18px;height:18px;border-radius:50%;background:#fff;box-shadow:var(--sh-sm);transition:.25s}
-.toggle.off{background:#cbd5e1}
-.toggle.off::after{left:3px}
-
 .content{flex:1;overflow-y:auto;padding:0 30px 40px;background:var(--bg)}
 .view{display:none;max-width:1120px;margin:0 auto;padding-top:22px;animation:fade .35s var(--ease)}
 .view.on{display:block}
@@ -435,7 +421,6 @@ button{font-family:inherit;cursor:pointer;border:none;background:none}
 
 html[data-embed] .sidenav{display:none}
 html[data-embed] .shell{height:100%}
-html[data-embed] .topbar .crumbs{display:none}
 </style>
 </head>
 <body>
@@ -456,16 +441,6 @@ if (new URLSearchParams(location.search).has('embed')) {
   </aside>
 
   <div class="main">
-    <div class="topbar">
-      <div class="crumbs">数字门户 / <b>AI 内容运营</b> / <span class="ai" id="crumbNow">整站巡检</span></div>
-      <div class="sp"></div>
-      <div class="agent-switch">
-        <span class="dot" id="swDot"></span>
-        <span class="lab">智能体</span>
-        <div class="toggle" id="agentToggle" title="总开关：开启即自主运行"></div>
-      </div>
-    </div>
-
     <div class="content">
       <!-- ① 整站巡检（一次性，巡检站点已有的内容文章） -->
       <section class="view on" id="view-audit">
@@ -904,7 +879,6 @@ function go(v){
   document.querySelectorAll('.sidenav .navitem').forEach(n=>n.classList.remove('active'));
   const navMap={audit:'navAudit',dashboard:'navDash',calendar:'navCal',settings:'navSet'};
   if(navMap[v]) document.getElementById(navMap[v]).classList.add('active');
-  document.getElementById('crumbNow').textContent = {audit:'整站巡检',dashboard:'运营看板',calendar:'内容中心',settings:'站点设置'}[v]||'';
    if(v==='audit') renderAudit();
   if(v==='dashboard') renderDashboard();
   if(v==='calendar') renderCalendar();
@@ -1855,14 +1829,6 @@ function closeConfirm(ok){
   const cb=CF_CB; CF_CB=null;
   if(ok && cb) cb();
 }
-
-document.getElementById('agentToggle').addEventListener('click',function(){
-  const off=this.classList.toggle('off');
-  const d=document.getElementById('swDot');
-  d.style.background=off?'#94a3b8':'var(--ok)';
-  d.style.boxShadow=off?'none':'0 0 0 4px rgba(16,185,129,.18)';
-  flashToast(off?'智能体已暂停。':'智能体已恢复自主运行。');
-});
 
 /* ===================== 初始化 ===================== */
 renderAudit();
