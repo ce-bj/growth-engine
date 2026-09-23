@@ -125,9 +125,9 @@ export function ScanProgressView() {
           <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} className="scan-ring">
             <defs>
               <linearGradient id="scanRingGrad" x1="0" y1="0" x2="1" y2="1">
-                <stop offset="0%" stopColor="#a855f7" />
+                <stop offset="0%" stopColor="#818cf8" />
                 <stop offset="50%" stopColor="#6366f1" />
-                <stop offset="100%" stopColor="#06b6d4" />
+                <stop offset="100%" stopColor="#4338ca" />
               </linearGradient>
             </defs>
             <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke="#eef0f7" strokeWidth={stroke} />

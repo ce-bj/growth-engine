@@ -372,7 +372,7 @@ const ARTICLE_TYPE_META = {
   blog: { label: '博客', color: '#6366f1', bg: '#eef2ff' },
   case: { label: '案例', color: '#22c55e', bg: '#dcfce7' },
   insight: { label: '洞察', color: '#f59e0b', bg: '#fef3c7' },
-  guide: { label: '指南', color: '#3b82f6', bg: '#dbeafe' },
+  guide: { label: '指南', color: '#6366f1', bg: '#e0e7ff' },
 }
 
 function LandingPagesTable({ pages, showAll = false }: { pages: LandingPage[]; showAll?: boolean }) {
@@ -617,9 +617,9 @@ export function DashboardView() {
   ]
 
   const CHANNEL_COLORS: Record<string, string> = {
-    '广告投放': '#3b82f6',
+    '广告投放': '#6366f1',
     '社交媒体': '#22c55e',
-    '全球SEO': '#a855f7',
+    '全球SEO': '#4338ca',
   '自然收录': '#14b8a6',
     '直接访问': '#f59e0b',
     '外链': '#ef4444',
@@ -809,7 +809,7 @@ export function DashboardView() {
             </div>
           </div>
           <div className="kpi-card">
-            <div className="kpi-card__icon" style={{ background: 'rgba(59, 130, 246, 0.1)', color: '#3b82f6' }}>👁</div>
+            <div className="kpi-card__icon" style={{ background: 'rgba(99, 102, 241, 0.1)', color: '#6366f1' }}>👁</div>
             <div className="kpi-card__body">
               <div className="kpi-card__label">UV</div>
               <div className="kpi-card__value">{totalUV.toLocaleString()}</div>
@@ -817,7 +817,7 @@ export function DashboardView() {
             </div>
           </div>
           <div className="kpi-card">
-            <div className="kpi-card__icon" style={{ background: 'rgba(59, 130, 246, 0.1)', color: '#3b82f6' }}>📄</div>
+            <div className="kpi-card__icon" style={{ background: 'rgba(99, 102, 241, 0.1)', color: '#6366f1' }}>📄</div>
             <div className="kpi-card__body">
               <div className="kpi-card__label">PV</div>
               <div className="kpi-card__value">{(totalUV * 3.0).toLocaleString()}</div>
@@ -860,9 +860,9 @@ export function DashboardView() {
                 labelStyle={{ color: '#e2e8f0' }}
               />
               <Legend wrapperStyle={{ fontSize: 12 }} />
-              <Line type="monotone" dataKey="广告投放" stroke="#3b82f6" strokeWidth={2} dot={{ r: 3 }} />
+              <Line type="monotone" dataKey="广告投放" stroke="#6366f1" strokeWidth={2} dot={{ r: 3 }} />
               <Line type="monotone" dataKey="社交媒体" stroke="#22c55e" strokeWidth={2} dot={{ r: 3 }} />
-              <Line type="monotone" dataKey="全球SEO" stroke="#a855f7" strokeWidth={2} dot={{ r: 3 }} />
+              <Line type="monotone" dataKey="全球SEO" stroke="#4338ca" strokeWidth={2} dot={{ r: 3 }} />
               <Line type="monotone" dataKey="自然收录" stroke="#14b8a6" strokeWidth={2} dot={{ r: 3 }} />
               <Line type="monotone" dataKey="直接访问" stroke="#f59e0b" strokeWidth={2} dot={{ r: 3 }} />
               <Line type="monotone" dataKey="外链" stroke="#ef4444" strokeWidth={2} dot={{ r: 3 }} />
@@ -909,7 +909,7 @@ export function DashboardView() {
               <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
               <XAxis dataKey="day" stroke="#94a3b8" fontSize={12} />
               <YAxis yAxisId="left" stroke="#22c55e" fontSize={12} tickFormatter={(v) => `${v}%`} />
-              <YAxis yAxisId="right" orientation="right" stroke="#3b82f6" fontSize={12} />
+              <YAxis yAxisId="right" orientation="right" stroke="#6366f1" fontSize={12} />
               <Tooltip
                 contentStyle={{ background: '#1e293b', border: '1px solid #334155', borderRadius: 8 }}
                 labelStyle={{ color: '#e2e8f0' }}
@@ -920,7 +920,7 @@ export function DashboardView() {
               />
               <Legend wrapperStyle={{ fontSize: 12 }} />
               <Line yAxisId="left" type="monotone" dataKey="留资率" stroke="#22c55e" strokeWidth={3} dot={{ r: 4 }} activeDot={{ r: 6 }} />
-              <Line yAxisId="right" type="monotone" dataKey="留资数" stroke="#3b82f6" strokeWidth={2} strokeDasharray="4 2" dot={{ r: 3 }} />
+              <Line yAxisId="right" type="monotone" dataKey="留资数" stroke="#6366f1" strokeWidth={2} strokeDasharray="4 2" dot={{ r: 3 }} />
             </LineChart>
           </ResponsiveContainer>
         </section>
@@ -1107,7 +1107,7 @@ export function DashboardView() {
                       <div className="rank-item__bar-wrap">
                         <div
                           className="rank-item__bar"
-                          style={{ width: `${widthPct}%`, background: isZero ? 'var(--color-danger)' : 'linear-gradient(90deg, #22c55e, #3b82f6)' }}
+                          style={{ width: `${widthPct}%`, background: isZero ? 'var(--color-danger)' : 'linear-gradient(90deg, #22c55e, #6366f1)' }}
                         />
                       </div>
                     </div>

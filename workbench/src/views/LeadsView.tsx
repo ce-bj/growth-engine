@@ -31,9 +31,9 @@ const LEAD_STATUS_LABELS: Record<LeadStatus, string> = {
 
 const STATUS_COLORS: Record<LeadStatus, string> = {
   pending: '#f59e0b',
-  contacted: '#3b82f6',
+  contacted: '#6366f1',
   qualified: '#10b981',
-  converted: '#8b5cf6',
+  converted: '#4338ca',
   invalid: '#9ca3af',
 }
 

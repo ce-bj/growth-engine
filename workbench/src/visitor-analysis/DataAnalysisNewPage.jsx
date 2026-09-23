@@ -79,9 +79,9 @@ const THEME = {
 const INTENT_COLOR = {
   product: "#e85d04",
   spec: "#0f766e",
-  supplier: "#1d4ed8",
+  supplier: "#4338ca",
   quote: "#be123c",
-  content: "#7c3aed",
+  content: "#818cf8",
   unclear: "#78716c",
 };
 

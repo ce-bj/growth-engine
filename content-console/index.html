@@ -15,7 +15,6 @@
   --ok:#10b981; --ok-bg:#ecfdf5;
   --warn:#f59e0b; --warn-bg:#fffbeb;
   --danger:#ef4444; --danger-bg:#fef2f2;
-  --info:#6366f1;
   --sh-sm:0 1px 2px rgba(15,23,42,.05);
   --sh-md:0 6px 18px -6px rgba(15,23,42,.12);
   --sh-lg:0 18px 40px -16px rgba(99,102,241,.22);
@@ -33,13 +32,12 @@ button{font-family:inherit;cursor:pointer;border:none;background:none}
 ::-webkit-scrollbar-thumb{background:#cbd5e1;border-radius:8px}
 ::-webkit-scrollbar-track{background:transparent}
 
-/* ===== 外壳 ===== */
 .shell{display:flex;height:100vh}
 .sidenav{width:210px;flex:0 0 210px;background:#0f1729;color:#cbd5e1;display:flex;flex-direction:column;padding:18px 12px}
 .sidenav .logo{display:flex;align-items:center;gap:9px;color:#fff;font-weight:700;font-size:15px;padding:4px 8px 16px}
 .sidenav .logo .d{width:26px;height:26px;border-radius:8px;background:linear-gradient(135deg,#6366f1,#818cf8);display:grid;place-items:center;font-size:14px}
 .navgroup{font-size:11px;letter-spacing:.08em;color:#64748b;padding:14px 10px 6px}
-.navitem{display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:9px;color:#cbd5e1;font-size:13.5px;margin-bottom:2px;transition:.18s}
+.navitem{display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:9px;color:#cbd5e1;font-size:13.5px;margin-bottom:2px;transition:.18s;cursor:pointer}
 .navitem:hover{background:rgba(255,255,255,.06);color:#fff}
 .navitem.active{background:linear-gradient(90deg,rgba(99,102,241,.28),rgba(99,102,241,.05));color:#fff;box-shadow:inset 2px 0 0 var(--ai-1)}
 .navitem .ic{width:18px;text-align:center;opacity:.85}
@@ -51,9 +49,6 @@ button{font-family:inherit;cursor:pointer;border:none;background:none}
 .crumbs b{color:var(--txt-2)}
 .crumbs .ai{color:var(--ai-1);font-weight:600}
 .topbar .sp{flex:1}
-.langs{display:flex;gap:4px;background:#f1f5f9;border-radius:9px;padding:3px}
-.langs span{padding:4px 9px;border-radius:7px;font-size:12px;color:var(--txt-2);cursor:pointer}
-.langs span.on{background:#fff;color:var(--brand-600);font-weight:600;box-shadow:var(--sh-sm)}
 .agent-switch{display:flex;align-items:center;gap:9px;background:linear-gradient(135deg,rgba(99,102,241,.10),rgba(6,182,212,.08));border:1px solid rgba(99,102,241,.25);padding:6px 12px;border-radius:30px}
 .agent-switch .dot{width:9px;height:9px;border-radius:50%;background:var(--ok);box-shadow:0 0 0 4px rgba(16,185,129,.18);animation:pulse 2s infinite}
 @keyframes pulse{0%,100%{box-shadow:0 0 0 4px rgba(16,185,129,.18)}50%{box-shadow:0 0 0 7px rgba(16,185,129,.04)}}
@@ -63,115 +58,171 @@ button{font-family:inherit;cursor:pointer;border:none;background:none}
 .toggle.off{background:#cbd5e1}
 .toggle.off::after{left:3px}
 
-/* ===== 智能体子导航 ===== */
-.subnav{display:flex;gap:4px;padding:14px 30px 0;background:var(--bg)}
-.subnav .tab{padding:9px 16px;font-size:13.5px;font-weight:600;color:var(--txt-2);border-radius:10px 10px 0 0;position:relative;cursor:pointer;transition:.18s}
-.subnav .tab:hover{color:var(--txt)}
-.subnav .tab.on{color:var(--ai-1);background:var(--panel)}
-.subnav .tab.on::after{content:"";position:absolute;left:16px;right:16px;bottom:-1px;height:2px;background:var(--ai-1);border-radius:2px}
-.subnav .tab .bd{background:var(--warn);color:#fff;font-size:10px;padding:0 6px;border-radius:8px;margin-left:6px;vertical-align:middle}
-
 .content{flex:1;overflow-y:auto;padding:0 30px 40px;background:var(--bg)}
 .view{display:none;max-width:1120px;margin:0 auto;padding-top:22px;animation:fade .35s var(--ease)}
 .view.on{display:block}
 @keyframes fade{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
-.sheet{background:transparent}
 
-/* ===== 今天 ===== */
-.voice{display:flex;align-items:flex-start;gap:14px;background:linear-gradient(135deg,rgba(99,102,241,.07),rgba(6,182,212,.05));border:1px solid rgba(99,102,241,.18);border-radius:var(--r-lg);padding:18px 20px;margin-bottom:22px;position:relative;overflow:hidden;transition:transform .2s}
-.voice::before{content:"";position:absolute;right:-40px;top:-40px;width:160px;height:160px;background:radial-gradient(circle,rgba(99,102,241,.12),transparent 70%)}
-.voice .av{width:44px;height:44px;border-radius:13px;background:var(--ai-grad);display:grid;place-items:center;color:#fff;font-size:20px;flex:0 0 auto;box-shadow:var(--sh-ai)}
-.voice .bubble{flex:1;min-width:0}
-.voice .who{font-size:12px;color:var(--ai-1);font-weight:700;letter-spacing:.03em;margin-bottom:3px}
-.voice .msg{font-size:15px;color:var(--txt);font-weight:500}
-.voice .msg b{color:var(--ai-1)}
-
-.kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:26px}
-.kpi{background:var(--panel);border:1px solid var(--line);border-radius:var(--r-lg);padding:18px 20px;box-shadow:var(--sh-sm);transition:.2s}
-.kpi:hover{box-shadow:var(--sh-md);transform:translateY(-2px)}
-.kpi .n{font-size:30px;font-weight:700;font-family:var(--mono);line-height:1;letter-spacing:-.02em}
-.kpi .n.warn{color:var(--warn)} .kpi .n.ok{color:var(--ok)} .kpi .n.ai{color:var(--ai-1)}
-.kpi .l{font-size:12.5px;color:var(--txt-2);margin-top:8px}
-.kpi .s{font-size:11.5px;color:var(--txt-3);margin-top:3px}
-
-.section-h{display:flex;align-items:center;gap:10px;margin:4px 0 14px}
-.section-h .t{font-size:15px;font-weight:700}
-.section-h .cnt{background:var(--warn-bg);color:var(--warn);font-size:12px;font-weight:700;padding:2px 9px;border-radius:9px}
-.section-h .hint{font-size:12px;color:var(--txt-3);margin-left:auto}
-.review{display:flex;flex-direction:column;gap:12px}
-.rv{display:flex;align-items:center;gap:14px;background:var(--panel);border:1px solid var(--line);border-left:4px solid var(--warn);border-radius:var(--r-md);padding:14px 18px;box-shadow:var(--sh-sm);transition:.2s}
-.rv:hover{box-shadow:var(--sh-md)}
-.rv .meta{flex:1;min-width:0}
-.rv .ti{font-size:14.5px;font-weight:600}
-.rv .sub{font-size:12px;color:var(--txt-2);margin-top:3px}
-.rv .score{font-family:var(--mono);font-weight:700;color:var(--ok);font-size:15px;background:var(--ok-bg);padding:3px 10px;border-radius:8px;white-space:nowrap}
-.rv .acts{display:flex;gap:8px;flex:0 0 auto}
-.btn{border-radius:10px;padding:9px 15px;font-size:13px;font-weight:600;transition:.18s}
-.btn.ghost{background:#f1f5f9;color:var(--txt-2)} .btn.ghost:hover{background:#e8edf5;color:var(--txt)}
-.btn.approve{background:var(--ai-grad);color:#fff;box-shadow:var(--sh-ai)} .btn.approve:hover{transform:translateY(-1px)}
-.btn.reject{background:var(--danger-bg);color:var(--danger)} .btn.reject:hover{background:#fee2e2}
-.btn.line{background:#fff;border:1px solid var(--line);color:var(--txt-2)} .btn.line:hover{border-color:var(--brand-400);color:var(--brand-600)}
-
-.collapse{margin-top:28px;border:1px solid var(--line);border-radius:var(--r-md);background:var(--panel);overflow:hidden}
-.collapse > summary{list-style:none;cursor:pointer;padding:14px 18px;display:flex;align-items:center;gap:10px;font-size:13.5px;font-weight:600;color:var(--txt-2)}
-.collapse > summary::-webkit-details-marker{display:none}
-.collapse > summary .ar{margin-left:auto;color:var(--txt-3);transition:.2s}
-.collapse[open] > summary .ar{transform:rotate(90deg)}
-.tl{padding:4px 18px 16px}
-.tl .row{display:flex;gap:12px;padding:9px 0;border-bottom:1px dashed var(--line-2)}
-.tl .row:last-child{border-bottom:none}
-.tl .tk{width:8px;height:8px;border-radius:50%;background:var(--ai-1);margin-top:7px;flex:0 0 auto}
-.tl .tk.ok{background:var(--ok)} .tl .tk.ai{background:var(--ai-3)}
-.tl .tx{font-size:13px;color:var(--txt-2)}
-.tl .tx b{color:var(--txt)}
-.tl .tm{font-size:11px;color:var(--txt-3);font-family:var(--mono);margin-top:2px}
-.foot-hint{margin-top:22px;text-align:center;font-size:12px;color:var(--txt-3)}
-
-/* ===== 内容 ===== */
-.subbar{font-size:13px;color:var(--txt-2);margin-bottom:16px}
-.clist{display:grid;grid-template-columns:repeat(2,1fr);gap:14px}
-.card{background:var(--panel);border:1px solid var(--line);border-radius:var(--r-md);padding:16px 18px;box-shadow:var(--sh-sm);transition:.2s}
-.card:hover{box-shadow:var(--sh-md);transform:translateY(-2px);border-color:rgba(99,102,241,.35)}
-.card .top{display:flex;align-items:center;gap:8px;margin-bottom:6px}
-.card .st{font-size:11px;font-weight:700;padding:2px 8px;border-radius:7px}
-.st.pub{background:var(--ok-bg);color:var(--ok)} .st.rev{background:var(--warn-bg);color:var(--warn)}
-.st.auto{background:var(--ai-grad);color:#fff} .st.run{background:#eef2ff;color:var(--brand-600)}
-.card .ti{font-size:14.5px;font-weight:600;line-height:1.4}
-.card .desc{font-size:12.5px;color:var(--txt-2);margin-top:7px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
-.card .ft{display:flex;align-items:center;gap:14px;margin-top:11px;font-size:12px;color:var(--txt-3);border-top:1px solid var(--line-2);padding-top:9px}
-.card .ft b{color:var(--txt-2);font-family:var(--mono)}
-.card .acts2{display:flex;gap:8px;margin-top:12px}
-
-/* ===== 任务（日历） ===== */
-.plan-intro{font-size:13px;color:var(--txt-2);margin-bottom:14px}
-.plan-intro b{color:var(--ai-1)}
-.plan-head{display:flex;align-items:center;gap:12px;margin-bottom:6px}
-.plan-head .h1{font-size:18px;font-weight:700}
-.plan-head .h1 small{font-size:12.5px;font-weight:400;color:var(--txt-3);margin-left:8px}
-.btn-new{margin-left:auto;background:var(--ai-grad);color:#fff;font-weight:600;padding:10px 16px;border-radius:11px;box-shadow:var(--sh-ai);font-size:13px;transition:.18s}
+.page-head{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin-bottom:18px}
+.page-head .h1{font-size:20px;font-weight:700;line-height:1.3}
+.page-head .h1 small{display:block;font-size:12.5px;font-weight:400;color:var(--txt-3);margin-top:4px}
+.btn-new{background:var(--ai-grad);color:#fff;font-weight:600;padding:10px 16px;border-radius:11px;box-shadow:var(--sh-ai);font-size:13px;transition:.18s;white-space:nowrap}
 .btn-new:hover{transform:translateY(-1px)}
-.chip-task.man{background:#dcfce7;color:#16a34a}
-.plan-bar{display:flex;align-items:center;gap:12px;margin-bottom:14px;flex-wrap:wrap}
-.seg{display:flex;background:#f1f5f9;border-radius:10px;padding:3px}
-.seg span{padding:6px 13px;border-radius:8px;font-size:12.5px;color:var(--txt-2);cursor:pointer;transition:.15s}
-.seg span.on{background:#fff;color:var(--ai-1);font-weight:600;box-shadow:var(--sh-sm)}
-.legend{display:flex;gap:14px;font-size:12px;color:var(--txt-2);margin-left:auto}
-.legend i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:5px;vertical-align:middle}
-.week{display:grid;grid-template-columns:repeat(7,1fr);gap:10px}
-.day{background:var(--panel);border:1px solid var(--line);border-radius:var(--r-md);padding:10px;min-height:190px;display:flex;flex-direction:column}
-.day.today{border-color:var(--ai-1);box-shadow:var(--sh-ai)}
-.day .dh{font-size:12px;color:var(--txt-2);font-weight:700;margin-bottom:8px;display:flex;justify-content:space-between;align-items:center}
-.day .dh .dt{font-family:var(--mono);font-size:11px;color:var(--txt-3);font-weight:400}
-.day.today .dh .dname{color:var(--ai-1)}
-.chip-task{padding:6px 8px;border-radius:8px;font-size:11.5px;margin-bottom:6px;line-height:1.35;transition:.15s}
-.chip-task.auto{background:#eef2ff;color:var(--brand-600)}
-.chip-task.sch{background:#eef2ff;color:#6366f1}
-.chip-task.rev{background:var(--warn-bg);color:var(--warn)}
-.chip-task .nt{display:block;font-size:10.5px;opacity:.8;margin-top:2px}
-.plan-foot{margin-top:16px;font-size:12px;color:var(--txt-3);background:var(--panel);border:1px dashed var(--line);border-radius:var(--r-md);padding:13px 16px}
-.plan-foot b{color:var(--txt-2)}
 
-/* ===== 设置（政策级） ===== */
+/* 巡检 */
+.audit-hero{background:var(--panel);border:1px solid var(--line);border-radius:var(--r-lg);padding:26px 28px;box-shadow:var(--sh-sm);margin-bottom:18px}
+.audit-hero h2{font-size:18px;font-weight:700;margin-bottom:6px}
+.audit-hero .sub{font-size:13px;color:var(--txt-2);line-height:1.7;max-width:720px}
+.audit-result-list{display:flex;flex-direction:column;gap:10px;margin-top:16px}
+.audit-item{display:flex;align-items:center;gap:12px;padding:13px 16px;border:1px solid var(--line);border-radius:12px;background:var(--panel-2);font-size:13px}
+.audit-item .st-ic{width:24px;height:24px;border-radius:8px;display:grid;place-items:center;font-size:12px;flex-shrink:0;font-weight:700}
+.audit-item.issue{border-color:#fecaca;background:#fff5f5}
+.audit-item.issue .st-ic{background:#fee2e2;color:var(--danger)}
+.audit-item.pass{border-color:#a7f3d0;background:#f0fdf4}
+.audit-item.pass .st-ic{background:#d1fae5;color:var(--ok)}
+.audit-item .ai-body{flex:1;min-width:0}
+.audit-item .ai-body b{display:block;font-size:13.5px}
+.audit-item .ai-body span{font-size:12px;color:var(--txt-2)}
+.audit-item .ai-tag{font-size:11px;font-weight:700;padding:3px 10px;border-radius:8px;white-space:nowrap}
+.ai-tag.mod{background:var(--warn-bg);color:#92400e}
+.ai-tag.pub{background:var(--ok-bg);color:#065f46}
+.ai-tag.fixing{background:var(--brand-50);color:var(--brand-600)}
+.audit-item.kb-block{border-color:var(--warn-bg);background:#fffbeb}
+.audit-item.kb-block .st-ic{background:#fef3c7;color:var(--warn)}
+.kb-hint{display:block;margin-top:5px;color:var(--warn);font-size:12.5px;line-height:1.65}
+.kb-note{margin-top:12px;font-size:13px;color:var(--txt-2)}
+.audit-item .acts2{display:flex;gap:8px;flex-shrink:0}
+.spinner{width:14px;height:14px;border:2px solid var(--line);border-top-color:var(--ai-1);border-radius:50%;animation:spin 1s linear infinite;flex-shrink:0}
+@keyframes spin{to{transform:rotate(360deg)}}
+/* 炫酷巡检舞台 */
+.scan-stage{position:relative;height:420px;display:grid;place-items:center;background:radial-gradient(circle at 50% 38%,rgba(99,102,241,.12),transparent 62%);border:1px solid var(--line);border-radius:var(--r-lg);overflow:hidden;box-shadow:var(--sh-md)}
+.scan-stage::before{content:"";position:absolute;inset:0;background:linear-gradient(transparent 95%,rgba(99,102,241,.10) 100%);background-size:100% 28px;animation:scanMove 6s linear infinite;opacity:.55}
+@keyframes scanMove{from{background-position:0 0}to{background-position:0 28px}}
+.scan-orb{position:relative;width:184px;height:184px}
+.scan-orb .ring{position:absolute;inset:0;border-radius:50%;border:2px solid transparent}
+.scan-orb .ring.r1{animation:spin 3.4s linear infinite;border-top-color:var(--ai-1);border-right-color:rgba(99,102,241,.25)}
+.scan-orb .ring.r2{inset:18px;animation:spin 2.3s linear infinite reverse;border-bottom-color:var(--ai-2);border-left-color:rgba(129,140,248,.25)}
+.scan-orb .ring.r3{inset:38px;animation:spin 4.6s linear infinite;border-top-color:var(--ai-3);opacity:.55}
+.scan-orb .pulse{position:absolute;inset:-6px;border-radius:50%;border:1px solid rgba(99,102,241,.45);animation:pulseRing 2.2s ease-out infinite}
+@keyframes pulseRing{0%{transform:scale(.82);opacity:.75}100%{transform:scale(1.45);opacity:0}}
+.scan-orb .core{position:absolute;inset:60px;border-radius:50%;background:var(--ai-grad);box-shadow:0 0 34px rgba(99,102,241,.65);display:grid;place-items:center;color:#fff;font-size:13px;font-weight:700;letter-spacing:.05em}
+.scan-cap{position:absolute;left:24px;right:24px;bottom:74px;text-align:center;font-size:15px;color:var(--txt-2);min-height:22px;transition:opacity .38s var(--ease);line-height:1.5}
+.scan-bar{position:absolute;left:14%;right:14%;bottom:42px;height:5px;border-radius:6px;background:var(--line);overflow:hidden}
+.scan-bar i{display:block;height:100%;width:0;border-radius:6px;background:var(--ai-grad);transition:width .5s var(--ease);box-shadow:0 0 12px rgba(99,102,241,.6)}
+.scan-hint{position:absolute;left:0;right:0;bottom:20px;text-align:center;font-size:12px;color:var(--txt-3)}
+
+/* 看板 */
+.dash-metrics{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-bottom:16px}
+.dash-metric{display:flex;align-items:center;gap:10px;padding:14px;background:var(--panel);border:1px solid var(--line);border-radius:12px}
+.dash-metric .ic{color:var(--ai-1);font-size:18px}
+.dash-metric b{display:block;font-size:17px;line-height:1.2}
+.dash-metric span{display:block;font-size:11px;color:var(--txt-2);margin-top:2px}
+.dash-metric.big{padding:18px;background:var(--panel-2)}
+.dash-metric.big b{font-size:30px}
+.dash-card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:18px;margin-bottom:16px}
+.dash-card .ch{display:flex;align-items:baseline;gap:8px;margin-bottom:14px}
+.dash-card .ch h3{margin:0;font-size:15px}
+.dash-card .ch p{margin:0;font-size:12px;color:var(--txt-3);flex:1}
+.dir-item{display:flex;align-items:center;gap:14px;padding:14px 16px;border:1px solid var(--line);border-radius:12px;margin-bottom:10px;background:var(--panel-2);transition:.15s}
+.dir-item:hover{border-color:rgba(99,102,241,.4)}
+.dir-item .ti{flex:1;min-width:0}
+.dir-item .ti b{font-size:14px;display:block}
+.dir-item .ti .meta{font-size:12px;color:var(--txt-2);margin-top:3px}
+.dir-item .ti .strat{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
+.chip{display:inline-block;background:#eef2ff;color:var(--brand-600);font-size:11px;padding:2px 8px;border-radius:6px;font-family:var(--mono)}
+.chip.type{background:var(--ok-bg);color:var(--ok)}
+.dir-item .acts{display:flex;gap:8px;flex-shrink:0}
+.dash-card.rec{border-color:rgba(99,102,241,.35);box-shadow:0 0 0 3px rgba(99,102,241,.06)}
+.rec-empty{font-size:13px;color:var(--txt-3);padding:12px 0}
+.pub-head{display:flex;align-items:center;gap:10px;margin-bottom:9px}
+.pub-head .ph-date{font-size:12.5px;color:var(--txt-3)}
+.pub-head .ph-prog{margin-left:auto;font-size:12px;color:var(--txt-2)}
+.pub-head .ph-prog b{font-family:var(--mono);font-size:13px;color:var(--txt);margin-left:1px}
+.pub-track{height:5px;border-radius:99px;background:var(--line-2);overflow:hidden;margin-bottom:16px}
+.pub-track i{display:block;height:100%;border-radius:99px;background:linear-gradient(90deg,var(--ok),#34d399);transition:width .5s}
+.pub-cols{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.pub-col-h{display:flex;align-items:center;gap:7px;font-size:12px;font-weight:700;color:var(--txt-2);margin-bottom:9px}
+.pub-col-h b{margin-left:auto;font-family:var(--mono);font-size:12.5px;color:var(--txt)}
+.dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.dot.ok{background:var(--ok);box-shadow:0 0 0 3px rgba(16,185,129,.16)}
+.dot.wait{background:var(--warn);box-shadow:0 0 0 3px rgba(245,158,11,.16)}
+.pub-card{position:relative;display:flex;gap:11px;padding:11px 13px 11px 12px;border:1px solid var(--line);border-radius:12px;background:var(--panel);margin-bottom:9px;cursor:pointer;transition:.18s}
+.pub-card:last-child{margin-bottom:0}
+.pub-card:hover{border-color:rgba(99,102,241,.45);box-shadow:var(--sh-md);transform:translateY(-1px)}
+.pub-card.todo{border-style:dashed;background:var(--panel-2)}
+.pub-card.todo:hover{border-style:solid}
+.pub-card .pc-bar{width:3px;border-radius:2px;flex-shrink:0;background:var(--brand-500)}
+.pub-card.type-blog .pc-bar{background:var(--warn)}
+.pub-card.type-news .pc-bar{background:#0ea5e9}
+.pub-card.type-case .pc-bar{background:#a21caf}
+.pub-card .pc-body{flex:1;min-width:0}
+.pub-card .pc-t{display:flex;align-items:flex-start;gap:8px;font-size:13px;font-weight:600;line-height:1.45}
+.pub-card .pc-t span{flex:1;min-width:0}
+.pub-card .pc-tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.pc-tag{font-size:11px;padding:2px 8px;border-radius:6px;white-space:nowrap;font-family:var(--mono)}
+.pc-tag.type{background:var(--brand-50);color:var(--brand-600)}
+.pub-card.type-blog .pc-tag.type{background:var(--warn-bg);color:#92400e}
+.pub-card.type-news .pc-tag.type{background:#f0f9ff;color:#0369a1}
+.pub-card.type-case .pc-tag.type{background:#fdf4ff;color:#a21caf}
+.pc-tag.strat{background:#f1f5f9;color:var(--txt-2)}
+.pc-badge{font-size:10.5px;font-weight:700;padding:2px 8px;border-radius:7px;white-space:nowrap;flex-shrink:0}
+.pc-badge.ok{background:var(--ok-bg);color:#047857}
+.pc-badge.wait{background:var(--warn-bg);color:#b45309}
+.pub-empty{font-size:12.5px;color:var(--txt-3);padding:14px;border:1px dashed var(--line);border-radius:12px;text-align:center}
+/* 生产内容策略：渐变卡片 */
+.strat-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+.strat-card{position:relative;border-radius:14px;padding:16px;overflow:hidden;border:1px solid var(--line);background:var(--panel-2)}
+.strat-card::before{content:'';position:absolute;inset:0;opacity:.15;background:radial-gradient(130px 90px at 100% 0,var(--sc1),transparent 70%)}
+.strat-card .sc-ic{font-size:24px;margin-bottom:8px}
+.strat-card .sc-name{font-size:13.5px;font-weight:700}
+.strat-card .sc-slogan{font-size:13px;font-weight:700;margin-top:6px;background:linear-gradient(90deg,var(--sc1),var(--sc2));-webkit-background-clip:text;background-clip:text;color:transparent}
+.strat-card .sc-desc{font-size:11.5px;color:var(--txt-2);line-height:1.55;margin-top:6px}
+.strat-card.sc-eeat{--sc1:#6366f1;--sc2:#a855f7}
+.strat-card.sc-geo{--sc1:#0ea5e9;--sc2:#22d3ee}
+.strat-card.sc-red{--sc1:#ef4444;--sc2:#f59e0b}
+.strat-card.sc-auth{--sc1:#10b981;--sc2:#84cc16}
+/* 抽屉 tab */
+.dtabs{display:flex;gap:6px;margin-bottom:16px;border-bottom:1px solid var(--line)}
+.dtabs .dt{padding:8px 14px;font-size:13px;font-weight:600;color:var(--txt-3);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px}
+.dtabs .dt.on{color:var(--brand-600);border-bottom-color:var(--brand-500)}
+/* 调整弹窗表单 */
+.afield{display:flex;gap:12px;align-items:flex-start;margin-bottom:14px}
+.afield label{width:76px;flex:0 0 76px;font-size:13px;font-weight:600;color:var(--txt-2);padding-top:7px}
+.afield .arow{flex:1;display:flex;flex-wrap:wrap;gap:6px;padding-top:4px;align-items:center}
+.ainput{flex:1;width:100%;box-sizing:border-box;padding:8px 10px;border:1px solid var(--line);border-radius:9px;font-size:13px;font-family:inherit;background:var(--panel);color:var(--txt)}
+.ainput:focus{outline:none;border-color:var(--brand-500)}
+.ro-tag{font-size:11px;color:var(--txt-3);background:#f1f5f9;padding:2px 8px;border-radius:6px}
+.empty-tip{text-align:center;padding:56px 20px;color:var(--txt-3);font-size:13px;background:var(--panel);border:1px dashed var(--line);border-radius:var(--r-lg)}
+.lock-tip{text-align:center;padding:70px 20px}
+.lock-tip .lk{font-size:40px;margin-bottom:14px}
+.lock-tip b{font-size:15px;color:var(--txt);display:block}
+.lock-tip p{font-size:13px;color:var(--txt-2);margin-top:8px}
+
+/* 日历 */
+.cal-toolbar{display:flex;align-items:center;gap:10px;margin-bottom:14px}
+.cal-toolbar b{font-size:15px}
+.cal-toolbar .sp{flex:1}
+.cal-toolbar .legend{display:flex;align-items:center;gap:14px;font-size:12px;color:var(--txt-2)}
+.legend .lg{display:flex;align-items:center;gap:5px}
+.legend .dot{width:9px;height:9px;border-radius:50%}
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:8px}
+.cal-dow{text-align:center;font-size:12px;font-weight:600;color:var(--txt-3);padding:6px 0}
+.cal-cell{background:var(--panel);border:1px solid var(--line);border-radius:12px;min-height:110px;padding:8px;display:flex;flex-direction:column;gap:5px;transition:.15s}
+.cal-cell:hover{border-color:rgba(99,102,241,.4);box-shadow:var(--sh-md)}
+.cal-cell.dim{background:var(--panel-2);opacity:.5}
+.cal-cell.today{border-color:var(--ai-1);box-shadow:0 0 0 2px rgba(99,102,241,.15)}
+.cal-cell .dnum{font-size:12px;font-weight:700;color:var(--txt-2)}
+.cal-cell.today .dnum{color:var(--ai-1)}
+.cal-item{font-size:11px;padding:4px 7px;border-radius:7px;background:#eef2ff;color:var(--brand-600);cursor:pointer;line-height:1.35;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;transition:.12s}
+.cal-item:hover{background:var(--brand-500);color:#fff}
+.cal-item.type-prod{background:var(--ok-bg);color:#065f46}
+.cal-item.type-blog{background:var(--warn-bg);color:#92400e}
+.cal-item.type-news{background:#f0f9ff;color:#0369a1}
+.cal-item.type-case{background:#fdf4ff;color:#a21caf}
+.cal-item.pub{opacity:.55;text-decoration:line-through}
+.cal-more{font-size:11px;color:var(--txt-3);padding-left:7px}
+
+/* 设置 */
 .setup{display:flex;flex-direction:column;gap:18px;max-width:780px;margin:0 auto}
 .set-card{background:var(--panel);border:1px solid var(--line);border-radius:var(--r-lg);padding:20px 22px;box-shadow:var(--sh-sm)}
 .set-card > .h{font-size:15px;font-weight:700;margin-bottom:4px}
@@ -183,17 +234,13 @@ button{font-family:inherit;cursor:pointer;border:none;background:none}
 .tag{display:inline-block;background:#eef2ff;color:var(--brand-600);font-size:11.5px;padding:2px 9px;border-radius:7px;margin:2px 4px 2px 0}
 .redline{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--danger);padding:4px 0}
 .redline::before{content:"⛔";font-size:13px}
-.baseline{display:flex;align-items:center;gap:10px;font-size:13px;color:var(--txt-2);margin-top:4px;flex-wrap:wrap}
-.baseline input{width:74px;padding:7px 10px;border:1px solid var(--line);border-radius:8px;font-family:var(--mono);font-size:13px}
 .src-row{display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--line-2);font-size:13px}
 .src-row:last-child{border-bottom:none}
 .src-row .nm{flex:1} .src-row .stat{font-size:11.5px;font-weight:700;padding:2px 9px;border-radius:8px}
 .stat.s-ok{background:var(--ok-bg);color:var(--ok)} .stat.s-build{background:var(--warn-bg);color:var(--warn)} .stat.s-wait{background:#f1f5f9;color:var(--txt-3)}
-.memory-note{background:linear-gradient(135deg,rgba(99,102,241,.06),rgba(6,182,212,.05));border:1px solid rgba(99,102,241,.18);border-radius:var(--r-md);padding:14px 16px;font-size:12.5px;color:var(--txt-2);margin-top:12px}
-.memory-note b{color:var(--ai-1)}
 .set-note{font-size:12px;color:var(--txt-3);margin-top:10px;padding-top:10px;border-top:1px dashed var(--line-2)}
 
-/* ===== 通用抽屉（右滑） ===== */
+/* 抽屉 */
 .drawer-mask{position:fixed;inset:0;background:rgba(15,23,42,.36);opacity:0;pointer-events:none;transition:.25s;z-index:40}
 .drawer-mask.on{opacity:1;pointer-events:auto}
 .drawer{position:fixed;top:0;right:0;height:100vh;width:640px;max-width:94vw;background:var(--panel);box-shadow:-20px 0 60px -20px rgba(15,23,42,.4);transform:translateX(100%);transition:.3s var(--ease);z-index:41;display:flex;flex-direction:column}
@@ -202,29 +249,63 @@ button{font-family:inherit;cursor:pointer;border:none;background:none}
 .drawer .dh .ti{font-size:16px;font-weight:700;flex:1}
 .drawer .dh .x{font-size:22px;color:var(--txt-3);cursor:pointer;line-height:1}
 .drawer .db{padding:18px 22px;overflow-y:auto;flex:1}
-
-/* 生命周期/正文 Tab */
-.dtabs{display:flex;gap:4px;border-bottom:1px solid var(--line);margin:-6px 0 16px}
-.dtabs .dt{padding:9px 14px;font-size:13px;font-weight:600;color:var(--txt-2);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px}
-.dtabs .dt.on{color:var(--ai-1);border-color:var(--ai-1)}
 .lc-step{padding:13px 0;border-bottom:1px dashed var(--line-2)}
 .lc-step .h{display:flex;align-items:center;gap:9px;font-size:13.5px;font-weight:700}
 .lc-step .h .ix{width:22px;height:22px;border-radius:7px;background:var(--ai-grad);color:#fff;display:grid;place-items:center;font-size:12px;font-family:var(--mono)}
 .lc-step .b{font-size:13px;color:var(--txt-2);margin-top:7px;padding-left:31px;line-height:1.65}
 .lc-step .b .chip{display:inline-block;background:#eef2ff;color:var(--brand-600);font-size:11.5px;padding:1px 8px;border-radius:6px;margin:2px 4px 2px 0;font-family:var(--mono)}
-
-/* 内容正文预览 */
 .art-head{margin-bottom:14px}
-.art-head .art-ti{font-size:20px;font-weight:700;line-height:1.4;margin-bottom:8px}
+.art-head .art-ti{font-size:18px;font-weight:700;line-height:1.4;margin-bottom:8px}
 .art-head .art-meta{display:flex;flex-wrap:wrap;gap:12px;font-size:12px;color:var(--txt-3)}
-.art-cover{width:100%;height:180px;border-radius:var(--r-md);background:linear-gradient(135deg,#eef2ff,#f0f9ff);border:1px dashed var(--line);display:grid;place-items:center;color:var(--txt-3);font-size:13px;margin-bottom:16px}
 .art-body{font-size:13.5px;color:var(--txt-2);line-height:1.8}
 .art-body h3{font-size:14px;color:var(--txt);margin:16px 0 8px}
 .art-body p{margin-bottom:10px}
 .art-body ul{margin:8px 0 12px 18px}
 .art-body li{margin-bottom:4px}
-.art-kws{margin-top:16px;padding-top:12px;border-top:1px solid var(--line-2)}
-.art-kws .kw{display:inline-block;background:#f1f5f9;color:var(--txt-2);font-size:11.5px;padding:2px 9px;border-radius:7px;margin:2px 4px 2px 0}
+
+/* 弹窗 */
+.launch-modal{position:fixed;inset:0;z-index:90;display:none;place-items:center;background:rgba(15,23,41,.5)}
+.launch-modal.on{display:grid}
+.launch-modal .box{width:min(480px,92vw);background:#fff;border-radius:14px;overflow:hidden;box-shadow:var(--sh-lg)}
+.launch-modal .mh{display:flex;align-items:center;gap:10px;padding:16px 18px;border-bottom:1px solid var(--line)}
+.launch-modal .mh .ic{color:var(--danger)}
+.launch-modal .mh h3{flex:1;margin:0;font-size:15px}
+.launch-modal .mh .x{cursor:pointer;color:var(--txt-3);font-size:18px}
+.launch-modal .mb{padding:18px}
+.launch-modal .mb p{margin:0 0 14px;font-size:13px;color:var(--txt-2);line-height:1.7}
+.launch-modal .mf{display:flex;justify-content:flex-end;gap:10px;padding:14px 18px;border-top:1px solid var(--line)}
+
+.btn{border-radius:10px;padding:9px 15px;font-size:13px;font-weight:600;transition:.18s}
+.btn.ghost{background:#f1f5f9;color:var(--txt-2)} .btn.ghost:hover{background:#e8edf5;color:var(--txt)}
+.btn.approve{background:var(--ai-grad);color:#fff;box-shadow:var(--sh-ai)} .btn.approve:hover{transform:translateY(-1px)}
+.btn.reject{background:var(--danger-bg);color:var(--danger)} .btn.reject:hover{background:#fee2e2}
+.btn.line{background:#fff;border:1px solid var(--line);color:var(--txt-2)} .btn.line:hover{border-color:var(--brand-400);color:var(--brand-600)}
+
+/* ===== 内容中心：工具条 / 分段 / 卡片列表 ===== */
+.cc-toolbar{display:flex;align-items:center;gap:12px;margin-bottom:14px;flex-wrap:wrap}
+.seg{display:inline-flex;background:#eef2f8;border-radius:11px;padding:3px;gap:2px}
+.seg button{padding:7px 14px;border-radius:9px;font-size:12.5px;font-weight:600;color:var(--txt-2);transition:.18s;white-space:nowrap}
+.seg button:hover{color:var(--txt)}
+.seg button.on{background:#fff;color:var(--brand-600);box-shadow:var(--sh-sm)}
+.cc-toolbar .sp{flex:1}
+.cc-stat{font-size:12px;color:var(--txt-3)}
+.cc-stat b{font-family:var(--mono);font-size:12.5px;color:var(--txt-2)}
+.cc-seg{margin-bottom:12px}
+.cc-hint{font-size:12.5px;color:var(--txt-3);margin-bottom:12px;line-height:1.65}
+.cc-list{display:flex;flex-direction:column;gap:10px}
+.cc-card{position:relative;display:flex;gap:13px;padding:14px 16px;border:1px solid var(--line);border-radius:14px;background:var(--panel);cursor:pointer;transition:.18s}
+.cc-card:hover{border-color:rgba(99,102,241,.45);box-shadow:var(--sh-md);transform:translateY(-1px)}
+.cc-card .cc-bar{width:3px;border-radius:2px;flex-shrink:0;background:var(--brand-500)}
+.cc-card.type-blog .cc-bar{background:var(--warn)}
+.cc-card.type-news .cc-bar{background:#0ea5e9}
+.cc-card.type-case .cc-bar{background:#a21caf}
+.cc-card .cc-ti{flex:1;min-width:0}
+.cc-card .cc-title{font-size:13.5px;font-weight:600;line-height:1.45;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.cc-card .cc-meta{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:7px;font-size:11.5px;color:var(--txt-3)}
+.cc-fix{margin-top:8px;font-size:12px;color:#047857;background:var(--ok-bg);border:1px solid #a7f3d0;border-radius:9px;padding:7px 10px;line-height:1.55}
+.cc-fix.warn{color:#92400e;background:#fffbeb;border-color:#fde68a}
+.cc-acts{display:flex;align-items:center;gap:8px;flex-shrink:0}
+.cc-empty{font-size:12.5px;color:var(--txt-3);padding:26px;border:1px dashed var(--line);border-radius:14px;text-align:center;background:var(--panel-2)}
 
 /* ===== 新建发布任务抽屉：表单 ===== */
 .form-sect{margin-bottom:22px;padding-bottom:18px;border-bottom:1px solid var(--line-2)}
@@ -240,8 +321,6 @@ button{font-family:inherit;cursor:pointer;border:none;background:none}
 .form-row .hint{font-size:11.5px;color:var(--txt-3);margin-top:5px}
 .form-row.inline{display:flex;gap:12px}
 .form-row.inline > div{flex:1}
-
-/* 标签输入 */
 .tag-box{display:flex;flex-wrap:wrap;gap:6px;padding:8px 10px;border:1px solid var(--line);border-radius:9px;background:#fff;min-height:42px;align-items:center}
 .tag-box:focus-within{border-color:var(--brand-400);box-shadow:0 0 0 3px rgba(59,130,246,.08)}
 .tag-box .t{display:inline-flex;align-items:center;gap:5px;background:#eef2ff;color:var(--brand-600);font-size:12px;padding:3px 9px;border-radius:6px}
@@ -249,11 +328,9 @@ button{font-family:inherit;cursor:pointer;border:none;background:none}
 .tag-box .t .x:hover{opacity:1}
 .tag-box input{flex:1;min-width:80px;border:none;padding:4px 2px;font-size:13px;background:transparent}
 .tag-box input:focus{outline:none;box-shadow:none}
-.rec{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
-.rec span{font-size:12px;padding:4px 10px;border-radius:14px;background:#f1f5f9;color:var(--txt-2);cursor:pointer;transition:.15s}
-.rec span:hover{background:#e8edf5;color:var(--brand-600)}
-
-/* 开关 */
+.rec-tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.rec-tags span{font-size:12px;padding:4px 10px;border-radius:14px;background:#f1f5f9;color:var(--txt-2);cursor:pointer;transition:.15s}
+.rec-tags span:hover{background:#e8edf5;color:var(--brand-600)}
 .sw-row{display:flex;align-items:center;gap:12px;margin-bottom:6px}
 .sw-row .sw-lab{flex:1;font-size:13px;font-weight:600;color:var(--txt)}
 .sw-row .sw-hint{font-size:12px;color:var(--txt-3);margin-top:2px}
@@ -261,35 +338,13 @@ button{font-family:inherit;cursor:pointer;border:none;background:none}
 .sw.on{background:var(--ai-grad)}
 .sw::after{content:"";position:absolute;top:2.5px;left:2.5px;width:19px;height:19px;border-radius:50%;background:#fff;box-shadow:var(--sh-sm);transition:.25s}
 .sw.on::after{left:24px}
-
-/* 映射表 */
 .map-table{width:100%;border-collapse:collapse;font-size:13px;margin-top:6px}
 .map-table th{text-align:left;font-weight:600;color:var(--txt-2);padding:9px 10px;background:#f8fafc;border-bottom:1px solid var(--line)}
 .map-table td{padding:9px 10px;border-bottom:1px solid var(--line-2);color:var(--txt-2)}
 .map-table td.arr{width:34px;text-align:center;color:var(--txt-3)}
 .map-table select{width:100%;padding:7px 9px;border:1px solid var(--line);border-radius:7px;font-size:13px;background:#fff}
 .map-note{font-size:11.5px;color:var(--txt-3);margin-top:8px}
-
-/* 规则行 */
-.rule-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-.rule-row.third{grid-template-columns:1fr 1fr 1fr}
-
-/* 抽屉底部 */
 .dw-foot{padding:14px 22px;border-top:1px solid var(--line);display:flex;justify-content:flex-end;gap:10px;background:#fff}
-
-/* 嵌在增长工作台 iframe 时去掉数字门户侧栏，避免双导航 */
-html[data-embed] .sidenav{display:none}
-html[data-embed] .shell{height:100%}
-html[data-embed] .topbar .crumbs{display:none}
-
-/* ===== 内容生产 / 发布 框架确认闸门 ===== */
-.frame-confirm{margin-top:16px;padding:14px 16px;border:1px dashed var(--ai-1);border-radius:12px;background:#eef2ff;display:flex;flex-direction:column;gap:10px;align-items:flex-start}
-.frame-confirm p{margin:0;font-size:13px;color:var(--txt-2);line-height:1.6}
-.frame-locked{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:56px 24px;text-align:center}
-.frame-locked .lk-ic{width:54px;height:54px;border-radius:50%;background:#eef2ff;color:var(--ai-1);display:grid;place-items:center;font-size:24px}
-.frame-locked b{font-size:16px;color:var(--txt)}
-.frame-locked p{margin:0;font-size:13px;color:var(--txt-2);line-height:1.7;max-width:380px}
-.frame-locked .btn{margin-top:6px}
 .frame-card{border:1px solid var(--line);border-radius:14px;overflow:hidden;background:#fff}
 .frame-head{padding:14px 18px;background:#eef2ff;border-bottom:1px solid var(--line);display:flex;flex-direction:column;gap:4px}
 .frame-head b{font-size:14px;color:var(--txt)}
@@ -300,6 +355,87 @@ html[data-embed] .topbar .crumbs{display:none}
 .frame-v{flex:1;color:var(--txt);font-size:13px;line-height:1.6;word-break:break-word}
 .frame-note{margin:0;padding:12px 18px;background:#fff7ed;color:#9a3412;font-size:12.5px;line-height:1.6;border-top:1px solid var(--line)}
 .frame-actions{padding:14px 18px;display:flex;justify-content:flex-end;gap:10px;background:#fff}
+
+/* ===== 侧边栏：巡检跑完后的「回到初始页」入口 ===== */
+.navitem{position:relative}
+.nav-reset{display:none;position:absolute;right:7px;top:50%;transform:translateY(-50%);width:22px;height:22px;border-radius:7px;color:#94a3b8;font-size:13px;line-height:1;align-items:center;justify-content:center;transition:.15s}
+.navitem.done .nav-reset{display:flex}
+.nav-reset:hover{background:rgba(148,163,184,.22);color:#fff}
+
+/* ===== 页头工具组（看板 / 内容中心互切） ===== */
+.head-tools{display:flex;align-items:center;gap:10px;flex:0 0 auto}
+
+/* ===== 全部视图：按日期分组 ===== */
+.cc-day{display:flex;align-items:center;gap:10px;margin:18px 0 10px}
+.cc-day.first{margin-top:0}
+.cc-daylab{font-size:12.5px;font-weight:600;color:var(--txt-2);white-space:nowrap}
+.cc-dayline{flex:1;height:1px;background:var(--line)}
+.cc-daycnt{font-size:11.5px;color:var(--txt-3);font-family:var(--mono)}
+
+/* ===== 内容卡片：更多操作菜单 ===== */
+.cc-more{width:28px;height:28px;border-radius:8px;color:var(--txt-3);font-size:15px;line-height:1;display:grid;place-items:center;transition:.15s}
+.cc-more:hover{background:#eef2f8;color:var(--brand-600)}
+.cc-menu{position:fixed;z-index:300;background:#fff;border:1px solid var(--line);border-radius:11px;box-shadow:var(--sh-lg);padding:5px;min-width:136px}
+.cc-menu button{display:block;width:100%;text-align:left;padding:8px 11px;border-radius:8px;font-size:13px;color:var(--txt-2);transition:.13s}
+.cc-menu button:hover{background:#f1f5f9;color:var(--txt)}
+.cc-menu button.danger{color:var(--danger)}
+.cc-menu button.danger:hover{background:var(--danger-bg)}
+
+/* ===== 内容中心：一级页签（内容 / 发布任务） ===== */
+.cc-tabs{margin-right:4px}
+
+/* ===== 发布任务卡片（容器，1 个任务持续产出 N 条内容） ===== */
+.tk-list{display:flex;flex-direction:column;gap:12px}
+.tk-card{position:relative;display:flex;gap:14px;padding:15px 16px;border:1px solid var(--line);border-radius:14px;background:var(--panel);cursor:pointer;transition:.18s}
+.tk-card:hover{border-color:rgba(139,92,246,.45);box-shadow:var(--sh-md);transform:translateY(-1px)}
+.tk-card .tk-bar{width:3px;border-radius:2px;flex-shrink:0;background:var(--ai-grad)}
+.tk-card.paused{opacity:.72}
+.tk-card.paused .tk-bar{background:#cbd5e1}
+.tk-card .tk-ti{flex:1;min-width:0}
+.tk-card .tk-title{font-size:14px;font-weight:600;line-height:1.45;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.tk-card .tk-src{font-size:11px;font-weight:600;color:#6d28d9;background:#f3e8ff;border-radius:6px;padding:2px 7px}
+.tk-card .tk-src.agent{color:#0369a1;background:#e0f2fe}
+.tk-card .tk-meta{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:8px;font-size:11.5px;color:var(--txt-3)}
+.tk-prog{display:flex;align-items:center;gap:10px;margin-top:10px}
+.tk-track{flex:0 0 132px;height:6px;border-radius:4px;background:#eef2f8;overflow:hidden}
+.tk-track i{display:block;height:100%;border-radius:4px;background:var(--ai-grad)}
+.tk-prog span{font-size:11.5px;color:var(--txt-3)}
+.tk-prog b{font-family:var(--mono);color:var(--txt-2)}
+.cc-card.planned{border-style:dashed;background:var(--panel-2)}
+.cc-card.planned .cc-bar{background:#cbd5e1}
+.tk-sect-h{font-size:13px;font-weight:700;color:var(--txt);margin:20px 0 11px;display:flex;align-items:center;gap:8px}
+.tk-sect-h:first-child{margin-top:0}
+.tk-sect-h .n{font-size:11.5px;font-weight:600;color:var(--txt-3);font-family:var(--mono);font-weight:400}
+.tk-detail{border:1px solid var(--line);border-radius:12px;padding:12px 15px;background:var(--panel-2);margin-bottom:4px}
+.tk-detail .kv{display:flex;gap:12px;font-size:12.5px;padding:6px 0;border-bottom:1px dashed var(--line-2)}
+.tk-detail .kv:last-child{border-bottom:none}
+.tk-detail .kv .k{flex:0 0 74px;color:var(--txt-3)}
+.tk-detail .kv .v{flex:1;color:var(--txt-2);line-height:1.6}
+.tk-child{display:flex;align-items:center;gap:11px;padding:11px 13px;border:1px solid var(--line);border-radius:11px;background:var(--panel);margin-bottom:8px;cursor:pointer;transition:.15s}
+.tk-child:hover{border-color:rgba(99,102,241,.45);box-shadow:var(--sh-sm)}
+.tk-child .ch-ti{flex:1;min-width:0}
+.tk-child .ch-t{font-size:13px;font-weight:600;color:var(--txt);line-height:1.4}
+.tk-child .ch-m{font-size:11.5px;color:var(--txt-3);margin-top:4px}
+.tk-child .ch-bar{width:3px;border-radius:2px;align-self:stretch;background:var(--brand-500)}
+
+/* ===== 通用二次确认 ===== */
+.cf-mask{position:fixed;inset:0;background:rgba(15,23,42,.42);z-index:400;display:none;align-items:center;justify-content:center;padding:24px}
+.cf-mask.on{display:flex}
+.cf-box{width:100%;max-width:404px;background:#fff;border-radius:16px;padding:22px;box-shadow:var(--sh-lg)}
+.cf-box h3{font-size:15px;font-weight:700;margin-bottom:9px}
+.cf-box p{font-size:13px;color:var(--txt-2);line-height:1.7}
+.cf-foot{display:flex;justify-content:flex-end;gap:10px;margin-top:20px}
+.btn.danger{background:var(--danger);color:#fff}
+.btn.danger:hover{background:#dc2626}
+
+/* ===== 内容详情抽屉底部操作条 ===== */
+.dr-acts{display:none;gap:10px;padding:13px 22px;border-top:1px solid var(--line);background:var(--panel-2)}
+.dr-acts.on{display:flex}
+.dr-acts .sp{flex:1}
+
+html[data-embed] .sidenav{display:none}
+html[data-embed] .shell{height:100%}
+html[data-embed] .topbar .crumbs{display:none}
 </style>
 </head>
 <body>
@@ -311,21 +447,18 @@ if (new URLSearchParams(location.search).has('embed')) {
 <div class="shell">
   <aside class="sidenav">
     <div class="logo"><span class="d">数</span>数字门户</div>
-    <div class="navgroup">内容运营</div>
-    <div class="navitem"><span class="ic">▦</span>产品管理</div>
-    <div class="navitem"><span class="ic">✎</span>内容管理</div>
-    <div class="navitem"><span class="ic">⚲</span>SEO 优化</div>
-    <div class="navitem active badge" data-badge="2"><span class="ic">✦</span>AI 内容发布</div>
+    <div class="navgroup">运营流水线</div>
+    <div class="navitem active" id="navAudit" onclick="go('audit')"><span class="ic">🔍</span>整站巡检<button class="nav-reset" id="navReset" onclick="event.stopPropagation();resetAudit()" title="回到巡检初始页">↺</button></div>
+    <div class="navitem badge" data-badge="0" id="navDash" onclick="go('dashboard')"><span class="ic">📊</span>运营看板</div>
+    <div class="navitem" id="navCal" onclick="go('calendar')"><span class="ic">📅</span>内容中心</div>
     <div class="navgroup">系统</div>
-    <div class="navitem"><span class="ic">⚙</span>站点设置</div>
-    <div class="navitem"><span class="ic">↗</span>数据中心</div>
+    <div class="navitem" id="navSet" onclick="go('settings')"><span class="ic">⚙</span>站点设置</div>
   </aside>
 
   <div class="main">
     <div class="topbar">
-      <div class="crumbs">数字门户 / <b>AI 内容发布</b> / <span class="ai">智能体控制台</span></div>
+      <div class="crumbs">数字门户 / <b>AI 内容运营</b> / <span class="ai" id="crumbNow">整站巡检</span></div>
       <div class="sp"></div>
-      <div class="langs"><span>RU</span><span class="on">ZH</span><span>EN</span><span>JP</span></div>
       <div class="agent-switch">
         <span class="dot" id="swDot"></span>
         <span class="lab">智能体</span>
@@ -333,87 +466,66 @@ if (new URLSearchParams(location.search).has('embed')) {
       </div>
     </div>
 
-    <div class="subnav">
-      <div class="tab on" onclick="go('today',this)">今天</div>
-      <div class="tab" onclick="go('content',this)">内容</div>
-      <div class="tab" onclick="go('plan',this)">任务</div>
-      <div class="tab" onclick="go('settings',this)">设置</div>
-    </div>
-
     <div class="content">
-      <!-- 今天 -->
-      <section class="view on sheet" id="view-today">
-        <div class="voice">
-          <div class="av">✦</div>
-          <div class="bubble">
-            <div class="who">内容运营智能体 · 自主运行中</div>
-            <div class="msg" id="voiceMsg">本周已自主生成并自检 <b>12 篇</b> 内容，其中 <b>6 篇</b> 已发布上线；目前有 <b>2 篇</b> 通过质检、正在等你确认发布。其余内容我按节奏继续推进，你只需在发布这一步把关。</div>
-          </div>
+      <!-- ① 整站巡检（一次性，巡检站点已有的内容文章） -->
+      <section class="view on" id="view-audit">
+        <div class="page-head">
+          <div class="h1">整站巡检 <small>对站点已有的内容文章逐篇巡检，自动修正不符合规范的部分</small></div>
         </div>
-
-        <div class="kpis">
-          <div class="kpi"><div class="n warn" id="kN">2</div><div class="l">待你审核发布</div><div class="s">这是今天唯一需要你做的事</div></div>
-          <div class="kpi"><div class="n ok">6</div><div class="l">本周已发布</div><div class="s">全部通过 EEAT/GEO 门禁</div></div>
-          <div class="kpi"><div class="n ai">12</div><div class="l">本周自主产出</div><div class="s">无需你介入的生产</div></div>
-        </div>
-
-        <div class="section-h">
-          <span class="t">待审核发布</span>
-          <span class="cnt" id="revCnt">2</span>
-          <span class="hint">智能体已完成写作与自检，发布前需你拍板</span>
-        </div>
-        <div class="review" id="reviewList"></div>
-
-        <details class="collapse">
-          <summary>查看智能体近期自主做了什么 <span class="ar">›</span></summary>
-          <div class="tl">
-            <div class="row"><span class="tk ok"></span><div><div class="tx"><b>自检通过并发布</b> —《SDPH 系列全国产大电流型产品介绍》EEAT 96 分</div><div class="tm">09-15 11:20</div></div></div>
-            <div class="row"><span class="tk"></span><div><div class="tx"><b>主动补强</b> — PT100 温度指南 402 天未更新，已重写并比对品牌词库</div><div class="tm">09-15 09:05</div></div></div>
-            <div class="row"><span class="tk ai"></span><div><div class="tx"><b>环境感知</b> — 监测到行业新标准发布，已加入选题候选</div><div class="tm">09-14 22:40</div></div></div>
-            <div class="row"><span class="tk ai"></span><div><div class="tx"><b>自我进化</b> — 滚动深度周环比 +6%，将"参数实测"写法置信度上调至 0.82（全自动，无需你操作）</div><div class="tm">09-14 06:00 · 复盘</div></div></div>
-          </div>
-        </details>
-
-        <div class="foot-hint">智能体在后台自主运行，你只需在发布时把关。需要时可随时查看 <a style="color:var(--brand-500);cursor:pointer" onclick="go('content',document.querySelector('.tab:nth-child(2)'))">全部内容</a> 或 <a style="color:var(--brand-500);cursor:pointer" onclick="go('plan',document.querySelector('.tab:nth-child(3)'))">本周计划</a>。</div>
+        <div class="audit-hero" id="auditHero"></div>
       </section>
 
-      <!-- 内容 -->
-      <section class="view sheet" id="view-content">
-        <div class="subbar">以内容为主维度 — 每篇可查看完整正文与生产逻辑。点击卡片展开详情。</div>
-        <div class="clist" id="contentList"></div>
-      </section>
-
-      <!-- 任务 -->
-      <section class="view sheet" id="view-plan">
-        <div class="plan-head">
-          <div class="h1">发布任务 <small>自主发布任务统一管理：自动 / 排期 / 手动</small></div>
-          <button class="btn-new" onclick="openTask()">＋ 新建发布任务</button>
-        </div>
-        <div class="plan-intro">智能体以 <b>三种模式</b> 自主运转：<b>① 自动</b>（监控/环境触发）· <b>② 排期</b>（按固定节奏生成）· <b>③ 手动</b>（你下指令即时发起）。下方为本周计划，让你清楚"不在时它在干什么"。</div>
-        <div class="plan-bar">
-          <div class="seg" id="planSeg">
-            <span class="on" data-f="all" onclick="planFilter('all',this)">全部</span>
-            <span data-f="auto" onclick="planFilter('auto',this)">自动</span>
-            <span data-f="sch" onclick="planFilter('sch',this)">排期</span>
-            <span data-f="man" onclick="planFilter('man',this)">手动</span>
-            <span data-f="rev" onclick="planFilter('rev',this)">待审核</span>
-          </div>
-          <div class="legend">
-            <span><i style="background:#6366f1"></i>自动</span>
-            <span><i style="background:#4338ca"></i>排期</span>
-            <span><i style="background:#16a34a"></i>手动</span>
-            <span><i style="background:#f59e0b"></i>待审核</span>
+      <!-- ② 运营看板 -->
+      <section class="view" id="view-dashboard">
+        <div class="page-head">
+          <div class="h1">运营看板 <small>巡检通过后，智能体推荐发布方向（选题方向），经你确认后按周汇总产出与策略</small></div>
+          <div class="head-tools">
+            <div class="seg">
+              <button class="on">运营看板</button>
+              <button onclick="go('calendar')">内容中心 →</button>
+            </div>
           </div>
         </div>
-        <div class="week" id="weekGrid"></div>
-        <div class="plan-foot">说明：<b>自动</b>任务在触发条件满足时由智能体自行发起（如某篇滚动深度跌破基线即补强）；<b>排期</b>任务按你设定的节奏运行；<b>待审核</b>是已写好、等你确认发布的队列。三者均由智能体调度，<b>无需你每天操作</b>。</div>
+        <div id="dashBody"></div>
       </section>
 
-      <!-- 设置 -->
-      <section class="view sheet" id="view-settings">
+      <!-- ③ 内容中心（内容 / 发布任务 两个维度） -->
+      <section class="view" id="view-calendar">
+        <div class="page-head">
+          <div class="h1">内容中心 <small>内容是一条条要发布的结果，发布任务是持续生产内容的容器 —— 两个维度分开展示</small></div>
+          <div class="head-tools">
+            <div class="seg">
+              <button onclick="go('dashboard')">← 运营看板</button>
+              <button class="on">内容中心</button>
+            </div>
+            <button class="btn-new" onclick="openTask()">＋ 新建发布任务</button>
+          </div>
+        </div>
+        <div class="cc-toolbar">
+          <div class="seg cc-tabs">
+            <button id="ccTabContent" class="on" onclick="setCCTab('content')">内容</button>
+            <button id="ccTabTask" onclick="setCCTab('task')">发布任务</button>
+          </div>
+          <div class="seg" id="ccViewSeg">
+            <button id="ccViewList" class="on" onclick="setCCView('list')">☰ 列表</button>
+            <button id="ccViewCal" onclick="setCCView('calendar')">🗓 日历</button>
+          </div>
+          <div class="sp"></div>
+          <div class="cc-stat" id="ccStat"></div>
+        </div>
+        <div id="ccListBody"></div>
+        <div id="calBody" style="display:none"></div>
+        <div id="ccTaskBody" style="display:none"></div>
+      </section>
+
+      <!-- 站点设置 -->
+      <section class="view" id="view-settings">
+        <div class="page-head">
+          <div class="h1">站点设置 <small>给智能体的长期约定，设定一次长期生效</small></div>
+        </div>
         <div class="setup">
           <div class="set-card">
-            <div class="h">目标与范围（你定一次，长期生效）</div>
+            <div class="h">目标与范围</div>
             <div class="d">这是你对智能体的"交待"，之后它在此框架内自主运行。</div>
             <div class="field"><div class="k">目标站点</div><div class="v">termoline.com · 中文站 / 英文站 / 日文站（共 3 站）</div></div>
             <div class="field"><div class="k">内容目标</div><div class="v">增信为主——让浏览者觉得专业、可信、有据可查；<b style="color:var(--txt-2)">不承诺收录与排名</b></div></div>
@@ -421,7 +533,7 @@ if (new URLSearchParams(location.search).has('embed')) {
           </div>
           <div class="set-card">
             <div class="h">品牌语气与红线</div>
-            <div class="d">语气由你定义；红线是智能体不可逾越的硬边界（命中即退回重写，任何策略下不破例）。</div>
+            <div class="d">语气由你定义；红线是智能体不可逾越的硬边界。</div>
             <div class="field"><div class="k">品牌语气</div><div class="v"><span class="tag">专业克制</span><span class="tag">数据说话</span><span class="tag">有出处</span><span class="tag">不夸大</span></div></div>
             <div class="redline">事实错误（参数错）<span class="stat s-ok" style="margin-left:auto">✅ 能自动</span></div>
             <div class="redline">禁用词命中<span class="stat s-ok" style="margin-left:auto">✅ 能自动</span></div>
@@ -429,38 +541,13 @@ if (new URLSearchParams(location.search).has('embed')) {
             <div class="redline">品牌词不一致<span class="stat s-ok" style="margin-left:auto">✅ 能自动</span></div>
             <div class="redline">虚构案例<span class="stat s-build" style="margin-left:auto">🟡 部分 · 抽样人工</span></div>
             <div class="redline">虚构资质<span class="stat s-build" style="margin-left:auto">🟡 部分 · 需人核对</span></div>
-            <p class="set-note">适用边界：不承诺收录 / 排名 / 曝光 / 询盘等外部效果（仅把内容本身做到位：专业、有据、可信）。</p>
-          </div>
-          <div class="set-card">
-            <div class="h">质量基线（按站点独立配置）</div>
-            <div class="d">滚动深度低于基线即触发补强；基线由本站点过去 90 天滚动数据自动校准。</div>
-            <div class="baseline">滚动深度基线 <input value="40" /> % &nbsp;·&nbsp; 跳出率上限 <input value="65" /> % &nbsp;·&nbsp; 环比下滑预警 <input value="15" /> %</div>
-          </div>
-          <div class="set-card">
-            <div class="h">GEO 适配检查（4 项量化）</div>
-            <div class="d">让内容易被 AI 搜索（豆包 / DeepSeek / ChatGPT 等）摘引推荐；逐项过 / 不过，缺项→自动补 FAQ 或提示人补。</div>
-            <div class="field"><span class="k">① 结构清晰</span><span class="v">自动检测 H2/H3 无跳级（H1→H3 跳级即不通过）</span></div>
-            <div class="field"><span class="k">② 结论明确</span><span class="v">首段 ≤120 字内含判断句（"是 / 指 / 即 / 核心"），半自动判，存疑交人</span></div>
-            <div class="field"><span class="k">③ 含 FAQ</span><span class="v">≥3 组 Q&amp;A（正则检测 Q:/A: 或结构化块）硬阈值</span></div>
-            <div class="field"><span class="k">④ 可引用短句</span><span class="v">存在 ≤40 字结论句（NLP 抽取，如"PT100 在 -200~850°C 线性度优于热电偶"）</span></div>
-          </div>
-          <div class="set-card">
-            <div class="h">内容目标配比（4:3:3）</div>
-            <div class="d">按营销目标切资源；与内容类型维度正交。可漂移：复盘若某类持续低效，经人工确认后调整（如品牌内容长期滚动深度低 → 下调至 25%、引流升至 45%）。</div>
-            <div class="field"><span class="k">引流内容 40%</span><span class="v">拉新曝光 · 曝光量 / 排名 / 新访客占比</span></div>
-            <div class="field"><span class="k">品牌内容 30%</span><span class="v">建立调性与信任 · 停留时长 / 滚动深度 / 品牌词搜索</span></div>
-            <div class="field"><span class="k">深度阅读 30%</span><span class="v">推动深度消费 · 滚动深度 / 下一页跳转率 / CTA 点击</span></div>
+            <p class="set-note">适用边界：不承诺收录 / 排名 / 曝光 / 询盘等外部效果。</p>
           </div>
           <div class="set-card">
             <div class="h">信源与接口状态</div>
-            <div class="d">内容引用与监控依赖的外部接口。带「待建」项接入后智能体才能自动调用。</div>
-            <div class="src-row"><span class="nm">知识库产品（只读调用）</span><span class="stat s-ok">✅ 已接入</span></div>
+            <div class="d">内容引用与监控依赖的外部接口。</div>
+            <div class="src-row"><span class="nm">知识库产品（外部 · 只读调用）</span><span class="stat s-ok">✅ 已接入</span></div>
             <div class="src-row"><span class="nm">站长平台 / GSC 数据</span><span class="stat s-ok">✅ 已接入</span></div>
-            <div class="src-row"><span class="nm">GEO 引用率探针（商业 API）</span><span class="stat s-wait">⚪ 暂未接入</span></div>
-            <div class="src-row"><span class="nm">竞品 sitemap / RSS</span><span class="stat s-wait">⚪ 暂未接入</span></div>
-            <div class="src-row"><span class="nm">媒体权威度库</span><span class="stat s-build">🟡 待自建</span></div>
-            <div class="memory-note">⚠️ <b>GEO 探针与竞品源暂未接入</b>：接入前，GEO 引用率改以"结构合规 + 人工抽检"判定，竞品比对任务暂缓；其余能力不受影响，接口就绪后自动恢复。</div>
-            <div class="memory-note">🧠 <b>工作记忆（智能体自沉淀，全自动）</b>：已积累 <b>18 条</b>有效规律，置信度均值 <b>0.79</b>，本周新增 <b>3 条</b>。写入格式 {规律描述, 适用语种/类目, 效果证据, 来源任务, 置信度, 有效期}；置信度按指数平滑更新（置信度_new = (n×旧 + 本次) / (n+1)），被证伪连续失败跌破 <b>0.3</b> 自动移除；高置信规律（<b>&gt;0.9</b> 且跨多站验证）作为候选提交知识库。由 每周复盘自动更新，<b>无需你操作</b>——这正是智能体越用越准的方式。</div>
           </div>
         </div>
       </section>
@@ -468,26 +555,37 @@ if (new URLSearchParams(location.search).has('embed')) {
   </div>
 </div>
 
-<!-- 通用抽屉：生命周期 / 正文预览 -->
-<div class="drawer-mask" id="mask" onclick="closeDrawer()"></div>
-<div class="drawer" id="drawer">
-  <div class="dh"><div class="ti" id="drTitle"></div><div class="x" onclick="closeDrawer()">×</div></div>
-  <div class="db">
-    <div class="dtabs">
-      <div class="dt on" data-tab="logic" onclick="tabDrawer('logic')">生产逻辑</div>
-      <div class="dt" data-tab="article" onclick="tabDrawer('article')">内容正文</div>
+<!-- 调整发布任务弹窗（生产策略只读，不可更改） -->
+<div class="launch-modal" id="adjModal">
+  <div class="box">
+    <div class="mh"><span class="ic">✎</span><h3>调整发布任务</h3><span class="x" onclick="closeAdjust()">×</span></div>
+    <div class="mb">
+      <div class="afield"><label>主题</label><input id="adjTitle" class="ainput" type="text" placeholder="输入主题"></div>
+      <div class="afield"><label>内容类型</label><div class="arow"><span class="chip type">博客</span><span class="ro-tag">固定</span></div></div>
+      <div class="afield"><label>生产策略</label><div class="arow" id="adjStrat"></div></div>
+      <div class="afield"><label>目标日期</label><input id="adjDate" class="ainput" type="date"></div>
     </div>
-    <div id="drLogic"></div>
-    <div id="drArticle" style="display:none"></div>
+    <div class="mf"><button class="btn ghost" onclick="regenAdjust()">让智能体换一个</button><button class="btn line" onclick="closeAdjust()">取消</button><button class="btn approve" onclick="saveAdjust()">保存修改</button></div>
   </div>
 </div>
+
+<!-- 内容详情抽屉：正文 / 生产策略 -->
+<div class="drawer-mask" id="mask" onclick="closeDrawer()"></div>
+<aside class="drawer" id="drawer">
+  <div class="dh"><div class="ti" id="drTitle">内容详情</div><span class="x" onclick="closeDrawer()">×</span></div>
+  <div class="db">
+    <div class="dtabs"><div class="dt on" onclick="switchDTab(0)">正文</div><div class="dt" onclick="switchDTab(1)">生产策略</div></div>
+    <div id="drArticle"></div>
+    <div id="drLogic" style="display:none"></div>
+  </div>
+  <div class="dr-acts" id="drActs"></div>
+</aside>
 
 <!-- 新建发布任务抽屉 -->
 <div class="drawer-mask" id="taskMask" onclick="if(event.target===this)closeTask()"></div>
 <div class="drawer" id="taskDrawer" style="width:680px">
-  <div class="dh"><div class="ti">新建发布任务</div><div class="x" onclick="closeTask()">×</div></div>
+  <div class="dh"><div class="ti" id="taskTitle">新建发布任务</div><div class="x" onclick="closeTask()">×</div></div>
   <div class="db" id="taskBody">
-
     <div class="form-sect">
       <div class="fs-h">基本信息</div>
       <div class="form-row">
@@ -500,7 +598,7 @@ if (new URLSearchParams(location.search).has('embed')) {
           <input id="topicInput" placeholder="输入主题回车添加" onkeydown="addTag(event,'topic')" />
         </div>
         <div class="hint">推荐主题（点击添加）：</div>
-        <div class="rec" id="topicRec">
+        <div class="rec-tags" id="topicRec">
           <span onclick="pickTag('行业方案','topic')">行业方案</span>
           <span onclick="pickTag('行业动态','topic')">行业动态</span>
           <span onclick="pickTag('新闻资讯','topic')">新闻资讯</span>
@@ -519,7 +617,7 @@ if (new URLSearchParams(location.search).has('embed')) {
           <input id="kwInput" placeholder="输入关键词回车添加" onkeydown="addTag(event,'kw')" />
         </div>
         <div class="hint">推荐关键词（点击添加）：</div>
-        <div class="rec" id="kwRec">
+        <div class="rec-tags" id="kwRec">
           <span onclick="pickTag('渣浆泵','kw')">渣浆泵</span>
           <span onclick="pickTag('污水泵','kw')">污水泵</span>
           <span onclick="pickTag('离心泵厂家','kw')">离心泵厂家</span>
@@ -574,7 +672,7 @@ if (new URLSearchParams(location.search).has('embed')) {
         </div>
         <div>
           <label>推送开始时间</label>
-          <input type="date" id="fStart" value="2026-09-15" />
+          <input type="date" id="fStart" value="2026-09-22" />
         </div>
       </div>
       <div class="form-row">
@@ -589,192 +687,983 @@ if (new URLSearchParams(location.search).has('embed')) {
         <textarea id="fNote" placeholder="补充说明：语气倾向、必须包含的信息、需要避让的表述等"></textarea>
       </div>
     </div>
-
   </div>
   <div class="db" id="taskFrame" style="display:none"></div>
   <div class="dw-foot">
     <button class="btn ghost" onclick="closeTask()">取消</button>
-    <button class="btn approve" onclick="showPublishFrame()">生成内容框架</button>
+    <button class="btn approve" id="taskSubmit" onclick="showPublishFrame()">生成内容框架</button>
+  </div>
+</div>
+
+<!-- 通用二次确认 -->
+<div class="cf-mask" id="cfMask" onclick="if(event.target===this)closeConfirm(false)">
+  <div class="cf-box">
+    <h3 id="cfTitle">确认</h3>
+    <p id="cfDesc"></p>
+    <div class="cf-foot">
+      <button class="btn ghost" onclick="closeConfirm(false)">再想想</button>
+      <button class="btn danger" id="cfOk" onclick="closeConfirm(true)">确定</button>
+    </div>
   </div>
 </div>
 
 <script>
-/* ===================== 数据（mock） ===================== */
-const REVIEW = [
-  {id:'r1', title:'SDPH 系列全国产大电流型 — 产品介绍', sub:'自动补强 · 来源：产品详情页 71', score:96, why:'用户指令触发：按 sunwaycontrols.com 真实参数撰写，零虚构', ref:['官网参数表','高新技术企业自述'], self:['经验23 专业25 权威23 可信25','连续50A/峰值125A 已区分','红线0命中'], now:'待你确认发布'},
-  {id:'r2', title:'PT100 温度传感器选型指南（英文站）', sub:'主动补强 · 402 天未更新', score:88, why:'监控触发：滚动深度低于基线 12 个百分点', ref:['旧文比对','品牌词库 EN'], self:['EEAT 88 分','补入实测偏差 0.3°C','GEO 4 项全过'], now:'待你确认发布'}
-];
+/* ===================== 数据 =====================
+   智能体在网站即将上线时介入。
+   ① 整站巡检（一次性）：巡检站点「已有的内容文章」，逐篇判断该发布 / 该修改。
+   ② 运营看板：巡检通过后，智能体推荐「选题方向」（不是成稿），经你确认；按周汇总产出 + 生产策略。
+   ③ 内容中心：确认后的方向与手动创建的任务落地成内容，列表 / 日历双视图管理。发布后进入「上线运营」。
+*/
+
+const TODAY = '2026-09-22';   // 演示基准日：整站巡检当天
+const AUDITED_KEY = 'site_audited_v1';   // 站点的整站巡检是「一次性」动作：做过一次就长期有效
+function auditedBefore(){ try{ return localStorage.getItem(AUDITED_KEY)==='1'; }catch(e){ return false; } }
+
+/* 站点已有的内容文章（巡检对象） */
 const CONTENTS = [
-  {id:'c1', title:'SDPH 系列全国产大电流型 — 产品介绍', st:'rev', stT:'待审核', desc:'基于官网真实参数撰写，连续50A/峰值125A，全国产自主可控，附生产逻辑卡。', pv:'1.2k', dr:'—', src:'指令', body:`<h3>产品定位</h3><p>SDPH 系列是南京三慧控制技术有限公司推出的全国产大电流伺服驱动器，面向精密运动控制场景，强调“全链国产、自主可控”。</p><h3>核心技术参数</h3><ul><li>供电电压：24 ~ 72 VDC</li><li>额定连续电流：50 A（SDPH-4850）</li><li>峰值电流：125 A</li><li>适配功率：3000 W</li><li>电机类型：有刷 / 无刷 / 力矩 / 伺服电机</li><li>反馈接口：旋变、增量编码器、绝对值编码器</li><li>通讯协议：EtherCAT、CANopen、RS485</li><li>工作温度：-40 ~ +55 ℃</li></ul><h3>全国产自主可控</h3><p>该系列在软硬件架构、底层算法及配置工具层面全自主研发，关键元器件实现国产化替代，彻底摆脱海外技术与供应链依赖。</p><h3>典型应用场景</h3><p>可应用于航空航天、船舶、半导体设备、机器人、精密机床等对可靠性要求较高的领域。</p>`},
-  {id:'c2', title:'PT100 温度传感器选型指南（英文站）', st:'rev', stT:'待审核', desc:'主动补强旧文，补齐实测偏差与选型对照，对标品牌词库。', pv:'860', dr:'—', src:'自动', body:`<h3>选型核心指标</h3><p>PT100 铂电阻是工业温度测量中最常用的元件之一。选型时应重点关注温度范围、精度等级、响应时间及安装方式。</p><h3>关键参数对照</h3><ul><li>测温范围：-200 ~ +850 ℃</li><li>精度等级：A 级 ±0.15 ℃ / B 级 ±0.30 ℃</li><li>实测偏差：在 -50 ℃ 典型工况下偏差可控制在 0.3 ℃ 以内</li></ul><h3>安装建议</h3><p>根据被测介质选择铠装式、插入式或表面贴装结构，并确保热传导路径最短。</p>`},
-  {id:'c3', title:'工业温度传感器校准白皮书解读', st:'pub', stT:'已发布', desc:'环境感知触发：行业新标准发布，转化为科普增信内容。', pv:'3.4k', dr:'52%', src:'自动', body:`<h3>新标准要点</h3><p>2026 版校准规范对工业温度传感器的溯源链、不确定度评定和现场校准提出了更高要求。</p><h3>对企业的实际影响</h3><p>制造企业需要在出厂检验环节增加至少一个温度点的溯源记录，并保留至少 5 年。</p>`},
-  {id:'c4', title:'servo 驱动器散热设计要点', st:'pub', stT:'已发布', desc:'排程生成，EEAT 91 分，已发布 6 天。', pv:'2.1k', dr:'47%', src:'排程', body:`<h3>为什么散热决定伺服寿命</h3><p>大电流伺服驱动器在峰值输出时会产生显著热量，散热设计直接影响连续工作能力和长期可靠性。</p><h3>设计三原则</h3><ul><li>保证足够散热面积</li><li>避免热区集中</li><li>预留 20% 以上余量</li></ul>`},
-  {id:'c5', title:'全国产运动控制方案（半导体场景）', st:'auto', stT:'自主生成', desc:'监控驱动选题，起草中，预计今日完成自检。', pv:'—', dr:'—', src:'自动', body:'<p>内容正在由智能体生成中，完成后将显示完整正文。</p>'},
-  {id:'c6', title:'SDM 系列调试软件使用说明', st:'run', stT:'起草中', desc:'依据知识库只读资料组装，EEAT 四维起草阶段。', pv:'—', dr:'—', src:'排程', body:'<p>内容正在由智能体生成中，完成后将显示完整正文。</p>'}
-];
-const WEEK = [
-  {d:'周一', dt:'9/15', today:true, tasks:[
-    {t:'趋势解读 ×3', type:'sch'},
-    {t:'PT100 指南补强', type:'auto', nt:'滚动深度<基线时触发'},
-    {t:'SDPH 产品介绍', type:'rev', nt:'待你审核'}
-  ]},
-  {d:'周二', dt:'9/16', tasks:[
-    {t:'servo 散热设计', type:'sch'},
-    {t:'行业 RSS 监测', type:'auto', nt:'每日自动'}
-  ]},
-  {d:'周三', dt:'9/17', tasks:[
-    {t:'白皮书解读', type:'sch'},
-    {t:'竞品 sitemap 比对', type:'auto', nt:'接口暂未接入·暂缓'}
-  ]},
-  {d:'周四', dt:'9/18', tasks:[
-    {t:'半导体场景方案', type:'auto', nt:'监控触发补强'}
-  ]},
-  {d:'周五', dt:'9/19', tasks:[
-    {t:'周报复盘', type:'auto', nt:'每周五自动进化'},
-    {t:'趋势解读 ×2', type:'sch'}
-  ]},
-  {d:'周六', dt:'9/20', tasks:[
-    {t:'轻量维护', type:'auto', nt:'基线巡检'}
-  ]},
-  {d:'周日', dt:'9/21', tasks:[]}
+  {id:'c1', title:'SDPH 系列全国产大电流型 — 产品介绍', desc:'基于官网真实参数撰写，连续50A/峰值125A，全国产自主可控。', src:'存量', score:96, audit:'unchecked',
+   body:`<h3>产品定位</h3><p>SDPH 系列是南京三慧控制技术有限公司推出的全国产大电流伺服驱动器。</p><h3>核心技术参数</h3><ul><li>供电电压：24 ~ 72 VDC</li><li>额定连续电流：50 A</li><li>峰值电流：125 A</li></ul>`},
+  {id:'c2', title:'PT100 温度传感器选型指南（英文站）', desc:'主动补强旧文，补齐实测偏差与选型对照。', src:'存量', score:88, audit:'unchecked',
+   body:`<h3>选型核心指标</h3><p>PT100 铂电阻是工业温度测量中最常用的元件之一。</p><ul><li>测温范围：-200 ~ +850 ℃</li><li>精度等级：A 级 ±0.15 ℃ / B 级 ±0.30 ℃</li></ul>`},
+  {id:'c3', title:'工业温度传感器校准白皮书解读', desc:'环境感知触发：行业新标准发布。', src:'存量', score:82, audit:'unchecked',
+   body:`<h3>新标准要点</h3><p>2026 版校准规范对工业温度传感器的溯源链、不确定度评定提出了更高要求。</p>`},
+  {id:'c4', title:'servo 驱动器散热设计要点', desc:'排程生成，已发布 6 天。', src:'存量', score:91, audit:'unchecked',
+   body:`<h3>为什么散热决定伺服寿命</h3><p>大电流伺服驱动器在峰值输出时会产生显著热量。</p>`},
+  {id:'c5', title:'全国产运动控制方案（半导体场景）', desc:'监控驱动选题，起草中。', src:'存量', score:78, audit:'unchecked', body:`<p>内容正文正在整理中。</p>`},
+  {id:'c6', title:'SDM 系列调试软件使用说明', desc:'依据知识库只读资料组装。', src:'存量', score:75, audit:'unchecked', body:`<p>内容正文正在整理中。</p>`}
 ];
 
-/* ===================== 渲染 ===================== */
-function go(v, el){
-  document.querySelectorAll('.view').forEach(x=>x.classList.remove('on'));
-  document.getElementById('view-'+v).classList.add('on');
-  document.querySelectorAll('.subnav .tab').forEach(t=>t.classList.remove('on'));
-  (el||document.querySelector('.subnav .tab')).classList.add('on');
+/* 巡检状态机 */
+let audit = { status:'idle', scanned:0, total:CONTENTS.length, logs:[] };
+function nowTs(){ return new Date().toLocaleString('zh-CN',{hour12:false}); }
+function logAudit(step, act, st){ audit.logs.push({step, act, st, at:nowTs()}); }
+
+/* 检测判定：每条内容 → 该发布 / 该修改（数据驱动，覆盖多分支） */
+function detectItem(c){
+  const blocks=[];
+  if(c.score<80) blocks.push('EEAT 评分 '+c.score+' 低于 80');
+  if(c.id==='c5' || c.id==='c6') blocks.push('GEO 结构不清晰');
+  if(c.id==='c5') blocks.push('品牌词不一致');
+  if(c.id==='c3') blocks.push('改写需「英文站品牌词库」，知识库暂无');
+  return blocks;
 }
-function renderReview(){
-  document.getElementById('reviewList').innerHTML = REVIEW.map(r=>`
-    <div class="rv">
-      <div class="meta"><div class="ti">${r.title}</div><div class="sub">${r.sub}</div></div>
-      <div class="score">${r.score}分</div>
-      <div class="acts">
-        <button class="btn ghost" onclick="openDrawer('${r.id}')">看生产逻辑</button>
-        <button class="btn line" onclick="viewArticle('${r.id}')">查看内容</button>
-        <button class="btn reject" onclick="reject('${r.id}')">打回重写</button>
-        <button class="btn approve" onclick="approve('${r.id}')">批准发布</button>
-      </div>
-    </div>`).join('');
-  document.getElementById('revCnt').textContent=REVIEW.length;
-  document.getElementById('kN').textContent=REVIEW.length;
-}
-function renderContent(){
-  document.getElementById('contentList').innerHTML = CONTENTS.map(c=>`
-    <div class="card">
-      <div class="top"><span class="st ${c.st}">${c.stT}</span><span style="font-size:11px;color:var(--txt-3)">· ${c.src}</span></div>
-      <div class="ti">${c.title}</div>
-      <div class="desc">${c.desc}</div>
-      <div class="ft"><span>PV <b>${c.pv}</b></span><span>滚动深度 <b>${c.dr}</b></span></div>
-      <div class="acts2">
-        <button class="btn ghost" onclick="openDrawer('${c.id}')">生产逻辑</button>
-        <button class="btn line" onclick="viewArticle('${c.id}')">查看内容</button>
-      </div>
-    </div>`).join('');
-}
-function renderWeek(){
-  const cls={auto:'auto',sch:'sch',rev:'rev',man:'man'};
-  document.getElementById('weekGrid').innerHTML = WEEK.map(d=>`
-    <div class="day ${d.today?'today':''}">
-      <div class="dh"><span class="dname">${d.d}</span><span class="dt">${d.dt}</span></div>
-      ${(d.tasks||[]).map(t=>`<div class="chip-task ${cls[t.type]}" data-type="${t.type}">${t.t}${t.nt?`<span class="nt">${t.nt}</span>`:''}</div>`).join('') || '<div style="font-size:11px;color:var(--txt-3);margin-top:8px">— 无排程 —</div>'}
-    </div>`).join('');
-}
-function planFilter(f, el){
-  document.querySelectorAll('#planSeg span').forEach(s=>s.classList.remove('on'));
-  el.classList.add('on');
-  document.querySelectorAll('.chip-task').forEach(c=>{
-    c.style.display = (f==='all'||c.dataset.type===f)?'block':'none';
+function itemNeedKb(c){ return c.id==='c3'; }
+
+/* 上线初始推荐：智能体只推一个「博客类」发布任务（给方向，不是成稿） */
+const DIRECTIONS = [
+  {id:'d1', title:'伺服驱动器散热设计专题（博客）', type:'博客', strat:['GEO 4 项','权威信源'], date:'2026-09-30', status:'pending'},
+];
+
+/* ===================== 发布任务（容器） =====================
+   一个任务是一套「生产规则」，按节奏持续产出多条内容；
+   任务本身不可发布，可发布的对象永远是它产出的一条内容。
+*/
+let PUBLISH_TASKS = [
+  { id:'tk1', title:'10月行业方案内容包', from:'manual', status:'active',
+    app:'产品中心', col:'行业方案', freqText:'每周', countText:'2 篇',
+    start:'2026-10-12', next:'2026-10-19',
+    topic:'行业方案 / 应用场景', kw:['伺服驱动器','散热设计','选型'],
+    note:'围绕行业方案持续产出，配图开启后需人工审核', imgOn:true, mode:'review',
+    map:['伺服驱动器','产品中心','行业方案','termoline.com','自动匹配'],
+    strat:['eeat','geo'] },
+  { id:'tk2', title:'英文站 PT100 选型专题（博客）', from:'agent', status:'active',
+    app:'博客文章', col:'英文站 · Technical Blog', freqText:'每周', countText:'1 篇',
+    start:'2026-09-16', next:'2026-09-23',
+    topic:'选型指南 / 误差分析', kw:['PT100','铂电阻','温度传感器'],
+    note:'智能体依据已确认的选题方向自动排产', imgOn:false, mode:'review',
+    map:['PT100','博客文章','英文站','termoline.com','自动匹配'],
+    strat:['geo','auth'] }
+];
+
+/* ===================== 内容（任务产出的结果条） =====================
+   tid 为空 = 站点存量内容（不属于任何任务）；
+   tid 有值 = 该内容由对应发布任务产出。
+   status: published（已发布）| scheduled（已产出待发布）| planned（尚未产出，仅占位排期）
+*/
+let CALENDAR_ITEMS = [
+  /* —— 站点存量内容（由整站巡检修正后逐条发布，无任务归属） —— */
+  {id:'cal1', title:'SDM 系列调试软件使用说明', type:'prod', date:'2026-09-23', status:'scheduled', tid:'',
+   strat:['geo','auth'],
+   body:`<h3>软件安装</h3><p>SDM 调试软件支持 Windows 10 / 11，安装前请确认已连接驱动器。</p><h3>参数调试</h3><ul><li>连接方式：USB / RS485</li><li>支持离线参数读写与示波器采样</li></ul>`},
+  /* 今日（2026-09-22）：供运营看板「发布状态」模块展示 */
+  {id:'cal_t1', title:'SDPH 系列全国产大电流型 — 产品介绍', type:'prod', date:'2026-09-22', status:'published', tid:'',
+   strat:['eeat','geo'],
+   body:`<h3>产品定位</h3><p>SDPH 系列是全国产大电流伺服驱动器，连续 50A / 峰值 125A，自主可控。</p><h3>核心参数</h3><ul><li>供电：24 ~ 72 VDC</li><li>额定连续电流：50 A</li><li>峰值电流：125 A</li></ul>`},
+  {id:'cal_t2', title:'PT100 温度传感器选型指南（英文站）', type:'prod', date:'2026-09-22', status:'published', tid:'',
+   strat:['eeat','auth'],
+   body:`<h3>选型核心指标</h3><p>PT100 铂电阻是工业测温最常用的元件之一。</p><ul><li>测温范围：-200 ~ +850 ℃</li><li>精度等级：A 级 ±0.15 ℃ / B 级 ±0.30 ℃</li></ul>`},
+  {id:'cal_t4', title:'全国产运动控制方案（半导体场景）', type:'case', date:'2026-09-22', status:'scheduled', tid:'',
+   strat:['eeat','red'],
+   body:`<h3>场景需求</h3><p>半导体设备对运动控制的精度与稳定性要求极高，需要全国产、自主可控的解决方案。</p>`},
+
+  /* —— 任务 tk1「10月行业方案内容包」产出的内容 —— */
+  {id:'n1', title:'伺服散热设计要点', type:'blog', date:'2026-10-12', status:'published', tid:'tk1',
+   strat:['eeat','geo'],
+   body:`<h3>为什么散热决定伺服寿命</h3><p>大电流伺服驱动器在峰值输出时会产生显著热量，散热设计直接影响其长期稳定性。</p>`},
+  {id:'n2', title:'伺服选型对照表', type:'prod', date:'2026-10-15', status:'scheduled', tid:'tk1',
+   strat:['geo','auth'],
+   body:`<h3>选型要点</h3><p>按连续电流、峰值电流与安装空间三个维度给出对照，便于快速定位型号。</p>`},
+  {id:'n3', title:'半导体场景落地方案', type:'case', date:'2026-10-19', status:'planned', tid:'tk1',
+   strat:['eeat','red'], body:'' },
+
+  /* —— 任务 tk2「英文站 PT100 选型专题（博客）」产出的内容 —— */
+  {id:'n4', title:'PT100 铂电阻误差分析与选型要点', type:'blog', date:'2026-09-22', status:'scheduled', tid:'tk2',
+   strat:['geo','auth'],
+   body:`<h3>误差从哪里来</h3><p>从等级精度、导线电阻到自热效应，逐项拆解 PT100 的误差来源与压降手段。</p>`}
+];
+
+/* 运营看板：总计数据（发布量侧） */
+const DASH_STATS = { total:128, thisWeek:7, thisMonth:23, fixed:11 };
+/* 运营看板：生产内容策略（图标 + slogan + 说明） */
+const STRATEGIES = [
+  {key:'eeat', name:'EEAT 强化', icon:'🎯', slogan:'让每篇内容有据可依', desc:'补强经验 / 专业 / 权威 / 可信四个维度，附作者资质与数据出处'},
+  {key:'geo',  name:'GEO 4 项',  icon:'🧭', slogan:'让 AI 引擎优先引用你', desc:'面向生成式引擎优化：结构清晰、问答对齐、实体明确、引用规范'},
+  {key:'red',  name:'红线自检', icon:'🛡️', slogan:'上线前零违规风险',    desc:'发布前自动检测并规避违规、敏感表述'},
+  {key:'auth', name:'权威信源', icon:'📚', slogan:'每个结论都可核验',    desc:'关键结论附可核验来源，提升可信度'}
+];
+
+let calCursor = new Date(2026, 8, 22); // 2026-09
+let ccTab  = 'content'; // 内容中心一级页签：content（内容）| task（发布任务）
+let ccView = 'list';   // 内容页签视图：list | calendar
+let ccSeg  = 'all';    // 列表分区：all（全部）| draft（待发布）| fixed（已修改）| published（已发布）
+
+/* ===================== 统一内容库 =====================
+   内容中心 / 运营看板 / 日历共用同一份数据视图：
+   把「巡检存量文章」与「排期内容（含手动创建的任务）」归一成同一种结构，同标题自动合并。
+*/
+function taskOf(id){ return PUBLISH_TASKS.find(t=>t.id===id) || null; }
+function contentStore(){
+  const rows=[], byTitle=new Map();
+  CALENDAR_ITEMS.forEach(x=>{
+    const tk=x.tid ? taskOf(x.tid) : null;
+    const r={ id:x.id, cid:'', title:x.title, type:x.type||'prod', date:x.date||TODAY,
+      published:x.status==='published', planned:x.status==='planned',
+      tid:x.tid||'', taskTitle:tk?tk.title:'',
+      source: tk ? '任务产出的内容' : '站点存量内容', strat:(x.strat||[]).slice(),
+      body:x.body||'', fixed:false, fixNote:'', skipped:false, audit:'', score:'',
+      mode:x.mode||'', kw:(x.kw||[]).slice(), desc:x.desc||'' };
+    rows.push(r); if(!byTitle.has(x.title)) byTitle.set(x.title, r);
   });
+  CONTENTS.forEach(c=>{
+    const hit=byTitle.get(c.title);
+    if(hit){
+      hit.cid=c.id; hit.audit=c.audit||''; hit.score=c.score;
+      hit.fixed=!!c.fixed; hit.fixNote=c.fixNote||''; hit.skipped=!!c.skipped;
+      hit.tid=''; hit.taskTitle=''; hit.source='站点存量内容';   // 与存量文章同标题 → 视为同一篇存量内容
+      if(c.audit==='published'){ hit.published=true; hit.planned=false; }   // 巡检确认发布后同步为「已发布」
+      if(!hit.desc) hit.desc=c.desc||'';
+      if(!hit.body || hit.body.length<20) hit.body=c.body||hit.body;
+    } else {
+      rows.push({ id:c.id, cid:c.id, title:c.title, type:c.type||'prod', date:TODAY,
+        published:c.audit==='published', planned:false, source:'站点存量内容', strat:[], body:c.body||'',
+        fixed:!!c.fixed, fixNote:c.fixNote||'', skipped:!!c.skipped, audit:c.audit||'',
+        score:c.score, mode:'', kw:[], desc:c.desc||'', tid:'', taskTitle:'' });
+    }
+  });
+  return rows;
+}
+/* 内容状态：published（已发布）/ fixed（已修改）/ planned（计划中）/ draft（待发布） */
+function itemState(r){
+  if(r.published) return 'published';
+  if(r.fixed || r.skipped || r.audit==='needKb') return 'fixed';
+  if(r.planned) return 'planned';
+  return 'draft';
+}
+function storeCounts(){
+  const rows=contentStore();
+  const n=s=>rows.filter(r=>itemState(r)===s).length;
+  return { draft:n('draft'), planned:n('planned'), fixed:n('fixed'), published:n('published'), all:rows.length };
+}
+function storeFind(id){
+  const rows=contentStore();
+  return rows.find(r=>r.id===id) || rows.find(r=>r.cid===id) || null;
+}
+/* 任务维度的统计 */
+function taskCounts(){
+  const all=PUBLISH_TASKS;
+  return { all:all.length, active:all.filter(t=>t.status==='active').length, paused:all.filter(t=>t.status!=='active').length };
+}
+function taskContents(tid){
+  const rows=contentStore().filter(r=>r.tid===tid);
+  const order={draft:0,planned:1,fixed:2,published:3};
+  return rows.sort((a,b)=> a.date<b.date?-1:a.date>b.date?1:order[itemState(a)]-order[itemState(b)]);
+}
+function taskStat(tid){
+  const rows=taskContents(tid);
+  const pub=rows.filter(r=>itemState(r)==='published').length;
+  const draft=rows.filter(r=>itemState(r)==='draft'||itemState(r)==='fixed').length;
+  const planned=rows.filter(r=>itemState(r)==='planned').length;
+  return { pub, draft, planned, produced:pub+draft, total:rows.length };
 }
 
-/* ===================== 抽屉：生产逻辑 / 正文 ===================== */
-let curId=null, curTab='logic', logicConfirmed=false;
-function openDrawer(id){
-  curId=id; curTab='logic'; logicConfirmed=false;
-  const o=findById(id); if(!o) return;
-  document.getElementById('drTitle').textContent=o.title;
-  renderLogic(id);
-  switchTab('logic');
-  document.getElementById('mask').classList.add('on');
-  document.getElementById('drawer').classList.add('on');
+/* ===================== 视图切换 ===================== */
+function go(v){
+  document.querySelectorAll('.view').forEach(x=>x.classList.remove('on'));
+  const view=document.getElementById('view-'+v);
+  if(view) view.classList.add('on');
+  document.querySelectorAll('.sidenav .navitem').forEach(n=>n.classList.remove('active'));
+  const navMap={audit:'navAudit',dashboard:'navDash',calendar:'navCal',settings:'navSet'};
+  if(navMap[v]) document.getElementById(navMap[v]).classList.add('active');
+  document.getElementById('crumbNow').textContent = {audit:'整站巡检',dashboard:'运营看板',calendar:'内容中心',settings:'站点设置'}[v]||'';
+   if(v==='audit') renderAudit();
+  if(v==='dashboard') renderDashboard();
+  if(v==='calendar') renderCalendar();
 }
-function viewArticle(id){
-  curId=id; curTab='article'; logicConfirmed=false;
-  const o=findById(id); if(!o) return;
-  document.getElementById('drTitle').textContent=o.title;
-  renderArticle(id);
-  switchTab('article');
-  document.getElementById('mask').classList.add('on');
-  document.getElementById('drawer').classList.add('on');
-}
-function findById(id){ return REVIEW.find(x=>x.id===id) || CONTENTS.find(x=>x.id===id); }
-function switchTab(t){
-  curTab=t;
-  document.querySelectorAll('.dtabs .dt').forEach(d=>d.classList.toggle('on',d.dataset.tab===t));
-  document.getElementById('drLogic').style.display = t==='logic'?'block':'none';
-  document.getElementById('drArticle').style.display = t==='article'?'block':'none';
-}
-function tabDrawer(t){ if(t==='logic') renderLogic(curId); else renderArticle(curId); switchTab(t); }
-function renderLogic(id){
-  const r=REVIEW.find(x=>x.id===id), c=CONTENTS.find(x=>x.id===id);
-  const o=r||c; if(!o) return;
-  const why=r?r.why:'监控/排程触发，按站点基线与策略自动生成';
-  const ref=r?r.ref:['知识库只读','品牌词库','站点基线'];
-  const self=r?r.self:['EEAT 四维评分','GEO 4 项结构','风险红线实时查'];
-  const now=r?r.now:(o.stT||'进行中');
-  const steps=[
-    {h:'为什么写', b:why},
-    {h:'依据什么', b:`<span class="chip">${ref.join('</span><span class="chip">')}</span>`},
-    {h:'怎么写', b:'调取资料（只读）→ EEAT 四维起草（经验/专业/权威/可信）→ GEO 4 项结构 → 成稿'},
-    {h:'自检了什么', b:`<span class="chip">${self.join('</span><span class="chip">')}</span>`},
-    {h:'现在怎样', b:now}
-  ];
-  document.getElementById('drLogic').innerHTML = steps.map((s,i)=>`
-    <div class="lc-step"><div class="h"><span class="ix">${i+1}</span>${s.h}</div><div class="b">${s.b}</div></div>`).join('') + `
-    <div class="frame-confirm">
-      <p>以上为智能体将执行的内容生产框架（含改写/产出要点）。<b>确认后，你才能查看成稿正文。</b></p>
-      <button class="btn approve" onclick="confirmLogicFrame()">确认内容生产框架，进入正文</button>
-    </div>`;
-}
-function confirmLogicFrame(){ logicConfirmed=true; tabDrawer('article'); }
-function renderArticle(id){
-  const o=findById(id); if(!o) return;
-  if(!logicConfirmed){
-    document.getElementById('drArticle').innerHTML = `
-      <div class="frame-locked">
-        <div class="lk-ic">🔒</div>
-        <b>正文已锁定</b>
-        <p>请先在「生产逻辑」中确认内容生产框架（为什么写 / 依据什么 / 怎么写 / 自检项）。确认后，智能体才会向你展示成稿正文。</p>
-        <button class="btn ghost" onclick="switchTab('logic')">返回生产逻辑并确认</button>
+
+/* ===================== ① 整站巡检（一次性） ===================== */
+function renderAudit(){
+  const hero=document.getElementById('auditHero');
+  if(audit.status==='idle'){
+    hero.innerHTML=`
+      <h2>网站即将上线，先巡检一次站点已有的内容</h2>
+      <p class="sub">智能体会逐篇巡检<b>站点里已有的内容文章</b>，自动修正不符合规范的部分；巡检完成后，只把<b>被修正过的内容</b>列出来，供你确认发布。这是一次性动作。</p>
+      <div style="margin-top:18px"><button class="btn approve" onclick="startAudit()">▶ 开始整站巡检</button></div>`;
+  } else if(audit.status==='scanning'){
+    hero.innerHTML=`
+      <div class="scan-stage">
+        <div class="scan-orb">
+          <div class="pulse"></div>
+          <div class="ring r1"></div>
+          <div class="ring r2"></div>
+          <div class="ring r3"></div>
+          <div class="core">巡检中</div>
+        </div>
+        <div class="scan-cap" id="scanCap">正在通读站点全部内容，判断是否符合上线规范…</div>
+        <div class="scan-bar"><i id="scanBarI"></i></div>
+        <div class="scan-hint">智能体正在逐篇巡检并自动修正，请稍候</div>
       </div>`;
+  } else {
+    // done：列出被自动修正的内容（确认发布 / 暂不发布）；需补知识库的内容在对应内容卡片内提示
+    const allFixed=CONTENTS.filter(c=>c.fixed);
+    const allNeedKb=CONTENTS.filter(c=>c.audit==='needKb');
+    const fixed=allFixed.filter(c=>!c.skipped);
+    const needKb=allNeedKb.filter(c=>!c.skipped);
+    const skippedCount=(allFixed.length+allNeedKb.length)-(fixed.length+needKb.length);
+    const okCount=CONTENTS.length-allFixed.length-allNeedKb.length;
+    const items=fixed.map(c=>`
+      <div class="audit-item issue">
+        <div class="st-ic">✎</div>
+        <div class="ai-body"><b>《${c.title}》</b><span>修正：${c.fixNote}</span></div>
+        <div class="acts2">
+          <button class="btn approve" onclick="publishFixed('${c.id}')">确认发布</button>
+          <button class="btn ghost" onclick="skipItem('${c.id}')">暂不发布</button>
+        </div>
+      </div>`).join('');
+    const kbItems=needKb.map(c=>`
+      <div class="audit-item issue kb-block">
+        <div class="st-ic">⚠</div>
+        <div class="ai-body">
+          <b>《${c.title}》</b>
+          <span class="kb-hint">该篇修正需要知识库「<b>英文站品牌词库</b>」的对应内容，知识库中暂无。请前往<b>知识库产品</b>上传补充后，点击下方按钮由智能体继续修正。</span>
+        </div>
+        <div class="acts2">
+          <button class="btn line" onclick="confirmKbUploaded('${c.id}')">我已上传，继续修正</button>
+          <button class="btn ghost" onclick="skipItem('${c.id}')">暂不处理</button>
+        </div>
+      </div>`).join('');
+    const kbNote = needKb.length ? `<p class="kb-note">另有 <b>${needKb.length}</b> 篇因缺少知识库内容暂未修正，补充后可继续。</p>` : '';
+    const skipNote = skippedCount ? `<p class="kb-note">已跳过 <b>${skippedCount}</b> 篇：改动保留在站点，可在<b>内容中心</b>稍后处理。</p>` : '';
+    hero.innerHTML=`
+      <h2>整站巡检与修正完成</h2>
+      <p class="sub" style="margin-bottom:16px">智能体已完成全站内容巡检与自动修正：<b>${fixed.length}</b> 篇被修正并待你确认发布；其余 <b style="color:var(--ok)">${okCount} 篇</b>原本即合规，无需改动。</p>
+      <div class="audit-result-list">${items}${kbItems}</div>
+      ${kbNote}${skipNote}
+      <div style="margin-top:16px;display:flex;gap:10px;flex-wrap:wrap">
+        <button class="btn approve" onclick="publishAllFixed()">全部确认发布并进入运营</button>
+        <button class="btn ghost" onclick="go('dashboard')">前往运营看板 →</button>
+      </div>`;
+  }
+}
+
+function startAudit(){
+  // 一次性巡检：已经上线的内容不再参与，避免重跑时把它们拉回未发布
+  CONTENTS.forEach(c=>{ if(c.audit==='published') return; c.fixed=false; c.fixNote=''; c.audit='unchecked'; c.skipped=false; });
+  audit={status:'scanning',idx:0,total:CONTENTS.length,fixed:[],logs:[],_capIdx:0};
+  logAudit('整站巡检','启动巡检（'+CONTENTS.length+' 篇存量内容）','ok');
+  renderAudit();  startCapRotate();
+  syncBadge();
+  runNext(0);
+}
+/* 回到巡检初始页（一次性动作的重新演示入口，不改变已有内容的上线状态） */
+function resetAudit(){
+  clearInterval(audit._capTimer);
+  audit={status:'idle',idx:0,total:CONTENTS.length,fixed:[],logs:[],_capIdx:0};
+  CONTENTS.forEach(c=>{ if(c.audit==='published') return; c.fixed=false; c.fixNote=''; c.audit='unchecked'; c.skipped=false; });
+  try{ localStorage.removeItem(AUDITED_KEY); }catch(e){}
+  renderAudit(); renderDashboard(); syncBadge();
+  go('audit');
+  flashToast('已回到整站巡检的初始页面');
+}
+function startCapRotate(){
+  clearInterval(audit._capTimer);
+  const caps=['正在通读站点全部内容，判断是否符合上线规范…','发现若干篇需要补正，智能体正在自动改写修复…','正在按规范复核修正结果…'];
+  audit._capTimer=setInterval(()=>{
+    audit._capIdx=(audit._capIdx+1)%caps.length;
+    const el=document.getElementById('scanCap');
+    if(el){ el.style.opacity='0'; setTimeout(()=>{ el.textContent=caps[audit._capIdx]; el.style.opacity='1'; },380); }
+  },2400);
+}
+function runNext(i){
+  if(i>=audit.total){ clearInterval(audit._capTimer); finishAudit(); return; }
+  audit.idx=i+1;
+  const bar=document.getElementById('scanBarI'); if(bar) bar.style.width=Math.round(audit.idx/audit.total*100)+'%';
+  const c=CONTENTS[i];
+  setTimeout(()=>{
+    const blocks=detectItem(c);
+    if(blocks.length===0){
+      logAudit('巡检','《'+c.title+'》合规，无需修正','ok');
+      runNext(i+1);
+    } else if(itemNeedKb(c)){
+      c.audit='needKb';
+      logAudit('修正','《'+c.title+'》需「英文站品牌词库」，知识库暂无，巡检继续，结果页内提示','bad');
+      runNext(i+1);
+    } else {
+      doFix(c,blocks); runNext(i+1);
+    }
+  },760);
+}
+function doFix(c,blocks){
+  c.fixed=true; c.fixNote=buildFixNote(c);
+  c.score=Math.max(c.score,90); c.audit='fixed';
+  audit.fixed.push(c.id);
+  logAudit('自动修正','《'+c.title+'》'+c.fixNote,'ok');
+}
+function buildFixNote(c){
+  if(c.id==='c5') return '补充 EEAT 作者资质说明、统一品牌词、重排 GEO 结构';
+  if(c.id==='c6') return '重排 GEO 结构、补齐策略关键词';
+  if(c.id==='c2') return '补齐实测偏差与选型对照，强化数据出处';
+  if(c.id==='c4') return '补充散热实测数据与 EEAT 资质说明';
+  if(c.id==='c3') return '补充英文站品牌词库对应表述、强化权威信源';
+  return '按规范补正表述';
+}
+function finishAudit(){
+  audit.status='done';
+  try{ localStorage.setItem(AUDITED_KEY,'1'); }catch(e){}
+  logAudit('整站巡检','巡检与自动修正完成：'+audit.fixed.length+' 篇被修正','ok');
+  renderAudit(); syncBadge();}
+
+
+/* 发布已被智能体修正的内容 → 进入上线运营（统一内容库会自动并入「已发布」） */
+function publishFixed(id){
+  const c=CONTENTS.find(x=>x.id===id); if(!c) return;
+  c.audit='published'; c.skipped=false;
+  logAudit('发布','《'+c.title+'》已确认发布，进入上线运营','ok');
+  flashToast('《'+c.title+'》已发布，进入上线运营');
+  renderAudit(); renderCalendar(); renderDashboard(); syncBadge();
+}
+
+/* ===================== 知识库提示（结果页卡片内联，不在巡检中弹窗） ===================== */
+function confirmKbUploaded(id){
+  const c=CONTENTS.find(x=>x.id===id);
+  if(c){
+    doFix(c,detectItem(c));
+    logAudit('修正','用户已上传知识库，智能体继续修正《'+c.title+'》','ok');
+    renderAudit();  }
+}
+/* 暂不发布 / 暂不处理：跳过该篇，改动保留，可在内容中心稍后处理 */
+function skipItem(id){
+  const c=CONTENTS.find(x=>x.id===id); if(!c) return;
+  c.skipped=true;
+  logAudit('暂不处理','《'+c.title+'》已跳过：暂不发布，改动保留在站点，可在内容中心稍后处理','bad');
+  flashToast('《'+c.title+'》已跳过');
+  renderAudit(); renderCalendar();
+}
+function publishAllFixed(){
+  CONTENTS.forEach(c=>{ if(c.fixed && !c.skipped) publishFixed(c.id); });
+  const left=CONTENTS.filter(c=>(c.fixed||c.audit==='needKb') && c.skipped).length;
+  flashToast(left?('已发布未跳过的内容，另有 '+left+' 篇已跳过，可在内容中心稍后处理'):'全部修正内容已发布，进入上线运营');
+  renderAudit();  ccTab='content'; ccView='list'; ccSeg='all'; go('calendar'); setCCTab('content');
+}
+
+/* ===================== ② 运营看板 ===================== */
+function renderDashboard(){
+  const body=document.getElementById('dashBody');
+  // 巡检是一次性动作：做过一次之后，看板长期可用，不再反复拦截
+  if(audit.status!=='done' && !auditedBefore()){
+    body.innerHTML=`<div class="lock-tip"><div class="lk">🔒</div><b>请先完成整站巡检</b><p>整站巡检是一次性动作，做过一次之后，这里就可以随时进入。</p><button class="btn approve" style="margin-top:16px" onclick="go('audit')">去巡检</button></div>`;
     return;
   }
-  const meta=`创建：${o.src} · 状态：${o.stT} · PV ${o.pv} · 滚动深度 ${o.dr}`;
-  document.getElementById('drArticle').innerHTML = `
-    <div class="art-head">
-      <div class="art-ti">${o.title}</div>
-      <div class="art-meta">${meta}</div>
-    </div>
-    <div class="art-cover">配图占位 · 开启配图后自动生成</div>
-    <div class="art-body">${o.body}</div>
-    <div class="art-kws"><span style="font-size:12px;color:var(--txt-2);font-weight:600">关键词：</span><span class="kw">工业传感器</span><span class="kw">全国产</span><span class="kw">伺服驱动器</span></div>`;
-}
-function closeDrawer(){ document.getElementById('mask').classList.remove('on'); document.getElementById('drawer').classList.remove('on'); }
 
-/* ===================== 新建发布任务抽屉 ===================== */
-let taskType='man', imgOn=false;
-const STATE={topic:[],kw:[]};
-function openTask(){
+  const today=TODAY;
+  const todays=contentStore().filter(r=>r.date===today);
+  const todayPub=todays.filter(r=>r.published);
+  const todayTodo=todays.filter(r=>!r.published);
+  // 上线初始推荐：只推一个「博客类」发布任务
+  const rec=DIRECTIONS.find(d=>d.type==='博客'&&d.status==='pending');
+
+  /* ① 总计数据（发布量侧，四个指标） */
+  const statBlock=`
+    <div class="dash-card">
+      <div class="ch"><h3>总计数据</h3><p>已发布内容数量概览</p></div>
+      <div class="dash-metrics">
+        <div class="dash-metric big"><span class="ic">📰</span><div><b>${DASH_STATS.total}</b><span>累计发布内容数</span></div></div>
+        <div class="dash-metric"><span class="ic">📝</span><div><b>${DASH_STATS.thisWeek}</b><span>本周发布数</span></div></div>
+        <div class="dash-metric"><span class="ic">🗓</span><div><b>${DASH_STATS.thisMonth}</b><span>本月发布数</span></div></div>
+        <div class="dash-metric"><span class="ic">✍️</span><div><b>${DASH_STATS.fixed}</b><span>累计修正篇数</span></div></div>
+      </div>
+    </div>`;
+
+  /* ② 上线初始推荐（只一个博客类发布任务） */
+  const recBlock=`
+    <div class="dash-card rec">
+      <div class="ch"><h3>上线初始推荐</h3><p>网站刚上线，智能体推荐这一个博客类发布任务</p></div>
+      ${rec?`<div class="dir-item">
+        <div class="ti"><b>${rec.title}</b><div class="meta">博客类发布任务 · 目标 ${rec.date}</div><div class="strat"><span class="chip type">${rec.type}</span>${rec.strat.map(s=>`<span class="chip">${s}</span>`).join('')}</div></div>
+        <div class="acts"><button class="btn approve" onclick="confirmDir('${rec.id}')">确认发布</button><button class="btn line" onclick="openAdjust('${rec.id}')">调整</button></div>
+      </div>`:`<div class="rec-empty">暂无待确认的推荐任务</div>`}
+    </div>`;
+
+  /* ③ 发布状态（今日已发布 / 今日待发布，卡片式；点卡片看正文与生产策略） */
+  const pubTotal=todays.length;
+  const pubPct=pubTotal?Math.round(todayPub.length/pubTotal*100):0;
+  const pubCard=(x,done)=>`
+    <div class="pub-card ${done?'done':'todo'} type-${x.type}" onclick="goContentItem('${x.id}')" title="点击跳到内容中心查看这条内容">
+      <span class="pc-bar"></span>
+      <div class="pc-body">
+        <div class="pc-t"><span>${x.title}</span>${done?'<span class="pc-badge ok">✓ 已发布</span>':'<span class="pc-badge wait">待发布</span>'}</div>
+        <div class="pc-tags">
+          <span class="pc-tag type">${typeLabel(x.type)}</span>
+          ${(x.strat||[]).map(k=>`<span class="pc-tag strat">${stratName(k)}</span>`).join('')}
+        </div>
+      </div>
+    </div>`;
+  const pubBlock=`
+    <div class="dash-card">
+      <div class="ch"><h3>发布状态</h3><p>点击卡片查看内容正文与生产策略</p></div>
+      <div class="pub-head">
+        <span class="ph-date">今日 · ${today}</span>
+        <span class="ph-prog">今日发布进度 <b>${todayPub.length} / ${pubTotal}</b></span>
+      </div>
+      <div class="pub-track"><i style="width:${pubPct}%"></i></div>
+      <div class="pub-cols">
+        <div>
+          <div class="pub-col-h"><span class="dot ok"></span>今日已发布<b>${todayPub.length}</b></div>
+          ${todayPub.map(x=>pubCard(x,true)).join('')||'<div class="pub-empty">今日暂无已发布内容</div>'}
+        </div>
+        <div>
+          <div class="pub-col-h"><span class="dot wait"></span>今日待发布<b>${todayTodo.length}</b></div>
+          ${todayTodo.map(x=>pubCard(x,false)).join('')||'<div class="pub-empty">今日暂无待发布内容</div>'}
+        </div>
+      </div>
+    </div>`;
+
+  /* ④ 生产内容策略（渐变卡片） */
+  const stratBlock=`
+    <div class="dash-card">
+      <div class="ch"><h3>生产内容策略</h3><p>智能体生产内容时采用的策略</p></div>
+      <div class="strat-grid">
+        ${STRATEGIES.map(s=>`
+          <div class="strat-card sc-${s.key}">
+            <div class="sc-ic">${s.icon}</div>
+            <div class="sc-name">${s.name}</div>
+            <div class="sc-slogan">${s.slogan}</div>
+            <div class="sc-desc">${s.desc}</div>
+          </div>`).join('')}
+      </div>
+    </div>`;
+
+  body.innerHTML=statBlock+recBlock+pubBlock+stratBlock;
+}
+
+/* 确认推荐 → 生成一个「发布任务」（智能体排产），由它持续产出内容 */
+function confirmDir(id){
+  const d=DIRECTIONS.find(x=>x.id===id); if(!d) return;
+  d.status='confirmed';
+  const tid='tk_'+d.id;
+  if(!taskOf(tid)){
+    const start=d.date||TODAY;
+    PUBLISH_TASKS.push({ id:tid, title:d.title, from:'agent', status:'active',
+      app:'博客文章', col:'技术博客', freqText:'每周', countText:'1 篇',
+      start:start, next:addDays(start,7), topic:'散热设计 / 技术专题', kw:['伺服驱动器','散热'],
+      note:'智能体依据「上线初始推荐」自动排产', imgOn:false, mode:'review',
+      map:['伺服驱动器','博客文章','技术博客','termoline.com','自动匹配'], strat:['geo','auth'] });
+    CALENDAR_ITEMS.push({ id:'n_'+d.id, title:'伺服驱动器散热设计要点', type:'blog', date:start, tid:tid,
+      status:'scheduled', strat:['geo','auth'],
+      body:`<h3>散热路径</h3><p>从 IGBT 结温到散热器温升，逐段拆解温升来源与压降手段。</p>` });
+    CALENDAR_ITEMS.push({ id:'n_'+d.id+'_2', title:'散热设计常见误区', type:'blog', date:addDays(start,7), tid:tid,
+      status:'planned', strat:['geo','auth'], body:'' });
+  }
+  logAudit('任务确认','确认选题方向《'+d.title+'》，已生成发布任务并开始排产','ok');
+  flashToast('已确认《'+d.title+'》，已生成发布任务并开始排产');
+  renderDashboard(); renderCalendar(); syncBadge();
+}
+/* 调整推荐任务（生产策略只读不可改） */
+let adjustId=null;
+function openAdjust(id){
+  const d=DIRECTIONS.find(x=>x.id===id); if(!d) return;
+  adjustId=id;
+  document.getElementById('adjTitle').value=d.title;
+  document.getElementById('adjDate').value=d.date;
+  document.getElementById('adjStrat').innerHTML=d.strat.map(s=>`<span class="chip">${s}</span>`).join('')+'<span class="ro-tag">🔒 由智能体设定，不可更改</span>';
+  document.getElementById('adjModal').classList.add('on');
+}
+function closeAdjust(){ document.getElementById('adjModal').classList.remove('on'); }
+function saveAdjust(){
+  const d=DIRECTIONS.find(x=>x.id===adjustId); if(!d){ closeAdjust(); return; }
+  const t=document.getElementById('adjTitle').value.trim();
+  const dt=document.getElementById('adjDate').value;
+  if(t) d.title=t;
+  if(dt) d.date=dt;
+  logAudit('任务调整','调整推荐任务《'+d.title+'》，目标 '+d.date,'warn');
+  closeAdjust(); flashToast('已保存修改'); renderDashboard();
+}
+function regenAdjust(){
+  const d=DIRECTIONS.find(x=>x.id===adjustId); if(!d) return;
+  d.title='伺服驱动器散热设计要点（博客）';
+  d.date='2026-10-02';
+  document.getElementById('adjTitle').value=d.title;
+  document.getElementById('adjDate').value=d.date;
+  flashToast('智能体已重新生成一个主题');
+}
+function syncBadge(){
+  const n=DIRECTIONS.filter(d=>d.status==='pending').length;
+  const item=document.getElementById('navDash');
+  if(item){ item.dataset.badge=n; if(n>0) item.classList.add('badge'); else item.classList.remove('badge'); }
+  // 巡检跑完后，侧边栏「整站巡检」项上露出「回到初始页」的入口
+  const na=document.getElementById('navAudit');
+  if(na) na.classList.toggle('done', audit.status==='done');
+}
+
+/* ===================== ③ 内容中心（列表 / 日历 双视图） ===================== */
+const TYPE_LABEL={prod:'产品/白皮书',blog:'博客',news:'资讯',case:'案例'};
+const TYPE_COLOR={prod:'var(--brand-500)',blog:'var(--warn)',news:'#0ea5e9',case:'#a21caf'};
+function typeLabel(t){ return TYPE_LABEL[t]||'内容'; }
+function stBadge(r){
+  const st=itemState(r);
+  if(st==='published') return '<span class="pc-badge ok">✓ 已发布</span>';
+  if(st==='planned')   return '<span class="pc-badge wait">计划中</span>';
+  if(st==='fixed')     return r.skipped?'<span class="pc-badge wait">已跳过</span>':'<span class="pc-badge wait">待确认</span>';
+  return '<span class="pc-badge wait">待发布</span>';
+}
+function stratName(k){ const s=STRATEGIES.find(x=>x.key===k); return s?s.name:k; }
+
+function setCCTab(t){
+  ccTab=t;
+  document.getElementById('ccTabContent').classList.toggle('on',t==='content');
+  document.getElementById('ccTabTask').classList.toggle('on',t==='task');
+  document.getElementById('ccViewSeg').style.display = t==='content'?'':'none';
+  renderCalendar();
+}
+function setCCView(v){
+  ccView=v;
+  document.getElementById('ccViewList').classList.toggle('on',v==='list');
+  document.getElementById('ccViewCal').classList.toggle('on',v==='calendar');
+  renderCalendar();
+}
+function setCCSeg(s){ ccSeg=s; renderCalendar(); }
+
+function renderCalendar(){
+  const listBody=document.getElementById('ccListBody'), calBody=document.getElementById('calBody'), taskBody=document.getElementById('ccTaskBody');
+  if(ccTab==='task'){
+    const t=taskCounts();
+    document.getElementById('ccStat').innerHTML=
+      `任务共 <b>${t.all}</b> 个 · 进行中 <b>${t.active}</b> · 已暂停 <b>${t.paused}</b>`;
+    listBody.style.display='none'; calBody.style.display='none'; taskBody.style.display='block';
+    renderCCTasks();
+    return;
+  }
+  const c=storeCounts();
+  document.getElementById('ccStat').innerHTML=
+    `内容共 <b>${c.all}</b> 条 · 待发布 <b>${c.draft}</b> · 已修改 <b>${c.fixed}</b> · 已发布 <b>${c.published}</b>`+
+    (c.planned?` · 计划中 <b>${c.planned}</b>`:'');
+  taskBody.style.display='none';
+  listBody.style.display = ccView==='list'?'block':'none';
+  calBody.style.display  = ccView==='calendar'?'block':'none';
+  if(ccView==='list') renderCCList(); else renderCCCalendar();
+}
+
+/* —— 列表视图：全部（按日期分组） / 待发布 / 已修改 / 已发布 —— */
+function fmtDate(d){ const p=String(d||'').split('-'); return p.length===3?((+p[1])+'月'+(+p[2])+'日'):d; }
+function addDays(d,n){ const p=String(d||TODAY).split('-'); const dt=new Date(+p[0],(+p[1])-1,+p[2]); dt.setDate(dt.getDate()+n);
+  return dt.getFullYear()+'-'+String(dt.getMonth()+1).padStart(2,'0')+'-'+String(dt.getDate()).padStart(2,'0'); }
+/* 内容卡片上的归属：任务产出的挂到任务下，其余为站点存量内容 */
+function srcLabel(r){ return r.tid ? ('来自《'+r.taskTitle+'》') : '站点存量内容'; }
+function canEditItem(r){ const t=r.tid?taskOf(r.tid):null; return !!t && t.from==='manual' && itemState(r)!=='published'; }
+function canCancelItem(r){ return !!r.tid && itemState(r)!=='published'; }
+function ccCard(r){
+  const st=itemState(r);
+  const badge = stBadge(r);
+  let fix='';
+  if(st==='fixed'){
+    if(r.audit==='needKb'){
+      fix='<div class="cc-fix warn">⚠ 该篇修正需要知识库「英文站品牌词库」的内容，请在知识库产品中补充后，回到整站巡检继续修正。</div>';
+    } else if(r.fixNote){
+      fix='<div class="cc-fix">✎ 智能体已修正：'+r.fixNote+'</div>';
+    }
+  }
+  if(st==='planned'){
+    fix='<div class="cc-fix warn">◷ 该条由任务排期产出，尚未生成正文。任务下次产出后再回到这里。</div>';
+  }
+  const acts = (st==='published'||st==='planned') ? ''
+    : `<button class="btn ${st==='fixed'?'approve':'line'}" onclick="event.stopPropagation();publishNow('${r.id}')">${st==='fixed'?'确认发布':'立即发布'}</button>`;
+  const more = (canEditItem(r)||canCancelItem(r))
+    ? `<button class="cc-more" title="更多操作" onclick="event.stopPropagation();openCardMenu(event,'${r.id}')">⋯</button>` : '';
+  return `
+    <div class="cc-card type-${r.type} ${st==='planned'?'planned':''}" id="cc-${r.id}" onclick="openItem('${r.id}')">
+      <span class="cc-bar"></span>
+      <div class="cc-ti">
+        <div class="cc-title"><span>${r.title}</span>${badge}</div>
+        <div class="cc-meta">
+          <span class="pc-tag type">${typeLabel(r.type)}</span>
+          <span>${srcLabel(r)}</span>
+          <span>排期 ${r.date}${r.date===TODAY?'（今天）':''}</span>
+          ${(r.strat||[]).map(k=>`<span class="pc-tag strat">${stratName(k)}</span>`).join('')}
+        </div>
+        ${fix}
+      </div>
+      <div class="cc-acts">${acts}${more}</div>
+    </div>`;
+}
+function renderCCGrouped(rows){
+  const order={draft:0,planned:1,fixed:2,published:3};
+  const byDate=new Map();
+  rows.forEach(r=>{ if(!byDate.has(r.date)) byDate.set(r.date,[]); byDate.get(r.date).push(r); });
+  return [...byDate.keys()].sort().map((d,i)=>{
+    const list=byDate.get(d).slice().sort((a,b)=>order[itemState(a)]-order[itemState(b)]);
+    const lab = (d===TODAY? '今天 · ' : '') + fmtDate(d);
+    return `
+      <div class="cc-day${i===0?' first':''}">
+        <span class="cc-daylab">${lab}</span><span class="cc-dayline"></span><span class="cc-daycnt">${list.length} 条</span>
+      </div>
+      <div class="cc-list">${list.map(ccCard).join('')}</div>`;
+  }).join('');
+}
+function renderCCList(){
+  const body=document.getElementById('ccListBody');
+  const c=storeCounts();
+  const hint={
+    all:'站点全部内容按日期排在一起：任务产出的、巡检修正过的、已经上线的都在这里。',
+    draft:'已经产出正文、等待排期发布的内容。点开卡片可以看正文与生产策略，也可以直接发布。',
+    planned:'发布任务已排期、但尚未产出正文的内容。到产出时间后，任务会把它变成一条正式内容。',
+    fixed:'整站巡检中被智能体自动修正过的内容，确认即可发布；不想发的会保留改动、稍后处理。',
+    published:'已发布上线的内容，可随时回看正文与当时采用的策略。'
+  }[ccSeg];
+  const segs=[['all','全部'],['draft','待发布'],['planned','计划中'],['fixed','已修改'],['published','已发布']];
+  const listBody = ccSeg==='all'
+    ? renderCCGrouped(contentStore())
+    : `<div class="cc-list">${contentStore().filter(r=>itemState(r)===ccSeg).sort((a,b)=>a.date<b.date?-1:a.date>b.date?1:0).map(ccCard).join('')||'<div class="cc-empty">该状态下暂无内容</div>'}</div>`;
+  body.innerHTML=`
+    <div class="seg cc-seg">
+      ${segs.map(([k,n])=>`<button class="${ccSeg===k?'on':''}" onclick="setCCSeg('${k}')">${n} ${c[k]}</button>`).join('')}
+    </div>
+    <p class="cc-hint">${hint}</p>
+    ${listBody||'<div class="cc-empty">暂无内容</div>'}`;
+}
+
+/* ===================== 发布任务视图（容器维度） ===================== */
+function tkCadence(t){ return t.freqText==='仅一次' ? '仅一次产出' : (t.freqText+' '+t.countText); }
+function tkCard(t){
+  const s=taskStat(t.id);
+  const pct=s.total?Math.round(s.pub/s.total*100):0;
+  const nextTxt = t.status!=='active' ? '已暂停产出'
+                : (t.next ? ('下次产出 '+fmtDate(t.next)) : '不再排产');
+  return `
+    <div class="tk-card${t.status==='active'?'':' paused'}" id="tk-${t.id}" onclick="openTaskDetail('${t.id}')">
+      <span class="tk-bar"></span>
+      <div class="tk-ti">
+        <div class="tk-title">
+          <span>${escapeHtml(t.title)}</span>
+          ${t.status==='active'?'<span class="pc-badge ok">进行中</span>':'<span class="pc-badge wait">已暂停</span>'}
+          <span class="tk-src${t.from==='manual'?'':' agent'}">${t.from==='manual'?'手动创建':'智能体推荐'}</span>
+        </div>
+        <div class="tk-meta">
+          <span class="pc-tag type">${escapeHtml(t.app)} · ${escapeHtml(t.col)}</span>
+          <span>${tkCadence(t)}</span>
+          <span>起始 ${t.start}${t.start===TODAY?'（今天）':''}</span>
+          <span>${nextTxt}</span>
+        </div>
+        <div class="tk-prog">
+          <div class="tk-track"><i style="width:${pct}%"></i></div>
+          <span>已产出 <b>${s.produced}</b> 条（已发布 <b>${s.pub}</b> · 待发布 <b>${s.draft}</b>）${s.planned?` · 待产出 <b>${s.planned}</b> 条`:''}</span>
+        </div>
+      </div>
+      <div class="cc-acts">
+        <button class="cc-more" title="更多操作" onclick="event.stopPropagation();openTaskMenu(event,'${t.id}')">⋯</button>
+      </div>
+    </div>`;
+}
+function renderCCTasks(){
+  document.getElementById('ccTaskBody').innerHTML=`
+    <p class="cc-hint">发布任务是持续生产内容的容器：一个任务按节奏产出多条内容。任务本身不能发布，可发布的对象永远是它产出的某一条内容。</p>
+    <div class="tk-list">${PUBLISH_TASKS.map(tkCard).join('')||'<div class="cc-empty">暂无发布任务</div>'}</div>`;
+}
+function tkChild(r){
+  return `
+    <div class="tk-child" onclick="event.stopPropagation();openItem('${r.id}')">
+      <span class="ch-bar" style="background:${TYPE_COLOR[r.type]||'var(--brand-500)'}"></span>
+      <div class="ch-ti">
+        <div class="ch-t">${escapeHtml(r.title)}</div>
+        <div class="ch-m">${typeLabel(r.type)} · 排期 ${r.date}${r.date===TODAY?'（今天）':''} ${stBadge(r)}</div>
+      </div>
+      <button class="cc-more" title="更多操作" onclick="event.stopPropagation();openCardMenu(event,'${r.id}')">⋯</button>
+    </div>`;
+}
+/* 任务详情：上半是任务本身（生产规则），下半是这个任务已产出的内容 */
+function openTaskDetail(tid){
+  const t=taskOf(tid); if(!t) return;
+  closeCardMenu();
+  const s=taskStat(tid), kids=taskContents(tid);
+  const used=(t.strat||[]).map(k=>STRATEGIES.find(x=>x.key===k)).filter(Boolean);
+  document.getElementById('drTitle').textContent=t.title;
+  document.getElementById('drArticle').innerHTML=`
+    <div class="art-head"><div class="art-meta">
+      <span>发布任务</span><span>${t.from==='manual'?'手动创建':'智能体推荐'}</span>
+      <span>${t.status==='active'?'进行中':'已暂停'}</span><span>已产出 ${s.produced} 条</span></div></div>
+    <div class="tk-detail">
+      <div class="kv"><span class="k">生产节奏</span><span class="v">${tkCadence(t)} · 推送至 ${escapeHtml(t.app)} / ${escapeHtml(t.col)}</span></div>
+      <div class="kv"><span class="k">起始时间</span><span class="v">${t.start}${t.next&&t.status==='active'?`　·　下次产出 ${t.next}`:''}</span></div>
+      <div class="kv"><span class="k">内容主题</span><span class="v">${escapeHtml(t.topic||'—')}</span></div>
+      <div class="kv"><span class="k">关键词</span><span class="v">${escapeHtml((t.kw||[]).join('、')||'—')}</span></div>
+      <div class="kv"><span class="k">数据映射</span><span class="v">${(t.map||[]).map(x=>`<span class="chip">${escapeHtml(x)}</span>`).join('')||'—'}</span></div>
+      <div class="kv"><span class="k">配图</span><span class="v">${t.imgOn?'开启（生成后需人工审核）':'不开启'}</span></div>
+      <div class="kv"><span class="k">发布方式</span><span class="v">${t.mode==='review'?'生成后进入待审核队列，由你确认后发布':'校验通过后直接发布'}</span></div>
+      ${t.note?`<div class="kv"><span class="k">任务说明</span><span class="v">${escapeHtml(t.note)}</span></div>`:''}
+    </div>
+    <div class="tk-sect-h">这个任务产出的内容 <span class="n">${kids.length} 条 · 已发布 ${s.pub} · 待发布 ${s.draft}${s.planned?' · 待产出 '+s.planned:''}</span></div>
+    ${kids.map(tkChild).join('')||'<div class="cc-empty">该任务还没有产出内容</div>'}`;
+  document.getElementById('drLogic').innerHTML=`
+    <div class="lc-step"><div class="h"><span class="ix">◎</span>任务来源</div><div class="b">${t.from==='manual'?'手动创建的发布任务':'运营看板确认的选题方向（智能体排产）'}</div></div>
+    <div class="lc-step"><div class="h"><span class="ix">◎</span>该任务采用的策略</div><div class="b">${used.map(x=>`<span class="chip">${x.icon} ${x.name}</span>`).join('')||'—'}</div></div>
+    ${used.map(x=>`<div class="lc-step"><div class="h"><span class="ix">${x.icon}</span>${x.name} · ${x.slogan}</div><div class="b">${x.desc}</div></div>`).join('')}`;
+  switchDTab(0);
+  const acts=document.getElementById('drActs');
+  acts.className='dr-acts on';
+  acts.innerHTML=`<div class="sp"></div>
+    ${t.from==='manual'?`<button class="btn line" onclick="editTaskById('${t.id}')">编辑任务</button>`:''}
+    <button class="btn ghost" onclick="toggleTaskStatus('${t.id}')">${t.status==='active'?'暂停任务':'继续任务'}</button>
+    <button class="btn danger" onclick="cancelTaskById('${t.id}')">取消任务</button>`;
+  document.getElementById('mask').classList.add('on');
+  document.getElementById('drawer').classList.add('on');
+}
+function editTaskById(tid){ const t=taskOf(tid); if(!t) return; closeDrawer(); ccTab='task'; openTask(tid); }
+
+/* —— 卡片右侧「⋯」操作菜单 —— */
+function menuAt(ev, html){
+  closeCardMenu();
+  const m=document.createElement('div');
+  m.className='cc-menu'; m.id='ccMenu';
+  m.innerHTML=html;
+  document.body.appendChild(m);
+  const b=ev.currentTarget.getBoundingClientRect();
+  const w=m.offsetWidth||150, h=m.offsetHeight||120;
+  m.style.top=Math.max(12, Math.min(b.bottom+6, window.innerHeight-h-12))+'px';
+  m.style.left=Math.max(12, Math.min(b.right-w, window.innerWidth-w-12))+'px';
+  setTimeout(()=>document.addEventListener('click', closeCardMenu, {once:true}), 0);
+}
+/* 内容卡片：操作只针对这一条内容；任务级操作在任务卡片里 */
+function openCardMenu(ev, id){
+  const r=storeFind(id); if(!r) return;
+  menuAt(ev, `<button onclick="closeCardMenu();openItem('${id}')">查看详情</button>
+    ${r.tid?`<button onclick="closeCardMenu();openTaskDetail('${r.tid}')">查看所属任务</button>`:''}
+    ${canEditItem(r)?`<button onclick="closeCardMenu();editTask('${id}')">编辑任务</button>`:''}
+    ${canCancelItem(r)?`<button class="danger" onclick="closeCardMenu();cancelContent('${id}')">取消这条内容</button>`:''}`);
+}
+/* 任务卡片：编辑 / 暂停 / 取消任务 */
+function openTaskMenu(ev, tid){
+  const t=taskOf(tid); if(!t) return;
+  menuAt(ev, `<button onclick="closeCardMenu();openTaskDetail('${tid}')">查看任务</button>
+    ${t.from==='manual'?`<button onclick="closeCardMenu();editTaskById('${tid}')">编辑任务</button>`:''}
+    <button onclick="closeCardMenu();toggleTaskStatus('${tid}')">${t.status==='active'?'暂停任务':'继续任务'}</button>
+    <button class="danger" onclick="closeCardMenu();cancelTaskById('${tid}')">取消任务</button>`);
+}
+function closeCardMenu(){ const m=document.getElementById('ccMenu'); if(m) m.remove(); }
+
+let LAST_CANCEL=null;
+/* ① 取消「一条内容」：只影响这一条，任务继续产出 */
+function cancelContent(id){
+  const r=storeFind(id); if(!r) return;
+  askConfirm({ title:'取消这条内容《'+r.title+'》？',
+    desc:'该内容会从内容中心移除；它所属的发布任务不受影响，仍会按节奏继续产出。5 秒内可以撤销。',
+    ok:'确定取消', cb:()=>doCancelContent(id) });
+}
+function doCancelContent(id){
+  const r=storeFind(id); if(!r) return;
+  const idx=CALENDAR_ITEMS.findIndex(x=>x.id===r.id);
+  if(idx<0){ flashToast('该内容不在可取消范围内'); return; }
+  const removed=CALENDAR_ITEMS.splice(idx,1)[0];
+  LAST_CANCEL={task:null, list:[{item:removed, idx:idx}]};
+  closeCardMenu(); closeDrawer();
+  renderCalendar(); renderDashboard(); syncBadge();
+  flashToast('已取消《'+removed.title+'》', {label:'撤销', cb:()=>{
+    if(!LAST_CANCEL) return;
+    restoreCancel(LAST_CANCEL);
+    flashToast('已恢复《'+removed.title+'》');
+  }});
+}
+/* ② 取消「整个任务」：停止生产 + 名下未发布内容一并移除，已发布的保留 */
+function cancelTaskById(tid){
+  const t=taskOf(tid); if(!t) return;
+  const kids=contentStore().filter(r=>r.tid===tid);
+  const pub=kids.filter(r=>itemState(r)==='published').length;
+  askConfirm({ title:'取消任务《'+t.title+'》？',
+    desc:'任务将停止生产内容，它名下 '+(kids.length-pub)+' 条未发布内容会一并移除'+(pub?`；已发布的 ${pub} 条保留在内容中心`:'')+'。5 秒内可以撤销。',
+    ok:'确定取消', cb:()=>doCancelTask(tid) });
+}
+function doCancelTask(tid){
+  const t=taskOf(tid); if(!t) return;
+  const keep=new Set(contentStore().filter(r=>r.tid===tid && itemState(r)==='published').map(r=>r.id));
+  const snap=[];
+  CALENDAR_ITEMS.forEach((x,i)=>{ if(x.tid===tid && !keep.has(x.id)) snap.push({item:x, idx:i}); });
+  const drop=new Set(snap.map(s=>s.item.id));
+  CALENDAR_ITEMS=CALENDAR_ITEMS.filter(x=>!drop.has(x.id));
+  const tIdx=PUBLISH_TASKS.findIndex(x=>x.id===tid);
+  if(tIdx>=0) PUBLISH_TASKS.splice(tIdx,1);
+  LAST_CANCEL={task:{item:t, idx:tIdx}, list:snap};
+  closeCardMenu(); closeDrawer();
+  renderCalendar(); renderDashboard(); syncBadge();
+  flashToast('已取消任务《'+t.title+'》', {label:'撤销', cb:()=>{
+    if(!LAST_CANCEL) return;
+    const title=LAST_CANCEL.task.item.title;
+    restoreCancel(LAST_CANCEL);
+    flashToast('已恢复任务《'+title+'》');
+  }});
+}
+function restoreCancel(L){
+  LAST_CANCEL=null;
+  if(L.task && L.task.idx>=0) PUBLISH_TASKS.splice(L.task.idx, 0, L.task.item);
+  L.list.slice().sort((a,b)=>a.idx-b.idx).forEach(x=>CALENDAR_ITEMS.splice(x.idx, 0, x.item));
+  renderCalendar(); renderDashboard(); syncBadge();
+}
+/* 暂停 / 继续任务 */
+function toggleTaskStatus(tid){
+  const t=taskOf(tid); if(!t) return;
+  t.status = t.status==='active' ? 'paused' : 'active';
+  logAudit('任务'+(t.status==='active'?'继续':'暂停'),'发布任务《'+t.title+'》已'+(t.status==='active'?'恢复生产':'暂停产出'),'warn');
+  renderCalendar();
+  flashToast('任务《'+t.title+'》已'+(t.status==='active'?'继续':'暂停'));
+}
+
+/* —— 日历视图 —— */
+function renderCCCalendar(){
+  const body=document.getElementById('calBody');
+  const rows=contentStore();
+  const y=calCursor.getFullYear(), m=calCursor.getMonth();
+  const firstDow=(new Date(y,m,1).getDay()+6)%7;
+  const daysInMonth=new Date(y,m+1,0).getDate();
+  let cells='';
+  ['一','二','三','四','五','六','日'].forEach(d=>{cells+=`<div class="cal-dow">${d}</div>`;});
+  for(let i=0;i<firstDow;i++){cells+=`<div class="cal-cell dim"></div>`;}
+  for(let d=1;d<=daysInMonth;d++){
+    const dateStr=`${y}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    const items=rows.filter(r=>r.date===dateStr);
+    const isToday=dateStr===TODAY;
+    const itemHtml=items.slice(0,3).map(r=>`<div class="cal-item type-${r.type} ${r.published?'pub':''}" onclick="openItem('${r.id}')">${r.title}</div>`).join('');
+    const more=items.length>3?`<div class="cal-more">+${items.length-3} 篇</div>`:'';
+    cells+=`<div class="cal-cell ${isToday?'today':''}"><div class="dnum">${d}</div>${itemHtml}${more}</div>`;
+  }
+  body.innerHTML=`
+    <div class="cal-toolbar">
+      <button class="btn ghost" onclick="calPrev()">‹</button>
+      <b>${y}年${m+1}月</b>
+      <button class="btn ghost" onclick="calNext()">›</button>
+      <div class="sp"></div>
+      <div class="legend">
+        <div class="lg"><span class="dot" style="background:var(--brand-500)"></span>产品/白皮书</div>
+        <div class="lg"><span class="dot" style="background:var(--warn)"></span>博客</div>
+        <div class="lg"><span class="dot" style="background:#0ea5e9"></span>资讯</div>
+        <div class="lg"><span class="dot" style="background:#a21caf"></span>案例</div>
+      </div>
+    </div>
+    <div class="cal-grid">${cells}</div>
+    <p class="cc-hint" style="margin:14px 0 0">划掉的条目表示已发布；点击任意条目可查看正文与生产策略。</p>`;
+}
+function calPrev(){ calCursor=new Date(calCursor.getFullYear(),calCursor.getMonth()-1,1); renderCalendar(); }
+function calNext(){ calCursor=new Date(calCursor.getFullYear(),calCursor.getMonth()+1,1); renderCalendar(); }
+
+/* —— 发布（列表卡片与看板共用） —— */
+function publishNow(id){
+  const r=storeFind(id); if(!r) return;
+  const cal=CALENDAR_ITEMS.find(x=>x.id===r.id);
+  if(cal) cal.status='published';
+  const c=CONTENTS.find(x=>x.id===(r.cid||r.id));
+  if(c){ c.audit='published'; c.skipped=false; }
+  logAudit('发布','《'+r.title+'》已发布，进入上线运营','ok');
+  flashToast('《'+r.title+'》已发布，进入上线运营');
+  const drawer=document.getElementById('drawer');
+  if(drawer && drawer.classList.contains('on')) closeDrawer();
+  renderCalendar(); renderDashboard(); syncBadge();
+}
+
+function openItem(id){
+  const r=storeFind(id); if(!r) return;
+  const st=itemState(r);
+  document.getElementById('drTitle').textContent=r.title;
+  // Tab① 正文
+  const stTxt = st==='published' ? '已发布' : st==='planned' ? '计划中 · 尚未产出' : st==='fixed' ? '已修改 · 待确认发布' : '待发布';
+  let fixBox='';
+  if(r.audit==='needKb'){
+    fixBox='<div class="cc-fix warn" style="margin-bottom:14px">⚠ 该篇修正需要知识库「英文站品牌词库」的内容，请在知识库产品中补充后，回到整站巡检继续修正。</div>';
+  } else if(r.fixNote){
+    fixBox='<div class="cc-fix" style="margin-bottom:14px">✎ 智能体已修正：'+r.fixNote+'</div>';
+  } else if(st==='planned'){
+    fixBox='<div class="cc-fix warn" style="margin-bottom:14px">◷ 这条内容由发布任务排期产出，尚未生成正文。到产出时间后任务会补齐，再回到这里确认发布。</div>';
+  }
+  document.getElementById('drArticle').innerHTML=`
+    <div class="art-head"><div class="art-meta">
+      <span>${typeLabel(r.type)}</span><span>${stTxt}</span><span>排期 ${r.date}</span>
+      <span>${r.tid?('来自《'+escapeHtml(r.taskTitle)+'》'):'站点存量内容'}</span></div></div>
+    ${fixBox}
+    <div class="art-body">${r.body||'<p>正文尚未生成</p>'}</div>`;
+  // Tab② 生产策略
+  const used=(r.strat||[]).map(k=>STRATEGIES.find(s=>s.key===k)).filter(Boolean);
+  document.getElementById('drLogic').innerHTML=`
+    <div class="lc-step"><div class="h"><span class="ix">◎</span>内容来源</div><div class="b">${r.tid?('发布任务《'+escapeHtml(r.taskTitle)+'》产出'):'站点存量内容（由整站巡检修正）'}</div></div>
+    <div class="lc-step"><div class="h"><span class="ix">◎</span>本条采用的策略</div><div class="b">${used.map(s=>`<span class="chip">${s.icon} ${s.name}</span>`).join('')||'—'}</div></div>
+    ${used.map(s=>`<div class="lc-step"><div class="h"><span class="ix">${s.icon}</span>${s.name} · ${s.slogan}</div><div class="b">${s.desc}</div></div>`).join('')}`;
+  switchDTab(0);
+  // 底部操作条：内容级操作（针对这一条），任务级操作走「所属任务」
+  const acts=document.getElementById('drActs');
+  const eOk=canEditItem(r), cOk=canCancelItem(r), hasTask=!!r.tid;
+  if(hasTask||eOk||cOk){
+    acts.className='dr-acts on';
+    acts.innerHTML=`<div class="sp"></div>
+      ${hasTask?`<button class="btn ghost" onclick="openTaskDetail('${r.tid}')">所属任务</button>`:''}
+      ${eOk?`<button class="btn line" onclick="editTask('${r.id}')">编辑任务</button>`:''}
+      ${cOk?`<button class="btn ghost" onclick="cancelContent('${r.id}')">取消这条内容</button>`:''}`;
+  } else { acts.className='dr-acts'; acts.innerHTML=''; }
+  document.getElementById('mask').classList.add('on');
+  document.getElementById('drawer').classList.add('on');
+}
+function openCalItem(id){ openItem(id); }
+/* 从运营看板的发布状态跳到内容中心，并定位到那条内容 */
+function goContentItem(id){
+  const r=storeFind(id); if(!r) return;
+  ccTab='content'; ccView='list'; ccSeg=itemState(r);
+  go('calendar');
+  setCCTab('content');
+  openItem(id);
+}
+function switchDTab(i){
+  document.querySelectorAll('.dtabs .dt').forEach((t,k)=>t.classList.toggle('on',k===i));
+  document.getElementById('drArticle').style.display=i===0?'block':'none';
+  document.getElementById('drLogic').style.display=i===1?'block':'none';
+}
+function closeDrawer(){
+  document.getElementById('mask').classList.remove('on');
+  document.getElementById('drawer').classList.remove('on');
+  const a=document.getElementById('drActs'); if(a){ a.className='dr-acts'; a.innerHTML=''; }
+}
+
+/* ===================== 发布任务抽屉（新建 / 编辑，同一套表单） ===================== */
+let imgOn=false;
+let TASK_EDIT_ID=null;
+const TASK_STATE={topic:[],kw:[]};
+function openTask(id){
+  TASK_EDIT_ID = (typeof id==='string' && id) ? id : null;
   resetTaskForm();
+  if(TASK_EDIT_ID){
+    const x=taskOf(TASK_EDIT_ID);
+    if(x) fillTaskForm(x);
+  }
+  document.getElementById('taskTitle').textContent = TASK_EDIT_ID ? '编辑发布任务' : '新建发布任务';
+  document.getElementById('taskSubmit').textContent = TASK_EDIT_ID ? '保存修改' : '生成内容框架';
   document.getElementById('taskMask').classList.add('on');
   document.getElementById('taskDrawer').classList.add('on');
 }
 function closeTask(){
   document.getElementById('taskMask').classList.remove('on');
   document.getElementById('taskDrawer').classList.remove('on');
+  TASK_EDIT_ID=null;
 }
 function resetTaskForm(){
   document.getElementById('fTitle').value='';
@@ -782,10 +1671,11 @@ function resetTaskForm(){
   document.getElementById('fCol').selectedIndex=0;
   document.getElementById('fFreq').selectedIndex=1;
   document.getElementById('fCount').selectedIndex=1;
-  document.getElementById('fStart').value='2026-09-15';
+  document.getElementById('fStart').value=TODAY;
   document.getElementById('fStatus').selectedIndex=0;
   document.getElementById('fNote').value='';
-  STATE.topic=[]; STATE.kw=[];
+  document.querySelectorAll('#taskBody .map-table select').forEach(s=>s.selectedIndex=0);
+  TASK_STATE.topic=[]; TASK_STATE.kw=[];
   renderTags('topic'); renderTags('kw');
   imgOn=false; document.getElementById('imgSwitch').classList.remove('on');
   const body=document.getElementById('taskBody'), frame=document.getElementById('taskFrame'), foot=document.querySelector('#taskDrawer .dw-foot');
@@ -793,36 +1683,60 @@ function resetTaskForm(){
   if(frame) frame.style.display='none';
   if(foot) foot.style.display='flex';
 }
+/* 编辑模式：把任务原值回填到表单 */
+function fillTaskForm(x){
+  const setSel=(id,v,fallback)=>{ const el=document.getElementById(id); const i=[...el.options].findIndex(o=>o.text===v); el.selectedIndex=i>=0?i:(fallback===undefined?0:fallback); };
+  document.getElementById('fTitle').value=x.title||'';
+  setSel('fApp', x.app); setSel('fCol', x.col); setSel('fFreq', x.freqText); setSel('fCount', x.countText, 1);
+  document.getElementById('fStart').value=x.start||TODAY;
+  document.getElementById('fStatus').value=x.mode||'review';
+  document.getElementById('fNote').value=x.note||'';
+  TASK_STATE.topic=(x.topic||'').split(' / ').filter(Boolean);
+  TASK_STATE.kw=(x.kw||[]).slice();
+  renderTags('topic'); renderTags('kw');
+  imgOn=!!x.imgOn; document.getElementById('imgSwitch').classList.toggle('on',imgOn);
+  const sels=[...document.querySelectorAll('#taskBody .map-table select')];
+  (x.map||[]).forEach((v,i)=>{ if(sels[i]){ const k=[...sels[i].options].findIndex(o=>o.text===v); if(k>=0) sels[i].selectedIndex=k; } });
+}
+function editTask(id){
+  const r=storeFind(id); if(!r) return;
+  if(!canEditItem(r)||!r.tid){ flashToast('这条内容不支持编辑（编辑的是它所属的发布任务）'); return; }
+  closeDrawer();
+  ccTab='task';
+  openTask(r.tid);
+}
 function toggleImg(){ imgOn=!imgOn; document.getElementById('imgSwitch').classList.toggle('on',imgOn); }
 function addTag(e, kind){
   if(e.key!=='Enter') return;
   e.preventDefault();
   const v=e.target.value.trim();
-  if(v && !STATE[kind].includes(v)){ STATE[kind].push(v); renderTags(kind); }
+  if(v && !TASK_STATE[kind].includes(v)){ TASK_STATE[kind].push(v); renderTags(kind); }
   e.target.value='';
 }
-function pickTag(v, kind){ if(!STATE[kind].includes(v)){ STATE[kind].push(v); renderTags(kind); } }
+function pickTag(v, kind){ if(!TASK_STATE[kind].includes(v)){ TASK_STATE[kind].push(v); renderTags(kind); } }
 function renderTags(kind){
   const box=document.getElementById(kind+'Box');
-  const tags=STATE[kind].map(t=>`<span class="t">${t}<span class="x" onclick="removeTag('${kind}','${t}')">×</span></span>`).join('');
+  const tags=TASK_STATE[kind].map(t=>`<span class="t">${t}<span class="x" onclick="removeTag('${kind}','${t}')">×</span></span>`).join('');
   box.innerHTML=tags+`<input id="${kind}Input" placeholder="输入${kind==='topic'?'主题':'关键词'}回车添加" onkeydown="addTag(event,'${kind}')" />`;
-  setTimeout(()=>document.getElementById(kind+'Input').focus(),0);
+  setTimeout(()=>{ const i=document.getElementById(kind+'Input'); if(i) i.focus(); },0);
 }
-function removeTag(kind,v){ STATE[kind]=STATE[kind].filter(x=>x!==v); renderTags(kind); }
+function removeTag(kind,v){ TASK_STATE[kind]=TASK_STATE[kind].filter(x=>x!==v); renderTags(kind); }
+
 let PENDING_FRAME=null;
 function showPublishFrame(){
   const title=document.getElementById('fTitle').value.trim();
-  if(!title){ flashVoice('请填写任务标题'); return; }
-  if(STATE.topic.length===0){ flashVoice('请至少选择一个任务主题'); return; }
-  if(STATE.kw.length===0){ flashVoice('请至少添加一个关键词'); return; }
+  if(!title){ flashToast('请填写任务标题'); return; }
+  if(TASK_STATE.topic.length===0){ flashToast('请至少选择一个任务主题'); return; }
+  if(TASK_STATE.kw.length===0){ flashToast('请至少添加一个关键词'); return; }
   const freqText=document.getElementById('fFreq').options[document.getElementById('fFreq').selectedIndex].text;
   const countText=document.getElementById('fCount').options[document.getElementById('fCount').selectedIndex].text;
   const status=document.getElementById('fStatus').value;
   const isSch=freqText!=='仅一次';
   PENDING_FRAME={
-    title, topicList:STATE.topic.join(' / '), kwList:STATE.kw.slice(),
+    title, topicList:TASK_STATE.topic.join(' / '), kwList:TASK_STATE.kw.slice(),
     app:document.getElementById('fApp').value, col:document.getElementById('fCol').value,
     freqText, countText, isSch, status, imgOn,
+    map:[...document.querySelectorAll('#taskBody .map-table select')].map(s=>s.options[s.selectedIndex].text),
     start:document.getElementById('fStart').value, note:document.getElementById('fNote').value.trim()
   };
   document.getElementById('taskBody').style.display='none';
@@ -832,11 +1746,12 @@ function showPublishFrame(){
   box.innerHTML=publishFrameHTML(PENDING_FRAME);
 }
 function publishFrameHTML(f){
+  const editing=!!TASK_EDIT_ID;
   const publishMode = f.status==='review' ? '生成后进入待审核队列（你确认后再发布）' : '校验通过后直接发布';
   const cadence = f.isSch ? `${f.freqText} · 每次 ${f.countText}` : `仅一次 · ${f.countText}`;
   return `
     <div class="frame-card">
-      <div class="frame-head"><span class="frame-tag">发布内容框架</span><b>请确认以下框架，确认后智能体才会开始生成内容</b></div>
+      <div class="frame-head"><span class="frame-tag">${editing?'修改后的发布内容框架':'发布内容框架'}</span><b>${editing?'请确认修改后的框架，确认后智能体按新框架生成内容':'请确认以下框架，确认后智能体才会开始生成内容'}</b></div>
       <div class="frame-sec"><span class="frame-k">任务标题</span><span class="frame-v">${escapeHtml(f.title)}</span></div>
       <div class="frame-sec"><span class="frame-k">内容主题</span><span class="frame-v">${escapeHtml(f.topicList)}</span></div>
       <div class="frame-sec"><span class="frame-k">关键词</span><span class="frame-v">${escapeHtml(f.kwList.join('、'))}</span></div>
@@ -848,7 +1763,7 @@ function publishFrameHTML(f){
       <div class="frame-note">⚠️ 框架确认后，智能体将按以上约束起草正文（EEAT 四维 + GEO 4 项 + 风险红线门禁），确认前不会生成任何内容。</div>
       <div class="frame-actions">
         <button class="btn ghost" onclick="backToTaskForm()">返回修改</button>
-        <button class="btn approve" onclick="createTask()">确认框架，开始生成内容</button>
+        <button class="btn approve" onclick="createTask()">${editing?'确认修改':'确认框架，开始生成内容'}</button>
       </div>
     </div>`;
 }
@@ -858,56 +1773,102 @@ function backToTaskForm(){
   document.getElementById('taskBody').style.display='block';
   const foot=document.querySelector('#taskDrawer .dw-foot'); if(foot) foot.style.display='flex';
 }
+/* 创建 / 保存「发布任务」：任务只登记生产规则，产出的内容单独进入内容库 */
 function createTask(){
   const f=PENDING_FRAME; if(!f) return;
-  const { title, topicList, kwList, app, col, freqText, countText, isSch, status, imgOn, note } = f;
-  WEEK[0].tasks.push({t:title, type:'man', nt:`${freqText} · ${countText}${isSch?'':' · 立即执行'}`});
-  const newId='c'+Date.now();
-  CONTENTS.unshift({
-    id:newId, title:`${topicList} · ${kwList[0]}`, st:'run', stT:'起草中',
-    desc:`手动任务：${title}。关键词：${kwList.join(' / ')}。${imgOn?'已开启配图；':''}推送至 ${app} · ${col}。`,
-    pv:'—', dr:'—', src:'手动',
-    body:'<p>智能体已接收任务，正在按主题、关键词与推送规则起草正文，完成后将进入'+ (status==='review'?'待审核队列。':'立即发布。') +'</p>'
-  });
-  renderWeek(); renderContent();
+  const typeMap={'新闻资讯':'news','产品中心':'prod','博客文章':'blog','技术白皮书':'prod'};
+  const type=typeMap[f.app]||'news';
+  const mode=f.status==='review'?'review':'publish';
+  const start=f.start||TODAY;
+  const editingId=TASK_EDIT_ID;
+  if(editingId){
+    const t=taskOf(editingId);
+    if(t) Object.assign(t, { title:f.title, app:f.app, col:f.col, freqText:f.freqText, countText:f.countText,
+      start:start, next:f.isSch?addDays(start,7):'', topic:f.topicList, kw:f.kwList.slice(),
+      note:f.note, imgOn:f.imgOn, mode:mode, map:f.map.slice() });
+    closeTask();
+    ccTab='task'; ccView='list';
+    go('calendar'); setCCTab('task');
+    flashToast('发布任务《'+f.title+'》已更新（已产出的内容不受影响）');
+    syncBadge();
+    return;
+  }
+  /* 新任务：登记生产规则 */
+  const tid='tk'+Date.now();
+  PUBLISH_TASKS.push({ id:tid, title:f.title, from:'manual', status:'active',
+    app:f.app, col:f.col, freqText:f.freqText, countText:f.countText,
+    start:start, next:f.isSch?addDays(start,7):'', topic:f.topicList, kw:f.kwList.slice(),
+    note:f.note, imgOn:f.imgOn, mode:mode, map:f.map.slice(), strat:['eeat','geo'] });
+  /* 立即产出第 1 条内容；周期任务再挂 1 条「计划中」的待产出内容 */
+  const base=(f.kwList[0]||f.title).trim();
+  const topics=f.topicList.split(' / ').filter(Boolean);
+  CALENDAR_ITEMS.push({ id:'n'+Date.now(), title:base+' · '+(topics[0]||'首篇'), type:type, date:start, tid:tid,
+    status:'scheduled', strat:['eeat','geo'],
+    body:`<h3>任务产出 · 第 1 篇</h3><p>由发布任务《${escapeHtml(f.title)}》按确认后的框架起草。</p>
+      <p>内容主题：${escapeHtml(f.topicList)}</p><p>关键词：${escapeHtml(f.kwList.join('、'))}</p>
+      <p>推送至 ${escapeHtml(f.app)} · ${escapeHtml(f.col)}。</p>` });
+  if(f.isSch){
+    CALENDAR_ITEMS.push({ id:'n'+(Date.now()+7), title:base+' · '+(topics[1]||'续篇'), type:type,
+      date:addDays(start,7), tid:tid, status:'planned', strat:['eeat','geo'], body:'' });
+  }
   closeTask();
-  flashVoice('已创建发布任务《'+title+'》，主题：'+topicList+'，智能体将按规则起草'+(status==='review'?'，完成后由你把关发布。':'，校验通过后直接发布。'));
-}
-function approve(id){
-  const i=REVIEW.findIndex(x=>x.id===id); if(i<0) return;
-  REVIEW.splice(i,1);
-  const c=CONTENTS.find(x=>x.id===id); if(c){c.st='pub';c.stT='已发布';c.dr='待采集';}
-  renderReview(); renderContent();
-  flashVoice('已批准发布，内容已上线。智能体将继续推进其余选题，有新的待审核再提醒你。');
+  ccTab='task'; ccView='list';
+  go('calendar'); setCCTab('task');
+  flashToast('已创建发布任务《'+f.title+'》，任务将按节奏持续产出内容');
   syncBadge();
 }
-function reject(id){
-  const i=REVIEW.findIndex(x=>x.id===id); if(i<0) return;
-  const t=REVIEW[i].title; REVIEW.splice(i,1);
-  renderReview(); syncBadge();
-  flashVoice('已打回《'+t.slice(0,12)+'…》重写，智能体会按你的反馈调整后再提交。');
+
+/* ===================== 工具 ===================== */
+function flashToast(msg, action){
+  let t=document.getElementById('toast');
+  if(!t){
+    t=document.createElement('div'); t.id='toast';
+    t.style.cssText='position:fixed;bottom:24px;left:50%;transform:translateX(-50%);display:flex;align-items:center;gap:14px;background:#0f172a;color:#fff;padding:10px 18px;border-radius:10px;font-size:13px;z-index:500;box-shadow:0 10px 30px rgba(0,0,0,.3)';
+    document.body.appendChild(t);
+  }
+  t.innerHTML=`<span>${msg}</span>`;
+  if(action){
+    const b=document.createElement('button');
+    b.textContent=action.label;
+    b.style.cssText='color:#a5b4fc;text-decoration:underline;font-size:13px;white-space:nowrap';
+    b.onclick=()=>{ t.style.display='none'; clearTimeout(t._h); if(action.cb) action.cb(); };
+    t.appendChild(b);
+  }
+  t.style.display='flex'; t.style.opacity='1';
+  clearTimeout(t._h); t._h=setTimeout(()=>{ t.style.opacity='0'; setTimeout(()=>t.style.display='none',200); }, action?5200:2600);
 }
-function flashVoice(msg){
-  document.getElementById('voiceMsg').innerHTML=msg;
-  const v=document.querySelector('.voice'); v.style.transform='scale(1.01)';
-  setTimeout(()=>v.style.transform='none',200);
+
+/* 通用二次确认 */
+let CF_CB=null;
+function askConfirm(o){
+  o=o||{};
+  document.getElementById('cfTitle').textContent=o.title||'确认';
+  document.getElementById('cfDesc').textContent=o.desc||'';
+  const ok=document.getElementById('cfOk');
+  ok.textContent=o.ok||'确定';
+  ok.className='btn '+(o.danger===false?'approve':'danger');
+  CF_CB=o.cb||null;
+  document.getElementById('cfMask').classList.add('on');
 }
-function syncBadge(){
-  const n=REVIEW.length;
-  const item=document.querySelector('.sidenav .navitem.badge');
-  if(n>0){ item.dataset.badge=n; item.classList.add('badge'); }
-  else { item.classList.remove('badge'); item.removeAttribute('data-badge'); }
+function closeConfirm(ok){
+  document.getElementById('cfMask').classList.remove('on');
+  const cb=CF_CB; CF_CB=null;
+  if(ok && cb) cb();
 }
+
 document.getElementById('agentToggle').addEventListener('click',function(){
   const off=this.classList.toggle('off');
   const d=document.getElementById('swDot');
   d.style.background=off?'#94a3b8':'var(--ok)';
   d.style.boxShadow=off?'none':'0 0 0 4px rgba(16,185,129,.18)';
-  flashVoice(off?'智能体已暂停，所有自主任务待命中；需要时可随时重新开启。':'智能体已恢复自主运行，将继续按配置推进内容生产与发布流程。');
+  flashToast(off?'智能体已暂停。':'智能体已恢复自主运行。');
 });
 
-/* 初始化 */
-renderReview(); renderContent(); renderWeek();
+/* ===================== 初始化 ===================== */
+renderAudit();
+renderDashboard();
+renderCalendar();
+syncBadge();
 </script>
 </body>
 </html>
