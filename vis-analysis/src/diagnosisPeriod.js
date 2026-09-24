@@ -1,14 +1,44 @@
-/** 数据分析-新：自然月诊断外壳。漏斗人数与路径仍读 funnel-review/data。 */
+/** 访客行为分析：每周一出上一自然周，可回看最近 13 期。漏斗人数与路径仍读 funnel-review/data。 */
+
+function weekLabel(date) {
+  return `${date.getMonth() + 1}月${date.getDate()}日`;
+}
+
+function shiftDays(date, days) {
+  const next = new Date(date);
+  next.setDate(next.getDate() + days);
+  return next;
+}
+
+/** 最近 13 个已出自然周，最新一期在前。对照周是再往前的 7 天。 */
+export const WEEKS = Array.from({ length: 13 }, (_, index) => {
+  const end = shiftDays(new Date(2026, 8, 20), -7 * index);
+  const start = shiftDays(end, -6);
+  const baselineEnd = shiftDays(start, -1);
+  const baselineStart = shiftDays(baselineEnd, -6);
+  const label = `${weekLabel(start)} – ${weekLabel(end)}`;
+  const baselineLabel = `${weekLabel(baselineStart)} – ${weekLabel(baselineEnd)}`;
+  return {
+    id: `${start.getFullYear()}-${start.getMonth() + 1}-${start.getDate()}`,
+    label,
+    baselineLabel,
+    current: index === 0,
+  };
+});
+
+/** 这些周 7 条策略都没命中，页面只显示没有任务，不再逐条写结果。 */
+export const QUIET_WEEK_IDS = new Set(["2026-6-22"]);
 
 export const PERIOD = {
   siteName: "Demo · CNC 精密加工件外贸站",
   origin: "https://www.demo-cnc-oem.com",
-  label: "近 28 天",
-  range: "2026-08-04 ~ 2026-08-31",
-  baseline: "对照：过去 4 周同期",
-  schedule: "窗口滚动，每日 02:00 刷新",
-  lastRun: "2026-09-01 02:14",
-  nextRun: "2026-09-02 02:00",
+  label: WEEKS[0].label,
+  baselineLabel: WEEKS[0].baselineLabel,
+  baseline: `对照上一自然周（${WEEKS[0].baselineLabel}）`,
+  schedule: "每周一 02:00 出上一自然周",
+  retainedWeeks: WEEKS.length,
+  lastRun: "2026-09-21 02:14",
+  nextRun: "2026-09-28 02:00",
   sampleNote: "样例数，非现网",
 };
 
@@ -122,7 +152,7 @@ export const CHURN_MARK = {
   percent: 12,
   count: 198,
   label: "带流失信号",
-  hint: "流失不覆盖深度。上周到过决策、这次表单放弃的人，仍算决策型。",
+  hint: "流失不覆盖深度。这一周里到过决策、后来表单放弃的人，仍算决策型。",
 };
 
 export const PHENOMENA = [
@@ -184,6 +214,7 @@ export const ROOT_CAUSES = {
       title: "这页第一屏没吸引人往下看，多数人停在首屏附近就走了",
       evidence:
         "落地接住率 53.8% → 21.9%，落地停留约 11 秒，滚动深度 P75 停在首屏附近。搜索、直接、外链、广告四渠同步变差。",
+      trend: "近 8 周里有 5 周落地接住率在警戒线以下。",
     },
     {
       key: "A-01",

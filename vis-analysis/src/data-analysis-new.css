@@ -700,6 +700,12 @@ button.dan-pill.is-miss:hover {
   color: var(--dan-muted) !important;
 }
 
+.dan-cause-trend {
+  margin: 8px 0 0 !important;
+  font-size: 14px !important;
+  color: var(--dan-accent-deep) !important;
+}
+
 .dan-more {
   display: inline-flex;
   margin-top: 14px;

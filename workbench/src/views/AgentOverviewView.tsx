@@ -3,6 +3,7 @@ import { Button, Card, Statistic, Tag, Timeline } from 'antd'
 import { ValueFlywheel } from '../components/ValueFlywheel'
 import { useWorkbench } from '../context/WorkbenchContext'
 import {
+  overviewAiReadiness,
   overviewFunnel,
   overviewKpis,
   overviewPeriod,
@@ -15,6 +16,28 @@ const TONE_COLOR = {
   down: '#ef4444',
   up: '#16a34a',
   flat: '#1e293b',
+}
+
+function ScoreRing({ score, tone }: { score: number; tone: 'ok' | 'warn' }) {
+  const radius = 26
+  const circ = 2 * Math.PI * radius
+  const offset = circ * (1 - Math.min(100, Math.max(0, score)) / 100)
+  return (
+    <div className={`ov-ai__ring is-${tone}`}>
+      <svg viewBox="0 0 64 64" aria-hidden>
+        <circle className="ov-ai__ring-track" cx="32" cy="32" r={radius} />
+        <circle
+          className="ov-ai__ring-value"
+          cx="32"
+          cy="32"
+          r={radius}
+          strokeDasharray={circ}
+          strokeDashoffset={offset}
+        />
+      </svg>
+      <strong>{score}</strong>
+    </div>
+  )
 }
 
 export function AgentOverviewView() {
@@ -34,7 +57,7 @@ export function AgentOverviewView() {
         <div className="agent-overview__hero-copy">
           <h2>增长智能体自动运行中</h2>
           <p>
-            本月已替您完成诊断、技术止血和营销页草稿。您无需每天登录。
+            本周一已出上一自然周的诊断。技术止血和营销页草稿也在进行。您无需每天登录。
             <span className="agent-overview__url">
               {currentSite.name} · {overviewPeriod.label}
             </span>
@@ -58,6 +81,61 @@ export function AgentOverviewView() {
             <div className={`ov-delta is-${kpi.tone}`}>{kpi.delta}</div>
           </Card>
         ))}
+      </section>
+
+      <section className="ov-ai" aria-label={overviewAiReadiness.title}>
+        <div className="ov-ai__panel">
+          <header className="ov-ai__head">
+            <div>
+              <h3>{overviewAiReadiness.title}</h3>
+              <p>{overviewAiReadiness.note}</p>
+            </div>
+            <span className="ov-ai__checked">
+              <i />
+              {overviewAiReadiness.checkedLabel}
+            </span>
+          </header>
+          <div className="ov-ai__grid">
+            {overviewAiReadiness.pillars.map((pillar) => (
+              <article key={pillar.key} className={`ov-ai__card is-${pillar.tone}`}>
+                <div className="ov-ai__top">
+                  <ScoreRing score={pillar.score} tone={pillar.tone} />
+                  <div className="ov-ai__identity">
+                    <div className="ov-ai__name">
+                      <h4>{pillar.title}</h4>
+                      <span className={`ov-ai__status is-${pillar.tone}`}>{pillar.status}</span>
+                    </div>
+                    <p>{pillar.summary}</p>
+                  </div>
+                </div>
+                <ul className="ov-ai__checks">
+                  {pillar.checks.map((check) => (
+                    <li key={check.label}>
+                      <div className="ov-ai__check-meta">
+                        <b>{check.label}</b>
+                        <span>{check.score}</span>
+                      </div>
+                      <div className="ov-ai__meter" aria-hidden>
+                        <i style={{ width: `${check.score}%` }} />
+                      </div>
+                      <small>{check.detail}</small>
+                    </li>
+                  ))}
+                </ul>
+                {pillar.key === 'seen' ? (
+                  <div className="ov-ai__channels" aria-label="抓取通道">
+                    {overviewAiReadiness.channels.map((channel) => (
+                      <span key={channel.name} className={channel.open ? 'is-open' : ''}>
+                        <i />
+                        {channel.name}
+                      </span>
+                    ))}
+                  </div>
+                ) : null}
+              </article>
+            ))}
+          </div>
+        </div>
       </section>
 
       <ValueFlywheel onOpen={navigate} />

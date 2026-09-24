@@ -1820,6 +1820,296 @@ a:hover {
   color: var(--color-text-secondary);
 }
 
+.ov-ai__panel {
+  position: relative;
+  overflow: hidden;
+  padding: 16px 16px 14px;
+  background:
+    linear-gradient(180deg, rgba(59, 159, 208, 0.08), transparent 72px),
+    var(--color-card);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-card);
+}
+
+.ov-ai__panel::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, #2f8bb8, #7dd3fc 42%, #f59e0b);
+}
+
+.ov-ai__head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px 24px;
+  margin-bottom: 14px;
+}
+
+.ov-ai__head h3 {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.ov-ai__head p {
+  margin: 4px 0 0;
+  font-size: 12px;
+  color: var(--color-text-secondary);
+}
+
+.ov-ai__checked {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: rgba(59, 159, 208, 0.1);
+  color: var(--color-info-text);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.02em;
+}
+
+.ov-ai__checked i {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--color-primary);
+  box-shadow: 0 0 0 0 rgba(59, 159, 208, 0.45);
+  animation: ice-pulse 1.8s ease-out infinite;
+}
+
+.ov-ai__grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.ov-ai__card {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  padding: 14px;
+  background: rgba(255, 255, 255, 0.72);
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+}
+
+.ov-ai__card.is-warn {
+  border-color: #f3d19c;
+  background: linear-gradient(180deg, rgba(254, 243, 199, 0.45), rgba(255, 255, 255, 0.8) 48px);
+}
+
+.ov-ai__top {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.ov-ai__ring {
+  position: relative;
+  width: 72px;
+  height: 72px;
+  flex-shrink: 0;
+}
+
+.ov-ai__ring svg {
+  width: 72px;
+  height: 72px;
+}
+
+.ov-ai__ring-track,
+.ov-ai__ring-value {
+  fill: none;
+  stroke-width: 5;
+}
+
+.ov-ai__ring-track {
+  stroke: #e8f1f6;
+}
+
+.ov-ai__ring-value {
+  stroke-linecap: round;
+  transform: rotate(-90deg);
+  transform-origin: 32px 32px;
+}
+
+.ov-ai__ring.is-ok .ov-ai__ring-value {
+  stroke: #0f9f8f;
+}
+
+.ov-ai__ring.is-warn .ov-ai__ring-value {
+  stroke: #d97706;
+}
+
+.ov-ai__ring strong {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  font-family: var(--font-mono);
+  font-size: 18px;
+  font-weight: 600;
+  letter-spacing: -0.04em;
+}
+
+.ov-ai__ring.is-ok strong {
+  color: #0f766e;
+}
+
+.ov-ai__ring.is-warn strong {
+  color: #b45309;
+}
+
+.ov-ai__identity {
+  min-width: 0;
+}
+
+.ov-ai__name {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.ov-ai__name h4 {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.ov-ai__identity p {
+  margin: 6px 0 0;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--color-text-secondary);
+}
+
+.ov-ai__status {
+  flex-shrink: 0;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.ov-ai__status.is-ok {
+  background: var(--color-success-light);
+  color: var(--color-success-text);
+}
+
+.ov-ai__status.is-warn {
+  background: var(--color-warning-light);
+  color: #92400e;
+}
+
+.ov-ai__checks {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin: 14px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.ov-ai__check-meta {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.ov-ai__check-meta b {
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.ov-ai__check-meta span {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--color-text-secondary);
+}
+
+.ov-ai__meter {
+  height: 4px;
+  margin-top: 5px;
+  border-radius: 99px;
+  background: #e8f1f6;
+  overflow: hidden;
+}
+
+.ov-ai__meter i {
+  display: block;
+  height: 100%;
+  border-radius: 99px;
+}
+
+.ov-ai__card.is-ok .ov-ai__meter i {
+  background: linear-gradient(90deg, #14b8a6, #0f9f8f);
+}
+
+.ov-ai__card.is-warn .ov-ai__meter i {
+  background: linear-gradient(90deg, #fbbf24, #d97706);
+}
+
+.ov-ai__checks small {
+  display: block;
+  margin-top: 3px;
+  font-size: 12px;
+  line-height: 1.4;
+  color: var(--color-text-secondary);
+}
+
+.ov-ai__channels {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: auto;
+  padding-top: 14px;
+}
+
+.ov-ai__channels span {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 8px;
+  border-radius: 999px;
+  background: #f8fafc;
+  border: 1px solid var(--color-border);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--color-text-secondary);
+}
+
+.ov-ai__channels i {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #cbd5e1;
+}
+
+.ov-ai__channels .is-open {
+  color: #0f766e;
+  border-color: #99f6e4;
+  background: #f0fdfa;
+}
+
+.ov-ai__channels .is-open i {
+  background: #14b8a6;
+}
+
+.ov-ai__action {
+  align-self: flex-start;
+  margin-top: auto;
+  padding: 10px 0 0 !important;
+  height: auto !important;
+}
+
 .ov-split {
   display: grid;
   grid-template-columns: 1.35fr 1fr;
@@ -2104,8 +2394,15 @@ a:hover {
   .ov-work,
   .ov-split,
   .ov-outcomes,
-  .ov-agents {
+  .ov-agents,
+  .ov-ai__grid {
     grid-template-columns: 1fr;
+  }
+
+  .ov-ai__head {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
   }
 
   .ov-funnel__row {
@@ -2157,6 +2454,7 @@ a:hover {
 
 @media (prefers-reduced-motion: reduce) {
   .agent-overview__pulse,
+  .ov-ai__checked i,
   .fw__live i,
   .fw__flow,
   .fw__spin,

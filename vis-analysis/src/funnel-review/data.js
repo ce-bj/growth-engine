@@ -3,8 +3,8 @@
 export const SITE = {
   name: "Demo · CNC 精密加工件外贸站",
   origin: "www.demo-cnc-oem.com",
-  period: "2026-08-04 ~ 2026-08-31 · 28 天",
-  baseline: "对比：过去 4 周同期平均",
+  period: "9月14日 – 9月20日",
+  baseline: "对照上一周 · 9月7日 – 9月13日",
 };
 
 export const CHANNELS = [

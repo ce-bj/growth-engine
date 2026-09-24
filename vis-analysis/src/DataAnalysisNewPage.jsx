@@ -25,8 +25,9 @@ import {
   AUTH_SOURCES,
   CHURN_MARK,
   DEPTH_INTENTS,
-  PERIOD,
   PHENOMENA,
+  QUIET_WEEK_IDS,
+  WEEKS,
   ROOT_CAUSES,
   SITES,
   SOURCE_AUTH_PAGES,
@@ -199,6 +200,9 @@ function Workbench() {
   const [scrollSearch, setScrollSearch] = useState(false);
   const [adoptingKey, setAdoptingKey] = useState("");
   const [siteId, setSiteId] = useState(SITES[0].id);
+  const [weekId, setWeekId] = useState(WEEKS[0].id);
+  const week = WEEKS.find((item) => item.id === weekId) ?? WEEKS[0];
+  const quiet = QUIET_WEEK_IDS.has(week.id);
   const [intentId, setIntentId] = useState(null);
   const [mainTab, setMainTab] = useState("agent");
   const site = SITES.find((item) => item.id === siteId) ?? SITES[0];
@@ -291,7 +295,7 @@ function Workbench() {
       <div className="dan-inner">
         <header className="dan-hero">
           <div>
-            <p className="dan-kicker">诊断层 · 28 天窗口</p>
+            <p className="dan-kicker">诊断层 · 每周一更新</p>
             <h1 className="dan-title">AI 访客行为分析智能体</h1>
           </div>
           <div className="dan-hero-tools">
@@ -310,8 +314,22 @@ function Workbench() {
               }))}
               onChange={(id) => setSiteId(id)}
             />
-            <span className="dan-pill is-on">{PERIOD.label}</span>
-            <span className="dan-pill">{PERIOD.range}</span>
+            <Select
+              className="dan-site-select dan-week-select"
+              size="middle"
+              value={week.id}
+              showSearch={false}
+              allowClear={false}
+              suffixIcon={<DownOutlined />}
+              aria-label="分析周"
+              style={{ minWidth: 220 }}
+              options={WEEKS.map((item) => ({
+                value: item.id,
+                label: item.label,
+              }))}
+              onChange={(id) => setWeekId(id)}
+            />
+            <span className="dan-pill">对照上一周 · {week.baselineLabel}</span>
             {missingAuth.map((item) => (
               <button
                 key={item.key}
@@ -357,36 +375,56 @@ function Workbench() {
             <div>
               <p className="dan-run-kicker">访客行为分析智能体 · 自主运行中</p>
               <p className="dan-run-copy">
-                本窗口已扫描近 28 天行为并完成诊断，产出
-                <b> {executable.length} </b>
-                份任务说明、
-                <b> {displayTasks.length} </b>
-                条站外建议
-                {adopted.length ? (
+                {quiet ? (
                   <>
-                    ；其中
-                    <b> {adopted.length} </b>
-                    份已确认执行
+                    {week.label}的诊断已出，对照 {week.baselineLabel}。没有要确认的任务。
                   </>
-                ) : null}
-                ；目前有
-                <b> {pending.length} </b>
-                份正在等你确认执行。诊断我会按窗口继续跑，你只需在确认这一步把关。
+                ) : (
+                  <>
+                    {week.current
+                      ? `上一自然周（${week.label}）的诊断已在本周一出完，对照 ${week.baselineLabel}。`
+                      : `${week.label} 的诊断，对照 ${week.baselineLabel}。`}
+                    产出
+                    <b> {executable.length} </b>
+                    份任务说明、
+                    <b> {displayTasks.length} </b>
+                    条站外建议
+                    {adopted.length ? (
+                      <>
+                        ；其中
+                        <b> {adopted.length} </b>
+                        份已确认执行
+                      </>
+                    ) : null}
+                    ；目前有
+                    <b> {pending.length} </b>
+                    份正在等你确认。
+                  </>
+                )}
               </p>
             </div>
           </div>
           <div className="dan-run-stats">
             <article className="dan-run-stat is-pending">
-              <div className="dan-run-n">{pending.length}</div>
+              <div className="dan-run-n">{quiet ? 0 : pending.length}</div>
               <div className="dan-run-l">待你确认</div>
-              <div className="dan-run-h">这是今天唯一需要你做的事</div>
+              <div className="dan-run-h">
+                {quiet
+                  ? "这一期没有要确认的任务"
+                  : week.current
+                    ? "这是本周需要你确认的事"
+                    : "这一期里待确认的任务"}
+              </div>
             </article>
             <article className="dan-run-stat is-made">
-              <div className="dan-run-n">{produced}</div>
-              <div className="dan-run-l">本窗口产出</div>
-              <div className="dan-run-h">无需你介入的扫描与诊断</div>
+              <div className="dan-run-n">{quiet ? 0 : produced}</div>
+              <div className="dan-run-l">{week.current ? "本周产出" : "这一期产出"}</div>
+              <div className="dan-run-h">
+                {quiet ? "没有任务说明，也没有站外建议" : "无需你介入的扫描与诊断"}
+              </div>
             </article>
           </div>
+          {quiet ? null : (
           <div className="dan-inbox">
             <div className="dan-inbox-head">
               <h2>
@@ -486,7 +524,7 @@ function Workbench() {
                   })}
                 </ul>
               ) : (
-                <p className="dan-inbox-empty">本窗口还没有确认过任务。</p>
+                <p className="dan-inbox-empty">这一周还没有确认过任务。</p>
               )}
             </div>
             {displayTasks.length ? (
@@ -519,6 +557,7 @@ function Workbench() {
               </div>
             ) : null}
           </div>
+          )}
         </section>
 
         <section className="dan-card" aria-labelledby="dan-intent-title">
@@ -534,7 +573,11 @@ function Workbench() {
             </span>
           </div>
           <p className="dan-path-note">
-            按近 28 天窗口最深一级计，一人只算一个。点某一档，现象跟着切；漏斗和路径在「明细数据」里看。流失是叠加标记，不占第五档。
+            按 {week.label} 最深一级计，一人只算一个。
+            {quiet
+              ? "漏斗和路径在「明细数据」里看。"
+              : "点某一档，现象跟着切；漏斗和路径在「明细数据」里看。"}
+            流失是叠加标记，不占第五档。
           </p>
           <div className="dan-intents is-depth">
             {DEPTH_INTENTS.map((item) => {
@@ -566,6 +609,8 @@ function Workbench() {
           </div>
         </section>
 
+        {quiet ? null : (
+        <>
         <section className="dan-card" aria-labelledby="dan-phen-title">
           <div className="dan-head">
             <div className="dan-head-l">
@@ -610,7 +655,7 @@ function Workbench() {
             </div>
           </div>
           <p className="dan-path-note">
-            只展示本窗口已命中的原因。同页多规则已合并；轴二优先出主因，轴一、秒退作佐证。
+            只展示 {week.label} 已命中的原因。同页多规则已合并；轴二优先出主因，轴一、秒退作佐证。
           </p>
           <div className="dan-causes">
             {ROOT_CAUSES.hits.map((item) => (
@@ -626,14 +671,21 @@ function Workbench() {
                 </div>
                 <h3>{item.title}</h3>
                 <p>{item.evidence}</p>
+                {item.trend ? <p className="dan-cause-trend">{item.trend}</p> : null}
                 <p className="dan-cause-page">{item.page}</p>
               </article>
             ))}
           </div>
         </section>
+        </>
+        )}
           </>
         ) : (
           <div className="dan-data-tab">
+            <p className="dan-path-note dan-data-filter">
+              漏斗、搜索词和路径都是 {week.label}，对照 {week.baselineLabel}。
+              {quiet ? "这一期不据此出任务。" : ""}
+            </p>
             {intentId ? (
               <p className="dan-path-note dan-data-filter">
                 当前按「{DEPTH_INTENTS.find((item) => item.id === intentId)?.name ?? ""}」切开。切回「智能体分析」可改档。
@@ -656,6 +708,7 @@ function Workbench() {
                   variant="funnel"
                   intentId={intentId}
                   onIntent={setIntentId}
+                  periodLabel={week.label}
                 />
               </div>
             </section>

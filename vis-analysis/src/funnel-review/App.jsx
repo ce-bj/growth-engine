@@ -24,7 +24,7 @@ const MODULES = [
   { id: "path", label: "访客路径" },
 ];
 
-export default function App({ variant = "full", intentId = null, onIntent }) {
+export default function App({ variant = "full", intentId = null, onIntent, periodLabel = "这一自然周" }) {
   const [mod, setMod] = useState("funnel");
   const [channel, setChannel] = useState("site");
   const [innerIntent, setInnerIntent] = useState(null);
@@ -188,7 +188,7 @@ export default function App({ variant = "full", intentId = null, onIntent }) {
             </div>
           </div>
           <p className="slice-hint">
-            当前 {sliceCaption(channel, intent)}。意图按窗口最深一级计。
+            当前 {sliceCaption(channel, intent)}。意图按 {periodLabel} 最深一级计。
           </p>
 
           <FunnelLegend />

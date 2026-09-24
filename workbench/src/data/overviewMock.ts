@@ -1,7 +1,9 @@
+import type { ViewId } from '../types'
+
 /** 智能体概览 mock：对齐访客分析 CNC 贯穿案例，给「很少登录」的人看价值 */
 
 export const overviewPeriod = {
-  label: '2026-08-04 ~ 2026-08-31 · 28 天',
+  label: '9月14日 – 9月20日',
 }
 
 export const overviewKpis = [
@@ -59,6 +61,22 @@ export const overviewFunnel = {
 
 export const overviewTimeline = [
   {
+    time: '09-21 02:20',
+    title: '询价意图落在详情首屏',
+    desc: '这一周询价意向访客增多，多数停在首屏就走。',
+    agent: 'AI访客行为分析',
+    action: 'view' as const,
+    view: 'visitor' as const,
+  },
+  {
+    time: '09-21 02:14',
+    title: '上一自然周诊断完成',
+    desc: '9月14日–9月20日，对照上一周。访问持平，留资下跌，卡点在有效浏览。',
+    agent: 'AI访客行为分析',
+    action: 'view' as const,
+    view: 'visitor' as const,
+  },
+  {
     time: '08-31 09:20',
     title: '落地页草稿待确认发布',
     desc: '首屏对齐「48 小时打样 + ISO」，发布前需您拍板。',
@@ -75,22 +93,6 @@ export const overviewTimeline = [
     view: 'content' as const,
   },
   {
-    time: '08-31 02:00',
-    title: '本期漏斗诊断完成',
-    desc: '访问持平，留资下跌，卡点在有效浏览。',
-    agent: 'AI访客行为分析',
-    action: 'view' as const,
-    view: 'visitor' as const,
-  },
-  {
-    time: '08-30 21:40',
-    title: '询价意图扫描',
-    desc: '询价意向访客增多，多数停在首屏就走。',
-    agent: 'AI访客行为分析',
-    action: 'view' as const,
-    view: 'visitor' as const,
-  },
-  {
     time: '08-29 11:20',
     title: '本周 6 篇增信内容已发布',
     desc: '全部通过 EEAT / GEO 门禁，无需再处理。',
@@ -99,6 +101,80 @@ export const overviewTimeline = [
     view: 'content' as const,
   },
 ]
+
+type AiReadinessPillar = {
+  key: string
+  title: string
+  status: string
+  tone: 'ok' | 'warn'
+  score: number
+  summary: string
+  checks: { label: string; detail: string; score: number }[]
+  action?: string
+  view?: ViewId
+}
+
+/** 站点是否具备被 AI 发现、被 AI 读懂的条件。分数是条件分，不是引用次数。 */
+export const overviewAiReadiness: {
+  title: string
+  note: string
+  checkedLabel: string
+  channels: { name: string; open: boolean }[]
+  pillars: AiReadinessPillar[]
+} = {
+  title: 'AI 现在怎么看你的站',
+  note: '这是站点条件分，不是被引用的次数。',
+  checkedLabel: '本周已核验',
+  channels: [
+    { name: 'ChatGPT', open: true },
+    { name: 'Claude', open: true },
+    { name: 'Perplexity', open: true },
+    { name: 'Gemini', open: true },
+    { name: 'Copilot', open: true },
+  ],
+  pillars: [
+    {
+      key: 'seen',
+      title: '被 AI 看见',
+      status: '找得到',
+      tone: 'ok',
+      score: 100,
+      summary: '这些助手找得到这个站，产品页在目录里。',
+      checks: [
+        {
+          label: '允许抓取',
+          detail: 'robots.txt 已放行',
+          score: 100,
+        },
+        {
+          label: '站点目录',
+          detail: 'sitemap.xml 含产品页 · 9月20日',
+          score: 100,
+        },
+        {
+          label: '站点说明',
+          detail: '/llms.txt 已链到主力产品页',
+          score: 100,
+        },
+      ],
+    },
+    {
+      key: 'understood',
+      title: '被 AI 理解',
+      status: '有',
+      tone: 'ok',
+      score: 100,
+      summary: '页面已有结构化标签，助手能抽出型号、参数这些字段。',
+      checks: [
+        {
+          label: '结构化标签',
+          detail: '已有 JSON-LD',
+          score: 100,
+        },
+      ],
+    },
+  ],
+}
 
 export const overviewOutcomes = [
   { label: '已定位卡点', value: '有效浏览率 -10pp', tone: 'warn' as const },
