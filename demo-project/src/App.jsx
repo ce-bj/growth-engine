@@ -73,8 +73,9 @@ import {
 const USE_LIVE_API = import.meta.env.VITE_USE_LIVE_API === "true";
 const CHAT_SCROLL_THRESHOLD = 80;
 const GROWTH_WORKBENCH_URL = import.meta.env.VITE_GROWTH_WORKBENCH_URL || "http://127.0.0.1:5176/";
-const PORTAL_TABS = ["概况", "网站管理", "营销管理", "客户管理", "数据分析-旧", "数据分析-新", "管理设置", "增长工作台"];
-const HASH_TABS = PORTAL_TABS.filter((t) => t !== "增长工作台");
+const ONE_AI_WORKBENCH_URL = import.meta.env.VITE_ONE_AI_WORKBENCH_URL || "http://127.0.0.1:5188/";
+const PORTAL_TABS = ["概况", "网站管理", "营销管理", "客户管理", "数据分析-旧", "数据分析-新", "管理设置", "增长工作台", "一期AI工作台"];
+const HASH_TABS = PORTAL_TABS.filter((t) => t !== "增长工作台" && t !== "一期AI工作台");
 const DATA_ANALYSIS_TABS = ["数据分析-旧", "数据分析-新"];
 const BLANK_PORTAL_TABS = ["概况", "客户管理"];
 
@@ -88,6 +89,10 @@ function isAssistantEmbed() {
 
 function openGrowthWorkbench() {
   window.location.assign(GROWTH_WORKBENCH_URL);
+}
+
+function openOneAiWorkbench() {
+  window.location.assign(ONE_AI_WORKBENCH_URL);
 }
 
 function tabFromHash() {
@@ -2805,6 +2810,10 @@ export default function App() {
                   openGrowthWorkbench();
                   return;
                 }
+                if (t === "一期AI工作台") {
+                  openOneAiWorkbench();
+                  return;
+                }
                 setActiveTab(t);
                 if (t === "网站管理") setActiveView("list");
                 if (decodeURIComponent((window.location.hash || "").replace(/^#/, "")) !== t) {
@@ -2880,6 +2889,18 @@ export default function App() {
         )}
         {assistantEmbed && (
         <>
+        <SessionPanel
+          sessions={sessions}
+          activeId={sessionId}
+          sessionKindTab={sessionKindTab}
+          onSessionKindTabChange={setSessionKindTab}
+          automationActive={workspace === "automation"}
+          onOpenAutomation={handleOpenAutomation}
+          onSelect={handleSelectSession}
+          onNew={() => handleNewSession()}
+          onDelete={handleDeleteSession}
+          runsTick={automationTick}
+        />
         {workspace === "automation" ? (
           <AutomationTasksPage
             runsTick={automationTick}

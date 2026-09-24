@@ -2,7 +2,7 @@
 """Growth 一体启动：前端 + 对话后端。
 
 本地源码（有 workbench/）：
-  前端  工作台 5176 / 数字门户 5174 / 访客分析 5177 / 智能营销页 5186
+  前端  工作台 5176 / 数字门户 5174 / 访客分析 5177 / 智能营销页 5186 / 一期AI工作台 5188
   后端  chat-server 8787 / agent-bridge 8790
 
 内网打包目录（根目录有 index.html 和 visitor/）：
@@ -33,6 +33,7 @@ from urllib.parse import urlsplit
 
 ROOT = Path(__file__).resolve().parents[1]
 WORKBENCH = ROOT / "workbench"
+ONE_AI = ROOT / "one-AI-Workbench"
 DEMO = ROOT / "demo-project"
 VIS_ANALYSIS = ROOT / "vis-analysis"
 MARKETING = ROOT / "marketing-frontend"
@@ -65,9 +66,10 @@ FRONTENDS = (
     ("marketing-frontend", MARKETING, 5186),
     ("content-console", CONTENT, 5178),
     ("workbench", WORKBENCH, 5176),
+    ("one-ai-workbench", ONE_AI, 5188),
 )
 
-OWN_PORTS = (5174, 5176, 5177, 5178, 5186, CHAT_PORT, BRIDGE_PORT)
+OWN_PORTS = (5174, 5176, 5177, 5178, 5186, 5188, CHAT_PORT, BRIDGE_PORT)
 
 
 def load_env_file(path: Path) -> None:
@@ -223,6 +225,7 @@ def apply_runtime_env() -> None:
         os.environ.setdefault("VITE_CONTENT_AGENT_URL", f"{origin}:5178/?embed=1")
         os.environ.setdefault("VITE_OPS_ASSISTANT_URL", f"{origin}:5174/")
         os.environ.setdefault("VITE_PORTAL_URL", f"{origin}:5174/")
+        os.environ.setdefault("VITE_ONE_AI_WORKBENCH_URL", f"{origin}:5188/")
 
 
 def spawn(name: str, argv: list[str], cwd: Path) -> subprocess.Popen:
@@ -453,6 +456,7 @@ def wait_ports(items: list[tuple[str, int]], timeout: float = 30) -> None:
     print("[growth] -------- 已启动 --------", flush=True)
     print("[growth] 前端", flush=True)
     print("[growth]   工作台       http://127.0.0.1:5176/", flush=True)
+    print("[growth]   一期AI工作台 http://127.0.0.1:5188/", flush=True)
     print("[growth]   数字门户     http://127.0.0.1:5174/", flush=True)
     print("[growth]   访客分析     http://127.0.0.1:5177/", flush=True)
     print("[growth]   智能营销页   http://127.0.0.1:5186/", flush=True)
@@ -526,7 +530,7 @@ def main() -> None:
     parser.add_argument("--port", type=int, default=int(os.environ.get("INTRANET_WEB_PORT", str(WEB_PORT_DEFAULT))))
     parser.add_argument("--host", default="0.0.0.0")
     parser.add_argument("--skip-bridge", action="store_true", help="不启动 Python agent-bridge（仍启动 chat-server）")
-    parser.add_argument("--force", action="store_true", help="先结束占用 5174/5176/5177/5186/8787/8790 的进程")
+    parser.add_argument("--force", action="store_true", help="先结束占用 5174/5176/5177/5178/5186/5188/8787/8790 的进程")
     args = parser.parse_args()
     if PACKED:
         run_packed(args.port, args.skip_bridge)
