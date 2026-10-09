@@ -1,940 +1,1097 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import {
-  Activity,
-  ArrowRight,
-  Bot,
-  Bug,
-  ChevronDown,
-  ChevronUp,
-  CircleCheck,
-  Clock,
-  Code2,
-  ExternalLink,
-  FileCheck,
-  FileText,
-  Globe,
-  Loader2,
-  RefreshCw,
-  Search,
-  Shield,
-  Sparkles,
-  TrendingUp,
-  TriangleAlert,
-  XCircle,
-} from 'lucide-react'
-import {
-  BOT_COLORS,
-  LLMS_TEXT,
-  PRODUCT_JSONLD,
-  ROBOTS_TEXT,
-  buildProductDraft,
-  checks,
-  crawlTrend30d,
-  crawlerLogs,
-  initialProducts,
-} from './data.js'
+import { readyData } from './readyData.js'
+import ProductDetailGap from './ProductDetailGap.jsx'
+import './ready.css'
 
-const STATUS = {
-  pass: { Icon: CircleCheck, color: 'text-emerald-600', bg: 'bg-emerald-100', label: '已就绪' },
-  warn: { Icon: TriangleAlert, color: 'text-amber-600', bg: 'bg-amber-100', label: '需关注' },
-  fail: { Icon: XCircle, color: 'text-rose-600', bg: 'bg-rose-100', label: '未通过' },
+const S = {
+  icon: 'b856b8ea',
+  summary: '29bdbfb0',
+  title: '4713926b',
+  check: 'e1e739d0',
+  llms: 'd5da6e54',
+  schema: 'e6578b55',
+  robots: '1b4b3e4e',
+  og: '742dd540',
+  opt: 'b46e1206',
+  card: 'f015f100',
+  log: 'b088ec6d',
+  report: 'c97cc663',
+  ready: 'fd7d41c4',
 }
 
-const CHECK_ICONS = {
-  'llms-txt': FileText,
-  'schema-jsonld': Code2,
-  'robots-txt': Bot,
-  ssr: Globe,
-  https: Shield,
-  sitemap: FileCheck,
-  'og-tags': ExternalLink,
+const ICONS = {
+  activity: '<path d="M3 12h4l3-8 4 16 3-8h4"/>',
+  'book-open': '<path d="M12 6.5C10.5 5.2 8 4.5 4 4.5v13c4 0 6.5.7 8 2 1.5-1.3 4-2 8-2v-13c-4 0-6.5.7-8 2zM12 6.5v13"/>',
+  check: '<path d="M5 12.5l4.5 4.5L19 7.5"/>',
+  'check-circle': '<circle cx="12" cy="12" r="9"/><path d="M8 12.5l3 3 5-6"/>',
+  'chevron-down': '<path d="M6 9l6 6 6-6"/>',
+  'chevron-right': '<path d="M9 6l6 6-6 6"/>',
+  circle: '<circle cx="12" cy="12" r="9"/>',
+  clock: '<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',
+  code: '<path d="M8 8l-4 4 4 4M16 8l4 4-4 4M13.5 6l-3 12"/>',
+  edit: '<path d="M4 20h4L19 9a2.1 2.1 0 00-3-3L5 17v3zM14.5 7.5l3 3"/>',
+  'external-link': '<path d="M13 5h6v6M19 5l-8 8M17 14v4.5a1.5 1.5 0 01-1.5 1.5h-9A1.5 1.5 0 015 18.5v-9A1.5 1.5 0 016.5 8H11"/>',
+  'file-check': '<path d="M14 3H7.5A1.5 1.5 0 006 4.5v15A1.5 1.5 0 007.5 21h9a1.5 1.5 0 001.5-1.5V7l-4-4z"/><path d="M14 3v4h4M9.5 14l2 2 3.5-3.5"/>',
+  'file-text': '<path d="M14 3H7.5A1.5 1.5 0 006 4.5v15A1.5 1.5 0 007.5 21h9a1.5 1.5 0 001.5-1.5V7l-4-4z"/><path d="M14 3v4h4M9 12h6M9 16h6"/>',
+  globe: '<circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.5 2.6 3.7 5.6 3.7 9S14.5 18.4 12 21c-2.5-2.6-3.7-5.6-3.7-9S9.5 5.6 12 3z"/>',
+  info: '<circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 7.5h.01"/>',
+  refresh: '<path d="M20 11a8 8 0 00-14.5-4.5L4 8M4 4v4h4M4 13a8 8 0 0014.5 4.5L20 16M20 20v-4h-4"/>',
+  robot: '<rect x="5" y="8" width="14" height="11" rx="2.5"/><path d="M12 8V5"/><circle cx="12" cy="4" r="1"/><path d="M3 13v2M21 13v2M9 14.5h.01M15 14.5h.01M10 17h4"/>',
+  scan: '<path d="M4 8V6a2 2 0 012-2h2M16 4h2a2 2 0 012 2v2M20 16v2a2 2 0 01-2 2h-2M8 20H6a2 2 0 01-2-2v-2M4 12h16"/>',
+  shield: '<path d="M12 3l7 3v5.5c0 4.3-2.9 7.7-7 9.5-4.1-1.8-7-5.2-7-9.5V6l7-3z"/>',
+  'shield-check': '<path d="M12 3l7 3v5.5c0 4.3-2.9 7.7-7 9.5-4.1-1.8-7-5.2-7-9.5V6l7-3z"/><path d="M8.5 12l2.5 2.5 4.5-5"/>',
+  sparkle: '<path d="M10 3.5l1.8 4.7 4.7 1.8-4.7 1.8L10 16.5l-1.8-4.7L3.5 10l4.7-1.8L10 3.5zM18 14.5l.8 2 2 .8-2 .8-.8 2-.8-2-2-.8 2-.8.8-2z"/>',
+  tag: '<path d="M4 4h7.5l8.5 8.5-7.5 7.5L4 11.5V4z"/><circle cx="8.5" cy="8.5" r="1.2"/>',
+  trend: '<path d="M3 17l6-6 4 4 8-8M15 7h6v6"/>',
+  upload: '<path d="M12 16V5M7.5 9.5L12 5l4.5 4.5M4.5 15v3.5a1.5 1.5 0 001.5 1.5h12a1.5 1.5 0 001.5-1.5V15"/>',
+  warning: '<path d="M12 4l9 15.5H3L12 4z"/><path d="M12 10v4M12 17h.01"/>',
+  'x-circle': '<circle cx="12" cy="12" r="9"/><path d="M9 9l6 6M15 9l-6 6"/>',
 }
 
-const SCHEMA_PAGES = [
-  { name: '首页', type: 'Organization' },
-  { name: '产品详情页', type: 'Product' },
-  { name: '文章页', type: 'Article' },
-  { name: 'FAQ页', type: 'FAQPage' },
+const STATUS_TEXT = { pending: '检测中', ready: '已就绪', warn: '需关注' }
+const ROBOTS = [
+  { name: 'GPTBot', ua: 'GPTBot' },
+  { name: 'ClaudeBot', ua: 'ClaudeBot' },
+  { name: 'PerplexityBot', ua: 'PerplexityBot' },
+  { name: 'Bytespider', ua: 'Bytespider' },
+  { name: 'Googlebot', ua: 'Googlebot' },
+  { name: 'Bingbot', ua: 'Bingbot' },
+  { name: 'AppleBot', ua: 'Applebot' },
+  { name: 'Meta-ExternalAgent', ua: 'meta-externalagent' },
 ]
+const FILE_ACCEPT = '.pdf,.xls,.xlsx,.doc,.docx,.jpg,.jpeg,.png'
+const STEP_MS = 700
+const STEP_TAIL = 400
 
-const ROBOTS = ['GPTBot', 'ClaudeBot', 'PerplexityBot', 'Bytespider', 'Googlebot', 'Bingbot', 'AppleBot', 'Meta-ExternalAgent']
-
-function bandOf(score) {
-  if (score >= 100) return { label: '全部合格', chip: 'bg-emerald-100 text-emerald-700' }
-  if (score >= 90) return { label: '已达标', chip: 'bg-emerald-100 text-emerald-700' }
-  if (score >= 70) return { label: '需关注', chip: 'bg-amber-100 text-amber-700' }
-  return { label: '待优化', chip: 'bg-rose-100 text-rose-700' }
+function marks(...scopes) {
+  const attrs = {}
+  scopes.forEach((scope) => {
+    attrs[`data-v-${scope}`] = ''
+  })
+  return attrs
 }
 
-function scoreOf(issues) {
-  return 100 - issues.reduce((sum, issue) => sum + issue.weight, 0)
-}
-
-function withMaterials(product) {
-  return { ...product, materials: product.materials || { text: '', files: [] } }
-}
-
-function CodeBlock({ children }) {
+function AiIcon({ name, size = 16, className, scopes = [] }) {
+  const cls = className ? `ai-icon ${className}` : 'ai-icon'
   return (
-    <pre className="bg-slate-900 text-slate-200 rounded-lg p-4 text-xs leading-relaxed overflow-x-auto">
-      <code>{children}</code>
-    </pre>
+    <svg
+      {...marks(S.icon, ...scopes)}
+      className={cls}
+      viewBox="0 0 24 24"
+      width={size}
+      height={size}
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.8"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      dangerouslySetInnerHTML={{ __html: ICONS[name] || '' }}
+    />
   )
 }
 
-function LlmsPanel() {
+function statusClass(code) {
+  const value = Number(code)
+  if (value >= 400) return 'error'
+  if (value >= 300) return 'warn'
+  return 'ok'
+}
+
+function botLabel(name) {
+  const tab = readyData.crawlerTabs.find((item) => item.code && item.code.toLowerCase() === String(name || '').toLowerCase())
+  return tab ? tab.label : name
+}
+
+function robotsText(sitemap) {
+  const lines = ROBOTS.map((bot) => `User-agent: ${bot.ua}\nAllow: /`)
+  lines.push('User-agent: *\nAllow: /')
+  if (sitemap) lines.push(sitemap)
+  return lines.join('\n\n')
+}
+
+function niceMax(max) {
+  if (max <= 0) return 1
+  const pow = 10 ** Math.floor(Math.log10(max))
+  const n = max / pow
+  const nice = n <= 1 ? 1 : n <= 2 ? 2 : n <= 5 ? 5 : 10
+  return nice * pow
+}
+
+function smoothPath(points) {
+  if (!points.length) return ''
+  if (points.length === 1) return `M ${points[0].x} ${points[0].y}`
+  let d = `M ${points[0].x} ${points[0].y}`
+  for (let i = 0; i < points.length - 1; i += 1) {
+    const p0 = points[i - 1] || points[i]
+    const p1 = points[i]
+    const p2 = points[i + 1]
+    const p3 = points[i + 2] || p2
+    const c1x = p1.x + (p2.x - p0.x) / 6
+    const c1y = p1.y + (p2.y - p0.y) / 6
+    const c2x = p2.x - (p3.x - p1.x) / 6
+    const c2y = p2.y - (p3.y - p1.y) / 6
+    d += ` C ${c1x} ${c1y}, ${c2x} ${c2y}, ${p2.x} ${p2.y}`
+  }
+  return d
+}
+
+function TrendChart({ trend }) {
+  const width = 920
+  const height = 260
+  const pad = { l: 40, r: 16, t: 24, b: 28 }
+  const max = niceMax(Math.max(...trend.map((item) => item.count), 0))
+  const innerW = width - pad.l - pad.r
+  const innerH = height - pad.t - pad.b
+  const step = trend.length > 1 ? innerW / (trend.length - 1) : innerW
+  const points = trend.map((item, index) => ({
+    x: pad.l + index * step,
+    y: pad.t + innerH - (item.count / max) * innerH,
+  }))
+  const line = smoothPath(points)
+  const area = points.length
+    ? `${line} L ${points[points.length - 1].x} ${pad.t + innerH} L ${points[0].x} ${pad.t + innerH} Z`
+    : ''
+  const ticks = [0, 0.25, 0.5, 0.75, 1].map((ratio) => Math.round(max * ratio))
   return (
-    <div>
-      <div className="flex items-center justify-between mb-2">
-        <span className="text-xs font-bold text-gray-600">/llms.txt 当前内容</span>
-        <button type="button" className="flex items-center gap-1 text-xs text-blue-600 hover:text-blue-700 cursor-pointer font-medium">
-          <ExternalLink className="w-3.5 h-3.5" /> 访问 URL
+    <svg viewBox={`0 0 ${width} ${height}`} width="100%" height="260" role="img" aria-label="近 30 天访问趋势">
+      <defs>
+        <linearGradient id="readyTrendFill" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor="rgba(47, 107, 255, 0.25)" />
+          <stop offset="100%" stopColor="rgba(47, 107, 255, 0)" />
+        </linearGradient>
+      </defs>
+      {ticks.map((tick) => {
+        const y = pad.t + innerH - (tick / max) * innerH
+        return (
+          <g key={tick}>
+            <line x1={pad.l} y1={y} x2={width - pad.r} y2={y} stroke="#eef0f4" />
+            <text x={pad.l - 8} y={y + 4} textAnchor="end" fontSize="12" fill="#8a92a3">
+              {tick}
+            </text>
+          </g>
+        )
+      })}
+      <path d={area} fill="url(#readyTrendFill)" />
+      <path d={line} fill="none" stroke="#2f6bff" strokeWidth="3" />
+      {points.map((point, index) => (
+        <circle key={trend[index].date} cx={point.x} cy={point.y} r="3.5" fill="#2f6bff" />
+      ))}
+      {trend.map((item, index) =>
+        index % 4 === 0 ? (
+          <text key={item.date} x={points[index].x} y={height - 6} textAnchor="middle" fontSize="12" fill="#8a92a3">
+            {item.date}
+          </text>
+        ) : null,
+      )}
+    </svg>
+  )
+}
+
+function Dialog({ dialog, onClose }) {
+  useEffect(() => {
+    if (!dialog) return undefined
+    function onKey(event) {
+      if (event.key === 'Escape') onClose()
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [dialog, onClose])
+  if (!dialog) return null
+  return (
+    <div className="ready-dialog-mask" onClick={onClose}>
+      <div className="ready-dialog" onClick={(event) => event.stopPropagation()} role="dialog" aria-modal="true">
+        <header>
+          <span>{dialog.title}</span>
+          <button type="button" onClick={onClose} aria-label="关闭">
+            ×
+          </button>
+        </header>
+        <div className="body">
+          <pre {...marks(dialog.scope)} className="code">
+            {dialog.text}
+          </pre>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+function SectionTitle({ title, icon, tip, tipIcon, color, sectionRef, className = '' }) {
+  return (
+    <div
+      {...marks(S.report, S.title)}
+      ref={sectionRef}
+      className={`section-title report-section ${className}`.trim()}
+      style={color ? { '--color': color } : undefined}
+    >
+      <span {...marks(S.title)} className="bar" />
+      {icon ? <AiIcon scopes={[S.title]} className="icon" name={icon} size={20} /> : null}
+      <h2 {...marks(S.title)} className="text">
+        {title}
+      </h2>
+      {tip ? (
+        <span {...marks(S.title)} className="tip">
+          {tipIcon ? <AiIcon scopes={[S.title]} name={tipIcon} size={14} /> : null} {tip}
+        </span>
+      ) : null}
+    </div>
+  )
+}
+
+function Summary({ checks, brandPending, readablePending, trustPending, onJump }) {
+  const total = checks.length
+  const readyCount = checks.filter((item) => item.status === 'ready').length
+  const attentionCount = checks.filter((item) => item.status === 'warn').length
+  const contentPending = brandPending + readablePending + trustPending
+  const techTone = total && readyCount / total >= 1 ? 'good' : 'fair'
+  const contentTone = contentPending ? 'fair' : 'good'
+  const techDesc =
+    techTone === 'good'
+      ? `技术层：${total} 项关键项已由网站出厂完成配置，网站可被主流 AI 引擎正常抓取与收录。`
+      : `技术层：还有 ${attentionCount} 项关键项需要关注，处理后网站才能被主流 AI 引擎正常抓取与收录。`
+  const techMeta = attentionCount ? `${total} 项关键项 · ${attentionCount} 项需关注` : `${total} 项关键项 · 全部已就绪`
+  const contentDesc = contentPending
+    ? `内容层：AI 持续检测全站内容，把 AI 读不准、用不上的部分找出来，当前有 ${contentPending} 项待你确认或补充。`
+    : '内容层：全站内容已优化完成，AI 可以准确读懂并引用你的产品和品牌。'
+  return (
+    <div {...marks(S.report, S.summary)} className="summary">
+      <div {...marks(S.summary)} className="summary-head">
+        <div {...marks(S.summary)}>
+          <h1 {...marks(S.summary)} className="summary-title">
+            AI Ready · 对 AI 友好
+          </h1>
+          <p {...marks(S.summary)} className="summary-sub">
+            让 AI 引擎看得见你的网站，也读得懂你的核心内容。
+          </p>
+        </div>
+      </div>
+      <div {...marks(S.summary)} className="overview">
+        <OverviewCard
+          tone={techTone}
+          icon="shield"
+          title="被 AI 看见"
+          desc={techDesc}
+          meta={techMeta}
+          pill={techTone === 'good' ? 'Good' : '待关注'}
+          onClick={() => onJump('check')}
+        />
+        <OverviewCard
+          tone={contentTone}
+          icon="book-open"
+          title="被 AI 理解"
+          desc={contentDesc}
+          meta={`品牌一致性 / AI 可读性 / AI 可信性 · ${contentPending ? `${contentPending} 项待确认` : '全部已处理'}`}
+          pill={contentTone === 'good' ? 'Good' : '待关注'}
+          onClick={() => onJump('brand')}
+        />
+      </div>
+    </div>
+  )
+}
+
+function OverviewCard({ tone, icon, title, desc, meta, pill, onClick }) {
+  return (
+    <div {...marks(S.summary)} className={`ov-card is-link is-${tone}`} role="button" onClick={onClick}>
+      <div {...marks(S.summary)} className="ov-main">
+        <span {...marks(S.summary)} className="ov-icon">
+          <AiIcon scopes={[S.summary]} name={icon} size={20} />
+        </span>
+        <div {...marks(S.summary)} className="ov-body">
+          <h3 {...marks(S.summary)} className="ov-title">
+            {title}
+          </h3>
+          <p {...marks(S.summary)} className="ov-desc">
+            {desc}
+          </p>
+          <p {...marks(S.summary)} className="ov-meta">
+            <AiIcon scopes={[S.summary]} className={tone === 'good' ? 'is-good' : 'is-warn'} name={tone === 'good' ? 'check' : 'clock'} size={12} /> {meta}
+          </p>
+        </div>
+      </div>
+      <div {...marks(S.summary)} className={`ov-badge is-${tone}`}>
+        <span {...marks(S.summary)} className="ov-badge-icon">
+          <AiIcon scopes={[S.summary]} name={tone === 'good' ? 'check' : 'clock'} size={tone === 'good' ? 24 : 20} />
+        </span>
+        <span {...marks(S.summary)} className="ov-badge-text">
+          {pill}
+        </span>
+      </div>
+    </div>
+  )
+}
+
+function LlmsDetail({ onOpen }) {
+  return (
+    <div {...marks(S.check, S.llms)} className="detail-llms">
+      <div {...marks(S.llms)} className="head">
+        <button type="button" className="ready-mini-btn" onClick={onOpen}>
+          查看
         </button>
       </div>
-      <CodeBlock>{LLMS_TEXT}</CodeBlock>
     </div>
   )
 }
 
-function SchemaPanel() {
+function SchemaDetail({ rows, regenerating, onOpen, onRegenerate }) {
   return (
-    <div>
-      <div className="text-xs font-bold text-gray-600 mb-2">核心页面 Schema 配置一览</div>
-      <div className="space-y-2">
-        {SCHEMA_PAGES.map((page) => (
-          <div key={page.name} className="flex items-center gap-3 p-2.5 bg-white rounded-md border border-gray-100">
-            <CircleCheck className="w-4 h-4 text-emerald-500 flex-shrink-0" />
-            <span className="text-sm font-medium text-gray-700 flex-shrink-0">{page.name}</span>
-            <span className="text-xs px-2 py-0.5 rounded bg-purple-100 text-purple-700 font-medium">{page.type}</span>
-            <button type="button" className="ml-auto text-xs text-blue-600 hover:text-blue-700 cursor-pointer flex items-center gap-1">
-              <Code2 className="w-3.5 h-3.5" /> 查看代码
-            </button>
-            <button type="button" className="text-xs text-amber-600 hover:text-amber-700 cursor-pointer flex items-center gap-1">
-              <RefreshCw className="w-3.5 h-3.5" /> AI 重新生成
-            </button>
-          </div>
-        ))}
-      </div>
-      <pre className="bg-slate-900 text-slate-200 rounded-lg p-4 text-xs leading-relaxed overflow-x-auto mt-3">
-        <code>{PRODUCT_JSONLD}</code>
-      </pre>
-    </div>
-  )
-}
-
-function RobotsPanel() {
-  return (
-    <div>
-      <div className="text-xs font-bold text-gray-600 mb-2">AI 爬虫准入状态</div>
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-3">
-        {ROBOTS.map((bot) => (
-          <div key={bot} className="flex items-center gap-2 p-2 bg-emerald-50 rounded-md border border-emerald-100">
-            <CircleCheck className="w-3.5 h-3.5 text-emerald-500" />
-            <span className="text-xs font-medium text-gray-700">{bot}</span>
-            <span className="text-xs text-emerald-600 font-medium">Allow</span>
-          </div>
-        ))}
-      </div>
-      <CodeBlock>{ROBOTS_TEXT}</CodeBlock>
-    </div>
-  )
-}
-
-function OgPanel() {
-  return (
-    <div>
-      <div className="text-xs font-bold text-gray-600 mb-2">Open Graph 标签检查</div>
-      <div className="space-y-2">
-        <div className="flex items-center gap-2 p-2.5 bg-emerald-50 rounded-md border border-emerald-100">
-          <CircleCheck className="w-4 h-4 text-emerald-500" />
-          <span className="text-sm text-gray-700">og:title · og:description · og:url</span>
-          <span className="ml-auto text-xs text-emerald-600 font-medium">已配置</span>
-        </div>
-        <div className="flex items-center gap-2 p-2.5 bg-amber-50 rounded-md border border-amber-100">
-          <TriangleAlert className="w-4 h-4 text-amber-500" />
-          <span className="text-sm text-gray-700">og:image</span>
-          <span className="ml-auto text-xs text-amber-600 font-medium">3 个产品页缺失</span>
-          <button type="button" className="text-xs text-blue-600 hover:text-blue-700 cursor-pointer font-medium ml-2">
-            一键补全
+    <div {...marks(S.check, S.schema)} className="detail-schema">
+      <p {...marks(S.schema)} className="title">
+        核心页面 Schema 配置一览
+      </p>
+      {rows.map((row) => (
+        <div {...marks(S.schema)} key={row.code} className={`row${row.configured ? '' : ' off'}`}>
+          <AiIcon scopes={[S.schema]} className="ok" name={row.configured ? 'check-circle' : 'warning'} size={16} />
+          <span {...marks(S.schema)} className="label">
+            {row.label}
+          </span>
+          <span {...marks(S.schema)} className={`type${row.configured ? '' : ' off'}`}>
+            {row.configured ? row.type : '未配置'}
+          </span>
+          <button {...marks(S.schema)} type="button" className="action" disabled={!row.configured} onClick={() => onOpen(row)}>
+            <AiIcon scopes={[S.schema]} name="code" size={14} /> 查看代码
           </button>
+          {row.code === 'home' ? (
+            <button {...marks(S.schema)} type="button" className="action" disabled={!!regenerating} onClick={() => onRegenerate(row)}>
+              {regenerating === row.code ? <i className="spin" /> : <AiIcon scopes={[S.schema]} name="refresh" size={14} />}{' '}
+              {regenerating === row.code ? '生成中…' : 'AI 重新生成'}
+            </button>
+          ) : null}
         </div>
-      </div>
+      ))}
     </div>
   )
 }
 
-const EXPAND = {
-  'llms-txt': LlmsPanel,
-  'schema-jsonld': SchemaPanel,
-  'robots-txt': RobotsPanel,
-  'og-tags': OgPanel,
-}
-
-function CheckCard({ check }) {
-  const [open, setOpen] = useState(false)
-  const status = STATUS[check.status]
-  const StatusIcon = status.Icon
-  const Icon = CHECK_ICONS[check.id] || FileText
-  const Panel = EXPAND[check.id]
-
+function RobotsDetail({ enabled, onOpen }) {
   return (
-    <div className="border border-gray-200 rounded-xl bg-white overflow-hidden transition-all hover:shadow-sm hover:border-gray-300">
-      <div className="p-4">
-        <div className="flex items-start gap-3">
-          <div className="flex flex-col items-center gap-2 flex-shrink-0">
-            <div className={`w-10 h-10 rounded-lg ${status.bg} flex items-center justify-center`}>
-              <Icon className={`w-5 h-5 ${status.color}`} />
-            </div>
-            <span className={`inline-flex items-center gap-1 text-[11px] font-medium px-2 py-0.5 rounded-full ${status.bg} ${status.color} whitespace-nowrap`}>
-              <StatusIcon className="w-3 h-3" /> {status.label}
+    <div {...marks(S.check, S.robots)} className="detail-robots">
+      <div {...marks(S.robots)} className="head">
+        <p {...marks(S.robots)} className="title">
+          AI 爬虫准入状态
+        </p>
+        {enabled ? (
+          <button type="button" className="ready-mini-btn" onClick={onOpen}>
+            查看
+          </button>
+        ) : null}
+      </div>
+      <div {...marks(S.robots)} className="bots">
+        {ROBOTS.map((bot) => (
+          <div {...marks(S.robots)} key={bot.name} className={`bot${enabled ? '' : ' off'}`}>
+            <AiIcon scopes={[S.robots]} className="icon" name={enabled ? 'check-circle' : 'warning'} size={14} />
+            <span {...marks(S.robots)} className="name">
+              {bot.name}
+            </span>
+            <span {...marks(S.robots)} className="state">
+              {enabled ? 'Allow' : '未放行'}
             </span>
           </div>
-          <div className="flex-1 min-w-0">
-            <div className="flex items-center justify-between gap-2">
-              <span className="text-sm font-bold text-gray-800">{check.name}</span>
-              {check.expandable && (
-                <button
-                  type="button"
-                  onClick={() => setOpen((value) => !value)}
-                  className="flex-shrink-0 flex items-center gap-1 text-xs text-blue-600 hover:text-blue-700 cursor-pointer font-medium"
-                >
-                  {open ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
-                  {open ? '收起' : '查看详情'}
-                </button>
-              )}
-            </div>
-            <p className="text-[13px] text-gray-500 mt-1 leading-relaxed">{check.concept}</p>
-            <div className="mt-2 p-2.5 bg-blue-50/60 rounded-md border border-blue-100">
-              <p className="text-[12px] text-gray-600 leading-relaxed">
-                <span className="font-semibold text-blue-700">为什么重要：</span>
-                {check.importance}
-              </p>
-            </div>
-            <p className="mt-2 text-[12px] text-gray-400">{check.detail}</p>
-          </div>
-        </div>
+        ))}
       </div>
-      {open && Panel && (
-        <div className="border-t border-gray-100 bg-gray-50/50 p-4">
-          <Panel />
+      {enabled ? null : (
+        <div {...marks(S.robots)} className="empty">
+          robots 功能已关闭，AI 爬虫准入规则未生效
         </div>
       )}
     </div>
   )
 }
 
-function ProductCard({ diag, open, onToggle, onMaterials, onAddFiles, onRemoveFile, onOptimize, onDraftChange, onPublishReviewed, onToggleReview }) {
-  const fileRef = useRef(null)
-  const scoreColor = diag.score >= 90 ? 'text-emerald-600' : diag.score >= 70 ? 'text-amber-600' : 'text-rose-600'
-  const barColor = diag.score >= 90 ? 'bg-emerald-500' : diag.score >= 70 ? 'bg-amber-500' : 'bg-rose-500'
-  const band = bandOf(diag.score)
-  const sensitive = diag.issues.some((issue) => issue.sensitive)
-  const canOptimize = diag.score < 100 && diag.status !== 'generating' && diag.status !== 'review'
-  const materials = diag.materials || { text: '', files: [] }
-  const showBody = open && (diag.issues.length > 0 || diag.draft)
-
+function OgDetail({ checks }) {
   return (
-    <div className="border border-gray-200 rounded-xl bg-white overflow-hidden">
-      <div className="p-4">
-        <div className="flex items-center justify-between gap-3">
-          <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-2 flex-wrap">
-              <span className="text-sm font-bold text-gray-800">{diag.name}</span>
-              <a href={diag.url} onClick={(event) => event.preventDefault()} className="text-xs text-blue-500 hover:underline truncate">
-                {diag.url}
-              </a>
-            </div>
-            <div className="flex items-center gap-2 mt-2 flex-wrap">
-              <div className="w-24 h-2 bg-gray-100 rounded-full overflow-hidden">
-                <div className={`h-full ${barColor} rounded-full transition-all duration-700`} style={{ width: `${diag.score}%` }} />
-              </div>
-              <span className={`text-sm font-bold ${scoreColor}`}>{diag.score}</span>
-              <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${band.chip}`}>{band.label}</span>
-              {diag.status === 'generating' && (
-                <span className="text-xs px-2 py-0.5 rounded-full bg-blue-100 text-blue-700 font-medium inline-flex items-center gap-1">
-                  <Loader2 className="w-3 h-3 animate-spin" /> 生成中
-                </span>
-              )}
-              {diag.notice === '已发布到线上。' && (
-                <span className="text-xs px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700 font-medium inline-flex items-center gap-1">
-                  <CircleCheck className="w-3 h-3" /> 已发布到线上
-                </span>
-              )}
-            </div>
-          </div>
-          {(diag.issues.length > 0 || diag.draft) && (
-            <button type="button" onClick={onToggle} className="flex-shrink-0 p-2 hover:bg-gray-50 rounded cursor-pointer" aria-label={open ? '收起' : '展开'}>
-              {open ? <ChevronUp className="w-4 h-4 text-gray-400" /> : <ChevronDown className="w-4 h-4 text-gray-400" />}
+    <div {...marks(S.check, S.og)} className="detail-og">
+      <p {...marks(S.og)} className="title">
+        Open Graph 标签检查
+      </p>
+      {checks.map((item) => (
+        <div {...marks(S.og)} key={item.code} className={`row ${item.ok ? 'ok' : 'warn'}`}>
+          <AiIcon scopes={[S.og]} className="icon" name={item.ok ? 'check-circle' : 'warning'} size={16} />
+          <span {...marks(S.og)} className="label">
+            {item.label}
+          </span>
+          <span {...marks(S.og)} className="text">
+            {item.text}
+          </span>
+          {item.action ? (
+            <button {...marks(S.og)} type="button" className="action">
+              {item.action}
             </button>
-          )}
+          ) : null}
         </div>
-        {diag.notice && <p className="mt-2 text-xs text-gray-500">{diag.notice}</p>}
-        {showBody && (
-          <div className="mt-3 pt-3 border-t border-gray-100 space-y-2">
-            {diag.issues.map((issue) => (
-              <div key={issue.key} className="flex items-start gap-2 p-2.5 bg-gray-50 rounded-md">
-                <div className={`w-2 h-2 rounded-full mt-1.5 flex-shrink-0 ${issue.sensitive ? 'bg-amber-500' : 'bg-rose-500'}`} />
-                <div className="flex-1 min-w-0">
-                  <span className="text-[13px] font-medium text-gray-800">{issue.module}</span>
-                  <span className="text-[13px] text-gray-600">：{issue.desc}</span>
-                  {issue.sensitive && (
-                    <span className="ml-2 text-xs px-1.5 py-0.5 rounded bg-amber-100 text-amber-700 font-medium">需补充资料</span>
-                  )}
+      ))}
+    </div>
+  )
+}
+
+function CheckList({ items, openMap, onToggle, onDialog, regenerating, onRegenerate }) {
+  return (
+    <div {...marks(S.report, S.check)} className="check-list">
+      {items.map((item) => {
+        const open = Boolean(openMap[item.code])
+        return (
+          <div {...marks(S.check)} key={item.code} className={`check-card${open ? ' open' : ''}`}>
+            <div {...marks(S.check)} className="card-top">
+              <span {...marks(S.check)} className={`icon ${item.status}`}>
+                <AiIcon scopes={[S.check]} name={item.icon} size={20} />
+              </span>
+              <div {...marks(S.check)} className="main">
+                <div {...marks(S.check)} className="head">
+                  <h3 {...marks(S.check)} className="title">
+                    {item.title}
+                  </h3>
+                  <span {...marks(S.check)} className={`status ${item.status}`}>
+                    <AiIcon scopes={[S.check]} name={item.status === 'ready' ? 'check-circle' : 'warning'} size={12} /> {STATUS_TEXT[item.status]}
+                  </span>
+                </div>
+                <p {...marks(S.check)} className="note">
+                  {item.note}
+                </p>
+              </div>
+              <button {...marks(S.check)} type="button" className={`toggle${open ? ' open' : ''}`} onClick={() => onToggle(item.code)}>
+                详情 <AiIcon scopes={[S.check]} className="arrow" name="chevron-down" size={14} />
+              </button>
+            </div>
+            {open ? (
+              <div {...marks(S.check)} className="detail">
+                <div {...marks(S.check)} className="detail-inner">
+                  <div {...marks(S.check)} className="intro">
+                    <div {...marks(S.check)} className="intro-box">
+                      <p {...marks(S.check)} className="intro-label">
+                        这是什么
+                      </p>
+                      <p {...marks(S.check)} className="intro-text">
+                        {item.desc}
+                      </p>
+                    </div>
+                    <div {...marks(S.check)} className="intro-box is-why">
+                      <p {...marks(S.check)} className="intro-label">
+                        为什么重要
+                      </p>
+                      <p {...marks(S.check)} className="intro-text">
+                        {item.why}
+                      </p>
+                    </div>
+                  </div>
+                  {item.hasDetail && item.detail ? (
+                    <div {...marks(S.check)} className="detail-body">
+                      {item.detail.type === 'llms' ? (
+                        <LlmsDetail onOpen={() => onDialog({ title: 'llms.txt 内容', text: readyData.llmsText, scope: S.llms })} />
+                      ) : null}
+                      {item.detail.type === 'schema' ? (
+                        <SchemaDetail
+                          rows={item.detail.props.rows}
+                          regenerating={regenerating}
+                          onOpen={(row) => onDialog({ title: `${row.label} Schema 代码`, text: row.json, scope: S.schema })}
+                          onRegenerate={onRegenerate}
+                        />
+                      ) : null}
+                      {item.detail.type === 'robots' ? (
+                        <RobotsDetail
+                          enabled={item.detail.props.enabled}
+                          onOpen={() => onDialog({ title: 'robots.txt 内容', text: robotsText(item.detail.props.sitemap), scope: S.robots })}
+                        />
+                      ) : null}
+                      {item.detail.type === 'og' ? <OgDetail checks={item.detail.props.checks} /> : null}
+                    </div>
+                  ) : null}
                 </div>
               </div>
-            ))}
-            {sensitive && (
-              <div className="p-3 bg-amber-50 border border-amber-200 rounded-md space-y-2">
-                <div className="text-sm font-semibold text-amber-800">可补充资料，也可以不传直接优化</div>
-                <p className="text-xs text-amber-700 leading-relaxed">支持图片、文件或文字。不上传时，敏感模块生成通用内容，不写质保年数、认证号、运费和精确成分。</p>
-                <textarea
-                  value={materials.text}
-                  onChange={(event) => onMaterials(diag.id, event.target.value)}
-                  rows={3}
-                  placeholder="例如：材质 8.8 级碳钢，表面镀锌。质保按合同约定，不在这里写死年限。"
-                  className="w-full text-sm rounded-md border border-amber-200 bg-white px-3 py-2 text-gray-800 placeholder:text-gray-400"
-                />
-                <button
-                  type="button"
-                  className="inline-flex items-center gap-1 text-xs font-medium text-blue-600 cursor-pointer"
-                  onClick={(event) => {
-                    event.preventDefault()
-                    event.stopPropagation()
-                    fileRef.current?.click()
-                  }}
-                >
-                  <FileText className="w-3.5 h-3.5" />
-                  选择图片或文件
+            ) : null}
+          </div>
+        )
+      })}
+    </div>
+  )
+}
+
+function OptimizeCard({ item, state, onHandle, onToast }) {
+  const [explainOpen, setExplainOpen] = useState(false)
+  const [formOpen, setFormOpen] = useState(false)
+  const [content, setContent] = useState('')
+  const [fileName, setFileName] = useState('')
+  const [runStep, setRunStep] = useState(null)
+  const [customCopy, setCustomCopy] = useState('')
+  const [editingCopy, setEditingCopy] = useState(false)
+  const [copyDraft, setCopyDraft] = useState('')
+  const timers = useRef([])
+  const done = state === 'done'
+  const ignored = state === 'ignored'
+  const running = runStep !== null
+  const steps = item.action.form
+    ? item.action.form.type === 'upload'
+      ? ['解析上传的文件', 'AI 提取并生成内容', '校验并生效']
+      : ['读取你补充的资料', 'AI 生成网站内容', '校验并生效']
+    : ['扫描全站，定位待改内容', 'AI 改写并替换内容', '校验并生效']
+  const percent = Math.round((Math.min(runStep || 0, steps.length) / steps.length) * 100)
+  const doneNote = customCopy ? `已按你确认的文案生效：「${customCopy}」` : item.result || '已生效'
+
+  function clearTimers() {
+    timers.current.forEach((id) => window.clearTimeout(id))
+    timers.current = []
+  }
+
+  useEffect(() => () => clearTimers(), [])
+
+  useEffect(() => {
+    if (!state) {
+      clearTimers()
+      setRunStep(null)
+      setFormOpen(false)
+      setContent('')
+      setFileName('')
+      setCustomCopy('')
+      setEditingCopy(false)
+      setExplainOpen(false)
+    }
+  }, [state])
+
+  function startRun() {
+    if (running) return
+    clearTimers()
+    setRunStep(0)
+    setFormOpen(false)
+    setEditingCopy(false)
+    const next = []
+    for (let index = 0; index < steps.length; index += 1) {
+      next.push(window.setTimeout(() => setRunStep(index + 1), STEP_MS * (index + 1)))
+    }
+    next.push(
+      window.setTimeout(() => {
+        setRunStep(null)
+        onHandle(item, 'agree')
+      }, STEP_MS * steps.length + STEP_TAIL),
+    )
+    timers.current = next
+  }
+
+  function handleAction() {
+    if (item.action.form) setFormOpen((value) => !value)
+    else startRun()
+  }
+
+  function handleSubmit() {
+    if (!content.trim() && !fileName) {
+      onToast('warning', '请先填写资料或选择文件')
+      return
+    }
+    startRun()
+  }
+
+  return (
+    <div {...marks(S.card)} className={`opt-card${done ? ' is-done' : ''}${ignored ? ' is-ignored' : ''}`}>
+      <span {...marks(S.card)} className="icon">
+        <AiIcon scopes={[S.card]} name={done ? 'check-circle' : 'sparkle'} size={16} />
+      </span>
+      <div {...marks(S.card)} className="main">
+        <div {...marks(S.card)} className="head">
+          <h4 {...marks(S.card)} className="title">
+            {item.title}
+          </h4>
+          {done ? (
+            <span {...marks(S.card)} className="badge is-done">
+              <AiIcon scopes={[S.card]} name="check-circle" size={12} />
+              已生效
+            </span>
+          ) : ignored ? (
+            <span {...marks(S.card)} className="badge is-ignored">
+              <AiIcon scopes={[S.card]} name="x-circle" size={12} />
+              已忽略
+            </span>
+          ) : item.auto ? (
+            <span {...marks(S.card)} className="badge">
+              AI 可自动优化
+            </span>
+          ) : null}
+        </div>
+        {done ? (
+          <p {...marks(S.card)} className="result">
+            <AiIcon scopes={[S.card]} name="check-circle" size={14} />
+            {doneNote}
+          </p>
+        ) : (
+          <>
+            {item.tags.length ? (
+              <div {...marks(S.card)} className="tags">
+                {item.tags.map((tag) => (
+                  <span {...marks(S.card)} key={tag} className="tag">
+                    {tag}
+                  </span>
+                ))}
+              </div>
+            ) : null}
+            {ignored ? null : (
+              <div {...marks(S.card)} className="suggest">
+                <p {...marks(S.card)}>
+                  <b {...marks(S.card)}>优化建议：</b>
+                  {item.suggest}
+                </p>
+                {item.proposal && !running ? (
+                  <div {...marks(S.card)} className="proposal">
+                    {editingCopy ? (
+                      <>
+                        <div {...marks(S.card)} className="proposal-label">
+                          {item.proposalField}：
+                        </div>
+                        <textarea {...marks(S.card)} className="proposal-input" rows={2} value={copyDraft} placeholder={item.proposal} onChange={(event) => setCopyDraft(event.target.value)} />
+                        <div {...marks(S.card)} className="proposal-actions">
+                          <button
+                            {...marks(S.card)}
+                            type="button"
+                            className="proposal-apply"
+                            onClick={() => {
+                              setCustomCopy(copyDraft.trim())
+                              setEditingCopy(false)
+                            }}
+                          >
+                            <AiIcon scopes={[S.card]} name="check" size={12} /> 就用这个
+                          </button>
+                          <button
+                            {...marks(S.card)}
+                            type="button"
+                            className="proposal-reset"
+                            onClick={() => {
+                              setCustomCopy('')
+                              setEditingCopy(false)
+                            }}
+                          >
+                            恢复 AI 建议
+                          </button>
+                        </div>
+                      </>
+                    ) : (
+                      <div {...marks(S.card)} className="proposal-row">
+                        <span {...marks(S.card)} className="proposal-label">
+                          {item.proposalField}：
+                        </span>
+                        <span {...marks(S.card)} className="proposal-chip">
+                          {customCopy || item.proposal}
+                        </span>
+                        <button
+                          {...marks(S.card)}
+                          type="button"
+                          className="proposal-edit"
+                          onClick={() => {
+                            setCopyDraft(customCopy || item.proposal)
+                            setEditingCopy(true)
+                          }}
+                        >
+                          <AiIcon scopes={[S.card]} name="edit" size={12} /> 改用其他文案
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                ) : null}
+              </div>
+            )}
+          </>
+        )}
+        {running ? (
+          <div {...marks(S.card)} className="run">
+            <div {...marks(S.card)} className="run-head">
+              <i className="spin" />
+              <span {...marks(S.card)} className="run-title">
+                AI 正在执行…
+              </span>
+              <span {...marks(S.card)} className="run-pct">
+                {percent}%
+              </span>
+            </div>
+            <div {...marks(S.card)} className="run-bar">
+              <span style={{ width: `${percent}%` }} />
+            </div>
+            <div {...marks(S.card)} className="run-steps">
+              {steps.map((step, index) => (
+                <div {...marks(S.card)} key={step} className={`run-step${index < runStep ? ' is-done' : ''}${index === runStep ? ' is-current' : ''}`}>
+                  {index < runStep ? <AiIcon scopes={[S.card]} name="check-circle" size={14} /> : index === runStep ? <i className="spin" /> : <AiIcon scopes={[S.card]} name="circle" size={14} />}
+                  <span>{step}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        ) : (
+          <div {...marks(S.card)} className="foot">
+            {ignored ? (
+              <button {...marks(S.card)} type="button" className="restore" onClick={() => onHandle(item, 'restore')}>
+                恢复处理
+              </button>
+            ) : done ? null : (
+              <>
+                <button {...marks(S.card)} type="button" className="btn primary" onClick={handleAction}>
+                  <AiIcon scopes={[S.card]} name={item.action.icon} size={14} /> {formOpen ? '收起' : item.action.text}
                 </button>
+                {item.action.ignorable ? (
+                  <button {...marks(S.card)} type="button" className="btn" onClick={() => onHandle(item, 'ignore')}>
+                    忽略
+                  </button>
+                ) : null}
+              </>
+            )}
+            <button {...marks(S.card)} type="button" className="explain" onClick={() => setExplainOpen((value) => !value)}>
+              {explainOpen ? '收起说明' : '问题说明'} <AiIcon scopes={[S.card]} className={`arrow${explainOpen ? ' open' : ''}`} name="chevron-down" size={12} />
+            </button>
+          </div>
+        )}
+        {explainOpen && !running ? (
+          <p {...marks(S.card)} className="explain-text">
+            {item.explain}
+          </p>
+        ) : null}
+        {formOpen && !running && !done && !ignored ? (
+          <div {...marks(S.card)} className="form">
+            <textarea
+              {...marks(S.card)}
+              className="form-input"
+              rows={3}
+              placeholder={item.action.form.placeholder}
+              value={content}
+              onChange={(event) => setContent(event.target.value)}
+            />
+            <div {...marks(S.card)} className="form-or">
+              或上传文件
+            </div>
+            {fileName ? (
+              <div {...marks(S.card)} className="file-chip">
+                <AiIcon scopes={[S.card]} name="file-text" size={16} />
+                <span>{fileName}</span>
+                <button type="button" onClick={() => setFileName('')}>
+                  移除
+                </button>
+              </div>
+            ) : (
+              <label {...marks(S.card)} className="file-pick">
+                <AiIcon scopes={[S.card]} name="upload" size={16} />
+                <span>点击选择文件（支持 PDF / Excel / Word / JPG / PNG）</span>
                 <input
-                  ref={fileRef}
                   type="file"
-                  accept="image/*,.pdf,.doc,.docx,.txt"
-                  multiple
-                  className="hidden"
-                  tabIndex={-1}
-                  aria-hidden="true"
-                  onClick={(event) => event.stopPropagation()}
+                  accept={FILE_ACCEPT}
                   onChange={(event) => {
-                    const names = Array.from(event.target.files || []).map((file) => file.name)
-                    if (names.length) onAddFiles(diag.id, names)
+                    const file = event.target.files && event.target.files[0]
+                    setFileName(file ? file.name : '')
                     event.target.value = ''
                   }}
                 />
-                {materials.files.length > 0 && (
-                  <div className="flex flex-wrap gap-1.5">
-                    {materials.files.map((name) => (
-                      <button
-                        key={name}
-                        type="button"
-                        onClick={() => onRemoveFile(diag.id, name)}
-                        className="text-xs px-2 py-0.5 rounded-full bg-white border border-amber-200 text-gray-600 cursor-pointer"
-                      >
-                        {name} ×
-                      </button>
-                    ))}
-                  </div>
-                )}
-              </div>
+              </label>
             )}
-            {canOptimize && (
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1">
-                <button
-                  type="button"
-                  onClick={() => onOptimize(diag.id, 'publish')}
-                  className="flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg bg-gradient-to-r from-indigo-500 via-purple-500 to-cyan-500 text-white text-sm font-medium hover:opacity-90 cursor-pointer"
-                >
-                  <Sparkles className="w-4 h-4" /> 一键优化并发布
-                </button>
-                <button
-                  type="button"
-                  onClick={() => onOptimize(diag.id, 'review')}
-                  className="flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg border border-purple-200 bg-white text-purple-700 text-sm font-medium hover:bg-purple-50 cursor-pointer"
-                >
-                  一键优化并审查
-                </button>
-              </div>
-            )}
-            {diag.draft && diag.status !== 'generating' && (
-              <div className="pt-1">
-                <button type="button" onClick={() => onToggleReview(diag.id)} className="text-sm font-medium text-blue-600 hover:text-blue-700 cursor-pointer">
-                  {diag.reviewOpen ? '收起内容' : '查看内容'}
-                </button>
-              </div>
-            )}
-            {diag.draft && diag.reviewOpen && diag.status !== 'generating' && (
-              <div className="p-3 bg-slate-50 border border-slate-200 rounded-md space-y-2">
-                <label className="block text-xs font-medium text-gray-500">
-                  标题（不修改）
-                  <input value={diag.draft.title} readOnly className="mt-1 w-full text-sm rounded-md border border-gray-200 bg-gray-100 px-3 py-2 text-gray-500" />
-                </label>
-                <label className="block text-xs font-medium text-gray-500">
-                  摘要
-                  <textarea
-                    value={diag.draft.summary}
-                    onChange={(event) => onDraftChange(diag.id, 'summary', event.target.value)}
-                    rows={3}
-                    className="mt-1 w-full text-sm rounded-md border border-gray-200 bg-white px-3 py-2 text-gray-800"
-                  />
-                </label>
-                <label className="block text-xs font-medium text-gray-500">
-                  正文
-                  <textarea
-                    value={diag.draft.content}
-                    onChange={(event) => onDraftChange(diag.id, 'content', event.target.value)}
-                    rows={8}
-                    className="mt-1 w-full text-sm rounded-md border border-gray-200 bg-white px-3 py-2 text-gray-800"
-                  />
-                </label>
-                {diag.status === 'review' && (
-                  <>
-                    <p className="text-xs text-gray-500">发布前，线上仍是原来的产品详情。</p>
-                    <button
-                      type="button"
-                      onClick={() => onPublishReviewed(diag.id)}
-                      className="px-3 py-2 rounded-lg bg-emerald-600 text-white text-sm font-medium hover:bg-emerald-700 cursor-pointer"
-                    >
-                      发布
-                    </button>
-                  </>
-                )}
-              </div>
-            )}
-          </div>
-        )}
-      </div>
-    </div>
-  )
-}
-
-function CrawlTrendChart({ botFilter }) {
-  const values = useMemo(
-    () =>
-      crawlTrend30d.map((day) =>
-        botFilter === 'all' ? Object.values(day.counts).reduce((sum, count) => sum + count, 0) : day.counts[botFilter] || 0,
-      ),
-    [botFilter],
-  )
-  const maxVal = Math.max(...values, 1)
-  const total = values.reduce((sum, count) => sum + count, 0)
-  const avg = (total / values.length).toFixed(1)
-  const width = 920
-  const height = 180
-  const padL = 36
-  const padR = 16
-  const padT = 16
-  const padB = 28
-  const innerW = width - padL - padR
-  const innerH = height - padT - padB
-  const stepX = innerW / (values.length - 1)
-  const x = (index) => padL + index * stepX
-  const y = (value) => padT + innerH - (value / maxVal) * innerH
-  const linePath = values.map((value, index) => `${index === 0 ? 'M' : 'L'} ${x(index).toFixed(1)} ${y(value).toFixed(1)}`).join(' ')
-  const areaPath = `${linePath} L ${x(values.length - 1).toFixed(1)} ${padT + innerH} L ${padL} ${padT + innerH} Z`
-  const lineColor = botFilter === 'all' ? '#06b6d4' : BOT_COLORS[botFilter] || '#06b6d4'
-  const yTicks = [0, Math.round(maxVal / 2), maxVal]
-  const xLabels = crawlTrend30d.map((day, index) => (index % 5 === 0 ? { index, label: day.date } : null)).filter(Boolean)
-
-  return (
-    <div className="bg-white border border-gray-200 rounded-xl p-4 mb-4">
-      <div className="flex items-center justify-between mb-3">
-        <div className="flex items-center gap-2">
-          <TrendingUp className="w-4 h-4 text-cyan-600" />
-          <span className="text-sm font-semibold text-gray-700">
-            近 30 天访问趋势
-            {botFilter !== 'all' && <span className="text-cyan-600"> · {botFilter}</span>}
-          </span>
-        </div>
-        <div className="flex items-center gap-4 text-xs text-gray-500">
-          <span>
-            合计 <span className="font-bold text-gray-700">{total}</span> 次
-          </span>
-          <span>
-            日均 <span className="font-bold text-gray-700">{avg}</span> 次
-          </span>
-          <span>
-            峰值 <span className="font-bold text-gray-700">{maxVal}</span> 次
-          </span>
-        </div>
-      </div>
-      <svg viewBox={`0 0 ${width} ${height}`} className="w-full h-[180px]" preserveAspectRatio="none" role="img" aria-label="近30天AI爬虫访问趋势">
-        <defs>
-          <linearGradient id="crawlArea" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor={lineColor} stopOpacity="0.25" />
-            <stop offset="100%" stopColor={lineColor} stopOpacity="0.02" />
-          </linearGradient>
-        </defs>
-        {yTicks.map((tick) => (
-          <g key={tick}>
-            <line x1={padL} y1={y(tick)} x2={width - padR} y2={y(tick)} stroke="#f1f5f9" strokeWidth="1" />
-            <text x={padL - 6} y={y(tick) + 3} textAnchor="end" fontSize="10" fill="#94a3b8">
-              {tick}
-            </text>
-          </g>
-        ))}
-        <path d={areaPath} fill="url(#crawlArea)" />
-        <path d={linePath} fill="none" stroke={lineColor} strokeWidth="2" strokeLinejoin="round" strokeLinecap="round" />
-        {values.map((value, index) => (
-          <circle key={crawlTrend30d[index].date} cx={x(index)} cy={y(value)} r={index === values.length - 1 ? 3.5 : 2.2} fill={lineColor} />
-        ))}
-        {xLabels.map(({ index, label }) => (
-          <text key={label} x={x(index)} y={height - 8} textAnchor="middle" fontSize="10" fill="#94a3b8">
-            {label}
-          </text>
-        ))}
-      </svg>
-    </div>
-  )
-}
-
-function ReadyGate({ phase, checkDone, onStart }) {
-  const checkTotal = checks.length
-  const productTotal = initialProducts.length
-  const checksComplete = checkDone >= checkTotal
-  const currentCheck = checks[Math.min(checkDone, checkTotal - 1)]
-
-  return (
-    <div className="ready-stage-wrap">
-      <section className="ready-stage" aria-live="polite">
-        <p className="ready-stage__kicker">AI READY</p>
-        {phase === 'idle' ? (
-          <button type="button" className="ready-launch" onClick={onStart}>
-            <span className="ready-launch__sweep" aria-hidden="true" />
-            <span className="ready-launch__text">
-              <small>点此开始</small>
-              一键诊断是否已经 AI Ready
-            </span>
-          </button>
-        ) : (
-          <div className="ready-launch ready-launch--live" role="status">
-            <span className="ready-launch__sweep" aria-hidden="true" />
-            <span className="ready-launch__text">
-              <small>两项同时进行</small>
-              正在检测
-            </span>
-          </div>
-        )}
-        <p className="ready-stage__hint">
-          {phase === 'idle'
-            ? '一次检查 AI 友好性关键项，并诊断本站全部产品详情页。'
-            : '两项一起进行。关键项检查较快，完成后就打开这一页；产品页诊断会继续。'}
-        </p>
-        {phase === 'scanning' && (
-          <div className="ready-tracks">
-            <div className="ready-track">
-              <div className="ready-track__head">
-                <b>AI 友好性关键项检查</b>
-                <span>{checksComplete ? '已完成' : `${checkDone}/${checkTotal}`}</span>
-              </div>
-              <div className="ready-track__bar">
-                <i style={{ width: `${(checkDone / checkTotal) * 100}%` }} />
-              </div>
-              <p className="ready-track__note">{checksComplete ? '关键项已检查完，正在打开页面' : `正在检查：${currentCheck?.name || ''}`}</p>
-            </div>
-            <div className="ready-track">
-              <div className="ready-track__head">
-                <b>产品页内容诊断</b>
-                <span>已诊断 0/{productTotal}</span>
-              </div>
-              <div className="ready-track__bar">
-                <i className="is-slide" />
-              </div>
-              <p className="ready-track__note">正在读取产品详情页，关键项完成后会在页面上继续显示进度</p>
-            </div>
-          </div>
-        )}
-      </section>
-    </div>
-  )
-}
-
-export default function AIReady() {
-  const [phase, setPhase] = useState('idle')
-  const [checkDone, setCheckDone] = useState(0)
-  const [productDone, setProductDone] = useState(0)
-  const [diagnosed, setDiagnosed] = useState('idle')
-  const [products, setProducts] = useState([])
-  const [openIds, setOpenIds] = useState({})
-  const [botFilter, setBotFilter] = useState('all')
-  const scanTimers = useRef([])
-
-  useEffect(() => () => {
-    scanTimers.current.forEach((id) => window.clearTimeout(id))
-  }, [])
-
-  const passCount = checks.filter((item) => item.status === 'pass').length
-  const warnCount = checks.filter((item) => item.status === 'warn').length
-  const pendingCount = products.filter((item) => item.score < 100).length
-
-  const botCounts = useMemo(() => {
-    const counts = {}
-    crawlerLogs.forEach((row) => {
-      counts[row.bot] = (counts[row.bot] || 0) + 1
-    })
-    return Object.entries(counts).sort((a, b) => b[1] - a[1])
-  }, [])
-
-  const visibleLogs = botFilter === 'all' ? crawlerLogs : crawlerLogs.filter((row) => row.bot === botFilter)
-  const expandableIds = products.filter((item) => item.issues.length > 0).map((item) => item.id)
-  const allOpen = expandableIds.length > 0 && expandableIds.every((id) => openIds[id])
-
-  function later(fn, ms) {
-    const id = window.setTimeout(fn, ms)
-    scanTimers.current.push(id)
-  }
-
-  function revealProducts() {
-    const next = initialProducts.map((item) => withMaterials({ ...item, issues: item.issues.map((issue) => ({ ...issue })), status: 'ready', draft: null, reviewOpen: false, notice: '' }))
-    const opened = {}
-    next.forEach((item) => {
-      if (item.issues.length) opened[item.id] = true
-    })
-    setProducts(next)
-    setOpenIds(opened)
-    setDiagnosed('done')
-  }
-
-  function startScan() {
-    scanTimers.current.forEach((id) => window.clearTimeout(id))
-    scanTimers.current = []
-    setPhase('scanning')
-    setCheckDone(0)
-    setProductDone(0)
-    setProducts([])
-    setOpenIds({})
-    setDiagnosed('running')
-    checks.forEach((_, index) => {
-      later(() => setCheckDone(index + 1), 150 * (index + 1))
-    })
-    later(() => {
-      setPhase('open')
-      initialProducts.forEach((_, index) => {
-        later(() => {
-          setProductDone(index + 1)
-          if (index + 1 === initialProducts.length) later(revealProducts, 480)
-        }, 1100 * (index + 1))
-      })
-    }, 150 * checks.length + 520)
-  }
-
-  function patchProduct(id, updater) {
-    setProducts((list) => list.map((item) => (item.id === id ? updater(item) : item)))
-  }
-
-  function settle(product, mode) {
-    const source = product.sourceIssues || product.issues.map((issue) => ({ ...issue }))
-    const hasMaterial = Boolean((product.materials?.text || '').trim() || product.materials?.files?.length)
-    const issues = source.filter((issue) => issue.sensitive && !hasMaterial)
-    const draft = mode === 'keep-draft' ? product.draft : buildProductDraft({ ...product, issues: source })
-    if (mode === 'review') {
-      return {
-        ...product,
-        sourceIssues: source,
-        draft,
-        status: 'review',
-        reviewOpen: true,
-        notice: '已生成，尚未发布。线上仍是原来的产品详情。',
-      }
-    }
-    return {
-      ...product,
-      sourceIssues: source,
-      issues,
-      score: scoreOf(issues),
-      draft,
-      status: 'live',
-      reviewOpen: true,
-      notice: '已发布到线上。',
-    }
-  }
-
-  function optimize(id, mode) {
-    patchProduct(id, (item) => ({ ...item, status: 'generating' }))
-    window.setTimeout(() => {
-      patchProduct(id, (item) => settle(item, mode))
-    }, 1200)
-  }
-
-  function publishReviewed(id) {
-    patchProduct(id, (item) => settle(item, 'keep-draft'))
-  }
-
-  function toggleAll() {
-    const next = !allOpen
-    const map = {}
-    expandableIds.forEach((id) => {
-      map[id] = next
-    })
-    setOpenIds(map)
-  }
-
-  function scrollTo(id) {
-    document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' })
-  }
-
-  const productTotal = initialProducts.length
-  const diagnosingProduct = initialProducts[Math.min(productDone, productTotal - 1)]
-
-  if (phase !== 'open') {
-    return <ReadyGate phase={phase} checkDone={checkDone} onStart={startScan} />
-  }
-
-  return (
-    <div className="p-6 max-w-7xl mx-auto">
-      <div className="mb-5">
-        <div className="flex items-center gap-2 mb-2">
-          <span className="inline-block text-xs font-bold text-blue-600 bg-blue-50 px-3 py-1 rounded-full">AI READY</span>
-          <span className="text-xs text-gray-400">数字门户 · AI 友好性保障</span>
-        </div>
-        <h1 className="text-2xl font-bold text-gray-900 mb-1">AI Ready · AI 友好性保障中心</h1>
-        <p className="text-sm text-gray-500 max-w-3xl">
-          让你的产品在 ChatGPT、豆包、文心一言等 AI 引擎里被看见、被看懂、被推荐。客户问起相关产品时，AI 会主动介绍你的品牌和产品——我们把网站调整到 AI 最容易理解的状态，帮你抓住这波 AI 流量红利。
-        </p>
-      </div>
-
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-6">
-        <div className="bg-white border border-emerald-200 rounded-xl p-4 flex items-center gap-3">
-          <div className="w-11 h-11 rounded-lg bg-emerald-50 flex items-center justify-center flex-shrink-0">
-            <CircleCheck className="w-5 h-5 text-emerald-600" />
-          </div>
-          <div className="min-w-0">
-            <div className="text-base font-bold text-gray-900 leading-tight">AI 友好已就绪</div>
-            <div className="text-xs text-gray-500 mt-0.5">{warnCount > 0 ? `${warnCount} 项需关注` : '全部关键项通过'}</div>
-          </div>
-        </div>
-        <div className="bg-white border border-gray-200 rounded-xl p-4 flex items-center gap-3">
-          <div className="w-11 h-11 rounded-lg bg-blue-50 flex items-center justify-center flex-shrink-0">
-            <CircleCheck className="w-5 h-5 text-blue-600" />
-          </div>
-          <div>
-            <div className="text-2xl font-bold text-gray-900">
-              {passCount}
-              <span className="text-sm text-gray-400 font-normal">/{checks.length}</span>
-            </div>
-            <div className="text-xs text-gray-500">检查项已就绪</div>
-          </div>
-        </div>
-        <div className="bg-white border border-gray-200 rounded-xl p-4 flex items-center gap-3">
-          <div className="w-11 h-11 rounded-lg bg-amber-50 flex items-center justify-center flex-shrink-0">
-            <Search className="w-5 h-5 text-amber-600" />
-          </div>
-          <div>
-            <div className="text-2xl font-bold text-gray-900">
-              {diagnosed === 'done' ? pendingCount : `${productDone}/${productTotal}`}
-            </div>
-            <div className="text-xs text-gray-500">{diagnosed === 'done' ? '产品页待优化' : '产品页已诊断'}</div>
-          </div>
-        </div>
-        <div className="bg-white border border-gray-200 rounded-xl p-4 flex items-center gap-3">
-          <div className="w-11 h-11 rounded-lg bg-cyan-50 flex items-center justify-center flex-shrink-0">
-            <Bot className="w-5 h-5 text-cyan-600" />
-          </div>
-          <div>
-            <div className="text-2xl font-bold text-gray-900">{crawlerLogs.length}</div>
-            <div className="text-xs text-gray-500">今日 AI 爬虫访问</div>
-          </div>
-        </div>
-      </div>
-
-      <div className="sticky top-0 z-20 -mx-1 mb-6">
-        <div className="bg-white/95 backdrop-blur border border-gray-200 rounded-xl px-2 py-1.5 flex items-center gap-1 shadow-sm">
-          <button type="button" onClick={() => scrollTo('section-checks')} className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-100 cursor-pointer transition-colors">
-            <Shield className="w-4 h-4 text-blue-600" /> 关键项检查
-          </button>
-          <div className="w-px h-4 bg-gray-200" />
-          <button type="button" onClick={() => scrollTo('section-products')} className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-100 cursor-pointer transition-colors">
-            <Search className="w-4 h-4 text-purple-600" /> 产品页诊断
-          </button>
-          <div className="w-px h-4 bg-gray-200" />
-          <button type="button" onClick={() => scrollTo('section-crawlers')} className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-100 cursor-pointer transition-colors">
-            <Bot className="w-4 h-4 text-cyan-600" /> 爬虫访问日志
-          </button>
-        </div>
-      </div>
-
-      <section id="section-checks" className="mb-8 scroll-mt-16">
-        <div className="flex items-center gap-2 mb-4">
-          <div className="w-1 h-5 bg-blue-600 rounded-full" />
-          <h2 className="text-lg font-bold text-gray-800 flex items-center gap-2">
-            <Shield className="w-5 h-5 text-blue-600" />
-            AI 友好性关键项检查
-          </h2>
-          <span className="text-xs text-gray-400 ml-auto">网站交付时确保关键项全部就绪</span>
-        </div>
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
-          {checks.map((check) => (
-            <CheckCard key={check.id} check={check} />
-          ))}
-        </div>
-      </section>
-
-      <section id="section-products" className="mb-8 scroll-mt-16">
-        <div className="flex items-center justify-between mb-4">
-          <div className="flex items-center gap-2">
-            <div className="w-1 h-5 bg-purple-600 rounded-full" />
-            <h2 className="text-lg font-bold text-gray-800 flex items-center gap-2">
-              <Search className="w-5 h-5 text-purple-600" />
-              产品页内容诊断
-            </h2>
-          </div>
-          {diagnosed === 'done' && (
-            <button type="button" onClick={toggleAll} className="flex items-center gap-1 text-sm text-blue-600 hover:text-blue-700 cursor-pointer font-medium">
-              {allOpen ? '全部收起' : '全部展开'}
-              {allOpen ? <ChevronDown className="w-4 h-4" /> : <ArrowRight className="w-4 h-4" />}
-            </button>
-          )}
-        </div>
-        <p className="text-sm text-gray-500 mb-4">诊断看整张产品详情页。优化只改摘要和富文本，标题和其他页面区块不动。</p>
-        {diagnosed !== 'done' && (
-          <div className="border border-sky-200 rounded-xl bg-white p-5" aria-live="polite">
-            <div className="flex items-end justify-between gap-4">
-              <div>
-                <div className="text-sm font-semibold text-slate-800 flex items-center gap-2">
-                  <Loader2 className="w-4 h-4 animate-spin text-sky-600" />
-                  产品页内容诊断进行中
-                </div>
-                <p className="text-xs text-slate-500 mt-1">关键项检查已完成。正在逐页读取产品详情。</p>
-              </div>
-              <div className="text-right">
-                <div className="text-3xl font-bold tabular-nums text-slate-900">
-                  {productDone}
-                  <span className="text-lg text-slate-400 font-medium">/{productTotal}</span>
-                </div>
-                <div className="text-xs text-slate-500">已诊断 / 总量</div>
-              </div>
-            </div>
-            <div className="mt-4 h-2 rounded-full bg-slate-100 overflow-hidden">
-              <div className="h-full rounded-full transition-all duration-500" style={{ width: `${(productDone / productTotal) * 100}%`, background: '#3B9FD0' }} />
-            </div>
-            <ul className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-2">
-              {initialProducts.map((item, index) => {
-                const state = index < productDone ? '已诊断' : index === productDone ? '诊断中' : '等待'
-                const tone = index < productDone ? 'text-emerald-700 bg-emerald-50' : index === productDone ? 'text-sky-700 bg-sky-50' : 'text-slate-400 bg-slate-50'
-                return (
-                  <li key={item.id} className="flex items-center justify-between gap-3 px-3 py-2 rounded-lg border border-slate-100">
-                    <span className="text-sm text-slate-700 truncate">{item.name}</span>
-                    <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${tone}`}>{state}</span>
-                  </li>
-                )
-              })}
-            </ul>
-            {productDone < productTotal && diagnosingProduct && (
-              <p className="mt-3 text-sm text-slate-600">正在诊断：{diagnosingProduct.name}</p>
-            )}
-          </div>
-        )}
-        {diagnosed === 'done' && (
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
-            {products.map((product) => (
-              <ProductCard
-                key={product.id}
-                diag={product}
-                open={Boolean(openIds[product.id])}
-                onToggle={() => setOpenIds((current) => ({ ...current, [product.id]: !current[product.id] }))}
-                onMaterials={(id, text) => patchProduct(id, (item) => ({ ...item, materials: { ...item.materials, text } }))}
-                onAddFiles={(id, names) =>
-                  patchProduct(id, (item) => ({
-                    ...item,
-                    materials: { ...item.materials, files: Array.from(new Set([...(item.materials?.files || []), ...names])) },
-                  }))
-                }
-                onRemoveFile={(id, name) =>
-                  patchProduct(id, (item) => ({
-                    ...item,
-                    materials: { ...item.materials, files: (item.materials?.files || []).filter((file) => file !== name) },
-                  }))
-                }
-                onOptimize={optimize}
-                onDraftChange={(id, field, value) =>
-                  patchProduct(id, (item) => ({ ...item, draft: { ...item.draft, [field]: value } }))
-                }
-                onPublishReviewed={publishReviewed}
-                onToggleReview={(id) => patchProduct(id, (item) => ({ ...item, reviewOpen: !item.reviewOpen }))}
-              />
-            ))}
-          </div>
-        )}
-      </section>
-
-      <section id="section-crawlers" className="mb-8 scroll-mt-16">
-        <div className="flex items-center gap-2 mb-4">
-          <div className="w-1 h-5 bg-cyan-600 rounded-full" />
-          <h2 className="text-lg font-bold text-gray-800 flex items-center gap-2">
-            <Bot className="w-5 h-5 text-cyan-600" />
-            AI 爬虫访问日志
-          </h2>
-          <span className="text-xs text-gray-400 ml-auto">实时记录各 AI 引擎爬虫的访问行为</span>
-        </div>
-        <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-2 mb-4">
-          {botCounts.map(([bot, count]) => (
-            <div
-              key={bot}
-              onClick={() => setBotFilter((current) => (current === bot ? 'all' : bot))}
-              className={`p-3 rounded-lg border cursor-pointer transition-all text-center ${
-                botFilter === bot ? 'bg-cyan-50 border-cyan-300 ring-2 ring-cyan-100' : 'bg-white border-gray-200 hover:border-cyan-200'
-              }`}
-            >
-              <div className="text-lg font-bold text-gray-800">{count}</div>
-              <div className="text-[11px] text-gray-500 mt-0.5 truncate">{bot}</div>
-            </div>
-          ))}
-        </div>
-        <CrawlTrendChart botFilter={botFilter} />
-        <div className="bg-white border border-gray-200 rounded-xl overflow-hidden">
-          <div className="flex items-center justify-between px-4 py-3 border-b border-gray-100 bg-gray-50">
-            <div className="flex items-center gap-2">
-              <Activity className="w-4 h-4 text-gray-400" />
-              <span className="text-sm font-semibold text-gray-700">
-                访问日志 {botFilter !== 'all' && <span className="text-cyan-600">· {botFilter}</span>}
-              </span>
-            </div>
-            <div className="flex items-center gap-3 text-xs text-gray-400">
-              <span className="flex items-center gap-1">
-                <Clock className="w-3 h-3" /> 最近 24 小时
-              </span>
-              <button type="button" className="flex items-center gap-1 text-blue-600 hover:text-blue-700 cursor-pointer font-medium">
-                <RefreshCw className="w-3 h-3" /> 刷新
+            <div {...marks(S.card)} className="form-foot">
+              <button {...marks(S.card)} type="button" className="btn primary" onClick={handleSubmit}>
+                {item.action.form.submit}
               </button>
+              <span {...marks(S.card)} className="form-tip">
+                提交后 AI 会自动执行，无需其他操作
+              </span>
             </div>
           </div>
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
+        ) : null}
+      </div>
+    </div>
+  )
+}
+
+function OptimizeSection({ section, handled, detecting, open, onToggle, onHandle, onDetect, onToast }) {
+  const [introOpen, setIntroOpen] = useState(false)
+  const pendingCount = section.items.filter((item) => !handled[item.id]).length
+  const done = pendingCount === 0
+  return (
+    <div {...marks(S.report, S.opt)} id={`opt-${section.code}`} className={`opt-section report-section theme-${section.theme}${open ? ' is-open' : ''}`}>
+      <div
+        {...marks(S.opt)}
+        className="opt-bar"
+        role="button"
+        tabIndex={0}
+        aria-expanded={open}
+        onClick={onToggle}
+        onKeyDown={(event) => {
+          if (event.key === 'Enter' || event.key === ' ') {
+            event.preventDefault()
+            onToggle()
+          }
+        }}
+      >
+        <span {...marks(S.opt)} className="bar" />
+        <span {...marks(S.opt)} className="bar-icon">
+          <AiIcon scopes={[S.opt]} name={section.icon} size={16} />
+        </span>
+        <div {...marks(S.opt)} className="bar-text">
+          <span {...marks(S.opt)} className="bar-title">
+            {section.title}
+          </span>
+          <p {...marks(S.opt)} className="bar-brief">
+            {done ? '本板块问题已全部优化完成' : section.brief}
+          </p>
+        </div>
+        <div {...marks(S.opt)} className="bar-right">
+          {done ? (
+            <span {...marks(S.opt)} className="good-pill">
+              <i>
+                <AiIcon scopes={[S.opt]} name="check" size={10} />
+              </i>
+              Good
+            </span>
+          ) : (
+            <span {...marks(S.opt)} className="pending">
+              {pendingCount} 项待确认
+            </span>
+          )}
+          <AiIcon scopes={[S.opt]} className="chevron" name={open ? 'chevron-down' : 'chevron-right'} size={16} />
+        </div>
+      </div>
+      {open ? (
+        <div {...marks(S.opt)} className="opt-detail">
+          <div {...marks(S.opt)} className="detail-tools">
+            <button {...marks(S.opt)} type="button" className="what" onClick={() => setIntroOpen((value) => !value)}>
+              <AiIcon scopes={[S.opt]} name="info" size={14} /> {introOpen ? '收起说明' : '这项做什么'}
+            </button>
+            <button {...marks(S.opt)} type="button" className="detect" disabled={detecting} onClick={() => onDetect(section)}>
+              {detecting ? <i className="spin" /> : <AiIcon scopes={[S.opt]} name="scan" size={14} />} {detecting ? '检测中…' : '立即检测'}
+            </button>
+          </div>
+          {introOpen ? (
+            <div {...marks(S.opt)} className="intro">
+              <AiIcon scopes={[S.opt]} className="intro-icon" name="info" size={16} />
+              <div {...marks(S.opt)} className="intro-body">
+                <p {...marks(S.opt)} className="intro-sub">
+                  {section.subtitle}
+                </p>
+                <p {...marks(S.opt)}>
+                  <b {...marks(S.opt)}>这是什么：</b>
+                  {section.purpose}
+                </p>
+                <p {...marks(S.opt)}>
+                  <b {...marks(S.opt)} className="is-theme">
+                    对你的价值：
+                  </b>
+                  {section.value}
+                </p>
+              </div>
+            </div>
+          ) : null}
+          <div {...marks(S.opt)} className="opt-list">
+            {section.items.map((item) =>
+              item.id === 'readable-product' ? (
+                <ProductDetailGap key={item.id} detecting={detecting} onResolved={() => onHandle(item, 'agree')} />
+              ) : (
+                <OptimizeCard key={item.id} item={item} state={handled[item.id]} onHandle={onHandle} onToast={onToast} />
+              ),
+            )}
+          </div>
+        </div>
+      ) : null}
+    </div>
+  )
+}
+
+function CrawlerLogs() {
+  const [active, setActive] = useState('all')
+  const [refreshing, setRefreshing] = useState(false)
+  const series = readyData.crawlerSeries[active] || readyData.crawlerSeries.all
+  const activeName = active === 'all' ? '全部爬虫' : botLabel(readyData.crawlerTabs.find((item) => item.key === active)?.code || active)
+  return (
+    <div {...marks(S.report, S.log)} className="crawler-logs">
+      <p {...marks(S.log)} className="caption">
+        近 30 天各爬虫访问次数
+      </p>
+      <div {...marks(S.log)} className="bots">
+        {readyData.crawlerTabs.map((tab) => (
+          <button {...marks(S.log)} key={tab.key} type="button" className={`bot${active === tab.key ? ' active' : ''}`} onClick={() => setActive(tab.key)}>
+            <span {...marks(S.log)} className="name" title={tab.code}>
+              {tab.label}
+            </span>
+            <span {...marks(S.log)} className="count">
+              {tab.count}
+            </span>
+          </button>
+        ))}
+      </div>
+      <div {...marks(S.log)} className="panel">
+        <div {...marks(S.log)} className="panel-head">
+          <p {...marks(S.log)} className="panel-title">
+            <AiIcon scopes={[S.log]} className="icon" name="trend" size={18} />
+            近 30 天访问趋势
+            <small {...marks(S.log)}>{activeName}</small>
+          </p>
+          <div {...marks(S.log)} className="stats">
+            <span {...marks(S.log)}>
+              合计 <b {...marks(S.log)}>{series.total}</b> 次
+            </span>
+            <span {...marks(S.log)}>
+              日均 <b {...marks(S.log)}>{series.avg}</b> 次
+            </span>
+            <span {...marks(S.log)}>
+              峰值 <b {...marks(S.log)}>{series.max}</b> 次
+            </span>
+          </div>
+        </div>
+        <TrendChart trend={series.trend} />
+      </div>
+      <div {...marks(S.log)} className="panel">
+        <div {...marks(S.log)} className="panel-head">
+          <p {...marks(S.log)} className="panel-title">
+            <AiIcon scopes={[S.log]} className="icon" name="activity" size={18} />
+            访问日志
+            <small {...marks(S.log)}>
+              {activeName} · 共 {series.rows.length} 条
+            </small>
+          </p>
+          <div {...marks(S.log)} className="tools">
+            <span {...marks(S.log)} className="range">
+              <AiIcon scopes={[S.log]} name="clock" size={14} />
+              最近 24 小时
+            </span>
+            <button
+              {...marks(S.log)}
+              type="button"
+              className="refresh"
+              disabled={refreshing}
+              onClick={() => {
+                setRefreshing(true)
+                window.setTimeout(() => setRefreshing(false), 500)
+              }}
+            >
+              {refreshing ? <i className="spin" /> : <AiIcon scopes={[S.log]} name="refresh" size={14} />} 刷新
+            </button>
+          </div>
+        </div>
+        {series.rows.length === 0 ? (
+          <div {...marks(S.log)} className="state">
+            最近 24 小时暂无访问记录
+          </div>
+        ) : (
+          <div className="ready-table-wrap">
+            <table className="ready-table">
               <thead>
-                <tr className="bg-gray-50 border-b border-gray-100">
-                  <th className="text-left py-2.5 px-4 text-xs font-semibold text-gray-500">时间</th>
-                  <th className="text-left py-2.5 px-4 text-xs font-semibold text-gray-500">AI 爬虫</th>
-                  <th className="text-left py-2.5 px-4 text-xs font-semibold text-gray-500">访问页面</th>
-                  <th className="text-center py-2.5 px-4 text-xs font-semibold text-gray-500">状态</th>
-                  <th className="text-center py-2.5 px-4 text-xs font-semibold text-gray-500">耗时</th>
-                  <th className="text-left py-2.5 px-4 text-xs font-semibold text-gray-500">User-Agent</th>
+                <tr>
+                  <th style={{ width: 170 }}>时间</th>
+                  <th style={{ width: 160 }}>AI 爬虫</th>
+                  <th>访问页面</th>
+                  <th style={{ width: 90 }}>状态</th>
+                  <th style={{ width: 90 }}>耗时</th>
+                  <th>User-Agent</th>
                 </tr>
               </thead>
               <tbody>
-                {visibleLogs.map((row) => (
-                  <tr key={`${row.time}-${row.bot}-${row.page}`} className="border-b border-gray-50 hover:bg-gray-50/50">
-                    <td className="py-2.5 px-4 text-xs text-gray-500 font-mono">{row.time}</td>
-                    <td className="py-2.5 px-4">
-                      <span className="text-xs font-medium px-2 py-0.5 rounded bg-cyan-50 text-cyan-700">{row.bot}</span>
+                {series.rows.map((row) => (
+                  <tr key={`${row.time}-${row.bot}-${row.path}`}>
+                    <td>{row.time}</td>
+                    <td>
+                      <span {...marks(S.log)} className="bot-tag" title={row.bot}>
+                        {botLabel(row.bot)}
+                      </span>
                     </td>
-                    <td className="py-2.5 px-4 text-xs text-gray-600 font-mono">{row.page}</td>
-                    <td className="py-2.5 px-4 text-center">
-                      <span className="text-xs font-medium px-2 py-0.5 rounded bg-emerald-100 text-emerald-700">{row.status}</span>
+                    <td className="path" title={row.path}>
+                      {row.path}
                     </td>
-                    <td className="py-2.5 px-4 text-center text-xs text-gray-500">{row.duration}</td>
-                    <td className="py-2.5 px-4 text-xs text-gray-400 font-mono">{row.ua}</td>
+                    <td>
+                      <span {...marks(S.log)} className={`status ${statusClass(row.status)}`}>
+                        {row.status}
+                      </span>
+                    </td>
+                    <td>{row.duration}s</td>
+                    <td className="ua" title={row.ua}>
+                      {row.ua}
+                    </td>
                   </tr>
                 ))}
               </tbody>
             </table>
           </div>
-          {visibleLogs.length === 0 && (
-            <div className="py-8 text-center text-sm text-gray-400">
-              <Bug className="w-8 h-8 mx-auto mb-2 text-gray-300" />
-              暂无 {botFilter} 的访问记录
-            </div>
-          )}
-        </div>
-      </section>
+        )}
+      </div>
+    </div>
+  )
+}
+
+export default function AIReady() {
+  const [checks] = useState(readyData.checks)
+  const [openMap, setOpenMap] = useState({})
+  const [openGroup, setOpenGroup] = useState('readable')
+  const [handled, setHandled] = useState({})
+  const [detecting, setDetecting] = useState({})
+  const [dialog, setDialog] = useState(null)
+  const [toast, setToast] = useState(null)
+  const [regenerating, setRegenerating] = useState('')
+  const checkRef = useRef(null)
+  const brandRef = useRef(null)
+  const toastTimer = useRef(0)
+
+  function showToast(type, text) {
+    window.clearTimeout(toastTimer.current)
+    setToast({ type, text })
+    toastTimer.current = window.setTimeout(() => setToast(null), 2200)
+  }
+
+  function pendingOf(code) {
+    const section = readyData.optimizeSections.find((item) => item.code === code)
+    return section.items.filter((item) => !handled[item.id]).length
+  }
+
+  function handleOptimize(item, action) {
+    if (action === 'agree' && !item.action.ignorable && !item.action.form) {
+      showToast('info', '该入口即将开放')
+      return
+    }
+    setHandled((current) => {
+      const next = { ...current }
+      if (action === 'restore') delete next[item.id]
+      else next[item.id] = action === 'agree' ? 'done' : 'ignored'
+      return next
+    })
+  }
+
+  function handleDetect(section) {
+    if (detecting[section.code]) return
+    setDetecting((current) => ({ ...current, [section.code]: true }))
+    window.setTimeout(() => {
+      setHandled((current) => {
+        const next = { ...current }
+        section.items.forEach((item) => {
+          delete next[item.id]
+        })
+        return next
+      })
+      setDetecting((current) => ({ ...current, [section.code]: false }))
+      showToast('success', '检测完成')
+    }, 800)
+  }
+
+  function handleRegenerate(row) {
+    setRegenerating(row.code)
+    window.setTimeout(() => {
+      setRegenerating('')
+      showToast('success', `${row.label} 已重新生成`)
+    }, 900)
+  }
+
+  const sections = useMemo(() => readyData.optimizeSections, [])
+
+  useEffect(() => {
+    document.getElementById('opt-readable')?.scrollIntoView({ block: 'start' })
+  }, [])
+
+  return (
+    <div {...marks(S.ready)} className="ai-ready">
+      <div {...marks(S.ready, S.report)} className="report no-tabs">
+        <Summary checks={checks} brandPending={pendingOf('brand')} readablePending={pendingOf('readable')} trustPending={pendingOf('trust')} onJump={(code) => (code === 'check' ? checkRef : brandRef).current?.scrollIntoView({ behavior: 'smooth', block: 'start' })} />
+        <SectionTitle sectionRef={checkRef} title="被 AI 看见 · 关键项检查" icon="shield" tip="技术层 · 网站交付时关键项自动就绪" />
+        <CheckList items={checks} openMap={openMap} onToggle={(code) => setOpenMap((current) => ({ ...current, [code]: !current[code] }))} onDialog={setDialog} regenerating={regenerating} onRegenerate={handleRegenerate} />
+        <SectionTitle sectionRef={brandRef} className="report-section-gap" title="被 AI 理解 · 内容优化" icon="book-open" color="#9333ea" tip="AI 自动检测 → 生成建议 → 你确认或补充 → 自动生效" tipIcon="sparkle" />
+        {sections.map((section) => (
+          <OptimizeSection
+            key={section.code}
+            section={section}
+            handled={handled}
+            detecting={!!detecting[section.code]}
+            open={openGroup === section.code}
+            onToggle={() => setOpenGroup((current) => (current === section.code ? null : section.code))}
+            onHandle={handleOptimize}
+            onDetect={handleDetect}
+            onToast={showToast}
+          />
+        ))}
+        <SectionTitle className="report-section-gap" title="AI 模型访问日志" icon="robot" color="#0891b2" tip="点击爬虫切换趋势和日志" />
+        <CrawlerLogs />
+      </div>
+      <Dialog dialog={dialog} onClose={() => setDialog(null)} />
+      {toast ? <div className={`ready-toast is-${toast.type}`}>{toast.text}</div> : null}
     </div>
   )
 }
