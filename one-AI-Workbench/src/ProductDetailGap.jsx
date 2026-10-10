@@ -88,17 +88,10 @@ const BY_ID = Object.fromEntries(CATALOG.map((item) => [item.id, item]))
 
 const ISSUES = {
   'bolt-0': {
-    direct: [{ id: 'scene', name: '应用场景', reason: '只写了「广泛应用于各行业」，没有具体工况' }],
     specReason: '整页没有规格，看不出哪项对应哪个值',
   },
-  'bolt-1': {
-    direct: [{ id: 'install', name: '安装与使用', reason: '只写了「按说明书使用」，步骤少于 3 个' }],
-  },
+  'bolt-1': {},
   'nut-0': {
-    direct: [
-      { id: 'perf', name: '功能性能', reason: '只有产品名称和「品质可靠」，没有功能说明' },
-      { id: 'faq', name: '常见问题', reason: '整页没有问答，抽不出可引用的答案' },
-    ],
     specReason: '只有表头，没有数值',
   },
 }
@@ -109,20 +102,126 @@ const SHARED = [
   {
     id: 'service',
     name: '售后服务',
-    lead: '这些产品的页面上，还没有可核验的保修范围、期限或响应方式。',
     placeholder: '建议写清保修范围、保修期限、响应方式。例如：非人为损坏的产品本体，出厂之日起 12 个月，工作日 24 小时内回复',
     applies: () => true,
   },
   {
     id: 'pack',
     name: '包装与物流',
-    lead: '垫圈这组产品没有可核验的包装方式或交付信息。螺栓和螺母的页面上已经写了。',
     placeholder: '建议写清包装方式、运输或交付信息。例如：纸箱每箱 500 件，国内汽运，款到 7 日内发货',
     applies: (product) => product.category === 'washer',
   },
 ]
 
 const SPEC_PLACEHOLDER = '建议至少写两项名称和对应数值。例如：直径 8 mm，长度 30 mm'
+
+const MODULE_DEFS = [
+  { id: 'spec', name: '规格参数', sensitive: true },
+  { id: 'perf', name: '功能性能' },
+  { id: 'scene', name: '应用场景' },
+  { id: 'solution', name: '行业解决方案' },
+  { id: 'process', name: '技术原理或工艺' },
+  { id: 'install', name: '安装与使用' },
+  { id: 'maintain', name: '维护保养' },
+  { id: 'safety', name: '安全注意事项' },
+  { id: 'service', name: '售后服务', sensitive: true },
+  { id: 'pack', name: '包装与物流', sensitive: true },
+  { id: 'env', name: '环保说明' },
+  { id: 'faq', name: '常见问题' },
+]
+
+const PASS_LINE = {
+  spec: '至少两项，名称和对应值对得上。合格。',
+  perf: '写了能做什么、做到什么程度。合格。',
+  scene: '写了一个具体情形，能看出谁在什么情况下用。合格。',
+  solution: '写明了面对谁或哪个问题，以及对应做法。合格。',
+  process: '能看出步骤或因果关系。合格。',
+  install: '写清了怎么开始和怎么完成，至少两个条件或动作是具体的。合格。',
+  maintain: '写了后续要做的动作，或写清了周期和对应动作。合格。',
+  safety: '至少两条具体注意事项，能看出要避免什么。合格。',
+  service: '有可核验的服务范围、响应方式或期限。合格。',
+  pack: '有可核验的包装、运输或交付事实。合格。',
+  env: '写清了一件具体的环境事实。合格。',
+  faq: '至少三组问答，涉及两类问题。合格。',
+}
+
+const SERVICE_GAP = {
+  exists: false,
+  comment: '要写清可核验的服务范围、响应方式或期限。质保年数和上门时效用客户补充的资料，不能编造。不合格。',
+  suggestion: '新增模块',
+}
+const PACK_GAP = {
+  exists: false,
+  comment: '要写清包装、运输或交付里至少一件可核验事实。运费和交货天数用客户补充的资料，不能编造。不合格。',
+  suggestion: '新增模块',
+}
+
+function reviewSentence(row) {
+  const body = `${row.comment}建议：${row.suggestion}。`
+  return row.exists ? body : `原文缺失。${body}`
+}
+
+const WEAK = {
+  perf: { exists: true, comment: '只有产品名称和「品质可靠」，没有说明能做什么、做到什么程度。不合格。', suggestion: '基于原模块内容扩写' },
+  scene: { exists: true, comment: '只写了「广泛应用于各行业」，看不出谁在什么情况下用。不合格。', suggestion: '基于原模块内容扩写' },
+  solution: { exists: true, comment: '把功能介绍又写了一遍，看不出针对谁或哪个问题。不合格。', suggestion: '基于原模块内容扩写' },
+  process: { exists: true, comment: '只写了「技术先进、工艺成熟」，看不出步骤或因果关系。不合格。', suggestion: '基于原模块内容扩写' },
+  install: { exists: true, comment: '只写了「按说明书使用」，看不出怎么开始、怎么完成。不合格。', suggestion: '基于原模块内容扩写' },
+  maintain: { exists: true, comment: '只写了「定期维护」，没有对应动作。不合格。', suggestion: '基于原模块内容扩写' },
+  safety: { exists: true, comment: '只写了「注意安全」，不足两条具体注意事项。不合格。', suggestion: '基于原模块内容扩写' },
+  env: { exists: true, comment: '只写了「绿色环保」，没有具体的材料、能耗、排放或回收。不合格。', suggestion: '基于原模块内容扩写' },
+  faq: { exists: true, comment: '只有一组问答，不足 3 组，也没有两类问题。不合格。', suggestion: '基于原模块内容扩写' },
+}
+
+const ADD = {
+  perf: { exists: false, comment: '要写能做什么、做到什么程度，至少一段或 3 条，不要只有产品名称或广告口号。不合格。', suggestion: '新增模块' },
+  scene: { exists: false, comment: '要写至少一个具体情形，能看出谁在什么情况下用，或用完得到什么结果。不要只写「用途广泛」。不合格。', suggestion: '新增模块' },
+  solution: { exists: false, comment: '要写明面对谁或哪个问题，以及对应做法，不能只把功能介绍再抄一遍。不合格。', suggestion: '新增模块' },
+  process: { exists: false, comment: '要写清这件事怎么完成，让读者看出步骤或因果关系，不要只写「技术先进、工艺成熟」。不合格。', suggestion: '新增模块' },
+  install: { exists: false, comment: '要写清怎么开始和怎么完成，其中至少两个条件或动作是具体的。不要只写「按说明书使用」。不合格。', suggestion: '新增模块' },
+  maintain: { exists: false, comment: '要写至少两个后续动作，或写清周期和对应动作，不要只写「注意保养」。不合格。', suggestion: '新增模块' },
+  safety: { exists: false, comment: '要写至少两条具体注意事项，能看出要避免什么或要做什么。不要只写「注意安全」。不合格。', suggestion: '新增模块' },
+  env: { exists: false, comment: '要写清一件具体的环境事实，例如材料、能耗、排放或回收，不要只写「绿色环保」。不合格。', suggestion: '新增模块' },
+  faq: { exists: false, comment: '要新增至少 3 组问答，至少涉及两类问题。答案里的参数、价格、期限只用页面上已有的事实。不合格。', suggestion: '新增模块' },
+}
+
+const GAP = {
+  'bolt-0': {
+    spec: { exists: false, comment: '要补至少两项，每项写明名称和对应值。表格、分项或逐行都可以，数值用客户补充的资料，不能编造。不合格。', suggestion: '新增模块' },
+    perf: WEAK.perf,
+    scene: WEAK.scene,
+    solution: ADD.solution,
+    process: ADD.process,
+    install: WEAK.install,
+    maintain: ADD.maintain,
+    safety: WEAK.safety,
+    env: WEAK.env,
+    faq: WEAK.faq,
+  },
+  'bolt-1': {
+    perf: WEAK.perf,
+    scene: ADD.scene,
+    solution: ADD.solution,
+    process: WEAK.process,
+    install: WEAK.install,
+    maintain: ADD.maintain,
+    safety: WEAK.safety,
+    env: ADD.env,
+    faq: WEAK.faq,
+  },
+  'nut-0': {
+    spec: { exists: true, comment: '只有表头，没有数值。按原表补上至少两项名称和对应值，数值用客户补充的资料，不能编造。不合格。', suggestion: '基于原模块内容扩写' },
+    perf: WEAK.perf,
+    scene: ADD.scene,
+    solution: WEAK.solution,
+    process: ADD.process,
+    install: ADD.install,
+    maintain: WEAK.maintain,
+    safety: ADD.safety,
+    env: WEAK.env,
+    faq: ADD.faq,
+  },
+}
 
 function emptyDraft(ids) {
   const categories = {}
@@ -149,6 +248,10 @@ export default function ProductDetailGap({ detecting, onResolved }) {
   const [error, setError] = useState('')
   const [note, setNote] = useState('')
   const [evidenceOpen, setEvidenceOpen] = useState({})
+  const [detailOpen, setDetailOpen] = useState(true)
+  const [ownFocus, setOwnFocus] = useState(null)
+  const [ownCategory, setOwnCategory] = useState('all')
+  const [ownQuery, setOwnQuery] = useState('')
   const reported = useRef(false)
   const onResolvedRef = useRef(onResolved)
   onResolvedRef.current = onResolved
@@ -160,7 +263,8 @@ export default function ProductDetailGap({ detecting, onResolved }) {
   }
 
   function directLeft(productId) {
-    return (ISSUES[productId]?.direct || []).filter((item) => !optimized[productId]?.[item.id])
+    const gaps = GAP[productId] || {}
+    return MODULE_DEFS.filter((def) => !def.sensitive && gaps[def.id] && !optimized[productId]?.[def.id]).map((def) => ({ id: def.id, name: def.name }))
   }
 
   function sensitiveLeft(product) {
@@ -203,11 +307,17 @@ export default function ProductDetailGap({ detecting, onResolved }) {
 
   const ownProducts = CATALOG.filter((item) => ISSUES[item.id] && !isClear(item))
   const pendingProducts = CATALOG.filter((item) => !isClear(item))
-  const sharedOnly = pendingProducts.filter((item) => !ISSUES[item.id]).length
   const passed = CHECKED - pendingProducts.length - FAILED
   const readyProducts = ownProducts.filter((item) => canOptimize(item))
   const readyModuleCount = readyProducts.reduce((sum, item) => sum + directLeft(item.id).length + sensitiveLeft(item).length, 0)
   const readySharedOnly = CATALOG.filter((item) => !ISSUES[item.id] && canOptimize(item))
+  const ownQueryText = ownQuery.trim()
+  const ownShown = ownProducts.filter((item) => {
+    if (ownCategory !== 'all' && item.category !== ownCategory) return false
+    if (ownQueryText && !item.name.includes(ownQueryText)) return false
+    return true
+  })
+  const focusedProduct = ownShown.find((item) => item.id === ownFocus) || null
 
   useEffect(() => {
     if (pendingProducts.length === 0 && !reported.current) {
@@ -230,6 +340,9 @@ export default function ProductDetailGap({ detecting, onResolved }) {
     setError('')
     setNote('')
     setEvidenceOpen({})
+    setOwnFocus(null)
+    setOwnCategory('all')
+    setOwnQuery('')
   }, [detecting])
 
   function pendingIds(shared) {
@@ -288,7 +401,7 @@ export default function ProductDetailGap({ detecting, onResolved }) {
       markSupplied(shared.id, chosen, payload.text, payload.fileName)
       setEditing(null)
       setBusy('')
-      setNote(`已为 ${chosen.length} 个产品补充「${shared.name}」，尚未优化。下面产品里的对应状态已改为已补充资料。`)
+      setNote(`已为 ${chosen.length} 个产品补充「${shared.name}」。`)
     }, 500)
   }
 
@@ -304,7 +417,7 @@ export default function ProductDetailGap({ detecting, onResolved }) {
       markSupplied(module.id, [product.id], payload.text, payload.fileName)
       setProductForm(null)
       setBusy('')
-      setNote(module.id === 'spec' ? `已为「${product.name}」补充规格，尚未优化。` : `已为「${product.name}」补充${module.name}。共用事实里的数量已同步，尚未优化。`)
+      setNote(`已为「${product.name}」补充${module.name}。`)
     }, 500)
   }
 
@@ -331,7 +444,7 @@ export default function ProductDetailGap({ detecting, onResolved }) {
         return next
       })
       setBusy('')
-      setNote(`已优化 ${ready.length} 个产品。这次才把已补充的资料写进页面。`)
+      setNote(`已优化 ${ready.length} 个产品。`)
     }, 500)
   }
 
@@ -359,36 +472,96 @@ export default function ProductDetailGap({ detecting, onResolved }) {
     return groups
   }
 
+  function gapOf(product, def) {
+    if (def.id === 'service') return SERVICE_GAP
+    if (def.id === 'pack') return product.category === 'washer' ? PACK_GAP : null
+    return GAP[product.id]?.[def.id] || null
+  }
+
+  function moduleRows(product) {
+    return MODULE_DEFS.map((def) => {
+      if (optimized[product.id]?.[def.id]) {
+        return {
+          ...def,
+          tag: '合格',
+          tone: 'pass',
+          exists: true,
+          comment: '已写入页面，达到合格线。合格。',
+          suggestion: '保持原内容不变',
+          status: 'done',
+        }
+      }
+      const gap = gapOf(product, def)
+      if (!gap) {
+        return {
+          ...def,
+          tag: '合格',
+          tone: 'pass',
+          exists: true,
+          comment: PASS_LINE[def.id],
+          suggestion: '保持原内容不变',
+          status: 'pass',
+        }
+      }
+      if (def.sensitive) {
+        const status = materialStatus(product.id, def.id)
+        const shared = SHARED.find((item) => item.id === def.id)
+        return {
+          ...def,
+          ...gap,
+          tag: status === 'supplied' ? '已补充资料可优化' : '待补充资料',
+          tone: status === 'supplied' ? 'supplied' : 'wait',
+          status,
+          placeholder: def.id === 'spec' ? SPEC_PLACEHOLDER : shared?.placeholder || '',
+          evidence: supplied[product.id]?.[def.id],
+        }
+      }
+      return { ...def, ...gap, tag: '可优化', tone: 'direct', status: 'direct' }
+    })
+  }
+
   function categoriesIn(ids) {
     return ['bolt', 'nut', 'washer']
       .map((key) => ({ key, count: ids.filter((id) => BY_ID[id].category === key).length }))
       .filter((item) => item.count)
   }
 
+  function togglePicked(id) {
+    setDraft((current) => ({ ...current, picked: { ...current.picked, [id]: !current.picked[id] } }))
+  }
+
   return (
     <section className="pd-panel">
       <div className="pd-head">
-        <h4>产品详情页信息不足</h4>
-        <p>敏感资料还是待补充时，不能优化。补充后只改为已补充资料，要点优化才会写进页面。</p>
+        <div className="pd-head-main">
+          <span className="pd-mark" aria-hidden="true">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M10 3.5l1.8 4.7 4.7 1.8-4.7 1.8L10 16.5l-1.8-4.7L3.5 10l4.7-1.8L10 3.5zM18 14.5l.8 2 2 .8-2 .8-.8 2-.8-2-2-.8 2-.8.8-2z" />
+            </svg>
+          </span>
+          <h4>产品详情页信息不足</h4>
+          <button type="button" className="pd-fold" aria-expanded={detailOpen} onClick={() => setDetailOpen((open) => !open)}>
+            <i className={`pd-chevron${detailOpen ? ' is-open' : ''}`} />
+            {detailOpen ? '收起' : '展开'}
+          </button>
+        </div>
       </div>
+      <div className="pd-under">
       <div className="pd-stats">
         <span>已检测 {CHECKED}</span>
         <span className="is-hot">待处理 {pendingProducts.length}</span>
         <span>已通过 {passed}</span>
         <span>检测失败 {FAILED}</span>
       </div>
-      <p className="pd-read">
-        {pendingProducts.length
-          ? `${pendingProducts.length} 个产品待处理。其中 ${sharedOnly} 个只在共用事实里。下面 ${ownProducts.length} 个还有本产品自己的问题。`
-          : '待处理的产品已经清完。已通过的产品不在这里列出。'}
-      </p>
-      {note ? <p className="pd-note">{note}</p> : null}
-      {busy ? (
+      {detailOpen && note ? <p className="pd-note">{note}</p> : null}
+      {detailOpen && busy ? (
         <p className="pd-busy">
           <i className="spin" /> 正在处理
         </p>
       ) : null}
 
+      {detailOpen ? (
+      <>
       <h5 className="pd-label">共用事实</h5>
       <div className="pd-stack">
         {SHARED.map((shared) => {
@@ -396,14 +569,17 @@ export default function ProductDetailGap({ detecting, onResolved }) {
           const filled = suppliedIds(shared)
           const groups = groupsOf(shared.id, filled)
           const chosen = editing === shared.id ? scopeIds(waiting) : []
-          const visibleNames = waiting.filter((id) => BY_ID[id].name.includes(draft.query.trim()))
+          const pickCategories = categoriesIn(waiting)
+          const pickCategory = pickCategories.some((item) => item.key === draft.pickCategory) ? draft.pickCategory : pickCategories[0]?.key
+          const pickQuery = draft.query.trim()
+          const pickPool = pickQuery ? waiting.filter((id) => BY_ID[id].name.includes(pickQuery)) : waiting.filter((id) => BY_ID[id].category === pickCategory)
           if (!waiting.length && !filled.length) return null
           return (
             <article key={shared.id} className="pd-fact">
               {groups.map((group) => (
                 <div key={group.key} className="pd-done">
                   <b>
-                    {shared.name} 已补充资料 · {group.ids.length} 个产品，尚未优化
+                    {shared.name} 已补充资料可优化 · {group.ids.length} 个产品，尚未优化
                   </b>
                   <p>{evidenceText(group)}</p>
                   <button type="button" className="pd-link" onClick={() => setNamesOpen((current) => ({ ...current, [group.key]: !current[group.key] }))}>
@@ -444,7 +620,7 @@ export default function ProductDetailGap({ detecting, onResolved }) {
                       </button>
                     )}
                   </div>
-                  <p className="pd-lead">{shared.lead}</p>
+                  <p className="pd-review">{reviewSentence(shared.id === 'pack' ? PACK_GAP : SERVICE_GAP)}</p>
                   <button type="button" className="pd-link" onClick={() => setNamesOpen((current) => ({ ...current, [shared.id]: !current[shared.id] }))}>
                     {namesOpen[shared.id] ? '收起产品' : `查看这 ${waiting.length} 个产品`}
                   </button>
@@ -488,19 +664,41 @@ export default function ProductDetailGap({ detecting, onResolved }) {
                       ) : null}
                       {draft.mode === 'pick' ? (
                         <div className="pd-pick">
-                          <input value={draft.query} placeholder="按产品名筛选" onChange={(event) => setDraft((current) => ({ ...current, query: event.target.value }))} />
-                          <div className="pd-pick-list">
-                            {visibleNames.map((id) => (
-                              <label key={id}>
-                                <input
-                                  type="checkbox"
-                                  checked={Boolean(draft.picked[id])}
-                                  onChange={(event) => setDraft((current) => ({ ...current, picked: { ...current.picked, [id]: event.target.checked } }))}
-                                />
+                          <input value={draft.query} placeholder="搜索产品名" onChange={(event) => setDraft((current) => ({ ...current, query: event.target.value }))} />
+                          <div className="pd-chosen">
+                            {chosen.length ? (
+                              chosen.map((id) => (
+                                <button type="button" key={id} className="pd-chip is-on" onClick={() => togglePicked(id)}>
+                                  {BY_ID[id].name}
+                                  <span>×</span>
+                                </button>
+                              ))
+                            ) : (
+                              <span className="pd-hint">还没选。先选分类，再点产品名。</span>
+                            )}
+                          </div>
+                          {pickQuery ? null : (
+                            <div className="pd-pick-tabs">
+                              {pickCategories.map((item) => (
+                                <button
+                                  key={item.key}
+                                  type="button"
+                                  className={pickCategory === item.key ? 'is-on' : ''}
+                                  onClick={() => setDraft((current) => ({ ...current, pickCategory: item.key }))}
+                                >
+                                  {CATEGORY_LABEL[item.key]} {item.count}
+                                </button>
+                              ))}
+                            </div>
+                          )}
+                          <div className="pd-chips">
+                            {pickPool.map((id) => (
+                              <button type="button" key={id} className={`pd-chip${draft.picked[id] ? ' is-on' : ''}`} onClick={() => togglePicked(id)}>
                                 {BY_ID[id].name}
-                              </label>
+                              </button>
                             ))}
                           </div>
+                          {pickPool.length ? null : <span className="pd-hint">没有叫这个名字的产品</span>}
                         </div>
                       ) : null}
                       {error && editing === shared.id ? <p className="pd-error">{error}</p> : null}
@@ -518,11 +716,7 @@ export default function ProductDetailGap({ detecting, onResolved }) {
 
       <h5 className="pd-label">本产品自己的问题</h5>
       <div className="pd-batch">
-        <span>
-          {readyProducts.length
-            ? `${readyProducts.length} 个产品的敏感资料已补完，可以优化 ${readyModuleCount} 项。`
-            : '还有待补充资料。敏感资料补完之前，优化按钮不可点。'}
-        </span>
+        {readyProducts.length ? <span>{readyProducts.length} 个产品可以优化 {readyModuleCount} 项。</span> : null}
         <button type="button" className={`pd-btn${readyProducts.length ? ' is-primary' : ''}`} disabled={!readyProducts.length || !!busy} onClick={() => optimizeProducts(readyProducts)}>
           优化这 {readyModuleCount} 项
         </button>
@@ -537,7 +731,7 @@ export default function ProductDetailGap({ detecting, onResolved }) {
               const viewKey = `batch:${group.key}`
               return (
                 <li key={group.key}>
-                  <span className="pd-tag is-supplied">已补充资料</span>
+                  <span className="pd-tag is-supplied">已补充资料可优化</span>
                   <strong>{group.name}</strong>
                   <span>{group.ids.length} 个产品</span>
                   <button type="button" className="pd-link" onClick={() => toggleEvidence(viewKey)}>
@@ -556,53 +750,79 @@ export default function ProductDetailGap({ detecting, onResolved }) {
         </article>
       ) : null}
       {ownProducts.length ? (
-        <div className="pd-stack">
-          {ownProducts.map((product) => {
-            const directs = directLeft(product.id)
-            const sensitive = sensitiveLeft(product)
-            const allowed = canOptimize(product)
-            return (
-              <article key={product.id} className="pd-product">
+        <>
+          <div className="pd-own-nav">
+            <input value={ownQuery} placeholder="搜索产品名" onChange={(event) => setOwnQuery(event.target.value)} />
+            <div className="pd-pick-tabs">
+              <button type="button" className={ownCategory === 'all' ? 'is-on' : ''} onClick={() => setOwnCategory('all')}>
+                全部 {ownProducts.length}
+              </button>
+              {categoriesIn(ownProducts.map((item) => item.id)).map((item) => (
+                <button key={item.key} type="button" className={ownCategory === item.key ? 'is-on' : ''} onClick={() => setOwnCategory(item.key)}>
+                  {CATEGORY_LABEL[item.key]} {item.count}
+                </button>
+              ))}
+            </div>
+            <div className="pd-chips">
+              {ownShown.map((product) => (
+                <button
+                  key={product.id}
+                  type="button"
+                  className={`pd-chip${focusedProduct?.id === product.id ? ' is-on' : ''}${canOptimize(product) ? ' is-ready' : ''}`}
+                  onClick={() => {
+                    setOwnFocus(focusedProduct?.id === product.id ? null : product.id)
+                    setProductForm(null)
+                    setError('')
+                  }}
+                >
+                  {product.name}
+                </button>
+              ))}
+            </div>
+            {ownShown.length ? null : <span className="pd-hint">这个分类里没有叫这个名字的产品</span>}
+          </div>
+          {focusedProduct ? (
+            (() => {
+              const product = focusedProduct
+              const rows = moduleRows(product)
+              const sensitive = rows.filter((module) => module.sensitive && module.status !== 'done' && module.status !== 'pass')
+              const allowed = canOptimize(product)
+              return (
+              <article className="pd-product">
                 <div className="pd-product-top">
                   <b>{product.name}</b>
                   <em>{CATEGORY_LABEL[product.category]}</em>
                 </div>
                 <ul>
-                  {directs.map((module) => (
-                    <li key={module.id}>
-                      <span className="pd-tag is-direct">可直接优化</span>
-                      <strong>{module.name}</strong>
-                      <span>{module.reason}</span>
-                    </li>
-                  ))}
-                  {sensitive.map((module) => {
+                  {rows.map((module) => {
                     const viewKey = `${product.id}:${module.id}`
                     return (
-                      <li key={module.id}>
-                        <span className={`pd-tag ${module.status === 'supplied' ? 'is-supplied' : 'is-wait'}`}>{module.status === 'supplied' ? '已补充资料' : '待补充资料'}</span>
-                        <strong>{module.name}</strong>
-                        {module.status === 'supplied' ? (
-                          <button type="button" className="pd-link" onClick={() => toggleEvidence(viewKey)}>
-                            {evidenceOpen[viewKey] ? '收起资料' : '查看资料'}
-                          </button>
-                        ) : (
-                          <span>{module.reason}</span>
-                        )}
-                        {module.status === 'pending' ? (
-                          <button
-                            type="button"
-                            className="pd-link"
-                            onClick={() => {
-                              const opening = !(productForm?.productId === product.id && productForm?.moduleId === module.id)
-                              setProductForm(opening ? { productId: product.id, moduleId: module.id } : null)
-                              setProductDraft({ text: '', fileName: '' })
-                              setEditing(null)
-                              setError('')
-                            }}
-                          >
-                            {productForm?.productId === product.id && productForm?.moduleId === module.id ? '收起' : '补充资料'}
-                          </button>
-                        ) : null}
+                      <li key={module.id} className="pd-mod">
+                        <div className="pd-mod-side">
+                          <strong>{module.name}</strong>
+                          <span className={`pd-tag ${module.tone === 'pass' ? 'is-pass' : module.tone === 'direct' ? 'is-direct' : module.tone === 'supplied' ? 'is-supplied' : 'is-wait'}`}>{module.tag}</span>
+                          {module.status === 'supplied' ? (
+                            <button type="button" className="pd-link" onClick={() => toggleEvidence(viewKey)}>
+                              {evidenceOpen[viewKey] ? '收起资料' : '查看资料'}
+                            </button>
+                          ) : null}
+                          {module.status === 'pending' ? (
+                            <button
+                              type="button"
+                              className="pd-link"
+                              onClick={() => {
+                                const opening = !(productForm?.productId === product.id && productForm?.moduleId === module.id)
+                                setProductForm(opening ? { productId: product.id, moduleId: module.id } : null)
+                                setProductDraft({ text: '', fileName: '' })
+                                setEditing(null)
+                                setError('')
+                              }}
+                            >
+                              {productForm?.productId === product.id && productForm?.moduleId === module.id ? '收起' : '补充资料'}
+                            </button>
+                          ) : null}
+                        </div>
+                        <p className="pd-review">{reviewSentence(module)}</p>
                         {module.status === 'supplied' && evidenceOpen[viewKey] ? (
                           <EvidenceView text={module.evidence?.text} fileName={module.evidence?.fileName} />
                         ) : null}
@@ -633,15 +853,18 @@ export default function ProductDetailGap({ detecting, onResolved }) {
                   <button type="button" className={`pd-btn${allowed ? ' is-primary' : ''}`} disabled={!allowed || !!busy} onClick={() => optimizeProducts([product])}>
                     优化可改项
                   </button>
-                  {allowed ? null : <span className="pd-hint">还有待补充资料，补充完才能优化</span>}
                 </div>
               </article>
-            )
-          })}
-        </div>
+              )
+            })()
+          ) : null}
+        </>
       ) : (
         <p className="pd-empty">没有需要按产品单独处理的问题。</p>
       )}
+      </>
+      ) : null}
+      </div>
     </section>
   )
 }
