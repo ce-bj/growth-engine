@@ -62,6 +62,22 @@ const ROBOTS = [
 const FILE_ACCEPT = '.pdf,.xls,.xlsx,.doc,.docx,.jpg,.jpeg,.png'
 const STEP_MS = 700
 const STEP_TAIL = 400
+const CONTENT_SCAN = [
+  { code: 'brand', duration: 2800, steps: ['扫描全站品牌名称', '核对核心卖点表述', '核对联系方式与地址'] },
+  { code: 'readable', duration: 5600, steps: ['检查 FAQ 与图片说明', '诊断产品详情页', '检查营销化表达'] },
+  { code: 'trust', duration: 2800, steps: ['查找资质证书', '查找客户案例', '整理待补充项'] },
+]
+
+function phaseFor(code, scan, now) {
+  if (!scan) return null
+  const item = CONTENT_SCAN.find((entry) => entry.code === code)
+  if (!item) return null
+  const elapsed = Math.max(0, now - scan.startedAt)
+  const ratio = Math.min(1, elapsed / item.duration)
+  const done = ratio >= 1
+  const step = done ? item.steps.length : Math.min(item.steps.length - 1, Math.floor(ratio * item.steps.length))
+  return { status: done ? 'done' : 'run', steps: item.steps, step, percent: Math.round(ratio * 100) }
+}
 
 function marks(...scopes) {
   const attrs = {}
@@ -216,7 +232,7 @@ function Dialog({ dialog, onClose }) {
   )
 }
 
-function SectionTitle({ title, icon, tip, tipIcon, color, sectionRef, className = '' }) {
+function SectionTitle({ title, icon, tip, tipIcon, color, sectionRef, className = '', action = null }) {
   return (
     <div
       {...marks(S.report, S.title)}
@@ -229,6 +245,7 @@ function SectionTitle({ title, icon, tip, tipIcon, color, sectionRef, className 
       <h2 {...marks(S.title)} className="text">
         {title}
       </h2>
+      {action}
       {tip ? (
         <span {...marks(S.title)} className="tip">
           {tipIcon ? <AiIcon scopes={[S.title]} name={tipIcon} size={14} /> : null} {tip}
@@ -238,21 +255,31 @@ function SectionTitle({ title, icon, tip, tipIcon, color, sectionRef, className 
   )
 }
 
-function Summary({ checks, brandPending, readablePending, trustPending, onJump }) {
+function Summary({ checks, brandPending, readablePending, trustPending, detected, scanning, onJump }) {
   const total = checks.length
   const readyCount = checks.filter((item) => item.status === 'ready').length
   const attentionCount = checks.filter((item) => item.status === 'warn').length
   const contentPending = brandPending + readablePending + trustPending
   const techTone = total && readyCount / total >= 1 ? 'good' : 'fair'
-  const contentTone = contentPending ? 'fair' : 'good'
+  const contentTone = scanning || !detected ? 'checking' : contentPending ? 'fair' : 'good'
   const techDesc =
     techTone === 'good'
       ? `技术层：${total} 项关键项已由网站出厂完成配置，网站可被主流 AI 引擎正常抓取与收录。`
       : `技术层：还有 ${attentionCount} 项关键项需要关注，处理后网站才能被主流 AI 引擎正常抓取与收录。`
   const techMeta = attentionCount ? `${total} 项关键项 · ${attentionCount} 项需关注` : `${total} 项关键项 · 全部已就绪`
-  const contentDesc = contentPending
-    ? `内容层：AI 持续检测全站内容，把 AI 读不准、用不上的部分找出来，当前有 ${contentPending} 项待你确认或补充。`
-    : '内容层：全站内容已优化完成，AI 可以准确读懂并引用你的产品和品牌。'
+  const contentDesc = scanning
+    ? '内容层：正在同时检测品牌一致性、AI 可读性和 AI 可信性。'
+    : !detected
+      ? '内容层：三个板块尚未检测。点击「立即检测」后，才会列出需要你确认或补充的内容。'
+      : contentPending
+        ? `内容层：AI 持续检测全站内容，把 AI 读不准、用不上的部分找出来，当前有 ${contentPending} 项待你确认或补充。`
+        : '内容层：全站内容已优化完成，AI 可以准确读懂并引用你的产品和品牌。'
+  const contentMeta = scanning
+    ? '品牌一致性 / AI 可读性 / AI 可信性 · 检测中'
+    : !detected
+      ? '品牌一致性 / AI 可读性 / AI 可信性 · 待检测'
+      : `品牌一致性 / AI 可读性 / AI 可信性 · ${contentPending ? `${contentPending} 项待确认` : '全部已处理'}`
+  const contentPill = scanning ? '检测中' : !detected ? '待检测' : contentTone === 'good' ? 'Good' : '待关注'
   return (
     <div {...marks(S.report, S.summary)} className="summary">
       <div {...marks(S.summary)} className="summary-head">
@@ -280,8 +307,8 @@ function Summary({ checks, brandPending, readablePending, trustPending, onJump }
           icon="book-open"
           title="被 AI 理解"
           desc={contentDesc}
-          meta={`品牌一致性 / AI 可读性 / AI 可信性 · ${contentPending ? `${contentPending} 项待确认` : '全部已处理'}`}
-          pill={contentTone === 'good' ? 'Good' : '待关注'}
+          meta={contentMeta}
+          pill={contentPill}
           onClick={() => onJump('brand')}
         />
       </div>
@@ -504,7 +531,302 @@ function CheckList({ items, openMap, onToggle, onDialog, regenerating, onRegener
   )
 }
 
-function OptimizeCard({ item, state, onHandle, onToast }) {
+const VARIANT_PREVIEW = 3
+
+const BRAND_HITS = {
+  'brand-name': {
+    summary: '18 个页面 · 27 处 · 4 种说法',
+    variants: [
+      {
+        id: 'keep',
+        text: '越通紧固件',
+        count: 6,
+        role: 'keep',
+        pages: ['首页', '产品列表'],
+        pageCount: 4,
+        places: [
+          { page: '首页', where: '标题', quote: '越通紧固件' },
+          { page: '产品列表', where: '页头', quote: '越通紧固件产品中心' },
+        ],
+      },
+      {
+        id: 'wujin',
+        text: '越通五金',
+        count: 15,
+        role: 'replace',
+        pages: ['产品页', '关于我们'],
+        pageCount: 12,
+        places: [
+          { page: '产品页', where: '标题', quote: '越通五金' },
+          { page: '关于我们', where: '正文', quote: '越通五金专注紧固件制造' },
+          { page: '新闻中心', where: '标题', quote: '越通五金参加展会' },
+        ],
+      },
+      {
+        id: 'en',
+        text: 'YT Fastener',
+        count: 4,
+        role: 'replace',
+        pages: ['英文产品页', '英文关于我们'],
+        pageCount: 3,
+        places: [
+          { page: '英文产品页', where: '标题', quote: 'YT Fastener' },
+          { page: '英文关于我们', where: '正文', quote: 'YT Fastener was founded in...' },
+        ],
+      },
+      {
+        id: 'short',
+        text: '越通',
+        count: 2,
+        role: 'replace',
+        pages: ['页脚', '网站地图'],
+        pageCount: 2,
+        places: [
+          { page: '页脚', where: '版权', quote: '© 越通' },
+          { page: '网站地图', where: '栏目名', quote: '越通' },
+        ],
+      },
+    ],
+  },
+  'brand-selling': {
+    summary: '14 个页面 · 28 处 · 4 种说法',
+    variants: [
+      {
+        id: 'keep',
+        text: '20 年紧固件制造经验',
+        count: 8,
+        role: 'keep',
+        pages: ['首页', '产品列表'],
+        pageCount: 5,
+        places: [
+          { page: '首页', where: '首屏', quote: '20 年紧固件制造经验' },
+          { page: '产品列表', where: '导语', quote: '20 年紧固件制造经验' },
+        ],
+      },
+      {
+        id: 'deep',
+        text: '深耕行业二十年',
+        count: 11,
+        role: 'replace',
+        pages: ['关于我们', '新闻中心'],
+        pageCount: 7,
+        places: [
+          { page: '关于我们', where: '正文', quote: '深耕行业二十年' },
+          { page: '新闻中心', where: '导语', quote: '深耕行业二十年的制造商' },
+        ],
+      },
+      {
+        id: 'ten',
+        text: '十余年沉淀',
+        count: 6,
+        role: 'replace',
+        pages: ['产品页', '解决方案'],
+        pageCount: 4,
+        places: [
+          { page: '产品页', where: '卖点', quote: '十余年沉淀' },
+          { page: '解决方案', where: '导语', quote: '十余年沉淀，服务全球客户' },
+        ],
+      },
+      {
+        id: 'leader',
+        text: '行业领军制造商',
+        count: 3,
+        role: 'replace',
+        pages: ['首页横幅', '关于我们'],
+        pageCount: 2,
+        places: [
+          { page: '首页横幅', where: '副标题', quote: '行业领军制造商' },
+          { page: '关于我们', where: '标题', quote: '行业领军制造商' },
+        ],
+      },
+    ],
+  },
+  'brand-contact': {
+    groups: [
+      {
+        id: 'address',
+        name: '地址',
+        proposalField: '统一地址',
+        proposal: '河北省邯郸市永年区',
+        summary: '9 个页面 · 14 处 · 3 种说法',
+        variants: [
+          {
+            id: 'keep',
+            text: '河北省邯郸市永年区',
+            count: 4,
+            role: 'keep',
+            pages: ['联系我们', '页脚'],
+            pageCount: 3,
+            places: [
+              { page: '联系我们', where: '地址', quote: '河北省邯郸市永年区' },
+              { page: '页脚', where: '地址', quote: '河北省邯郸市永年区' },
+            ],
+          },
+          {
+            id: 'park',
+            text: '邯郸永年标准件产业园',
+            count: 8,
+            role: 'replace',
+            pages: ['关于我们', '联系我们'],
+            pageCount: 6,
+            places: [
+              { page: '关于我们', where: '地址', quote: '邯郸永年标准件产业园' },
+              { page: '联系我们', where: '地图说明', quote: '邯郸永年标准件产业园' },
+            ],
+          },
+          {
+            id: 'zone',
+            text: '永年区工业园区',
+            count: 2,
+            role: 'replace',
+            pages: ['招聘页', '页脚'],
+            pageCount: 2,
+            places: [
+              { page: '招聘页', where: '工作地点', quote: '永年区工业园区' },
+              { page: '页脚', where: '英文地址', quote: 'Yongnian Industrial Park' },
+            ],
+          },
+        ],
+      },
+      {
+        id: 'phone',
+        name: '电话',
+        proposalField: '统一电话',
+        proposal: '0310-88888888',
+        summary: '7 个页面 · 10 处 · 4 种说法',
+        variants: [
+          {
+            id: 'keep',
+            text: '0310-88888888',
+            count: 3,
+            role: 'keep',
+            pages: ['联系我们', '页脚'],
+            pageCount: 2,
+            places: [
+              { page: '联系我们', where: '电话', quote: '0310-88888888' },
+              { page: '页脚', where: '电话', quote: '0310-88888888' },
+            ],
+          },
+          {
+            id: 'spaced',
+            text: '0310-8888 8888',
+            count: 4,
+            role: 'replace',
+            pages: ['首页', '关于我们'],
+            pageCount: 3,
+            places: [
+              { page: '首页', where: '顶栏', quote: '0310-8888 8888' },
+              { page: '关于我们', where: '联系方式', quote: '0310-8888 8888' },
+            ],
+          },
+          {
+            id: 'short',
+            text: '88888888',
+            count: 2,
+            role: 'replace',
+            pages: ['产品页', '页脚'],
+            pageCount: 2,
+            places: [{ page: '产品页', where: '询盘旁', quote: '88888888' }],
+          },
+          {
+            id: 'intl',
+            text: '+86 310 8888 8888',
+            count: 1,
+            role: 'replace',
+            pages: ['英文联系页'],
+            pageCount: 1,
+            places: [{ page: '英文联系页', where: '电话', quote: '+86 310 8888 8888' }],
+          },
+        ],
+      },
+    ],
+  },
+}
+
+function pagePreview(variant) {
+  const names = variant.pages || []
+  const total = variant.pageCount || names.length
+  const head = names.slice(0, 2).join('、')
+  if (total > 2) return `${head}等 ${total} 个页面`
+  return head
+}
+
+function roleText(variant, proposal, skip) {
+  if (skip) return '不改'
+  if (variant.role === 'keep') return '建议保留'
+  return `将改为「${proposal}」`
+}
+
+function replaceKeys(hit, itemId) {
+  if (!hit) return []
+  const groups = hit.groups || [{ id: '', variants: hit.variants }]
+  return groups.flatMap((group) =>
+    group.variants.filter((variant) => variant.role === 'replace').map((variant) => (group.id ? `${itemId}:${group.id}:${variant.id}` : `${itemId}:${variant.id}`)),
+  )
+}
+
+function fieldLabel(field, suggestOnly) {
+  if (suggestOnly && (field === '统一地址' || field === '统一电话')) return `建议${field}`
+  return field
+}
+
+const ACTION_LINKS = {
+  'trust-cert': 'https://new2024062018064084554.fastindexs.com/npmanager/lowcode/np/app/196602/1724686942397616128?instance=NEW2024062018064084554',
+  'trust-case': 'https://new2024062018064084554.fastindexs.com/npmanager/lowcode/np/app/60003/1817967681753530368?instance=NEW2024062018064084554',
+}
+
+function VariantList({ variants, proposal, listKey, skipped, moreOpen, placeOpen, onSkip, onMore, onPlace }) {
+  const shown = moreOpen ? variants : variants.slice(0, VARIANT_PREVIEW)
+  const rest = variants.length - VARIANT_PREVIEW
+  return (
+    <div className="variant-list">
+      {shown.map((variant) => {
+        const key = `${listKey}:${variant.id}`
+        const skip = variant.role === 'replace' && skipped[key]
+        const placesOn = Boolean(placeOpen[key])
+        return (
+          <div key={variant.id} className={`variant-row${skip ? ' is-skip' : ''}`}>
+            <div className="variant-top">
+              <span className="variant-text">{variant.text}</span>
+              <span className="variant-count">{variant.count} 处</span>
+              <span className={`variant-role${skip ? ' is-skip' : variant.role === 'keep' ? ' is-keep' : ' is-replace'}`}>{roleText(variant, proposal, skip)}</span>
+              <span className="variant-pages">{pagePreview(variant)}</span>
+            </div>
+            <div className="variant-actions">
+              <button type="button" onClick={() => onPlace(key)}>
+                {placesOn ? '收起位置' : '查看位置'}
+              </button>
+              {variant.role === 'replace' ? (
+                <button type="button" onClick={() => onSkip(key)}>
+                  {skip ? '恢复替换' : '这处不改'}
+                </button>
+              ) : null}
+            </div>
+            {placesOn ? (
+              <div className="variant-places">
+                {variant.places.map((place) => (
+                  <div key={`${place.page}-${place.where}`} className="variant-place">
+                    <b>
+                      {place.page} · {place.where}
+                    </b>
+                    <span>{place.quote}</span>
+                  </div>
+                ))}
+              </div>
+            ) : null}
+          </div>
+        )
+      })}
+      {rest > 0 ? (
+        <button type="button" className="variant-more" onClick={() => onMore(listKey)}>
+          {moreOpen ? '收起说法' : `还有 ${rest} 种说法`}
+        </button>
+      ) : null}
+    </div>
+  )
+}
+
+function OptimizeCard({ item, state, skipped, onSkip, onHandle, onAct, onToast }) {
   const [explainOpen, setExplainOpen] = useState(false)
   const [formOpen, setFormOpen] = useState(false)
   const [content, setContent] = useState('')
@@ -513,7 +835,15 @@ function OptimizeCard({ item, state, onHandle, onToast }) {
   const [customCopy, setCustomCopy] = useState('')
   const [editingCopy, setEditingCopy] = useState(false)
   const [copyDraft, setCopyDraft] = useState('')
+  const [moreOpen, setMoreOpen] = useState({})
+  const [placeOpen, setPlaceOpen] = useState({})
+  const [groupCopy, setGroupCopy] = useState({})
+  const [groupEdit, setGroupEdit] = useState('')
+  const [groupDraft, setGroupDraft] = useState('')
   const timers = useRef([])
+  const hit = BRAND_HITS[item.id]
+  const skipKeys = replaceKeys(hit, item.id)
+  const allSkipped = skipKeys.length > 0 && skipKeys.every((key) => skipped[key])
   const done = state === 'done'
   const ignored = state === 'ignored'
   const running = runStep !== null
@@ -542,6 +872,11 @@ function OptimizeCard({ item, state, onHandle, onToast }) {
       setCustomCopy('')
       setEditingCopy(false)
       setExplainOpen(false)
+      setMoreOpen({})
+      setPlaceOpen({})
+      setGroupCopy({})
+      setGroupEdit('')
+      setGroupDraft('')
     }
   }, [state])
 
@@ -565,6 +900,13 @@ function OptimizeCard({ item, state, onHandle, onToast }) {
   }
 
   function handleAction() {
+    if (allSkipped) return
+    const link = ACTION_LINKS[item.id]
+    if (link) {
+      onAct?.(item)
+      window.open(link, '_blank', 'noopener,noreferrer')
+      return
+    }
     if (item.action.form) setFormOpen((value) => !value)
     else startRun()
   }
@@ -610,7 +952,8 @@ function OptimizeCard({ item, state, onHandle, onToast }) {
           </p>
         ) : (
           <>
-            {item.tags.length ? (
+            {hit && !hit.groups ? <p className="variant-summary">{hit.summary}</p> : null}
+            {item.tags.length && !hit ? (
               <div {...marks(S.card)} className="tags">
                 {item.tags.map((tag) => (
                   <span {...marks(S.card)} key={tag} className="tag">
@@ -625,7 +968,7 @@ function OptimizeCard({ item, state, onHandle, onToast }) {
                   <b {...marks(S.card)}>优化建议：</b>
                   {item.suggest}
                 </p>
-                {item.proposal && !running ? (
+                {item.proposal && !running && !hit?.groups ? (
                   <div {...marks(S.card)} className="proposal">
                     {editingCopy ? (
                       <>
@@ -683,6 +1026,85 @@ function OptimizeCard({ item, state, onHandle, onToast }) {
                 ) : null}
               </div>
             )}
+            {hit && !running && !ignored ? (
+              hit.groups ? (
+                hit.groups.map((group) => {
+                  const value = groupCopy[group.id] || group.proposal
+                  return (
+                    <div key={group.id} className="variant-group">
+                      <div className="variant-group-head">
+                        <b>{group.name}</b>
+                        <span>{group.summary}</span>
+                      </div>
+                      {groupEdit === group.id ? (
+                        <div className="variant-edit">
+                          <textarea rows={2} value={groupDraft} placeholder={group.proposal} onChange={(event) => setGroupDraft(event.target.value)} />
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setGroupCopy((current) => ({ ...current, [group.id]: groupDraft.trim() }))
+                              setGroupEdit('')
+                            }}
+                          >
+                            就用这个
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setGroupCopy((current) => {
+                                const next = { ...current }
+                                delete next[group.id]
+                                return next
+                              })
+                              setGroupEdit('')
+                            }}
+                          >
+                            恢复 AI 建议
+                          </button>
+                        </div>
+                      ) : (
+                        <div className="variant-proposal">
+                          <span>{fieldLabel(group.proposalField, allSkipped)}：</span>
+                          <b>{value}</b>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setGroupDraft(value)
+                              setGroupEdit(group.id)
+                            }}
+                          >
+                            改用其他文案
+                          </button>
+                        </div>
+                      )}
+                      <VariantList
+                        variants={group.variants}
+                        proposal={value}
+                        listKey={`${item.id}:${group.id}`}
+                        skipped={skipped}
+                        moreOpen={Boolean(moreOpen[`${item.id}:${group.id}`])}
+                        placeOpen={placeOpen}
+                        onSkip={onSkip}
+                        onMore={(key) => setMoreOpen((current) => ({ ...current, [key]: !current[key] }))}
+                        onPlace={(key) => setPlaceOpen((current) => ({ ...current, [key]: !current[key] }))}
+                      />
+                    </div>
+                  )
+                })
+              ) : (
+                <VariantList
+                  variants={hit.variants}
+                  proposal={customCopy || item.proposal}
+                  listKey={item.id}
+                  skipped={skipped}
+                  moreOpen={Boolean(moreOpen[item.id])}
+                  placeOpen={placeOpen}
+                  onSkip={onSkip}
+                  onMore={(key) => setMoreOpen((current) => ({ ...current, [key]: !current[key] }))}
+                  onPlace={(key) => setPlaceOpen((current) => ({ ...current, [key]: !current[key] }))}
+                />
+              )
+            ) : null}
           </>
         )}
         {running ? (
@@ -716,7 +1138,7 @@ function OptimizeCard({ item, state, onHandle, onToast }) {
               </button>
             ) : done ? null : (
               <>
-                <button {...marks(S.card)} type="button" className="btn primary" onClick={handleAction}>
+                <button {...marks(S.card)} type="button" className="btn primary" disabled={allSkipped} onClick={handleAction}>
                   <AiIcon scopes={[S.card]} name={item.action.icon} size={14} /> {formOpen ? '收起' : item.action.text}
                 </button>
                 {item.action.ignorable ? (
@@ -787,12 +1209,48 @@ function OptimizeCard({ item, state, onHandle, onToast }) {
   )
 }
 
-function OptimizeSection({ section, handled, detecting, open, onToggle, onHandle, onDetect, onToast }) {
+function SectionScan({ steps, step, percent }) {
+  const doneAll = step >= steps.length
+  const shown = typeof percent === 'number' ? percent : Math.round((Math.min(step, steps.length) / steps.length) * 100)
+  return (
+    <div className="opt-scan">
+      <div className="opt-scan-head">
+        {doneAll ? <AiIcon name="check-circle" size={14} /> : <i className="spin" />}
+        <span className="opt-scan-title">{doneAll ? '本板块检测完成' : '正在检测'}</span>
+        <span className="opt-scan-pct">{shown}%</span>
+      </div>
+      <div className="opt-scan-bar">
+        <span style={{ width: `${shown}%` }} />
+      </div>
+      <div className="opt-scan-steps">
+        {steps.map((label, index) => (
+          <div key={label} className={`opt-scan-step${index < step ? ' is-done' : ''}${index === step ? ' is-current' : ''}`}>
+            {index < step ? <AiIcon name="check-circle" size={14} /> : index === step ? <i className="spin" /> : <AiIcon name="circle" size={14} />}
+            <span>{label}</span>
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+}
+
+function OptimizeSection({ section, handled, skipped, detecting, detected, phase, open, onToggle, onSkip, onHandle, onAct, onToast }) {
   const [introOpen, setIntroOpen] = useState(false)
   const pendingCount = section.items.filter((item) => !handled[item.id]).length
-  const done = pendingCount === 0
+  const done = pendingCount === 0 && !phase
+  const running = phase?.status === 'run'
+  const waiting = phase?.status === 'wait'
+  const scanned = phase?.status === 'done'
+  const awaiting = !detected && !phase
+  const percent = typeof phase?.percent === 'number' ? phase.percent : phase ? Math.round((Math.min(phase.step, phase.steps.length) / phase.steps.length) * 100) : 0
+  const track = waiting ? 0 : percent
+  const brief = running ? phase.steps[phase.step] : scanned ? '本板块检测完成' : awaiting ? '尚未检测' : done ? '本板块问题已全部优化完成' : section.brief
   return (
-    <div {...marks(S.report, S.opt)} id={`opt-${section.code}`} className={`opt-section report-section theme-${section.theme}${open ? ' is-open' : ''}`}>
+    <div
+      {...marks(S.report, S.opt)}
+      id={`opt-${section.code}`}
+      className={`opt-section report-section theme-${section.theme}${open ? ' is-open' : ''}${running ? ' is-scanning' : ''}${waiting ? ' is-scan-wait' : ''}${scanned ? ' is-scanned' : ''}`}
+    >
       <div
         {...marks(S.opt)}
         className="opt-bar"
@@ -816,11 +1274,30 @@ function OptimizeSection({ section, handled, detecting, open, onToggle, onHandle
             {section.title}
           </span>
           <p {...marks(S.opt)} className="bar-brief">
-            {done ? '本板块问题已全部优化完成' : section.brief}
+            {brief}
           </p>
+          {phase ? (
+            <span className={`scan-track${running ? ' is-run' : ''}`}>
+              <span style={{ width: `${track}%` }} />
+            </span>
+          ) : null}
         </div>
         <div {...marks(S.opt)} className="bar-right">
-          {done ? (
+          {running ? (
+            <span className="opt-scan-pct">{percent}%</span>
+          ) : waiting ? (
+            <span {...marks(S.opt)} className="pending">
+              等待检测
+            </span>
+          ) : scanned ? (
+            <span {...marks(S.opt)} className="pending is-scanned">
+              已检测
+            </span>
+          ) : awaiting ? (
+            <span {...marks(S.opt)} className="pending is-await">
+              待检测
+            </span>
+          ) : done ? (
             <span {...marks(S.opt)} className="good-pill">
               <i>
                 <AiIcon scopes={[S.opt]} name="check" size={10} />
@@ -835,14 +1312,17 @@ function OptimizeSection({ section, handled, detecting, open, onToggle, onHandle
           <AiIcon scopes={[S.opt]} className="chevron" name={open ? 'chevron-down' : 'chevron-right'} size={16} />
         </div>
       </div>
-      {open ? (
+      {phase && !waiting ? <SectionScan steps={phase.steps} step={phase.step} percent={percent} /> : null}
+      {open && awaiting ? (
+        <div className="opt-await">
+          <p>本板块尚未检测。请点击上方「立即检测」按钮进行检测。</p>
+        </div>
+      ) : null}
+      {open && !phase && detected ? (
         <div {...marks(S.opt)} className="opt-detail">
           <div {...marks(S.opt)} className="detail-tools">
             <button {...marks(S.opt)} type="button" className="what" onClick={() => setIntroOpen((value) => !value)}>
               <AiIcon scopes={[S.opt]} name="info" size={14} /> {introOpen ? '收起说明' : '这项做什么'}
-            </button>
-            <button {...marks(S.opt)} type="button" className="detect" disabled={detecting} onClick={() => onDetect(section)}>
-              {detecting ? <i className="spin" /> : <AiIcon scopes={[S.opt]} name="scan" size={14} />} {detecting ? '检测中…' : '立即检测'}
             </button>
           </div>
           {introOpen ? (
@@ -870,7 +1350,7 @@ function OptimizeSection({ section, handled, detecting, open, onToggle, onHandle
               item.id === 'readable-product' ? (
                 <ProductDetailGap key={item.id} detecting={detecting} onResolved={() => onHandle(item, 'agree')} />
               ) : (
-                <OptimizeCard key={item.id} item={item} state={handled[item.id]} onHandle={onHandle} onToast={onToast} />
+                <OptimizeCard key={item.id} item={item} state={handled[item.id]} skipped={skipped} onSkip={onSkip} onHandle={onHandle} onAct={onAct} onToast={onToast} />
               ),
             )}
           </div>
@@ -1003,15 +1483,21 @@ function CrawlerLogs() {
 export default function AIReady() {
   const [checks] = useState(readyData.checks)
   const [openMap, setOpenMap] = useState({})
-  const [openGroup, setOpenGroup] = useState('readable')
+  const [openGroup, setOpenGroup] = useState(null)
   const [handled, setHandled] = useState({})
+  const [skipped, setSkipped] = useState({})
+  const [acted, setActed] = useState({})
+  const [detected, setDetected] = useState(false)
   const [detecting, setDetecting] = useState({})
+  const [scan, setScan] = useState(null)
+  const [now, setNow] = useState(0)
   const [dialog, setDialog] = useState(null)
   const [toast, setToast] = useState(null)
   const [regenerating, setRegenerating] = useState('')
   const checkRef = useRef(null)
   const brandRef = useRef(null)
   const toastTimer = useRef(0)
+  const scanTimers = useRef([])
 
   function showToast(type, text) {
     window.clearTimeout(toastTimer.current)
@@ -1037,20 +1523,43 @@ export default function AIReady() {
     })
   }
 
-  function handleDetect(section) {
-    if (detecting[section.code]) return
-    setDetecting((current) => ({ ...current, [section.code]: true }))
-    window.setTimeout(() => {
-      setHandled((current) => {
-        const next = { ...current }
-        section.items.forEach((item) => {
-          delete next[item.id]
+  function clearScanTimers() {
+    scanTimers.current.forEach((id) => window.clearTimeout(id))
+    scanTimers.current = []
+  }
+
+  useEffect(() => () => clearScanTimers(), [])
+
+  function handleDetectAll() {
+    if (detectingAny || detectLocked) return
+    clearScanTimers()
+    const startedAt = Date.now()
+    setDetecting(Object.fromEntries(CONTENT_SCAN.map((item) => [item.code, true])))
+    setScan({ startedAt })
+    setNow(startedAt)
+    document.getElementById('opt-brand')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    const maxDuration = Math.max(...CONTENT_SCAN.map((item) => item.duration))
+    scanTimers.current.push(
+      window.setTimeout(() => {
+        setHandled((current) => {
+          const next = { ...current }
+          readyData.optimizeSections.forEach((section) => {
+            section.items.forEach((item) => {
+              delete next[item.id]
+            })
+          })
+          return next
         })
-        return next
-      })
-      setDetecting((current) => ({ ...current, [section.code]: false }))
-      showToast('success', '检测完成')
-    }, 800)
+        setActed({})
+        setSkipped({})
+        setDetecting({})
+        setScan(null)
+        setDetected(true)
+        setOpenGroup('readable')
+        brandRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+        showToast('success', '检测完成')
+      }, maxDuration + STEP_TAIL),
+    )
   }
 
   function handleRegenerate(row) {
@@ -1062,28 +1571,59 @@ export default function AIReady() {
   }
 
   const sections = useMemo(() => readyData.optimizeSections, [])
+  const detectingAny = sections.some((section) => detecting[section.code])
+  const detectLocked = detected && !detectingAny && sections.some((section) => section.items.some((item) => !acted[item.id] && handled[item.id] !== 'done' && handled[item.id] !== 'ignored'))
 
   useEffect(() => {
-    document.getElementById('opt-readable')?.scrollIntoView({ block: 'start' })
-  }, [])
+    if (!scan) return undefined
+    const timer = window.setInterval(() => setNow(Date.now()), 120)
+    return () => window.clearInterval(timer)
+  }, [scan])
 
   return (
     <div {...marks(S.ready)} className="ai-ready">
       <div {...marks(S.ready, S.report)} className="report no-tabs">
-        <Summary checks={checks} brandPending={pendingOf('brand')} readablePending={pendingOf('readable')} trustPending={pendingOf('trust')} onJump={(code) => (code === 'check' ? checkRef : brandRef).current?.scrollIntoView({ behavior: 'smooth', block: 'start' })} />
+        <Summary checks={checks} brandPending={pendingOf('brand')} readablePending={pendingOf('readable')} trustPending={pendingOf('trust')} detected={detected} scanning={Boolean(scan)} onJump={(code) => (code === 'check' ? checkRef : brandRef).current?.scrollIntoView({ behavior: 'smooth', block: 'start' })} />
         <SectionTitle sectionRef={checkRef} title="被 AI 看见 · 关键项检查" icon="shield" tip="技术层 · 网站交付时关键项自动就绪" />
         <CheckList items={checks} openMap={openMap} onToggle={(code) => setOpenMap((current) => ({ ...current, [code]: !current[code] }))} onDialog={setDialog} regenerating={regenerating} onRegenerate={handleRegenerate} />
-        <SectionTitle sectionRef={brandRef} className="report-section-gap" title="被 AI 理解 · 内容优化" icon="book-open" color="#9333ea" tip="AI 自动检测 → 生成建议 → 你确认或补充 → 自动生效" tipIcon="sparkle" />
+        <SectionTitle
+          sectionRef={brandRef}
+          className="report-section-gap"
+          title="被 AI 理解 · 内容优化"
+          icon="book-open"
+          color="#9333ea"
+          tip="AI 自动检测 → 生成建议 → 你确认或补充 → 自动生效"
+          tipIcon="sparkle"
+          action={
+            <span {...marks(S.title)} className="detect-wrap">
+              <button {...marks(S.title)} type="button" className="detect" disabled={detectingAny || detectLocked} onClick={handleDetectAll}>
+                {detectingAny ? <i className="spin" /> : <AiIcon scopes={[S.title]} name="scan" size={14} />} {detectingAny ? '检测中…' : '立即检测'}
+              </button>
+              {detectLocked ? (
+                <span className="detect-hint" role="status">
+                  必须下方优化动作确认完才可以重新检测
+                </span>
+              ) : null}
+            </span>
+          }
+        />
         {sections.map((section) => (
           <OptimizeSection
             key={section.code}
             section={section}
             handled={handled}
+            skipped={skipped}
             detecting={!!detecting[section.code]}
-            open={openGroup === section.code}
-            onToggle={() => setOpenGroup((current) => (current === section.code ? null : section.code))}
+            detected={detected}
+            phase={phaseFor(section.code, scan, now)}
+            open={scan ? false : openGroup === section.code}
+            onToggle={() => {
+              if (scan) return
+              setOpenGroup((current) => (current === section.code ? null : section.code))
+            }}
             onHandle={handleOptimize}
-            onDetect={handleDetect}
+            onSkip={(key) => setSkipped((current) => ({ ...current, [key]: !current[key] }))}
+            onAct={(item) => setActed((current) => ({ ...current, [item.id]: true }))}
             onToast={showToast}
           />
         ))}
