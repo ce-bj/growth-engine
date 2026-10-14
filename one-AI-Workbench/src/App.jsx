@@ -1,9 +1,10 @@
 import { useMemo, useState } from 'react'
-import { ArrowLeft, Globe, Hexagon, LayoutDashboard, MessageSquare } from 'lucide-react'
+import { ArrowLeft, Globe, Hexagon, LayoutDashboard, MessageSquare, Coins } from 'lucide-react'
 import { Avatar, Breadcrumb, Button, ConfigProvider, Layout, Menu, Select, Tooltip } from 'antd'
 import zhCN from 'antd/locale/zh_CN'
 import AIReady from './AIReady.jsx'
 import Assistant from './Assistant.jsx'
+import Credits from './Credits.jsx'
 import 'antd/dist/reset.css'
 import './shell.css'
 
@@ -27,6 +28,7 @@ const SITES = [
 
 const NAV = [
   { id: 'dashboard', label: 'AI Ready', icon: LayoutDashboard },
+  { id: 'credits', label: '积分余额', icon: Coins },
   { id: 'assistant', label: 'AI运营助手', icon: MessageSquare },
 ]
 
@@ -143,7 +145,9 @@ export default function App() {
               items={
                 page === 'dashboard'
                   ? [{ title: '增长工作台' }, { title: 'AI Ready' }, { title: 'AI 友好性保障' }]
-                  : [{ title: '增长工作台' }, { title: 'AI运营助手' }]
+                  : page === 'credits'
+                    ? [{ title: '增长工作台' }, { title: '积分余额' }]
+                    : [{ title: '增长工作台' }, { title: 'AI运营助手' }]
               }
             />
           </div>
@@ -208,7 +212,7 @@ export default function App() {
           <Layout className="admin-main">
             <Content className="admin-body">
               <div className="admin-content">
-                {page === 'dashboard' ? <AIReady /> : page === 'assistant' ? <Assistant /> : <Placeholder title={current.label} />}
+                {page === 'dashboard' ? <AIReady /> : page === 'credits' ? <Credits /> : page === 'assistant' ? <Assistant /> : <Placeholder title={current.label} />}
               </div>
             </Content>
           </Layout>

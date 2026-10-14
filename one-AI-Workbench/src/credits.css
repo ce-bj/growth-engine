@@ -1,0 +1,264 @@
+/* 积分余额页面样式 */
+
+.credits-page {
+  padding: 24px 28px 40px;
+  max-width: 1080px;
+  margin: 0 auto;
+}
+
+.credits-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.credits-title {
+  margin: 0;
+  font-size: 22px;
+  font-weight: 700;
+  color: #1e293b;
+}
+
+.credits-sub {
+  margin: 6px 0 0;
+  font-size: 13px;
+  line-height: 1.6;
+  color: #64748b;
+  max-width: 640px;
+}
+
+.credits-stats {
+  display: grid;
+  grid-template-columns: 1.4fr 1fr 1fr;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.credit-stat.ant-card {
+  border: 1px solid #e2e8f0 !important;
+  border-radius: 12px;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+}
+
+.credit-stat.is-balance {
+  background: linear-gradient(135deg, #3b9fd0 0%, #2f86b8 100%);
+  border-color: transparent !important;
+}
+
+.credit-balance-inner {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.credit-balance-ico {
+  width: 46px;
+  height: 46px;
+  border-radius: 12px;
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  background: rgba(255, 255, 255, 0.2);
+  color: #fff;
+}
+
+.credit-stat-label {
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.credit-balance-num {
+  font-size: 30px;
+  font-weight: 750;
+  line-height: 1.15;
+  color: #fff;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.01em;
+}
+
+.credits-table-card.ant-card {
+  border: 1px solid #e2e8f0 !important;
+  border-radius: 12px;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+  margin-bottom: 8px;
+}
+
+.credits-section-title {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 15px;
+  font-weight: 700;
+  color: #1e293b;
+}
+
+.credits-filter {
+  margin-bottom: 14px;
+  overflow-x: auto;
+}
+
+.credit-cat {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--cat, #475569);
+  background: color-mix(in srgb, var(--cat, #475569) 12%, #fff);
+  white-space: nowrap;
+}
+
+.credit-time {
+  font-variant-numeric: tabular-nums;
+  color: #64748b;
+  font-size: 13px;
+}
+
+.credit-add {
+  font-weight: 700;
+  color: #16a34a;
+  font-variant-numeric: tabular-nums;
+}
+
+.credit-minus {
+  font-weight: 700;
+  color: #ef4444;
+  font-variant-numeric: tabular-nums;
+}
+
+.credit-balance {
+  font-variant-numeric: tabular-nums;
+  color: #1e293b;
+  font-weight: 600;
+}
+
+/* 充值弹窗 */
+.recharge-body {
+  padding-top: 6px;
+}
+
+.recharge-label {
+  margin: 0 0 10px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #334155;
+}
+
+.recharge-pkgs {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+  margin-bottom: 18px;
+}
+
+.recharge-pkg {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 12px 6px;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  background: #fff;
+  cursor: pointer;
+  font-family: inherit;
+  transition: border-color 0.18s ease, box-shadow 0.18s ease, background 0.18s ease;
+}
+
+.recharge-pkg:hover {
+  border-color: #3b9fd0;
+}
+
+.recharge-pkg.is-active {
+  border-color: #3b9fd0;
+  background: rgba(59, 159, 208, 0.08);
+  box-shadow: 0 0 0 2px rgba(59, 159, 208, 0.18);
+}
+
+.recharge-pkg-amt {
+  font-size: 17px;
+  font-weight: 750;
+  color: #1e293b;
+  font-variant-numeric: tabular-nums;
+}
+
+.recharge-pkg-unit {
+  font-size: 11px;
+  color: #94a3b8;
+}
+
+.recharge-pkg-price {
+  margin-top: 2px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #3b9fd0;
+}
+
+.recharge-summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 16px;
+  padding: 12px 14px;
+  border-radius: 10px;
+  background: #f5f7fa;
+  font-size: 14px;
+  color: #475569;
+}
+
+.recharge-pay {
+  font-size: 18px;
+  font-weight: 750;
+  color: #ef4444;
+  font-variant-numeric: tabular-nums;
+}
+
+.recharge-tip {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 12px 0 0;
+  font-size: 12px;
+  color: #94a3b8;
+}
+
+/* 操作提示 toast */
+.credits-toast {
+  position: fixed;
+  top: 72px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 1000;
+  padding: 10px 18px;
+  border-radius: 999px;
+  background: rgba(30, 41, 59, 0.92);
+  color: #fff;
+  font-size: 13px;
+  font-weight: 600;
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.24);
+  animation: credits-toast-in 0.22s ease;
+}
+
+@keyframes credits-toast-in {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -8px);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, 0);
+  }
+}
+
+@media (max-width: 720px) {
+  .credits-stats {
+    grid-template-columns: 1fr;
+  }
+  .recharge-pkgs {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
