@@ -60,6 +60,15 @@ const ROBOTS = [
   { name: 'Meta-ExternalAgent', ua: 'meta-externalagent' },
 ]
 const FILE_ACCEPT = '.pdf,.xls,.xlsx,.doc,.docx,.jpg,.jpeg,.png'
+const DIAGNOSED_KEY = 'ai-ready-content-detected'
+
+function hasDiagnosed() {
+  try {
+    return sessionStorage.getItem(DIAGNOSED_KEY) === '1'
+  } catch {
+    return false
+  }
+}
 const STEP_MS = 700
 const STEP_TAIL = 400
 const CONTENT_SCAN = [
@@ -1480,14 +1489,51 @@ function CrawlerLogs() {
   )
 }
 
+function ReadyGate({ onStart }) {
+  return (
+    <div className="ready-gate">
+      <div className="ready-gate-card">
+        <div className="ready-gate-inner">
+          <div className="ready-gate-kicker">
+            <span className="ready-gate-pill">
+              <svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true">
+                <path fill="currentColor" d="M8 1.2l1.15 3.55L12.7 5.9 9.15 7.05 8 10.6 6.85 7.05 3.3 5.9l3.55-1.15L8 1.2zM12.4 9.2l.55 1.65 1.65.55-1.65.55-.55 1.65-.55-1.65-1.65-.55 1.65-.55.55-1.65z" />
+              </svg>
+              AI READY
+            </span>
+            <span>数字门户 · AI 友好性基础层</span>
+          </div>
+          <h1>让 AI 看见你、看懂你</h1>
+          <p>
+            AI 友好性检测分两层：技术层确认 AI 抓得到，服务层确保 AI 看得懂。
+            <br />
+            逐项检查站点的 <em>7 项 AI 友好性关键项</em>。
+            <br />
+            诊断站点核心内容，把 AI 读不懂的表达改写成它能直接引用的内容。
+          </p>
+          <button type="button" className="ready-gate-start" onClick={onStart}>
+            <svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true">
+              <path fill="currentColor" d="M5.2 3.2v9.6L13 8 5.2 3.2z" />
+            </svg>
+            开始一键诊断
+          </button>
+          <small>全程自动，完成后只需确认发布</small>
+        </div>
+      </div>
+    </div>
+  )
+}
+
 export default function AIReady() {
+  const diagnosed = hasDiagnosed()
+  const [entered, setEntered] = useState(diagnosed)
   const [checks] = useState(readyData.checks)
   const [openMap, setOpenMap] = useState({})
   const [openGroup, setOpenGroup] = useState(null)
   const [handled, setHandled] = useState({})
   const [skipped, setSkipped] = useState({})
   const [acted, setActed] = useState({})
-  const [detected, setDetected] = useState(false)
+  const [detected, setDetected] = useState(diagnosed)
   const [detecting, setDetecting] = useState({})
   const [scan, setScan] = useState(null)
   const [now, setNow] = useState(0)
@@ -1498,6 +1544,7 @@ export default function AIReady() {
   const brandRef = useRef(null)
   const toastTimer = useRef(0)
   const scanTimers = useRef([])
+  const armScan = useRef(false)
 
   function showToast(type, text) {
     window.clearTimeout(toastTimer.current)
@@ -1555,6 +1602,11 @@ export default function AIReady() {
         setDetecting({})
         setScan(null)
         setDetected(true)
+        try {
+          sessionStorage.setItem(DIAGNOSED_KEY, '1')
+        } catch {
+          /* ignore */
+        }
         setOpenGroup('readable')
         brandRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
         showToast('success', '检测完成')
@@ -1573,12 +1625,31 @@ export default function AIReady() {
   const sections = useMemo(() => readyData.optimizeSections, [])
   const detectingAny = sections.some((section) => detecting[section.code])
   const detectLocked = detected && !detectingAny && sections.some((section) => section.items.some((item) => !acted[item.id] && handled[item.id] !== 'done' && handled[item.id] !== 'ignored'))
+  const detectDone = detected && detectLocked && !detectingAny
+
+  function enterDetail() {
+    armScan.current = true
+    setDetected(false)
+    setEntered(true)
+  }
+
+  useEffect(() => {
+    if (!armScan.current) return undefined
+    const timer = window.setTimeout(() => {
+      if (!armScan.current) return
+      armScan.current = false
+      handleDetectAll()
+    }, 0)
+    return () => window.clearTimeout(timer)
+  }, [entered])
 
   useEffect(() => {
     if (!scan) return undefined
     const timer = window.setInterval(() => setNow(Date.now()), 120)
     return () => window.clearInterval(timer)
   }, [scan])
+
+  if (!entered) return <ReadyGate onStart={enterDetail} />
 
   return (
     <div {...marks(S.ready)} className="ai-ready">
@@ -1596,8 +1667,8 @@ export default function AIReady() {
           tipIcon="sparkle"
           action={
             <span {...marks(S.title)} className="detect-wrap">
-              <button {...marks(S.title)} type="button" className="detect" disabled={detectingAny || detectLocked} onClick={handleDetectAll}>
-                {detectingAny ? <i className="spin" /> : <AiIcon scopes={[S.title]} name="scan" size={14} />} {detectingAny ? '检测中…' : '立即检测'}
+              <button {...marks(S.title)} type="button" className={`detect${detectDone ? ' is-done' : ''}`} disabled={detectingAny || detectLocked} onClick={handleDetectAll}>
+                {detectingAny ? <i className="spin" /> : <AiIcon scopes={[S.title]} name={detectDone ? 'check' : 'scan'} size={14} />} {detectingAny ? '检测中…' : detectDone ? '已检测' : '立即检测'}
               </button>
               {detectLocked ? (
                 <span className="detect-hint" role="status">

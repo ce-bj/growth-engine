@@ -96,7 +96,7 @@ export default function ProductListPage({ onEditProduct }) {
       </div>
 
       {/* 表格 */}
-      <div style={css.tableWrap}>
+      <div className="sms-scroll" style={css.tableWrap}>
         <table style={css.table}>
           <thead>
             <tr style={css.thead}>

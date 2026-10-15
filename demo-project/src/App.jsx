@@ -48,6 +48,7 @@ import { addRun, markRunsSessionDeleted, patchRun } from "./automation/taskStore
 import { finishLeadGenDemoMessages, buildLeadGenStartMessages } from "./automation/leadGenDemo";
 import { getMockRunFail, setMockRunFail } from "./automation/prereqCheck";
 import ProductListPage from "./components/ProductListPage";
+import SiteManageShell from "./components/SiteManageShell";
 import EmailDomainConfigPage from "./components/EmailDomainConfigPage";
 import EmailMarketingPage from "./components/EmailMarketingPage";
 import DataAnalysisPage from "./components/DataAnalysisPage";
@@ -85,6 +86,12 @@ function isAssistantEmbed() {
   } catch {
     return false;
   }
+}
+
+// 打开数字门户且没有指定页签时，默认进入一期 AI 工作台（5188）
+if (typeof window !== "undefined" && !isAssistantEmbed()) {
+  const rawHash = decodeURIComponent((window.location.hash || "").replace(/^#/, ""));
+  if (!rawHash) window.location.replace(ONE_AI_WORKBENCH_URL);
 }
 
 function openGrowthWorkbench() {
@@ -2855,21 +2862,27 @@ export default function App() {
       {/* Main */}
       <div style={S.main}>
         {/* ── 网站管理 Tab ── */}
-        {!assistantEmbed && activeTab === "网站管理" && activeView === "list" && (
-          <ProductListPage
-            onEditProduct={(product) => { setEditProduct(product); setActiveView("edit"); setAssistantMessages([{ id: "welcome", type: "welcome" }]); }}
-          />
-        )}
-        {!assistantEmbed && activeTab === "网站管理" && activeView === "edit" && (
-          <div className="app-shell" style={{ flex: 1, overflow: "hidden" }}>
-            <div className="main-column">
-              <ProductEditPage
-                product={editProduct || {}}
-                onProductChange={setEditProduct}
-                onBack={() => setActiveView("list")}
+        {!assistantEmbed && activeTab === "网站管理" && (
+          <SiteManageShell
+            editing={activeView === "edit"}
+            onExitEdit={() => setActiveView("list")}
+            productList={(
+              <ProductListPage
+                onEditProduct={(product) => { setEditProduct(product); setActiveView("edit"); setAssistantMessages([{ id: "welcome", type: "welcome" }]); }}
               />
-            </div>
-          </div>
+            )}
+            productEdit={(
+              <div className="app-shell" style={{ flex: 1, minHeight: 0, overflow: "hidden" }}>
+                <div className="main-column">
+                  <ProductEditPage
+                    product={editProduct || {}}
+                    onProductChange={setEditProduct}
+                    onBack={() => setActiveView("list")}
+                  />
+                </div>
+              </div>
+            )}
+          />
         )}
         {!assistantEmbed && activeTab === "营销管理" && (
           <EmailMarketingPage
