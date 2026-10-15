@@ -6,6 +6,7 @@
 
 ```
 Growth/
+├── one-AI-Workbench/       一期 AI 工作台（Vite，端口 5188，默认入口）
 ├── workbench/              增长工作台外壳（Vite，端口 5176）
 ├── demo-project/           数字门户 + AI 运营助手智能体（端口 5174）
 ├── vis-analysis/           访客行为分析智能体（端口 5177）
@@ -43,6 +44,7 @@ python scripts/run_intranet.py
 
 | 角色 | 服务 | 地址 |
 |------|------|------|
+| 前端 | 一期 AI 工作台（默认入口） | http://127.0.0.1:5188/ |
 | 前端 | 工作台 | http://127.0.0.1:5176/ |
 | 前端 | 数字门户 / 运营助手页 | http://127.0.0.1:5174/ |
 | 前端 | 访客行为分析 | http://127.0.0.1:5177/ |
@@ -50,7 +52,7 @@ python scripts/run_intranet.py
 | 后端 | chat-server | http://127.0.0.1:8787/health |
 | 后端 | agent-bridge | http://127.0.0.1:8790/health |
 
-打开 http://127.0.0.1:5176/
+打开 http://127.0.0.1:5188/
 
 内网原型打包：
 
