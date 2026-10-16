@@ -88,11 +88,7 @@ function isAssistantEmbed() {
   }
 }
 
-// 打开数字门户且没有指定页签时，默认进入一期 AI 工作台（5188）
-if (typeof window !== "undefined" && !isAssistantEmbed()) {
-  const rawHash = decodeURIComponent((window.location.hash || "").replace(/^#/, ""));
-  if (!rawHash) window.location.replace(ONE_AI_WORKBENCH_URL);
-}
+// 数字门户默认停留在「概况」页（tabFromHash 对无 hash 兜底为「概况」），不再自动跳转到一期 AI 工作台
 
 function openGrowthWorkbench() {
   window.location.assign(GROWTH_WORKBENCH_URL);
