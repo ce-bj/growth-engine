@@ -1174,7 +1174,7 @@ a:hover {
   height: 56px !important;
   line-height: 1.4 !important;
   padding: 0 20px !important;
-  background: var(--color-primary);
+  background: linear-gradient(158deg, #34adbb 0%, #448bc9 100%);
   color: #fff;
   position: sticky;
   top: 0;
