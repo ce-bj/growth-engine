@@ -73,7 +73,11 @@ import {
 
 const USE_LIVE_API = import.meta.env.VITE_USE_LIVE_API === "true";
 const CHAT_SCROLL_THRESHOLD = 80;
-const GROWTH_WORKBENCH_URL = import.meta.env.VITE_GROWTH_WORKBENCH_URL || "http://127.0.0.1:5176/";
+// 兜底取「当前访问的主机名」，不再写死 127.0.0.1：
+// 这样经内网/局域网地址（如 10.66.0.47:5174）打开门户时，点「增长工作台」仍跳到同一台主机的 5176。
+const GROWTH_WORKBENCH_URL =
+  import.meta.env.VITE_GROWTH_WORKBENCH_URL ||
+  `http://${window.location.hostname || "127.0.0.1"}:5176/`;
 const ONE_AI_WORKBENCH_URL = import.meta.env.VITE_ONE_AI_WORKBENCH_URL || "http://127.0.0.1:5188/";
 const PORTAL_TABS = ["概况", "网站管理", "营销管理", "客户管理", "数据分析-旧", "数据分析-新", "管理设置", "增长工作台", "一期AI工作台"];
 const HASH_TABS = PORTAL_TABS.filter((t) => t !== "增长工作台" && t !== "一期AI工作台");
