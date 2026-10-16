@@ -1025,7 +1025,9 @@ a:hover {
   display: flex;
   flex-direction: column;
   padding: 16px 8px 8px;
-  overflow: hidden;
+  /* 侧栏菜单合并后条目变多，窗口不高时允许滚动，避免底部「站点设置」被挤出可视区 */
+  overflow-x: hidden;
+  overflow-y: auto;
 }
 
 .admin-brand {
@@ -1038,10 +1040,10 @@ a:hover {
 }
 
 .admin-brand__mark {
-  width: 28px;
-  height: 28px;
+  width: 26px;
+  height: 26px;
   border-radius: 6px;
-  background: rgba(255, 255, 255, 0.18);
+  background: transparent;
   color: #fff;
   display: grid;
   place-items: center;
@@ -1145,6 +1147,7 @@ a:hover {
   margin-top: auto;
   padding-top: 8px;
   border-top: 1px solid var(--color-border);
+  flex-shrink: 0;
 }
 
 .admin-menu--foot {
@@ -1261,6 +1264,156 @@ a:hover {
   display: block;
   font-size: 11px;
   color: rgba(255, 255, 255, 0.72);
+}
+
+/* ── 顶栏：数字门户横向菜单 + 右侧图标区 + 账号区 ───────────── */
+
+.admin-brand.is-clickable {
+  cursor: pointer;
+}
+
+.admin-brand.is-clickable:hover {
+  opacity: 0.86;
+}
+
+.admin-brand__text {
+  display: block;
+}
+
+.admin-portalnav {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  margin-left: 0;
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scrollbar-width: none;
+}
+
+.admin-portalnav::-webkit-scrollbar {
+  display: none;
+}
+
+.admin-portalnav__item {
+  appearance: none;
+  border: 0;
+  border-bottom: 2px solid transparent;
+  background: transparent;
+  color: rgba(255, 255, 255, 0.82);
+  font: inherit;
+  font-size: 13px;
+  line-height: 1;
+  white-space: nowrap;
+  flex-shrink: 0;
+  padding: 9px 10px;
+  cursor: pointer;
+  transition: color 0.15s ease, background 0.15s ease;
+}
+
+.admin-portalnav__item:hover {
+  color: #fff;
+  background: rgba(255, 255, 255, 0.12);
+}
+
+/* 顶栏选中态：本项目入口项 */
+.admin-portalnav__item.is-current {
+  color: #fff;
+  border-bottom-color: #fff;
+}
+
+.admin-portalnav__ai {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  align-self: stretch;
+  padding: 0 12px;
+}
+
+.admin-portalnav__ai img {
+  display: block;
+  height: 18px;
+  width: auto;
+}
+
+.admin-portalicons {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.admin-portalicon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  padding: 0;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: #fff;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.admin-portalicon:hover {
+  background: rgba(255, 255, 255, 0.16);
+}
+
+.admin-portalicon.is-static,
+.admin-portalicon.is-static:hover {
+  background: transparent;
+  cursor: default;
+}
+
+.admin-portalicon.is-ai img {
+  display: block;
+  height: 18px;
+  width: auto;
+}
+
+.admin-portalicon.is-ai.is-on {
+  background: rgba(255, 255, 255, 0.22);
+}
+
+.admin-account {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  align-self: stretch;
+  height: auto;
+  padding: 0 4px 0 14px;
+  border: 0;
+  border-left: 1px solid rgba(255, 255, 255, 0.28);
+  background: transparent;
+  color: #fff;
+  font: inherit;
+  font-size: 12px;
+  letter-spacing: 0.6px;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.admin-account:hover {
+  background: rgba(255, 255, 255, 0.14);
+}
+
+.admin-account__name {
+  max-width: 190px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.admin-menu--plain {
+  flex: none;
+}
+
+.admin-content.is-oneai {
+  padding: 0;
 }
 
 .admin-scan-banner {

@@ -27,6 +27,11 @@ export function contentAgentUrl() {
   return lanServiceUrl(import.meta.env.VITE_CONTENT_AGENT_URL, 5178, '/?embed=1')
 }
 
+/** 数字门户里的 AI 运营助手对话界面（?embed=assistant） */
+export function opsAssistantUrl() {
+  return lanServiceUrl(import.meta.env.VITE_OPS_ASSISTANT_URL, 5174, '/?embed=assistant')
+}
+
 export function EmbedFrame({ src, title }: { src: string; title: string }) {
   return (
     <div className="admin-embed-wrap">

@@ -35,7 +35,10 @@ export const DIMENSION_META: Array<{
   { key: 'config',     name: '基础配置',   weight: 0,    rawMax: 0,  weightPoints: 0  },
 ]
 
-/** 侧栏可进入的业务页（scanning / fix 为覆盖层，不占导航） */
+/** 侧栏可进入的业务页（scanning / fix 为覆盖层，不占导航）
+ *  ready / credits / assistant 为原「一期AI工作台」并入的三个页面
+ *  knowledge 为新增的知识库页
+ */
 export type ViewId =
   | 'dashboard'
   | 'visitor'
@@ -48,6 +51,10 @@ export type ViewId =
   | 'weekly'
   | 'content'
   | 'leads'
+  | 'ready'
+  | 'credits'
+  | 'assistant'
+  | 'knowledge'
 
 export type FunnelPeriod = 'week' | 'month'
 

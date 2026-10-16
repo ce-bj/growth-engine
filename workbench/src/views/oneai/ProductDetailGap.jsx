@@ -1,0 +1,960 @@
+import { useEffect, useMemo, useRef, useState } from 'react'
+
+const CHECKED = 100
+const FAILED = 0
+
+const BOLTS = [
+  '六角螺栓 M8×30',
+  '膨胀螺栓 M10×80',
+  '内六角螺栓 M6×20',
+  '马车螺栓 M10×40',
+  '地脚螺栓 M16×200',
+  '双头螺栓 M12×60',
+  '吊环螺栓 M8',
+  'U型螺栓 M10',
+  '方头螺栓 M12×40',
+  '活节螺栓 M8×50',
+  '沉头螺栓 M6×25',
+  '半圆头螺栓 M8×20',
+  'T型螺栓 M10×30',
+  '铰链螺栓 M8×35',
+  '法兰螺栓 M10×25',
+  '不锈钢螺栓 M8×40',
+  '高强度螺栓 M16×60',
+  '化学锚栓 M12×110',
+  '膨胀钩 M8',
+  '止动螺栓 M6×16',
+  '蝶形螺栓 M6',
+  '焊接螺栓 M8×20',
+  '台阶螺栓 M10×45',
+  '防松螺栓 M12×35',
+]
+
+const NUTS = [
+  '法兰螺母 M12',
+  '六角螺母 M8',
+  '尼龙锁紧螺母 M10',
+  '盖形螺母 M8',
+  '焊接螺母 M6',
+  '蝶形螺母 M8',
+  '开槽螺母 M12',
+  '法兰尼龙螺母 M10',
+  '四方螺母 M8',
+  '高螺母 M12',
+  '薄螺母 M8',
+  '防松螺母 M10',
+  '铆螺母 M6',
+  '铜螺母 M8',
+  '尼龙螺母 M6',
+  '六角法兰螺母 M16',
+  '锁紧螺母 M20',
+  '盖形螺母 M10',
+]
+
+const WASHERS = [
+  '平垫圈 M8',
+  '弹垫圈 M8',
+  '平垫圈 M10',
+  '弹垫圈 M10',
+  '鞍形垫圈 M8',
+  '方斜垫圈 M12',
+  '止动垫圈 M10',
+  '波形垫圈 M8',
+  '齿形垫圈 M6',
+  '球面垫圈 M12',
+  '锥形垫圈 M16',
+  '加大平垫 M10',
+  '绝缘垫圈 M8',
+  '铜垫圈 M6',
+  '尼龙垫圈 M8',
+  '密封垫圈 M12',
+  '平垫圈 M16',
+  '弹垫圈 M12',
+]
+
+const CATEGORY_LABEL = { bolt: '螺栓', nut: '螺母', washer: '垫圈' }
+
+function buildCatalog() {
+  const groups = [
+    ['bolt', BOLTS],
+    ['nut', NUTS],
+    ['washer', WASHERS],
+  ]
+  return groups.flatMap(([category, names]) => names.map((name, index) => ({ id: `${category}-${index}`, name, category })))
+}
+
+const CATALOG = buildCatalog()
+const BY_ID = Object.fromEntries(CATALOG.map((item) => [item.id, item]))
+
+const ISSUES = {
+  'bolt-0': {
+    specReason: '整页没有规格，看不出哪项对应哪个值',
+  },
+  'bolt-1': {},
+  'nut-0': {
+    specReason: '只有表头，没有数值',
+  },
+}
+
+const FILE_ACCEPT = '.pdf,.xls,.xlsx,.doc,.docx,.jpg,.jpeg,.png'
+
+const SHARED = [
+  {
+    id: 'service',
+    name: '售后服务',
+    placeholder: '建议写清保修范围、保修期限、响应方式。例如：非人为损坏的产品本体，出厂之日起 12 个月，工作日 24 小时内回复',
+    applies: () => true,
+  },
+  {
+    id: 'pack',
+    name: '包装与物流',
+    placeholder: '建议写清包装方式、运输或交付信息。例如：纸箱每箱 500 件，国内汽运，款到 7 日内发货',
+    applies: (product) => product.category === 'washer',
+  },
+]
+
+const SPEC_PLACEHOLDER = '建议至少写两项名称和对应数值。例如：直径 8 mm，长度 30 mm'
+
+const MODULE_DEFS = [
+  { id: 'spec', name: '规格参数', sensitive: true },
+  { id: 'perf', name: '功能性能' },
+  { id: 'scene', name: '应用场景' },
+  { id: 'solution', name: '行业解决方案' },
+  { id: 'process', name: '技术原理或工艺' },
+  { id: 'install', name: '安装与使用' },
+  { id: 'maintain', name: '维护保养' },
+  { id: 'safety', name: '安全注意事项' },
+  { id: 'service', name: '售后服务', sensitive: true },
+  { id: 'pack', name: '包装与物流', sensitive: true },
+  { id: 'env', name: '环保说明' },
+  { id: 'faq', name: '常见问题' },
+]
+
+const PASS_LINE = {
+  spec: '至少两项，名称和对应值对得上。合格。',
+  perf: '写了能做什么、做到什么程度。合格。',
+  scene: '写了一个具体情形，能看出谁在什么情况下用。合格。',
+  solution: '写明了面对谁或哪个问题，以及对应做法。合格。',
+  process: '能看出步骤或因果关系。合格。',
+  install: '写清了怎么开始和怎么完成，至少两个条件或动作是具体的。合格。',
+  maintain: '写了后续要做的动作，或写清了周期和对应动作。合格。',
+  safety: '至少两条具体注意事项，能看出要避免什么。合格。',
+  service: '有可核验的服务范围、响应方式或期限。合格。',
+  pack: '有可核验的包装、运输或交付事实。合格。',
+  env: '写清了一件具体的环境事实。合格。',
+  faq: '至少三组问答，涉及两类问题。合格。',
+}
+
+const SERVICE_GAP = {
+  exists: false,
+  comment: '要写清可核验的服务范围、响应方式或期限。质保年数和上门时效用客户补充的资料，不能编造。不合格。',
+  suggestion: '新增模块',
+}
+const PACK_GAP = {
+  exists: false,
+  comment: '要写清包装、运输或交付里至少一件可核验事实。运费和交货天数用客户补充的资料，不能编造。不合格。',
+  suggestion: '新增模块',
+}
+
+function reviewSentence(row) {
+  const body = `${row.comment}建议：${row.suggestion}。`
+  return row.exists ? body : `原文缺失。${body}`
+}
+
+const WEAK = {
+  perf: { exists: true, comment: '只有产品名称和「品质可靠」，没有说明能做什么、做到什么程度。不合格。', suggestion: '基于原模块内容扩写' },
+  scene: { exists: true, comment: '只写了「广泛应用于各行业」，看不出谁在什么情况下用。不合格。', suggestion: '基于原模块内容扩写' },
+  solution: { exists: true, comment: '把功能介绍又写了一遍，看不出针对谁或哪个问题。不合格。', suggestion: '基于原模块内容扩写' },
+  process: { exists: true, comment: '只写了「技术先进、工艺成熟」，看不出步骤或因果关系。不合格。', suggestion: '基于原模块内容扩写' },
+  install: { exists: true, comment: '只写了「按说明书使用」，看不出怎么开始、怎么完成。不合格。', suggestion: '基于原模块内容扩写' },
+  maintain: { exists: true, comment: '只写了「定期维护」，没有对应动作。不合格。', suggestion: '基于原模块内容扩写' },
+  safety: { exists: true, comment: '只写了「注意安全」，不足两条具体注意事项。不合格。', suggestion: '基于原模块内容扩写' },
+  env: { exists: true, comment: '只写了「绿色环保」，没有具体的材料、能耗、排放或回收。不合格。', suggestion: '基于原模块内容扩写' },
+  faq: { exists: true, comment: '只有一组问答，不足 3 组，也没有两类问题。不合格。', suggestion: '基于原模块内容扩写' },
+}
+
+const ADD = {
+  perf: { exists: false, comment: '要写能做什么、做到什么程度，至少一段或 3 条，不要只有产品名称或广告口号。不合格。', suggestion: '新增模块' },
+  scene: { exists: false, comment: '要写至少一个具体情形，能看出谁在什么情况下用，或用完得到什么结果。不要只写「用途广泛」。不合格。', suggestion: '新增模块' },
+  solution: { exists: false, comment: '要写明面对谁或哪个问题，以及对应做法，不能只把功能介绍再抄一遍。不合格。', suggestion: '新增模块' },
+  process: { exists: false, comment: '要写清这件事怎么完成，让读者看出步骤或因果关系，不要只写「技术先进、工艺成熟」。不合格。', suggestion: '新增模块' },
+  install: { exists: false, comment: '要写清怎么开始和怎么完成，其中至少两个条件或动作是具体的。不要只写「按说明书使用」。不合格。', suggestion: '新增模块' },
+  maintain: { exists: false, comment: '要写至少两个后续动作，或写清周期和对应动作，不要只写「注意保养」。不合格。', suggestion: '新增模块' },
+  safety: { exists: false, comment: '要写至少两条具体注意事项，能看出要避免什么或要做什么。不要只写「注意安全」。不合格。', suggestion: '新增模块' },
+  env: { exists: false, comment: '要写清一件具体的环境事实，例如材料、能耗、排放或回收，不要只写「绿色环保」。不合格。', suggestion: '新增模块' },
+  faq: { exists: false, comment: '要新增至少 3 组问答，至少涉及两类问题。答案里的参数、价格、期限只用页面上已有的事实。不合格。', suggestion: '新增模块' },
+}
+
+const GAP = {
+  'bolt-0': {
+    spec: { exists: false, comment: '要补至少两项，每项写明名称和对应值。表格、分项或逐行都可以，数值用客户补充的资料，不能编造。不合格。', suggestion: '新增模块' },
+    perf: WEAK.perf,
+    scene: WEAK.scene,
+    solution: ADD.solution,
+    process: ADD.process,
+    install: WEAK.install,
+    maintain: ADD.maintain,
+    safety: WEAK.safety,
+    env: WEAK.env,
+    faq: WEAK.faq,
+  },
+  'bolt-1': {
+    perf: WEAK.perf,
+    scene: ADD.scene,
+    solution: ADD.solution,
+    process: WEAK.process,
+    install: WEAK.install,
+    maintain: ADD.maintain,
+    safety: WEAK.safety,
+    env: ADD.env,
+    faq: WEAK.faq,
+  },
+  'nut-0': {
+    spec: { exists: true, comment: '只有表头，没有数值。按原表补上至少两项名称和对应值，数值用客户补充的资料，不能编造。不合格。', suggestion: '基于原模块内容扩写' },
+    perf: WEAK.perf,
+    scene: ADD.scene,
+    solution: WEAK.solution,
+    process: ADD.process,
+    install: ADD.install,
+    maintain: WEAK.maintain,
+    safety: ADD.safety,
+    env: WEAK.env,
+    faq: ADD.faq,
+  },
+}
+
+function emptyDraft(ids) {
+  const categories = {}
+  ids.forEach((id) => {
+    categories[BY_ID[id].category] = true
+  })
+  return { text: '', fileName: '', mode: 'all', categories, picked: {}, query: '' }
+}
+
+function evidenceText(item) {
+  if (!item) return ''
+  return [item.text, item.fileName ? `附件 ${item.fileName}` : ''].filter(Boolean).join(' · ')
+}
+
+export default function ProductDetailGap({ detecting, onResolved }) {
+  const [supplied, setSupplied] = useState({})
+  const [optimized, setOptimized] = useState({})
+  const [aiPassed, setAiPassed] = useState({})
+  const [editing, setEditing] = useState(null)
+  const [draft, setDraft] = useState(() => emptyDraft([]))
+  const [namesOpen, setNamesOpen] = useState({})
+  const [productForm, setProductForm] = useState(null)
+  const [productDraft, setProductDraft] = useState({ text: '', fileName: '' })
+  const [busy, setBusy] = useState('')
+  const [error, setError] = useState('')
+  const [note, setNote] = useState('')
+  const [evidenceOpen, setEvidenceOpen] = useState({})
+  const [detailOpen, setDetailOpen] = useState(true)
+  const [ownFocus, setOwnFocus] = useState(() => CATALOG.find((item) => ISSUES[item.id])?.id || null)
+  const [ownCategory, setOwnCategory] = useState('all')
+  const [ownQuery, setOwnQuery] = useState('')
+  const [ownStatus, setOwnStatus] = useState('pending')
+  const reported = useRef(false)
+  const optimizeTimer = useRef(0)
+  const onResolvedRef = useRef(onResolved)
+  onResolvedRef.current = onResolved
+
+  function materialStatus(productId, moduleId) {
+    if (optimized[productId]?.[moduleId]) return 'done'
+    if (supplied[productId]?.[moduleId]) return 'supplied'
+    return 'pending'
+  }
+
+  function directLeft(productId) {
+    const gaps = GAP[productId] || {}
+    return MODULE_DEFS.filter((def) => !def.sensitive && gaps[def.id] && !optimized[productId]?.[def.id]).map((def) => ({ id: def.id, name: def.name }))
+  }
+
+  function sensitiveLeft(product) {
+    const rows = []
+    SHARED.forEach((shared) => {
+      if (!shared.applies(product)) return
+      const status = materialStatus(product.id, shared.id)
+      if (status === 'done') return
+      rows.push({
+        id: shared.id,
+        name: shared.name,
+        status,
+        reason: '还没有可核验事实',
+        placeholder: shared.placeholder,
+        evidence: supplied[product.id]?.[shared.id],
+      })
+    })
+    if (ISSUES[product.id]?.specReason && materialStatus(product.id, 'spec') !== 'done') {
+      rows.push({
+        id: 'spec',
+        name: '规格参数',
+        status: materialStatus(product.id, 'spec'),
+        reason: ISSUES[product.id].specReason,
+        placeholder: SPEC_PLACEHOLDER,
+        evidence: supplied[product.id]?.spec,
+      })
+    }
+    return rows
+  }
+
+  function isClear(product) {
+    return directLeft(product.id).length === 0 && sensitiveLeft(product).length === 0
+  }
+
+  function canOptimize(product) {
+    const sensitive = sensitiveLeft(product)
+    if (sensitive.some((item) => item.status === 'pending')) return false
+    return directLeft(product.id).length > 0 || sensitive.some((item) => item.status === 'supplied')
+  }
+
+  const ownIssueProducts = CATALOG.filter((item) => ISSUES[item.id])
+  const pendingProducts = CATALOG.filter((item) => !isClear(item))
+  const passed = CHECKED - pendingProducts.length - FAILED
+  const ownProducts = ownIssueProducts.filter((item) => {
+    if (ownStatus === 'checked') return true
+    if (ownStatus === 'failed') return false
+    return isClear(item) ? ownStatus === 'passed' : ownStatus === 'pending'
+  })
+  const readyProducts = ownProducts.filter((item) => canOptimize(item))
+  const readyModuleCount = readyProducts.reduce((sum, item) => sum + directLeft(item.id).length + sensitiveLeft(item).length, 0)
+  const readySharedOnly = CATALOG.filter((item) => !ISSUES[item.id] && canOptimize(item))
+  const ownQueryText = ownQuery.trim()
+  const ownShown = ownProducts.filter((item) => {
+    if (ownCategory !== 'all' && item.category !== ownCategory) return false
+    if (ownQueryText && !item.name.includes(ownQueryText)) return false
+    return true
+  })
+  const focusedProduct = ownShown.find((item) => item.id === ownFocus) || null
+
+  useEffect(() => {
+    if (pendingProducts.length === 0 && !reported.current) {
+      reported.current = true
+      onResolvedRef.current?.()
+    }
+  }, [pendingProducts.length])
+
+  useEffect(() => () => window.clearTimeout(optimizeTimer.current), [])
+
+  useEffect(() => {
+    if (!detecting) return
+    window.clearTimeout(optimizeTimer.current)
+    reported.current = false
+    setSupplied({})
+    setOptimized({})
+    setAiPassed({})
+    setEditing(null)
+    setDraft(emptyDraft([]))
+    setNamesOpen({})
+    setProductForm(null)
+    setProductDraft({ text: '', fileName: '' })
+    setBusy('')
+    setError('')
+    setNote('')
+    setEvidenceOpen({})
+    setOwnFocus(CATALOG.find((item) => ISSUES[item.id])?.id || null)
+    setOwnCategory('all')
+    setOwnQuery('')
+    setOwnStatus('pending')
+  }, [detecting])
+
+  function pendingIds(shared) {
+    return CATALOG.filter((item) => shared.applies(item) && materialStatus(item.id, shared.id) === 'pending').map((item) => item.id)
+  }
+
+  function suppliedIds(shared) {
+    return CATALOG.filter((item) => shared.applies(item) && materialStatus(item.id, shared.id) === 'supplied').map((item) => item.id)
+  }
+
+  function scopeIds(ids) {
+    if (draft.mode === 'all') return ids
+    if (draft.mode === 'category') return ids.filter((id) => draft.categories[BY_ID[id].category])
+    return ids.filter((id) => draft.picked[id])
+  }
+
+  function groupsOf(moduleId, ids) {
+    const groups = []
+    ids.forEach((id) => {
+      const item = supplied[id][moduleId]
+      const key = `${item.text}\n${item.fileName}`
+      let group = groups.find((entry) => entry.key === key)
+      if (!group) {
+        group = { key, text: item.text, fileName: item.fileName, ids: [] }
+        groups.push(group)
+      }
+      group.ids.push(id)
+    })
+    return groups
+  }
+
+  function markSupplied(moduleId, ids, text, fileName) {
+    setSupplied((current) => {
+      const next = { ...current }
+      ids.forEach((id) => {
+        next[id] = { ...(next[id] || {}), [moduleId]: { text, fileName } }
+      })
+      return next
+    })
+  }
+
+  function submitShared(shared, ids) {
+    const chosen = scopeIds(ids)
+    if (!draft.text.trim() && !draft.fileName) {
+      setError('先填写资料，或上传文件')
+      return
+    }
+    if (!chosen.length) {
+      setError('先指定这一套用在哪些产品')
+      return
+    }
+    const payload = { text: draft.text.trim(), fileName: draft.fileName }
+    setBusy(shared.id)
+    setError('')
+    window.setTimeout(() => {
+      markSupplied(shared.id, chosen, payload.text, payload.fileName)
+      setEditing(null)
+      setBusy('')
+      setNote(`已为 ${chosen.length} 个产品补充「${shared.name}」。`)
+    }, 500)
+  }
+
+  function submitProduct(product, module) {
+    if (!productDraft.text.trim() && !productDraft.fileName) {
+      setError('先填写资料，或上传文件')
+      return
+    }
+    const payload = { text: productDraft.text.trim(), fileName: productDraft.fileName }
+    setBusy(`${product.id}-${module.id}`)
+    setError('')
+    window.setTimeout(() => {
+      markSupplied(module.id, [product.id], payload.text, payload.fileName)
+      setProductForm(null)
+      setBusy('')
+      setNote(`已为「${product.name}」补充${module.name}。`)
+    }, 500)
+  }
+
+  function finishOptimize(ready) {
+    setOptimized((current) => {
+      const next = { ...current }
+      ready.forEach((product) => {
+        const bag = { ...(next[product.id] || {}) }
+        directLeft(product.id).forEach((item) => {
+          bag[item.id] = true
+        })
+        sensitiveLeft(product)
+          .filter((item) => item.status === 'supplied')
+          .forEach((item) => {
+            bag[item.id] = true
+          })
+        next[product.id] = bag
+      })
+      return next
+    })
+    setAiPassed((current) => {
+      const next = { ...current }
+      ready.forEach((product) => {
+        next[product.id] = true
+      })
+      return next
+    })
+    setBusy('')
+    setNote(`已优化 ${ready.length} 个产品。`)
+  }
+
+  function optimizeProducts(products) {
+    const ready = products.filter((item) => canOptimize(item))
+    if (!ready.length || busy) return
+    window.clearTimeout(optimizeTimer.current)
+    setBusy('process')
+    setError('')
+    setNote('')
+    optimizeTimer.current = window.setTimeout(() => {
+      setBusy('recheck')
+      optimizeTimer.current = window.setTimeout(() => finishOptimize(ready), 4000)
+    }, 5000)
+  }
+
+  function toggleEvidence(key) {
+    setEvidenceOpen((current) => ({ ...current, [key]: !current[key] }))
+  }
+
+  function evidenceGroups(products) {
+    const groups = []
+    products.forEach((product) => {
+      sensitiveLeft(product)
+        .filter((module) => module.status === 'supplied')
+        .forEach((module) => {
+          const text = module.evidence?.text || ''
+          const fileName = module.evidence?.fileName || ''
+          const key = `${module.id}\n${text}\n${fileName}`
+          let group = groups.find((entry) => entry.key === key)
+          if (!group) {
+            group = { key, name: module.name, text, fileName, ids: [] }
+            groups.push(group)
+          }
+          group.ids.push(product.id)
+        })
+    })
+    return groups
+  }
+
+  function gapOf(product, def) {
+    if (def.id === 'service') return SERVICE_GAP
+    if (def.id === 'pack') return product.category === 'washer' ? PACK_GAP : null
+    return GAP[product.id]?.[def.id] || null
+  }
+
+  function moduleRows(product) {
+    return MODULE_DEFS.map((def) => {
+      if (optimized[product.id]?.[def.id]) {
+        return {
+          ...def,
+          tag: '合格',
+          tone: 'pass',
+          exists: true,
+          comment: '已写入页面，达到合格线。合格。',
+          suggestion: '保持原内容不变',
+          status: 'done',
+        }
+      }
+      const gap = gapOf(product, def)
+      if (!gap) {
+        return {
+          ...def,
+          tag: '合格',
+          tone: 'pass',
+          exists: true,
+          comment: PASS_LINE[def.id],
+          suggestion: '保持原内容不变',
+          status: 'pass',
+        }
+      }
+      if (def.sensitive) {
+        const status = materialStatus(product.id, def.id)
+        const shared = SHARED.find((item) => item.id === def.id)
+        return {
+          ...def,
+          ...gap,
+          tag: status === 'supplied' ? '已补充资料可优化' : '待补充资料',
+          tone: status === 'supplied' ? 'supplied' : 'wait',
+          status,
+          placeholder: def.id === 'spec' ? SPEC_PLACEHOLDER : shared?.placeholder || '',
+          evidence: supplied[product.id]?.[def.id],
+        }
+      }
+      return { ...def, ...gap, tag: '可优化', tone: 'direct', status: 'direct' }
+    })
+  }
+
+  function categoriesIn(ids) {
+    return ['bolt', 'nut', 'washer']
+      .map((key) => ({ key, count: ids.filter((id) => BY_ID[id].category === key).length }))
+      .filter((item) => item.count)
+  }
+
+  function togglePicked(id) {
+    setDraft((current) => ({ ...current, picked: { ...current.picked, [id]: !current.picked[id] } }))
+  }
+
+  return (
+    <section className="pd-panel">
+      <div className="pd-head">
+        <div className="pd-head-main">
+          <span className="pd-mark" aria-hidden="true">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M10 3.5l1.8 4.7 4.7 1.8-4.7 1.8L10 16.5l-1.8-4.7L3.5 10l4.7-1.8L10 3.5zM18 14.5l.8 2 2 .8-2 .8-.8 2-.8-2-2-.8 2-.8.8-2z" />
+            </svg>
+          </span>
+          <h4>产品详情页信息不足</h4>
+          <span className="pd-auto">AI 可自动优化</span>
+          <button type="button" className="pd-fold" aria-expanded={detailOpen} onClick={() => setDetailOpen((open) => !open)}>
+            <i className={`pd-chevron${detailOpen ? ' is-open' : ''}`} />
+            {detailOpen ? '收起' : '展开'}
+          </button>
+        </div>
+      </div>
+      <div className="pd-under">
+      <div className="pd-stats">
+        {[
+          ['checked', `已检测 ${CHECKED}`],
+          ['pending', `待处理 ${pendingProducts.length}`],
+          ['passed', `已通过 ${passed}`],
+          ['failed', `检测失败 ${FAILED}`],
+        ].map(([key, label]) => (
+          <button key={key} type="button" className={ownStatus === key ? 'is-on' : ''} aria-pressed={ownStatus === key} onClick={() => {
+            setOwnStatus(key)
+            setOwnFocus(key === 'pending' ? CATALOG.find((item) => ISSUES[item.id] && !isClear(item))?.id || null : null)
+            setOwnCategory('all')
+            setOwnQuery('')
+          }}>
+            {label}
+          </button>
+        ))}
+      </div>
+      {detailOpen && note ? <p className="pd-note">{note}</p> : null}
+      {detailOpen && busy ? (
+        <p className="pd-busy">
+          <i className="spin" /> {busy === 'recheck' ? '复检中' : '正在处理'}
+        </p>
+      ) : null}
+
+      {detailOpen ? (
+      <>
+      <h5 className="pd-label">本产品自己的问题</h5>
+      {ownStatus === 'passed' || ownStatus === 'failed' ? null : (
+      <>
+      <div className="pd-batch">
+        {readyProducts.length ? <span>{readyProducts.length} 个产品可以优化 {readyModuleCount} 项。</span> : null}
+        <button type="button" className={`pd-btn${readyProducts.length ? ' is-primary' : ''}`} disabled={!readyProducts.length || !!busy} onClick={() => optimizeProducts(readyProducts)}>
+          优化这 {readyModuleCount} 项
+        </button>
+      </div>
+      {readySharedOnly.length ? (
+        <article className="pd-product">
+          <div className="pd-product-top">
+            <b>{readySharedOnly.length} 个产品的共用资料已补充，尚未优化</b>
+          </div>
+          <ul>
+            {evidenceGroups(readySharedOnly).map((group) => {
+              const viewKey = `batch:${group.key}`
+              return (
+                <li key={group.key}>
+                  <span className="pd-tag is-supplied">已补充资料可优化</span>
+                  <strong>{group.name}</strong>
+                  <span>{group.ids.length} 个产品</span>
+                  <button type="button" className="pd-link" onClick={() => toggleEvidence(viewKey)}>
+                    {evidenceOpen[viewKey] ? '收起资料' : '查看资料'}
+                  </button>
+                  {evidenceOpen[viewKey] ? <EvidenceView text={group.text} fileName={group.fileName} /> : null}
+                </li>
+              )
+            })}
+          </ul>
+          <div className="pd-actions">
+            <button type="button" className="pd-btn is-primary" disabled={!!busy} onClick={() => optimizeProducts(readySharedOnly)}>
+              优化这 {readySharedOnly.length} 个产品
+            </button>
+          </div>
+        </article>
+      ) : null}
+      </>
+      )}
+      {ownProducts.length ? (
+        <>
+          <div className="pd-own-nav">
+            <input value={ownQuery} placeholder="搜索产品名" onChange={(event) => setOwnQuery(event.target.value)} />
+            <div className="pd-pick-tabs">
+              <button type="button" className={ownCategory === 'all' ? 'is-on' : ''} onClick={() => setOwnCategory('all')}>
+                全部 {ownProducts.length}
+              </button>
+              {categoriesIn(ownProducts.map((item) => item.id)).map((item) => (
+                <button key={item.key} type="button" className={ownCategory === item.key ? 'is-on' : ''} onClick={() => setOwnCategory(item.key)}>
+                  {CATEGORY_LABEL[item.key]} {item.count}
+                </button>
+              ))}
+            </div>
+            <div className="pd-chips">
+              {ownShown.map((product) => (
+                <button
+                  key={product.id}
+                  type="button"
+                  className={`pd-chip${focusedProduct?.id === product.id ? ' is-on' : ''}${canOptimize(product) ? ' is-ready' : ''}`}
+                  onClick={() => {
+                    setOwnFocus(focusedProduct?.id === product.id ? null : product.id)
+                    setProductForm(null)
+                    setError('')
+                  }}
+                >
+                  {product.name}
+                  {ownStatus === 'passed' && aiPassed[product.id] ? <span className="pd-ai-pass">AI优化通过</span> : null}
+                </button>
+              ))}
+            </div>
+            {ownShown.length ? null : <span className="pd-hint">这个分类里没有叫这个名字的产品</span>}
+          </div>
+          {focusedProduct ? (
+            (() => {
+              const product = focusedProduct
+              const rows = moduleRows(product)
+              const sensitive = rows.filter((module) => module.sensitive && module.status !== 'done' && module.status !== 'pass')
+              const allowed = canOptimize(product)
+              return (
+              <article className="pd-product">
+                <div className="pd-product-top">
+                  <b>{product.name}</b>
+                  {ownStatus === 'passed' && aiPassed[product.id] ? <span className="pd-tag is-ai">AI优化通过</span> : null}
+                  <em>{CATEGORY_LABEL[product.category]}</em>
+                </div>
+                <ul>
+                  {rows.map((module) => {
+                    const viewKey = `${product.id}:${module.id}`
+                    return (
+                      <li key={module.id} className="pd-mod">
+                        <div className="pd-mod-side">
+                          <strong>{module.name}</strong>
+                          <span className={`pd-tag ${module.tone === 'pass' ? 'is-pass' : module.tone === 'direct' ? 'is-direct' : module.tone === 'supplied' ? 'is-supplied' : 'is-wait'}`}>{module.tag}</span>
+                          {module.status === 'supplied' ? (
+                            <button type="button" className="pd-link" onClick={() => toggleEvidence(viewKey)}>
+                              {evidenceOpen[viewKey] ? '收起资料' : '查看资料'}
+                            </button>
+                          ) : null}
+                          {module.status === 'pending' ? (
+                            <button
+                              type="button"
+                              className="pd-link"
+                              onClick={() => {
+                                const opening = !(productForm?.productId === product.id && productForm?.moduleId === module.id)
+                                setProductForm(opening ? { productId: product.id, moduleId: module.id } : null)
+                                setProductDraft({ text: '', fileName: '' })
+                                setEditing(null)
+                                setError('')
+                              }}
+                            >
+                              {productForm?.productId === product.id && productForm?.moduleId === module.id ? '收起' : '补充资料'}
+                            </button>
+                          ) : null}
+                        </div>
+                        <p className="pd-review">{reviewSentence(module)}</p>
+                        {module.status === 'supplied' && evidenceOpen[viewKey] ? (
+                          <EvidenceView text={module.evidence?.text} fileName={module.evidence?.fileName} />
+                        ) : null}
+                      </li>
+                    )
+                  })}
+                </ul>
+                {productForm?.productId === product.id ? (
+                  <div className="pd-form">
+                    <textarea
+                      value={productDraft.text}
+                      placeholder={sensitive.find((item) => item.id === productForm.moduleId)?.placeholder || ''}
+                      onChange={(event) => setProductDraft((current) => ({ ...current, text: event.target.value }))}
+                    />
+                    <FilePick fileName={productDraft.fileName} onPick={(fileName) => setProductDraft((current) => ({ ...current, fileName }))} />
+                    {error ? <p className="pd-error">{error}</p> : null}
+                    <button
+                      type="button"
+                      className="pd-btn is-primary"
+                      disabled={!!busy}
+                      onClick={() => submitProduct(product, sensitive.find((item) => item.id === productForm.moduleId))}
+                    >
+                      只补充这个产品
+                    </button>
+                  </div>
+                ) : null}
+                <div className="pd-actions">
+                  <button type="button" className={`pd-btn${allowed ? ' is-primary' : ''}`} disabled={!allowed || !!busy} onClick={() => optimizeProducts([product])}>
+                    {busy === 'process' ? '正在处理' : busy === 'recheck' ? '复检中' : '优化该产品'}
+                  </button>
+                </div>
+              </article>
+              )
+            })()
+          ) : null}
+        </>
+      ) : (
+        <p className="pd-empty">
+          {ownStatus === 'failed'
+            ? '没有检测失败的产品。'
+            : ownStatus === 'passed'
+              ? '没有已通过、且带有本产品自己问题的产品。'
+              : ownStatus === 'checked'
+                ? '没有已检测、且带有本产品自己问题的产品。'
+                : '没有待处理、且带有本产品自己问题的产品。'}
+        </p>
+      )}
+      <h5 className="pd-label">共用事实</h5>
+      <div className="pd-stack">
+        {SHARED.map((shared) => {
+          const waiting = pendingIds(shared)
+          const filled = suppliedIds(shared)
+          const groups = groupsOf(shared.id, filled)
+          const chosen = editing === shared.id ? scopeIds(waiting) : []
+          const pickCategories = categoriesIn(waiting)
+          const pickCategory = pickCategories.some((item) => item.key === draft.pickCategory) ? draft.pickCategory : pickCategories[0]?.key
+          const pickQuery = draft.query.trim()
+          const pickPool = pickQuery ? waiting.filter((id) => BY_ID[id].name.includes(pickQuery)) : waiting.filter((id) => BY_ID[id].category === pickCategory)
+          if (!waiting.length && !filled.length) return null
+          return (
+            <article key={shared.id} className="pd-fact">
+              {groups.map((group) => (
+                <div key={group.key} className="pd-done">
+                  <b>
+                    {shared.name} 已补充资料可优化 · {group.ids.length} 个产品，尚未优化
+                  </b>
+                  <p>{evidenceText(group)}</p>
+                  <button type="button" className="pd-link" onClick={() => setNamesOpen((current) => ({ ...current, [group.key]: !current[group.key] }))}>
+                    {namesOpen[group.key] ? '收起名单' : '查看名单'}
+                  </button>
+                  {namesOpen[group.key] ? (
+                    <div className="pd-names">
+                      {group.ids.map((id) => (
+                        <span key={id}>{BY_ID[id].name}</span>
+                      ))}
+                    </div>
+                  ) : null}
+                </div>
+              ))}
+              {waiting.length ? (
+                <>
+                  <div className="pd-fact-top">
+                    <div>
+                      <b>{shared.name}</b>
+                      <em>{waiting.length} 个产品待补充资料</em>
+                    </div>
+                    {editing === shared.id ? (
+                      <button type="button" className="pd-btn" onClick={() => setEditing(null)}>
+                        收起
+                      </button>
+                    ) : (
+                      <button
+                        type="button"
+                        className="pd-btn is-primary"
+                        onClick={() => {
+                          setEditing(shared.id)
+                          setDraft(emptyDraft(waiting))
+                          setProductForm(null)
+                          setError('')
+                        }}
+                      >
+                        填写并指定范围
+                      </button>
+                    )}
+                  </div>
+                  <p className="pd-review">{reviewSentence(shared.id === 'pack' ? PACK_GAP : SERVICE_GAP)}</p>
+                  <button type="button" className="pd-link" onClick={() => setNamesOpen((current) => ({ ...current, [shared.id]: !current[shared.id] }))}>
+                    {namesOpen[shared.id] ? '收起产品' : `查看这 ${waiting.length} 个产品`}
+                  </button>
+                  {namesOpen[shared.id] ? (
+                    <div className="pd-names">
+                      {waiting.map((id) => (
+                        <span key={id}>{BY_ID[id].name}</span>
+                      ))}
+                    </div>
+                  ) : null}
+                  {editing === shared.id ? (
+                    <div className="pd-form">
+                      <textarea value={draft.text} placeholder={shared.placeholder} onChange={(event) => setDraft((current) => ({ ...current, text: event.target.value }))} />
+                      <FilePick fileName={draft.fileName} onPick={(fileName) => setDraft((current) => ({ ...current, fileName }))} />
+                      <div className="pd-scope">
+                        <span>用在哪些产品</span>
+                        {[
+                          ['all', `这 ${waiting.length} 个产品用同一套`],
+                          ['category', '按产品分类'],
+                          ['pick', '手动挑选'],
+                        ].map(([mode, label]) => (
+                          <label key={mode} className={draft.mode === mode ? 'is-on' : ''}>
+                            <input type="radio" name={`scope-${shared.id}`} checked={draft.mode === mode} onChange={() => setDraft((current) => ({ ...current, mode }))} />
+                            {label}
+                          </label>
+                        ))}
+                      </div>
+                      {draft.mode === 'category' ? (
+                        <div className="pd-checks">
+                          {categoriesIn(waiting).map((item) => (
+                            <label key={item.key}>
+                              <input
+                                type="checkbox"
+                                checked={Boolean(draft.categories[item.key])}
+                                onChange={(event) => setDraft((current) => ({ ...current, categories: { ...current.categories, [item.key]: event.target.checked } }))}
+                              />
+                              {CATEGORY_LABEL[item.key]} · {item.count}
+                            </label>
+                          ))}
+                        </div>
+                      ) : null}
+                      {draft.mode === 'pick' ? (
+                        <div className="pd-pick">
+                          <input value={draft.query} placeholder="搜索产品名" onChange={(event) => setDraft((current) => ({ ...current, query: event.target.value }))} />
+                          <div className="pd-chosen">
+                            {chosen.length ? (
+                              chosen.map((id) => (
+                                <button type="button" key={id} className="pd-chip is-on" onClick={() => togglePicked(id)}>
+                                  {BY_ID[id].name}
+                                  <span>×</span>
+                                </button>
+                              ))
+                            ) : (
+                              <span className="pd-hint">还没选。先选分类，再点产品名。</span>
+                            )}
+                          </div>
+                          {pickQuery ? null : (
+                            <div className="pd-pick-tabs">
+                              {pickCategories.map((item) => (
+                                <button
+                                  key={item.key}
+                                  type="button"
+                                  className={pickCategory === item.key ? 'is-on' : ''}
+                                  onClick={() => setDraft((current) => ({ ...current, pickCategory: item.key }))}
+                                >
+                                  {CATEGORY_LABEL[item.key]} {item.count}
+                                </button>
+                              ))}
+                            </div>
+                          )}
+                          <div className="pd-chips">
+                            {pickPool.map((id) => (
+                              <button type="button" key={id} className={`pd-chip${draft.picked[id] ? ' is-on' : ''}`} onClick={() => togglePicked(id)}>
+                                {BY_ID[id].name}
+                              </button>
+                            ))}
+                          </div>
+                          {pickPool.length ? null : <span className="pd-hint">没有叫这个名字的产品</span>}
+                        </div>
+                      ) : null}
+                      {error && editing === shared.id ? <p className="pd-error">{error}</p> : null}
+                      <button type="button" className="pd-btn is-primary" disabled={!!busy || !chosen.length} onClick={() => submitShared(shared, waiting)}>
+                        补充到这 {chosen.length} 个产品
+                      </button>
+                    </div>
+                  ) : null}
+                </>
+              ) : null}
+            </article>
+          )
+        })}
+      </div>
+
+      </>
+      ) : null}
+      </div>
+    </section>
+  )
+}
+
+function EvidenceView({ text, fileName }) {
+  return (
+    <div className="pd-evidence">
+      {text ? <p>{text}</p> : null}
+      {fileName ? (
+        <div className="pd-file">
+          <span>{fileName}</span>
+        </div>
+      ) : null}
+    </div>
+  )
+}
+
+function FilePick({ fileName, onPick }) {
+  return fileName ? (
+    <div className="pd-file">
+      <span>{fileName}</span>
+      <button type="button" onClick={() => onPick('')}>
+        移除
+      </button>
+    </div>
+  ) : (
+    <label className="pd-file is-pick">
+      <span>上传文件（PDF / Excel / Word / JPG / PNG）</span>
+      <input
+        type="file"
+        accept={FILE_ACCEPT}
+        onChange={(event) => {
+          const file = event.target.files && event.target.files[0]
+          onPick(file ? file.name : '')
+          event.target.value = ''
+        }}
+      />
+    </label>
+  )
+}

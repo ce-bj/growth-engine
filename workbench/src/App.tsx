@@ -5,6 +5,7 @@ import {
   EmbedFrame,
   contentAgentUrl,
   marketingAgentUrl,
+  opsAssistantUrl,
   visitorAnalysisUrl,
 } from './components/EmbedFrame'
 import { FixDrawer } from './components/FixDrawer'
@@ -12,8 +13,11 @@ import { ToastStack } from './components/ToastStack'
 import { WorkbenchProvider, useWorkbench } from './context/WorkbenchContext'
 import { portalTheme } from './theme'
 import { AgentOverviewView } from './views/AgentOverviewView'
+import { KnowledgeBaseView } from './views/KnowledgeBaseView'
 import { ScanProgressView } from './views/ScanProgressView'
 import { SettingsView } from './views/WeeklySettingsViews'
+import AIReady from './views/oneai/AIReady.jsx'
+import Credits from './views/oneai/Credits.jsx'
 import 'antd/dist/reset.css'
 import './styles.css'
 
@@ -34,6 +38,12 @@ function Pages() {
         <EmbedFrame src={contentAgentUrl()} title="内容发布智能体" />
       )}
       {view === 'settings' && <SettingsView />}
+      {view === 'ready' && <AIReady />}
+      {view === 'credits' && <Credits />}
+      {view === 'assistant' && (
+        <EmbedFrame src={opsAssistantUrl()} title="AI 运营助手" />
+      )}
+      {view === 'knowledge' && <KnowledgeBaseView />}
       <FixDrawer />
       <ToastStack toasts={toasts} onDismiss={dismissToast} />
     </AdminShell>
