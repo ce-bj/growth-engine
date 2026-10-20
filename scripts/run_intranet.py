@@ -225,6 +225,7 @@ def apply_runtime_env() -> None:
         os.environ.setdefault("VITE_CONTENT_AGENT_URL", f"{origin}:5178/?embed=1")
         os.environ.setdefault("VITE_OPS_ASSISTANT_URL", f"{origin}:5174/")
         os.environ.setdefault("VITE_PORTAL_URL", f"{origin}:5174/")
+        os.environ.setdefault("VITE_GROWTH_WORKBENCH_URL", f"{origin}:5188/")
         os.environ.setdefault("VITE_ONE_AI_WORKBENCH_URL", f"{origin}:5188/")
 
 
