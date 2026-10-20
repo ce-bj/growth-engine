@@ -1,8 +1,9 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { ArrowLeft, Globe, Hexagon, LayoutDashboard, MessageSquare, Coins } from 'lucide-react'
 import { Avatar, Breadcrumb, Button, ConfigProvider, Layout, Menu, Select, Tooltip } from 'antd'
 import zhCN from 'antd/locale/zh_CN'
 import AIReady from './AIReady.jsx'
+import { ProductPage } from './ProductDetailGap.jsx'
 import Assistant from './Assistant.jsx'
 import Credits from './Credits.jsx'
 import 'antd/dist/reset.css'
@@ -32,6 +33,12 @@ const NAV = [
   { id: 'assistant', label: 'AI运营助手', icon: MessageSquare },
 ]
 
+function productIdFromHash() {
+  const hash = decodeURIComponent((window.location.hash || '').replace(/^#/, ''))
+  const match = hash.match(/^product\/([^/?#]+)/)
+  return match ? match[1] : ''
+}
+
 function portalHref() {
   const host = window.location.hostname || '127.0.0.1'
   return `http://${host}:5174/#概况`
@@ -48,10 +55,17 @@ function Placeholder({ title }) {
 
 export default function App() {
   const [page, setPage] = useState('dashboard')
+  const [productId, setProductId] = useState(productIdFromHash)
   const [siteId, setSiteId] = useState(SITES[0].id)
   const [collapsed, setCollapsed] = useState(false)
   const site = SITES.find((item) => item.id === siteId) || SITES[0]
   const current = NAV.find((item) => item.id === page) || NAV[0]
+
+  useEffect(() => {
+    const sync = () => setProductId(productIdFromHash())
+    window.addEventListener('hashchange', sync)
+    return () => window.removeEventListener('hashchange', sync)
+  }, [])
 
   const menuItems = useMemo(
     () =>
@@ -212,7 +226,14 @@ export default function App() {
           <Layout className="admin-main">
             <Content className="admin-body">
               <div className="admin-content">
-                {page === 'dashboard' ? <AIReady /> : page === 'credits' ? <Credits /> : page === 'assistant' ? <Assistant /> : <Placeholder title={current.label} />}
+                {page === 'dashboard' ? (
+                  <>
+                    <div hidden={Boolean(productId)}>
+                      <AIReady />
+                    </div>
+                    {productId ? <ProductPage id={productId} onBack={() => { window.location.hash = '' }} /> : null}
+                  </>
+                ) : page === 'credits' ? <Credits /> : page === 'assistant' ? <Assistant /> : <Placeholder title={current.label} />}
               </div>
             </Content>
           </Layout>

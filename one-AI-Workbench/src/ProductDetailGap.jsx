@@ -185,6 +185,47 @@ const ADD = {
   faq: { exists: false, comment: '要新增至少 3 组问答，至少涉及两类问题。答案里的参数、价格、期限只用页面上已有的事实。不合格。', suggestion: '新增模块' },
 }
 
+const IMAGE_CHECK = {
+  'bolt-0': { total: 4, missing: 2 },
+  'bolt-1': { total: 3, missing: 0 },
+  'nut-0': { total: 0, missing: 0 },
+}
+
+function imageRow(product) {
+  const check = IMAGE_CHECK[product.id] || { total: 0, missing: 0 }
+  if (!check.total) {
+    return {
+      id: 'image',
+      name: '图片说明',
+      tag: '无图片',
+      tone: 'none',
+      plainReview: true,
+      comment: '详情里没有配图。',
+      status: 'image',
+    }
+  }
+  if (!check.missing) {
+    return {
+      id: 'image',
+      name: '图片说明',
+      tag: '合格',
+      tone: 'pass',
+      plainReview: true,
+      comment: `${check.total}张图片均有图片说明，合格。`,
+      status: 'image',
+    }
+  }
+  return {
+    id: 'image',
+    name: '图片说明',
+    tag: '不合格',
+    tone: 'fail',
+    plainReview: true,
+    comment: `共${check.total}张图片，其中${check.missing}张图片没有图片说明。`,
+    status: 'image',
+  }
+}
+
 const GAP = {
   'bolt-0': {
     spec: { exists: false, comment: '要补至少两项，每项写明名称和对应值。表格、分项或逐行都可以，数值用客户补充的资料，不能编造。不合格。', suggestion: '新增模块' },
@@ -231,9 +272,53 @@ function emptyDraft(ids) {
   return { text: '', fileName: '', mode: 'all', categories, picked: {}, query: '' }
 }
 
+function openProductPage(id) {
+  window.location.hash = `product/${id}`
+}
+
+function productPageCopy(product, def) {
+  const gap = (GAP[product.id] || {})[def.id]
+  if (gap) {
+    if (!gap.exists) return '详情页上还没有这一块内容。'
+    return gap.comment.replace(/不合格。$/, '')
+  }
+  if (def.sensitive) return '详情页上还没有这一块内容。'
+  return PASS_LINE[def.id]
+}
+
 function evidenceText(item) {
   if (!item) return ''
   return [item.text, item.fileName ? `附件 ${item.fileName}` : ''].filter(Boolean).join(' · ')
+}
+
+export function ProductPage({ id, onBack }) {
+  const product = BY_ID[id]
+  if (!product) {
+    return (
+      <div className="pd-page">
+        <button type="button" className="pd-btn" onClick={onBack}>
+          返回
+        </button>
+        <p>找不到这个产品详情页。</p>
+      </div>
+    )
+  }
+  const modules = MODULE_DEFS.filter((def) => def.id !== 'pack' || product.category === 'washer')
+  return (
+    <article className="pd-page">
+      <button type="button" className="pd-btn" onClick={onBack}>
+        返回诊断
+      </button>
+      <p className="pd-page-kicker">{CATEGORY_LABEL[product.category]} · 产品详情页</p>
+      <h1>{product.name}</h1>
+      {modules.map((def) => (
+        <section key={def.id}>
+          <h2>{def.name}</h2>
+          <p>{productPageCopy(product, def)}</p>
+        </section>
+      ))}
+    </article>
+  )
 }
 
 export default function ProductDetailGap({ detecting, onResolved }) {
@@ -505,8 +590,8 @@ export default function ProductDetailGap({ detecting, onResolved }) {
     return GAP[product.id]?.[def.id] || null
   }
 
-  function moduleRows(product) {
-    return MODULE_DEFS.map((def) => {
+function moduleRows(product) {
+  const rows = MODULE_DEFS.map((def) => {
       if (optimized[product.id]?.[def.id]) {
         return {
           ...def,
@@ -545,6 +630,8 @@ export default function ProductDetailGap({ detecting, onResolved }) {
       }
       return { ...def, ...gap, tag: '可优化', tone: 'direct', status: 'direct' }
     })
+    rows.push(imageRow(product))
+    return rows
   }
 
   function categoriesIn(ids) {
@@ -667,7 +754,7 @@ export default function ProductDetailGap({ detecting, onResolved }) {
                   }}
                 >
                   {product.name}
-                  {ownStatus === 'passed' && aiPassed[product.id] ? <span className="pd-ai-pass">AI优化通过</span> : null}
+                  {ownStatus === 'passed' && aiPassed[product.id] ? <span className="pd-ai-pass">AI优化</span> : null}
                 </button>
               ))}
             </div>
@@ -677,74 +764,73 @@ export default function ProductDetailGap({ detecting, onResolved }) {
             (() => {
               const product = focusedProduct
               const rows = moduleRows(product)
-              const sensitive = rows.filter((module) => module.sensitive && module.status !== 'done' && module.status !== 'pass')
               const allowed = canOptimize(product)
               return (
               <article className="pd-product">
                 <div className="pd-product-top">
                   <b>{product.name}</b>
-                  {ownStatus === 'passed' && aiPassed[product.id] ? <span className="pd-tag is-ai">AI优化通过</span> : null}
+                  {ownStatus === 'passed' && aiPassed[product.id] ? <span className="pd-tag is-ai">AI优化</span> : null}
                   <em>{CATEGORY_LABEL[product.category]}</em>
                 </div>
                 <ul>
                   {rows.map((module) => {
                     const viewKey = `${product.id}:${module.id}`
+                    const formOpen = productForm?.productId === product.id && productForm?.moduleId === module.id
+                    const openForm = (existing) => {
+                      setProductForm(formOpen ? null : { productId: product.id, moduleId: module.id })
+                      setProductDraft(formOpen ? { text: '', fileName: '' } : { text: existing?.text || '', fileName: existing?.fileName || '' })
+                      setEditing(null)
+                      setError('')
+                    }
                     return (
                       <li key={module.id} className="pd-mod">
                         <div className="pd-mod-side">
                           <strong>{module.name}</strong>
                           <span className={`pd-tag ${module.tone === 'pass' ? 'is-pass' : module.tone === 'direct' ? 'is-direct' : module.tone === 'supplied' ? 'is-supplied' : 'is-wait'}`}>{module.tag}</span>
                           {module.status === 'supplied' ? (
-                            <button type="button" className="pd-link" onClick={() => toggleEvidence(viewKey)}>
-                              {evidenceOpen[viewKey] ? '收起资料' : '查看资料'}
-                            </button>
+                            <>
+                              <button type="button" className="pd-link" onClick={() => toggleEvidence(viewKey)}>
+                                {evidenceOpen[viewKey] ? '收起资料' : '查看资料'}
+                              </button>
+                              <button type="button" className="pd-link" onClick={() => openForm(module.evidence)}>
+                                {formOpen ? '收起' : '继续补充资料'}
+                              </button>
+                            </>
                           ) : null}
                           {module.status === 'pending' ? (
-                            <button
-                              type="button"
-                              className="pd-link"
-                              onClick={() => {
-                                const opening = !(productForm?.productId === product.id && productForm?.moduleId === module.id)
-                                setProductForm(opening ? { productId: product.id, moduleId: module.id } : null)
-                                setProductDraft({ text: '', fileName: '' })
-                                setEditing(null)
-                                setError('')
-                              }}
-                            >
-                              {productForm?.productId === product.id && productForm?.moduleId === module.id ? '收起' : '补充资料'}
+                            <button type="button" className="pd-link" onClick={() => openForm(null)}>
+                              {formOpen ? '收起' : '补充资料'}
                             </button>
                           ) : null}
                         </div>
-                        <p className="pd-review">{reviewSentence(module)}</p>
+                        <p className="pd-review">{module.plainReview ? module.comment : reviewSentence(module)}</p>
                         {module.status === 'supplied' && evidenceOpen[viewKey] ? (
                           <EvidenceView text={module.evidence?.text} fileName={module.evidence?.fileName} />
+                        ) : null}
+                        {formOpen ? (
+                          <div className="pd-form">
+                            <textarea
+                              value={productDraft.text}
+                              placeholder={module.placeholder || ''}
+                              onChange={(event) => setProductDraft((current) => ({ ...current, text: event.target.value }))}
+                            />
+                            <FilePick fileName={productDraft.fileName} onPick={(fileName) => setProductDraft((current) => ({ ...current, fileName }))} />
+                            {error ? <p className="pd-error">{error}</p> : null}
+                            <button type="button" className="pd-btn is-primary" disabled={!!busy} onClick={() => submitProduct(product, module)}>
+                              只补充这个产品
+                            </button>
+                          </div>
                         ) : null}
                       </li>
                     )
                   })}
                 </ul>
-                {productForm?.productId === product.id ? (
-                  <div className="pd-form">
-                    <textarea
-                      value={productDraft.text}
-                      placeholder={sensitive.find((item) => item.id === productForm.moduleId)?.placeholder || ''}
-                      onChange={(event) => setProductDraft((current) => ({ ...current, text: event.target.value }))}
-                    />
-                    <FilePick fileName={productDraft.fileName} onPick={(fileName) => setProductDraft((current) => ({ ...current, fileName }))} />
-                    {error ? <p className="pd-error">{error}</p> : null}
-                    <button
-                      type="button"
-                      className="pd-btn is-primary"
-                      disabled={!!busy}
-                      onClick={() => submitProduct(product, sensitive.find((item) => item.id === productForm.moduleId))}
-                    >
-                      只补充这个产品
-                    </button>
-                  </div>
-                ) : null}
                 <div className="pd-actions">
                   <button type="button" className={`pd-btn${allowed ? ' is-primary' : ''}`} disabled={!allowed || !!busy} onClick={() => optimizeProducts([product])}>
                     {busy === 'process' ? '正在处理' : busy === 'recheck' ? '复检中' : '优化该产品'}
+                  </button>
+                  <button type="button" className="pd-btn" onClick={() => openProductPage(product.id)}>
+                    去查看
                   </button>
                 </div>
               </article>

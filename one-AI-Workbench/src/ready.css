@@ -672,7 +672,8 @@
   line-height: 1.55;
   color: #374151;
 }
-.pd-mod .pd-evidence {
+.pd-mod .pd-evidence,
+.pd-mod .pd-form {
   grid-column: 1 / -1;
 }
 .pd-tag.is-pass,
@@ -708,6 +709,45 @@
 .pd-actions,
 .pd-form {
   margin-top: 10px;
+}
+.pd-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.pd-page {
+  max-width: 760px;
+  margin: 24px;
+  padding: 28px 32px 40px;
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 16px;
+}
+.pd-page-kicker {
+  margin: 18px 0 0;
+  font-size: 13px;
+  color: #6b7280;
+}
+.pd-page h1 {
+  margin: 8px 0 20px;
+  font-size: 28px;
+  line-height: 1.35;
+  color: #111827;
+}
+.pd-page section {
+  padding: 14px 0;
+  border-top: 1px solid #f3f4f6;
+}
+.pd-page h2 {
+  margin: 0 0 6px;
+  font-size: 15px;
+  color: #111827;
+}
+.pd-page p {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.7;
+  color: #4b5563;
 }
 .pd-form {
   display: flex;
@@ -886,6 +926,14 @@
 .pd-tag.is-supplied {
   color: #0f766e;
   background: #f0fdfa;
+}
+.pd-tag.is-fail {
+  color: #b91c1c;
+  background: #fef2f2;
+}
+.pd-tag.is-none {
+  color: #4b5563;
+  background: #f3f4f6;
 }
 .pd-evidence {
   flex-basis: 100%;
