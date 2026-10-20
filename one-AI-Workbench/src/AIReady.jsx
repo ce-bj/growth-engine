@@ -61,6 +61,7 @@ const ROBOTS = [
 ]
 const FILE_ACCEPT = '.pdf,.xls,.xlsx,.doc,.docx,.jpg,.jpeg,.png'
 const DIAGNOSED_KEY = 'ai-ready-content-detected'
+const PROGRESS_KEY = 'ai-ready-optimize-progress'
 
 function hasDiagnosed() {
   try {
@@ -68,6 +69,20 @@ function hasDiagnosed() {
   } catch {
     return false
   }
+}
+
+function loadProgress() {
+  try {
+    const parsed = JSON.parse(sessionStorage.getItem(PROGRESS_KEY) || '')
+    if (!parsed || typeof parsed !== 'object') return {}
+    return parsed
+  } catch {
+    return {}
+  }
+}
+
+function emptyGap() {
+  return { supplied: {}, optimized: {}, aiPassed: {} }
 }
 const STEP_MS = 700
 const STEP_TAIL = 400
@@ -161,9 +176,19 @@ function smoothPath(points) {
 }
 
 function TrendChart({ trend }) {
-  const width = 920
+  const boxRef = useRef(null)
+  const [width, setWidth] = useState(0)
+  useEffect(() => {
+    const node = boxRef.current
+    if (!node) return undefined
+    const update = () => setWidth(node.clientWidth)
+    update()
+    const observer = new ResizeObserver(update)
+    observer.observe(node)
+    return () => observer.disconnect()
+  }, [])
   const height = 260
-  const pad = { l: 40, r: 16, t: 24, b: 28 }
+  const pad = { l: 40, r: 28, t: 24, b: 28 }
   const max = niceMax(Math.max(...trend.map((item) => item.count), 0))
   const innerW = width - pad.l - pad.r
   const innerH = height - pad.t - pad.b
@@ -178,7 +203,9 @@ function TrendChart({ trend }) {
     : ''
   const ticks = [0, 0.25, 0.5, 0.75, 1].map((ratio) => Math.round(max * ratio))
   return (
-    <svg viewBox={`0 0 ${width} ${height}`} width="100%" height="260" role="img" aria-label="近 30 天访问趋势">
+    <div ref={boxRef} className="trend-chart">
+    {width > 0 ? (
+    <svg viewBox={`0 0 ${width} ${height}`} width="100%" height={height} role="img" aria-label="近 30 天访问趋势">
       <defs>
         <linearGradient id="readyTrendFill" x1="0" y1="0" x2="0" y2="1">
           <stop offset="0%" stopColor="rgba(47, 107, 255, 0.25)" />
@@ -209,6 +236,8 @@ function TrendChart({ trend }) {
         ) : null,
       )}
     </svg>
+    ) : null}
+    </div>
   )
 }
 
@@ -540,8 +569,6 @@ function CheckList({ items, openMap, onToggle, onDialog, regenerating, onRegener
   )
 }
 
-const VARIANT_PREVIEW = 3
-
 const BRAND_HITS = {
   'brand-name': {
     summary: '18 个页面 · 27 处 · 4 种说法',
@@ -752,18 +779,63 @@ const BRAND_HITS = {
   },
 }
 
-function pagePreview(variant) {
-  const names = variant.pages || []
-  const total = variant.pageCount || names.length
-  const head = names.slice(0, 2).join('、')
-  if (total > 2) return `${head}等 ${total} 个页面`
-  return head
+const SITE_ORIGIN = 'https://www.example.com'
+
+const PAGE_URL = {
+  首页: '/',
+  产品列表: '/products',
+  产品页: '/products/hex-bolt-m8',
+  关于我们: '/about',
+  新闻中心: '/news/exhibition',
+  英文产品页: '/en/products',
+  英文关于我们: '/en/about',
+  页脚: '/',
+  网站地图: '/sitemap',
+  解决方案: '/solutions',
+  首页横幅: '/',
+  联系我们: '/contact',
+  招聘页: '/jobs',
+  英文联系页: '/en/contact',
 }
 
-function roleText(variant, proposal, skip) {
-  if (skip) return '不改'
-  if (variant.role === 'keep') return '建议保留'
-  return `将改为「${proposal}」`
+function placeUrls(variant) {
+  const urls = []
+  ;(variant.places || []).forEach((place) => {
+    const path = place.url || PAGE_URL[place.page]
+    if (!path) return
+    const url = /^https?:\/\//.test(path) ? path : `${SITE_ORIGIN}${path.startsWith('/') ? path : `/${path}`}`
+    if (!urls.includes(url)) urls.push(url)
+  })
+  return urls
+}
+
+function VariantList({ variants }) {
+  return (
+    <div className="brand-hit">
+      <table className="ready-table">
+        <thead>
+          <tr>
+            <th>关键词</th>
+            <th>所在 URL</th>
+          </tr>
+        </thead>
+        <tbody>
+          {variants.map((variant) => (
+            <tr key={variant.id}>
+              <td>{variant.text}</td>
+              <td>
+                {placeUrls(variant).map((url) => (
+                  <div key={url} className="brand-url">
+                    {url}
+                  </div>
+                ))}
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  )
 }
 
 function replaceKeys(hit, itemId) {
@@ -784,59 +856,9 @@ const ACTION_LINKS = {
   'trust-case': 'https://new2024062018064084554.fastindexs.com/npmanager/lowcode/np/app/60003/1817967681753530368?instance=NEW2024062018064084554',
 }
 
-function VariantList({ variants, proposal, listKey, skipped, moreOpen, placeOpen, onSkip, onMore, onPlace }) {
-  const shown = moreOpen ? variants : variants.slice(0, VARIANT_PREVIEW)
-  const rest = variants.length - VARIANT_PREVIEW
-  return (
-    <div className="variant-list">
-      {shown.map((variant) => {
-        const key = `${listKey}:${variant.id}`
-        const skip = variant.role === 'replace' && skipped[key]
-        const placesOn = Boolean(placeOpen[key])
-        return (
-          <div key={variant.id} className={`variant-row${skip ? ' is-skip' : ''}`}>
-            <div className="variant-top">
-              <span className="variant-text">{variant.text}</span>
-              <span className="variant-count">{variant.count} 处</span>
-              <span className={`variant-role${skip ? ' is-skip' : variant.role === 'keep' ? ' is-keep' : ' is-replace'}`}>{roleText(variant, proposal, skip)}</span>
-              <span className="variant-pages">{pagePreview(variant)}</span>
-            </div>
-            <div className="variant-actions">
-              <button type="button" onClick={() => onPlace(key)}>
-                {placesOn ? '收起位置' : '查看位置'}
-              </button>
-              {variant.role === 'replace' ? (
-                <button type="button" onClick={() => onSkip(key)}>
-                  {skip ? '恢复替换' : '这处不改'}
-                </button>
-              ) : null}
-            </div>
-            {placesOn ? (
-              <div className="variant-places">
-                {variant.places.map((place) => (
-                  <div key={`${place.page}-${place.where}`} className="variant-place">
-                    <b>
-                      {place.page} · {place.where}
-                    </b>
-                    <span>{place.quote}</span>
-                  </div>
-                ))}
-              </div>
-            ) : null}
-          </div>
-        )
-      })}
-      {rest > 0 ? (
-        <button type="button" className="variant-more" onClick={() => onMore(listKey)}>
-          {moreOpen ? '收起说法' : `还有 ${rest} 种说法`}
-        </button>
-      ) : null}
-    </div>
-  )
-}
-
 function OptimizeCard({ item, state, skipped, onSkip, onHandle, onAct, onToast }) {
   const [explainOpen, setExplainOpen] = useState(false)
+  const [hitOpen, setHitOpen] = useState({})
   const [formOpen, setFormOpen] = useState(false)
   const [content, setContent] = useState('')
   const [fileName, setFileName] = useState('')
@@ -844,8 +866,6 @@ function OptimizeCard({ item, state, skipped, onSkip, onHandle, onAct, onToast }
   const [customCopy, setCustomCopy] = useState('')
   const [editingCopy, setEditingCopy] = useState(false)
   const [copyDraft, setCopyDraft] = useState('')
-  const [moreOpen, setMoreOpen] = useState({})
-  const [placeOpen, setPlaceOpen] = useState({})
   const [groupCopy, setGroupCopy] = useState({})
   const [groupEdit, setGroupEdit] = useState('')
   const [groupDraft, setGroupDraft] = useState('')
@@ -881,8 +901,7 @@ function OptimizeCard({ item, state, skipped, onSkip, onHandle, onAct, onToast }
       setCustomCopy('')
       setEditingCopy(false)
       setExplainOpen(false)
-      setMoreOpen({})
-      setPlaceOpen({})
+      setHitOpen({})
       setGroupCopy({})
       setGroupEdit('')
       setGroupDraft('')
@@ -926,6 +945,17 @@ function OptimizeCard({ item, state, skipped, onSkip, onHandle, onAct, onToast }
       return
     }
     startRun()
+  }
+
+  function hitFold(key) {
+    if (!hit || running || ignored) return null
+    const open = Boolean(hitOpen[key])
+    return (
+      <button type="button" className={`brand-fold${open ? ' is-open' : ''}`} aria-expanded={open} onClick={() => setHitOpen((current) => ({ ...current, [key]: !current[key] }))}>
+        {open ? '收起' : '详情'}
+        <AiIcon className="arrow" name="chevron-down" size={12} />
+      </button>
+    )
   }
 
   return (
@@ -1018,17 +1048,20 @@ function OptimizeCard({ item, state, skipped, onSkip, onHandle, onAct, onToast }
                         <span {...marks(S.card)} className="proposal-chip">
                           {customCopy || item.proposal}
                         </span>
-                        <button
-                          {...marks(S.card)}
-                          type="button"
-                          className="proposal-edit"
-                          onClick={() => {
-                            setCopyDraft(customCopy || item.proposal)
-                            setEditingCopy(true)
-                          }}
-                        >
-                          <AiIcon scopes={[S.card]} name="edit" size={12} /> 改用其他文案
-                        </button>
+                        <span className="proposal-tools">
+                          {hitFold('main')}
+                          <button
+                            {...marks(S.card)}
+                            type="button"
+                            className="proposal-edit"
+                            onClick={() => {
+                              setCopyDraft(customCopy || item.proposal)
+                              setEditingCopy(true)
+                            }}
+                          >
+                            <AiIcon scopes={[S.card]} name="edit" size={12} /> 改用其他文案
+                          </button>
+                        </span>
                       </div>
                     )}
                   </div>
@@ -1036,83 +1069,90 @@ function OptimizeCard({ item, state, skipped, onSkip, onHandle, onAct, onToast }
               </div>
             )}
             {hit && !running && !ignored ? (
-              hit.groups ? (
-                hit.groups.map((group) => {
-                  const value = groupCopy[group.id] || group.proposal
-                  return (
-                    <div key={group.id} className="variant-group">
-                      <div className="variant-group-head">
-                        <b>{group.name}</b>
-                        <span>{group.summary}</span>
-                      </div>
-                      {groupEdit === group.id ? (
-                        <div className="variant-edit">
-                          <textarea rows={2} value={groupDraft} placeholder={group.proposal} onChange={(event) => setGroupDraft(event.target.value)} />
-                          <button
-                            type="button"
-                            onClick={() => {
-                              setGroupCopy((current) => ({ ...current, [group.id]: groupDraft.trim() }))
-                              setGroupEdit('')
-                            }}
-                          >
-                            就用这个
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => {
-                              setGroupCopy((current) => {
-                                const next = { ...current }
-                                delete next[group.id]
-                                return next
-                              })
-                              setGroupEdit('')
-                            }}
-                          >
-                            恢复 AI 建议
-                          </button>
+              <>
+                {hit.groups
+                  ? hit.groups.map((group) => {
+                      const value = groupCopy[group.id] || group.proposal
+                      return (
+                        <div key={group.id}>
+                        <div {...marks(S.card)} className="suggest">
+                          <div className="variant-group-head">
+                            <b>{group.name}</b>
+                            <span>{group.summary}</span>
+                          </div>
+                          {groupEdit === group.id ? (
+                            <div {...marks(S.card)} className="proposal">
+                              <div {...marks(S.card)} className="proposal-label">
+                                {fieldLabel(group.proposalField, allSkipped)}：
+                              </div>
+                              <textarea {...marks(S.card)} className="proposal-input" rows={2} value={groupDraft} placeholder={group.proposal} onChange={(event) => setGroupDraft(event.target.value)} />
+                              <div {...marks(S.card)} className="proposal-actions">
+                                <button
+                                  {...marks(S.card)}
+                                  type="button"
+                                  className="proposal-apply"
+                                  onClick={() => {
+                                    setGroupCopy((current) => ({ ...current, [group.id]: groupDraft.trim() }))
+                                    setGroupEdit('')
+                                  }}
+                                >
+                                  <AiIcon scopes={[S.card]} name="check" size={12} /> 就用这个
+                                </button>
+                                <button
+                                  {...marks(S.card)}
+                                  type="button"
+                                  className="proposal-reset"
+                                  onClick={() => {
+                                    setGroupCopy((current) => {
+                                      const next = { ...current }
+                                      delete next[group.id]
+                                      return next
+                                    })
+                                    setGroupEdit('')
+                                  }}
+                                >
+                                  恢复 AI 建议
+                                </button>
+                              </div>
+                            </div>
+                          ) : (
+                            <div {...marks(S.card)} className="proposal">
+                              <div {...marks(S.card)} className="proposal-row">
+                                <span {...marks(S.card)} className="proposal-label">
+                                  {fieldLabel(group.proposalField, allSkipped)}：
+                                </span>
+                                <span {...marks(S.card)} className="proposal-chip">
+                                  {value}
+                                </span>
+                                <span className="proposal-tools">
+                                  {hitFold(group.id)}
+                                  <button
+                                    {...marks(S.card)}
+                                    type="button"
+                                    className="proposal-edit"
+                                    onClick={() => {
+                                      setGroupDraft(value)
+                                      setGroupEdit(group.id)
+                                    }}
+                                  >
+                                    <AiIcon scopes={[S.card]} name="edit" size={12} /> 改用其他文案
+                                  </button>
+                                </span>
+                              </div>
+                            </div>
+                          )}
                         </div>
-                      ) : (
-                        <div className="variant-proposal">
-                          <span>{fieldLabel(group.proposalField, allSkipped)}：</span>
-                          <b>{value}</b>
-                          <button
-                            type="button"
-                            onClick={() => {
-                              setGroupDraft(value)
-                              setGroupEdit(group.id)
-                            }}
-                          >
-                            改用其他文案
-                          </button>
+                        {hitOpen[group.id] ? (
+                          <VariantList variants={group.variants} />
+                        ) : null}
                         </div>
-                      )}
-                      <VariantList
-                        variants={group.variants}
-                        proposal={value}
-                        listKey={`${item.id}:${group.id}`}
-                        skipped={skipped}
-                        moreOpen={Boolean(moreOpen[`${item.id}:${group.id}`])}
-                        placeOpen={placeOpen}
-                        onSkip={onSkip}
-                        onMore={(key) => setMoreOpen((current) => ({ ...current, [key]: !current[key] }))}
-                        onPlace={(key) => setPlaceOpen((current) => ({ ...current, [key]: !current[key] }))}
-                      />
-                    </div>
-                  )
-                })
-              ) : (
-                <VariantList
-                  variants={hit.variants}
-                  proposal={customCopy || item.proposal}
-                  listKey={item.id}
-                  skipped={skipped}
-                  moreOpen={Boolean(moreOpen[item.id])}
-                  placeOpen={placeOpen}
-                  onSkip={onSkip}
-                  onMore={(key) => setMoreOpen((current) => ({ ...current, [key]: !current[key] }))}
-                  onPlace={(key) => setPlaceOpen((current) => ({ ...current, [key]: !current[key] }))}
-                />
-              )
+                      )
+                    })
+                  : null}
+                {!hit.groups && hitOpen.main ? (
+                  <VariantList variants={hit.variants} />
+                ) : null}
+              </>
             ) : null}
           </>
         )}
@@ -1243,7 +1283,7 @@ function SectionScan({ steps, step, percent }) {
   )
 }
 
-function OptimizeSection({ section, handled, skipped, detecting, detected, phase, open, onToggle, onSkip, onHandle, onAct, onToast }) {
+function OptimizeSection({ section, handled, skipped, detecting, detected, phase, open, gap, gapEpoch, onGapChange, onToggle, onSkip, onHandle, onAct, onToast }) {
   const [introOpen, setIntroOpen] = useState(false)
   const pendingCount = section.items.filter((item) => !handled[item.id]).length
   const done = pendingCount === 0 && !phase
@@ -1327,8 +1367,8 @@ function OptimizeSection({ section, handled, skipped, detecting, detected, phase
           <p>本板块尚未检测。请点击上方「立即检测」按钮进行检测。</p>
         </div>
       ) : null}
-      {open && !phase && detected ? (
-        <div {...marks(S.opt)} className="opt-detail">
+      {detected && !phase ? (
+        <div {...marks(S.opt)} className="opt-detail" hidden={!open}>
           <div {...marks(S.opt)} className="detail-tools">
             <button {...marks(S.opt)} type="button" className="what" onClick={() => setIntroOpen((value) => !value)}>
               <AiIcon scopes={[S.opt]} name="info" size={14} /> {introOpen ? '收起说明' : '这项做什么'}
@@ -1357,7 +1397,7 @@ function OptimizeSection({ section, handled, skipped, detecting, detected, phase
           <div {...marks(S.opt)} className="opt-list">
             {section.items.map((item) =>
               item.id === 'readable-product' ? (
-                <ProductDetailGap key={item.id} detecting={detecting} onResolved={() => onHandle(item, 'agree')} />
+                <ProductDetailGap key={`${item.id}-${gapEpoch}`} initialGap={gap} onGapChange={onGapChange} onResolved={() => onHandle(item, 'agree')} onDirty={() => onHandle(item, 'restore')} />
               ) : (
                 <OptimizeCard key={item.id} item={item} state={handled[item.id]} skipped={skipped} onSkip={onSkip} onHandle={onHandle} onAct={onAct} onToast={onToast} />
               ),
@@ -1530,8 +1570,12 @@ export default function AIReady() {
   const [checks] = useState(readyData.checks)
   const [openMap, setOpenMap] = useState({})
   const [openGroup, setOpenGroup] = useState(null)
-  const [handled, setHandled] = useState({})
-  const [skipped, setSkipped] = useState({})
+  const savedProgress = useRef(null)
+  if (savedProgress.current === null) savedProgress.current = loadProgress()
+  const [handled, setHandled] = useState(() => savedProgress.current.handled || {})
+  const [skipped, setSkipped] = useState(() => savedProgress.current.skipped || {})
+  const [gap, setGap] = useState(() => ({ ...emptyGap(), ...(savedProgress.current.gap || {}) }))
+  const [gapEpoch, setGapEpoch] = useState(0)
   const [acted, setActed] = useState({})
   const [detected, setDetected] = useState(diagnosed)
   const [detecting, setDetecting] = useState({})
@@ -1563,9 +1607,14 @@ export default function AIReady() {
       return
     }
     setHandled((current) => {
+      if (action === 'restore') {
+        if (!current[item.id]) return current
+        const next = { ...current }
+        delete next[item.id]
+        return next
+      }
       const next = { ...current }
-      if (action === 'restore') delete next[item.id]
-      else next[item.id] = action === 'agree' ? 'done' : 'ignored'
+      next[item.id] = action === 'agree' ? 'done' : 'ignored'
       return next
     })
   }
@@ -1577,10 +1626,22 @@ export default function AIReady() {
 
   useEffect(() => () => clearScanTimers(), [])
 
+  function handleGapChange(next) {
+    setGap((current) => {
+      if (current.supplied === next.supplied && current.optimized === next.optimized && current.aiPassed === next.aiPassed) return current
+      return next
+    })
+  }
+
   function handleDetectAll() {
     if (detectingAny || detectLocked) return
     clearScanTimers()
     const startedAt = Date.now()
+    setHandled({})
+    setSkipped({})
+    setActed({})
+    setGap(emptyGap())
+    setGapEpoch((value) => value + 1)
     setDetecting(Object.fromEntries(CONTENT_SCAN.map((item) => [item.code, true])))
     setScan({ startedAt })
     setNow(startedAt)
@@ -1624,8 +1685,21 @@ export default function AIReady() {
 
   const sections = useMemo(() => readyData.optimizeSections, [])
   const detectingAny = sections.some((section) => detecting[section.code])
-  const detectLocked = detected && !detectingAny && sections.some((section) => section.items.some((item) => !acted[item.id] && handled[item.id] !== 'done' && handled[item.id] !== 'ignored'))
-  const detectDone = detected && detectLocked && !detectingAny
+  const contentItems = sections.filter((section) => section.code !== 'trust').flatMap((section) => section.items)
+  const hasIgnored = contentItems.some((item) => handled[item.id] === 'ignored')
+  const detectBlocked = contentItems.some((item) => handled[item.id] !== 'done')
+  const detectLocked = detected && !detectingAny && detectBlocked
+  const redetect = detected && !detectingAny && !detectBlocked
+  const detectLabel = detectingAny ? '检测中…' : !detected ? '立即检测' : redetect ? '重新检测' : '已检测'
+  const detectIcon = detectingAny ? 'scan' : redetect ? 'refresh' : detectLocked ? 'check' : 'scan'
+
+  useEffect(() => {
+    try {
+      sessionStorage.setItem(PROGRESS_KEY, JSON.stringify({ handled, skipped, gap }))
+    } catch {
+      /* ignore */
+    }
+  }, [handled, skipped, gap])
 
   function enterDetail() {
     armScan.current = true
@@ -1667,12 +1741,12 @@ export default function AIReady() {
           tipIcon="sparkle"
           action={
             <span {...marks(S.title)} className="detect-wrap">
-              <button {...marks(S.title)} type="button" className={`detect${detectDone ? ' is-done' : ''}`} disabled={detectingAny || detectLocked} onClick={handleDetectAll}>
-                {detectingAny ? <i className="spin" /> : <AiIcon scopes={[S.title]} name={detectDone ? 'check' : 'scan'} size={14} />} {detectingAny ? '检测中…' : detectDone ? '已检测' : '立即检测'}
+              <button {...marks(S.title)} type="button" className={`detect${detectLocked ? ' is-done' : ''}${redetect ? ' is-again' : ''}`} disabled={detectingAny || detectLocked} onClick={handleDetectAll}>
+                {detectingAny ? <i className="spin" /> : <AiIcon scopes={[S.title]} name={detectIcon} size={14} />} {detectLabel}
               </button>
               {detectLocked ? (
                 <span className="detect-hint" role="status">
-                  必须下方优化动作确认完才可以重新检测
+                  {hasIgnored ? '存在忽略AI动作，不可重复检测' : '品牌一致性和 AI 可读性的动作都优化完，才可以重新检测'}
                 </span>
               ) : null}
             </span>
@@ -1688,6 +1762,9 @@ export default function AIReady() {
             detected={detected}
             phase={phaseFor(section.code, scan, now)}
             open={scan ? false : openGroup === section.code}
+            gap={gap}
+            gapEpoch={gapEpoch}
+            onGapChange={handleGapChange}
             onToggle={() => {
               if (scan) return
               setOpenGroup((current) => (current === section.code ? null : section.code))
