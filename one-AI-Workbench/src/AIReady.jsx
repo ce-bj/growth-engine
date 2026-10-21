@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { readyData } from './readyData.js'
 import ProductDetailGap from './ProductDetailGap.jsx'
+import { addSimSession } from './readySimStore.js'
 import './ready.css'
 
 const S = {
@@ -777,6 +778,38 @@ const BRAND_HITS = {
       },
     ],
   },
+  'readable-marketing': {
+    summary: '2 个页面 · 3 处 · 3 种说法',
+    variants: [
+      {
+        id: 'craft',
+        text: '匠心品质',
+        count: 1,
+        role: 'replace',
+        pages: ['首页'],
+        pageCount: 1,
+        places: [{ page: '首页', where: '首屏', quote: '匠心品质' }],
+      },
+      {
+        id: 'extreme',
+        text: '极致工艺',
+        count: 1,
+        role: 'replace',
+        pages: ['首页'],
+        pageCount: 1,
+        places: [{ page: '首页', where: '卖点', quote: '极致工艺' }],
+      },
+      {
+        id: 'leader',
+        text: '行业领航者',
+        count: 1,
+        role: 'replace',
+        pages: ['关于我们'],
+        pageCount: 1,
+        places: [{ page: '关于我们', where: '标题', quote: '行业领航者' }],
+      },
+    ],
+  },
 }
 
 const SITE_ORIGIN = 'https://www.example.com'
@@ -838,6 +871,44 @@ function VariantList({ variants }) {
   )
 }
 
+function brandReplaceGroups(item, { customCopy, groupCopy, skipped }) {
+  const hit = BRAND_HITS[item.id]
+  if (!hit) return []
+  const source = hit.groups || [{ id: '', proposal: item.proposal, variants: hit.variants }]
+  return source
+    .map((group) => {
+      const keywords = group.variants.filter((variant) => {
+        if (variant.role !== 'replace') return false
+        const key = group.id ? `${item.id}:${group.id}:${variant.id}` : `${item.id}:${variant.id}`
+        return !skipped[key]
+      })
+      const target = (group.id ? groupCopy[group.id] : customCopy) || group.proposal || ''
+      return { keywords, target: String(target).trim() }
+    })
+    .filter((group) => group.keywords.length && group.target)
+}
+
+function buildBrandSession(item, copies) {
+  const groups = brandReplaceGroups(item, copies)
+  if (!groups.length) return null
+  const lines = groups.map((group) => `查找${group.keywords.map((keyword) => keyword.text).join('、')}，替换为${group.target}`)
+  const rows = groups.flatMap((group) =>
+    group.keywords.flatMap((keyword) => {
+      const urls = placeUrls(keyword)
+      return (urls.length ? urls : ['']).map((url) => ({ keyword: keyword.text, url }))
+    }),
+  )
+  return {
+    id: `brand-${item.id}-${Date.now()}`,
+    itemId: item.id,
+    title: lines.join(' '),
+    message: lines.join('\n'),
+    rows,
+    failed: false,
+    createdAt: Date.now(),
+  }
+}
+
 function replaceKeys(hit, itemId) {
   if (!hit) return []
   const groups = hit.groups || [{ id: '', variants: hit.variants }]
@@ -870,6 +941,7 @@ function OptimizeCard({ item, state, skipped, onSkip, onHandle, onAct, onToast }
   const [groupEdit, setGroupEdit] = useState('')
   const [groupDraft, setGroupDraft] = useState('')
   const timers = useRef([])
+  const sessionSent = useRef(false)
   const hit = BRAND_HITS[item.id]
   const skipKeys = replaceKeys(hit, item.id)
   const allSkipped = skipKeys.length > 0 && skipKeys.every((key) => skipped[key])
@@ -894,6 +966,7 @@ function OptimizeCard({ item, state, skipped, onSkip, onHandle, onAct, onToast }
   useEffect(() => {
     if (!state) {
       clearTimers()
+      sessionSent.current = false
       setRunStep(null)
       setFormOpen(false)
       setContent('')
@@ -909,7 +982,15 @@ function OptimizeCard({ item, state, skipped, onSkip, onHandle, onAct, onToast }
   }, [state])
 
   function startRun() {
-    if (running) return
+    if (running || sessionSent.current) return
+    if (hit) {
+      const session = buildBrandSession(item, { customCopy, groupCopy, skipped })
+      if (session) {
+        sessionSent.current = true
+        addSimSession(session)
+        onToast('success', '已在「AI运营助手-AIready模拟执行后」新增会话')
+      }
+    }
     clearTimers()
     setRunStep(0)
     setFormOpen(false)

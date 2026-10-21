@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { Button, ConfigProvider, Table, Tag } from 'antd'
+import { addSimSession } from './readySimStore'
 
 const CHECKED = 100
 const FAILED = 0
@@ -200,6 +201,48 @@ const MODULE_DEFS = [
   { id: 'env', name: '环保说明' },
   { id: 'faq', name: '常见问题' },
 ]
+
+const SPEC_MODULE_NAME = {
+  spec: '产品规格参数列表',
+  perf: '产品功能性能介绍',
+  scene: '应用场景使用案例',
+  solution: '行业解决方案',
+  process: '技术原理工艺流程',
+  install: '安装使用指南',
+  maintain: '维护保养指南',
+  safety: '安全注意事项',
+  service: '售后服务承诺',
+  pack: '包装与物流信息',
+  env: '环保可持续性说明',
+  faq: '常见问题FAQ',
+}
+
+const PRODUCT_TITLE_RULE = '写进产品详情时，小标题按这个产品和行业另起，不要照抄上面的规范模块名。规范模块名只用来指认要写哪一块。原文里已经有贴合该行业的小标题，沿用或在此基础上改。'
+
+function productDetailUrl(product) {
+  return `https://www.example.com/products/${product.id}`
+}
+
+export function lookupSimProduct(productId) {
+  const product = BY_ID[productId]
+  if (!product) return null
+  const images = IMAGE_CHECK[productId] || { total: 0, missing: 0 }
+  return {
+    id: product.id,
+    name: product.name,
+    category: product.category,
+    imageTotal: images.total,
+    imageMissing: images.missing,
+  }
+}
+
+function materialClause(item) {
+  if (!item) return ''
+  const text = String(item.text || '').trim()
+  const fileName = String(item.fileName || '').trim()
+  if (fileName && text) return `${fileName}。${text}`
+  return fileName || text
+}
 
 const PASS_LINE = {
   spec: '至少两项，名称和对应值对得上。合格。',
@@ -612,11 +655,37 @@ export default function ProductDetailGap({ initialGap, onGapChange, onResolved, 
     })
   }
 
+  function productOptimizeMessage(product) {
+    const blocks = MODULE_DEFS.map((def) => {
+      const name = SPEC_MODULE_NAME[def.id]
+      const kept = `${name}。建议：保持原内容不变。`
+      if (optimized[product.id]?.[def.id]) return kept
+      const gap = gapOf(product, def)
+      if (!gap) return kept
+      const review = gap.exists ? gap.comment : `原文缺失。${gap.comment}`
+      const material = def.sensitive ? materialClause(supplied[product.id]?.[def.id]) : ''
+      const extra = material ? `补充资料：${material}。` : ''
+      return `${name}。${review}${extra}建议：${gap.suggestion}。`
+    }).join('')
+    return `帮我把${productDetailUrl(product)}的产品按通用行业规范优化下，${blocks}${PRODUCT_TITLE_RULE}`
+  }
+
   function optimizeProducts(products, scope = 'row') {
     const running = new Set(optimizeJobs.current.flatMap((job) => job.ids))
     const ready = products.filter((item) => canOptimize(item) && !running.has(item.id))
     if (!ready.length) return false
     if (scope === 'batch' && optimizeJobs.current.some((job) => job.scope === 'batch')) return false
+    const stamp = Date.now()
+    ready.forEach((product, index) => {
+      const message = productOptimizeMessage(product)
+      addSimSession({
+        id: `product-${product.id}-${stamp}-${index}`,
+        kind: 'product',
+        title: message,
+        message,
+        createdAt: stamp,
+      })
+    })
     const job = { ids: ready.map((item) => item.id), scope, timers: [] }
     optimizeJobs.current.push(job)
     setOptimizingIds(optimizeJobs.current.flatMap((item) => item.ids))

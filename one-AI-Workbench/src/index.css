@@ -262,6 +262,7 @@ body {
 .assistant-entry__title {
   display: flex;
   align-items: center;
+  flex-wrap: wrap;
   gap: 8px;
   font-size: 15px;
   font-weight: 700;

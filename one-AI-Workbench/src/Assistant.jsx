@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { ArrowLeft, ArrowRight, MessageSquare } from 'lucide-react'
+import ReadySimAssistant from './ReadySimAssistant.jsx'
 
 function assistantEmbedUrl() {
   const host = window.location.hostname || '127.0.0.1'
@@ -15,11 +16,21 @@ const ENTRIES = [
     mark: '原型',
     desc: '数字门户里的对话界面。发布产品、修改产品、查看运营数据，从这里进入。',
   },
+  {
+    id: 'ops-ready-sim',
+    title: 'AI运营助手-AIready模拟执行后',
+    mark: '模拟',
+    desc: 'AI Ready 模拟执行之后的运营助手界面。历史对话、欢迎说明和输入框都在这一页。',
+  },
 ]
 
 export default function Assistant() {
   const [opened, setOpened] = useState(null)
   const current = ENTRIES.find((item) => item.id === opened)
+
+  if (current?.id === 'ops-ready-sim') {
+    return <ReadySimAssistant onBack={() => setOpened(null)} />
+  }
 
   if (current) {
     return (
