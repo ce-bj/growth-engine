@@ -74,10 +74,10 @@ import {
 const USE_LIVE_API = import.meta.env.VITE_USE_LIVE_API === "true";
 const CHAT_SCROLL_THRESHOLD = 80;
 // 兜底取「当前访问的主机名」，不再写死 127.0.0.1：
-// 这样经内网/局域网地址（如 10.66.0.47:5174）打开门户时，默认进入同一台主机的 5188（一期 AI 工作台）。
+// 经内网/局域网地址打开门户时，增长工作台进同一台主机的 5176，一期 AI 工作台进 5188。
 const GROWTH_WORKBENCH_URL =
   import.meta.env.VITE_GROWTH_WORKBENCH_URL ||
-  `http://${window.location.hostname || "127.0.0.1"}:5188/`;
+  `http://${window.location.hostname || "127.0.0.1"}:5176/`;
 const ONE_AI_WORKBENCH_URL =
   import.meta.env.VITE_ONE_AI_WORKBENCH_URL ||
   `http://${window.location.hostname || "127.0.0.1"}:5188/`;

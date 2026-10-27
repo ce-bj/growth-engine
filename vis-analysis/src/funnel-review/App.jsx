@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import Funnel, { FunnelLegend } from "./Funnel.jsx";
+import Funnel from "./Funnel.jsx";
 import DrillPanel from "./DrillPanel.jsx";
 import PageCatalog from "./PageCatalog.jsx";
 import VisitorModule from "./VisitorModule.jsx";
@@ -28,7 +28,9 @@ export default function App({ variant = "full", intentId = null, onIntent, perio
   const [mod, setMod] = useState("funnel");
   const [channel, setChannel] = useState("site");
   const [innerIntent, setInnerIntent] = useState(null);
-  const [lossId, setLossId] = useState("l1");
+  const [pinnedLoss, setPinnedLoss] = useState(null);
+  const [previewLoss, setPreviewLoss] = useState(null);
+  const lossId = previewLoss || pinnedLoss;
   const hideChrome = variant !== "full";
   const showPath = variant === "path" || (variant === "full" && mod === "path");
   const intent = onIntent ? intentId : innerIntent;
@@ -53,8 +55,13 @@ export default function App({ variant = "full", intentId = null, onIntent, perio
     else setInnerIntent(next);
   }
 
-  function selectLoss(id) {
-    if (id) setLossId(id);
+  function pinLoss(id) {
+    if (!id || pinnedLoss === id) {
+      setPinnedLoss(null);
+      setPreviewLoss(null);
+      return;
+    }
+    setPinnedLoss(id);
   }
 
   return (
@@ -191,14 +198,13 @@ export default function App({ variant = "full", intentId = null, onIntent, perio
             当前 {sliceCaption(channel, intent)}。意图按 {periodLabel} 最深一级计。
           </p>
 
-          <FunnelLegend />
-
-          <div className="workspace">
+          <div className="workspace" onMouseLeave={() => setPreviewLoss(null)}>
             <Funnel
               stages={stages}
               gates={gates}
-              selectedLoss={lossId}
-              onSelectLoss={selectLoss}
+              activeLoss={lossId}
+              onPreview={setPreviewLoss}
+              onPin={pinLoss}
             />
             {lossId ? (
               <DrillPanel
@@ -208,7 +214,7 @@ export default function App({ variant = "full", intentId = null, onIntent, perio
                 gate={gate}
               />
             ) : (
-              <p className="hint drill-placeholder">点左侧流失点，右侧看这一层关键指标。</p>
+              <p className="hint drill-placeholder">指向层与层之间的圆点，右侧只展开这一处流失。</p>
             )}
           </div>
 

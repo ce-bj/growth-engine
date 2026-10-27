@@ -1,138 +1,99 @@
-import { LOSSES, fmtInt, pct, stateOfThrough } from "./data.js";
+import { LOSSES, fmtInt, pct, rate, stateOfThrough } from "./data.js";
 
-const VIEW_W = 420;
-const VIEW_H = 580;
-const CX = 210;
-const STAGE_H = 72;
-const GAP = 68;
-const MAX_W = 360;
-const MIN_W = 148;
-const TOP = 10;
-
-function stageWidth(count, maxCount) {
-  if (!maxCount) return MIN_W;
-  return MIN_W + (MAX_W - MIN_W) * (count / maxCount);
+function barWidth(value, scale) {
+  if (!scale || value <= 0) return 0;
+  return (value / scale) * 100;
 }
 
-function trap(cx, y, wTop, wBot, h) {
-  const t = wTop / 2;
-  const b = wBot / 2;
-  return `${cx - t},${y} ${cx + t},${y} ${cx + b},${y + h} ${cx - b},${y + h}`;
+function barStyle(value, scale) {
+  const width = barWidth(value, scale);
+  if (!width) return { width: "0%" };
+  return { width: `${width}%`, minWidth: 14 };
 }
 
-export default function Funnel({ stages, gates, selectedLoss, onSelectLoss }) {
-  const maxCount = Math.max(...stages.map((s) => s.cur), 1);
-  const layout = stages.map((s, i) => {
-    const w = stageWidth(s.cur, maxCount);
-    const y = TOP + i * (STAGE_H + GAP);
-    return { ...s, w, y, index: i };
-  });
+export default function Funnel({ stages, gates, activeLoss, onPreview, onPin }) {
+  const scale = Math.max(...stages.flatMap((s) => [s.cur, s.prev]), 1);
+  const entry = stages[0]?.cur || 1;
 
   return (
-    <div className="funnel-board">
-      <svg
-        className="funnel-svg"
-        viewBox={`0 0 ${VIEW_W} ${VIEW_H}`}
-        role="img"
-        aria-label="四层转化漏斗，层间为可点击的流失点"
-      >
-        <defs>
-          <filter id="grain">
-            <feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="2" />
-            <feColorMatrix type="saturate" values="0" />
-            <feComponentTransfer>
-              <feFuncA type="linear" slope="0.05" />
-            </feComponentTransfer>
-            <feBlend in="SourceGraphic" mode="multiply" />
-          </filter>
-        </defs>
-
-        {layout.map((s, i) => {
-          const next = layout[i + 1];
-          const loss = LOSSES[i];
-          const selected = Boolean(loss && selectedLoss === loss.id);
+    <div
+      className="flow"
+      onKeyDown={(event) => {
+        if (event.key === "Escape") onPin(null);
+      }}
+    >
+      <p className="flow-note">条长按人数。深色是本期，浅色拖尾是上期。</p>
+      <ol className="flow-list">
+        {stages.map((stage, index) => {
+          const incoming = index > 0 ? LOSSES[index - 1] : null;
+          const outgoing = LOSSES[index];
+          const gate = gates[index];
+          const pointedHere = incoming && activeLoss === incoming.id;
           return (
-            <g key={s.id}>
-              {next && (
-                <polygon
-                  className={`funnel-neck${selected ? " is-hot" : ""}`}
-                  points={trap(CX, s.y + STAGE_H, s.w, next.w, GAP)}
+            <li key={stage.id} className="flow-item">
+              <article
+                className={`flow-stage${pointedHere ? " is-to" : ""}`}
+                onMouseEnter={() => {
+                  if (incoming) onPreview(incoming.id);
+                }}
+              >
+                <span className="flow-idx" aria-hidden="true">
+                  {index + 1}
+                </span>
+                <div className="flow-main">
+                  <div className="flow-name">{stage.name}</div>
+                  <div className="flow-track" aria-hidden="true">
+                    <div className="flow-prev" style={barStyle(stage.prev, scale)} />
+                    <div className="flow-fill" style={barStyle(stage.cur, scale)} />
+                  </div>
+                </div>
+                <div className="flow-fig">
+                  <strong className="num">
+                    {fmtInt(stage.cur)}
+                    <span>人</span>
+                  </strong>
+                  <small>
+                    占入口 {pct(rate(stage.cur, entry))} · 上期 {fmtInt(stage.prev)}
+                  </small>
+                </div>
+              </article>
+
+              {outgoing && gate ? (
+                <LossSeam
+                  loss={outgoing}
+                  gate={gate}
+                  fromName={stage.name}
+                  toName={stages[index + 1]?.name}
+                  active={activeLoss === outgoing.id}
+                  onPreview={onPreview}
+                  onPin={onPin}
                 />
-              )}
-              <polygon
-                className={`funnel-stage is-${s.color}`}
-                points={trap(CX, s.y, s.w, s.w, STAGE_H)}
-              />
-            </g>
+              ) : null}
+            </li>
           );
         })}
-      </svg>
-
-      <div className="funnel-overlay">
-        {layout.map((s) => (
-          <div
-            key={s.id}
-            className={`stage-label is-${s.color}`}
-            style={{
-              top: `${(s.y / VIEW_H) * 100}%`,
-              left: `${((CX - s.w / 2) / VIEW_W) * 100}%`,
-              width: `${(s.w / VIEW_W) * 100}%`,
-              height: `${(STAGE_H / VIEW_H) * 100}%`,
-            }}
-          >
-            <div className="stage-name">{s.name}</div>
-            <div className="stage-count">
-              <span className="num">{fmtInt(s.cur)}</span>
-              <span className="unit">人</span>
-            </div>
-            <div className="stage-prev">上期 {fmtInt(s.prev)}</div>
-          </div>
-        ))}
-
-        {gates.map((g, i) => {
-          const s = layout[i];
-          const next = layout[i + 1];
-          const loss = LOSSES[i];
-          const y = s.y + STAGE_H;
-          const chipW = Math.min(s.w, next.w) * 0.78;
-          const st = stateOfThrough(g.pass, g.passPrev);
-          const selected = selectedLoss === loss.id;
-          return (
-            <button
-              key={loss.id}
-              type="button"
-              className={`loss-ticket${selected ? " is-on" : ""}${st === "异常" ? " is-alert" : ""}`}
-              style={{
-                top: `${((y + GAP / 2) / VIEW_H) * 100}%`,
-                left: `${((CX - chipW / 2) / VIEW_W) * 100}%`,
-                width: `${(chipW / VIEW_W) * 100}%`,
-                transform: "translateY(-50%)",
-              }}
-              aria-pressed={selected}
-              onClick={() => onSelectLoss(loss.id)}
-            >
-              <span className="loss-stamp">流失点 {loss.seq}</span>
-              <span className="loss-drop">
-                掉 {fmtInt(g.dropped)} 人
-              </span>
-              <span className={`loss-state is-${st}`}>{st}</span>
-            </button>
-          );
-        })}
-      </div>
+      </ol>
     </div>
   );
 }
 
-export function FunnelLegend() {
+function LossSeam({ loss, gate, fromName, toName, active, onPreview, onPin }) {
+  const state = stateOfThrough(gate.pass, gate.passPrev);
+  const label = `流失点 ${loss.seq}，${fromName}到${toName}，掉 ${fmtInt(gate.dropped)} 人，${state}。指向后在右侧展开，点击可固定`;
   return (
-    <ol className="funnel-legend">
-      {["访问入口", "有效浏览", "转化交互", "成功留资"].map((name, i) => (
-        <li key={name}>
-          <span className={`dot is-${["blue", "green", "rose", "violet"][i]}`} />
-          {name}
-        </li>
-      ))}
-    </ol>
+    <div className={`flow-seam${active ? " is-on" : ""}`} data-state={state}>
+      <button
+        type="button"
+        className="flow-node"
+        aria-pressed={active}
+        aria-label={label}
+        onMouseEnter={() => onPreview(loss.id)}
+        onFocus={() => onPreview(loss.id)}
+        onClick={() => onPin(loss.id)}
+      >
+        <span className="flow-dot" aria-hidden="true" />
+      </button>
+      <span className="flow-seam-line" aria-hidden="true" />
+    </div>
   );
 }
