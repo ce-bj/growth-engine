@@ -1662,6 +1662,67 @@ export function catalogRows(slice = "page", channelId = "site", intentId = null)
   });
 }
 
+/**
+ * 具体来源 mock。每个渠道的 UV 之和 = 该渠道访问入口，
+ * PV 之和 = 该渠道页面表浏览次数合计，留资访客之和 = 该渠道成功留资。
+ * 四渠留资访客之和 = 全站成功留资 34。
+ */
+export const TRAFFIC_SOURCE_MOCK = [
+  { id: "google", cat: "search", name: "Google", uv: 516, pv: 655, leads: 8 },
+  { id: "baidu", cat: "search", name: "百度", uv: 176, pv: 194, leads: 3 },
+  { id: "bing", cat: "search", name: "Bing", uv: 60, pv: 61, leads: 1 },
+  { id: "yandex", cat: "search", name: "Yandex", uv: 28, pv: 28, leads: 0 },
+  { id: "browser", cat: "direct", name: "浏览器直访", uv: 220, pv: 305, leads: 9 },
+  { id: "bookmark", cat: "direct", name: "书签", uv: 70, pv: 118, leads: 3 },
+  { id: "di", cat: "referral", name: "DirectIndustry", uv: 92, pv: 150, leads: 3 },
+  { id: "thomasnet", cat: "referral", name: "Thomasnet", uv: 36, pv: 61, leads: 1 },
+  { id: "media", cat: "referral", name: "行业媒体", uv: 82, pv: 121, leads: 2 },
+  { id: "gads", cat: "ads", name: "Google Ads", uv: 261, pv: 334, leads: 3 },
+  { id: "linkedin", cat: "ads", name: "LinkedIn", uv: 109, pv: 132, leads: 1 },
+  { id: "chatgpt", cat: "ai", name: "ChatGPT" },
+  { id: "perplexity", cat: "ai", name: "Perplexity" },
+  { id: "gemini", cat: "ai", name: "Gemini" },
+];
+
+const TRAFFIC_CATS = [
+  { id: "search", name: "搜索引擎", channelId: "search" },
+  { id: "direct", name: "直接访问", channelId: "direct" },
+  { id: "referral", name: "外部链接", channelId: "referral" },
+  { id: "ads", name: "广告", channelId: "ads" },
+  { id: "ai", name: "AI", channelId: null },
+];
+
+export function trafficBoard() {
+  const siteUv = getStages("site")[0].cur;
+  const cats = TRAFFIC_CATS.map((cat) => {
+    const listed = TRAFFIC_SOURCE_MOCK.filter((item) => item.cat === cat.id);
+    if (!cat.channelId) {
+      return {
+        ...cat,
+        uv: null,
+        pv: null,
+        leads: null,
+        sources: listed.map((item) => ({ ...item, catName: cat.name, uv: null, pv: null, leads: null })),
+      };
+    }
+    const stages = getStages(cat.channelId);
+    const uv = stages[0].cur;
+    const leads = stages[3].cur;
+    const pv = catalogRows("page", cat.channelId).reduce((sum, row) => sum + (row.pv || 0), 0);
+    const sources = listed.map((item) => ({ ...item, catName: cat.name }));
+    const sumOf = (key) => sources.reduce((sum, item) => sum + (item[key] || 0), 0);
+    return {
+      ...cat,
+      uv,
+      pv,
+      leads,
+      aligned: sumOf("uv") === uv && sumOf("pv") === pv && sumOf("leads") === leads,
+      sources,
+    };
+  });
+  return { siteUv, cats, sources: cats.flatMap((cat) => cat.sources) };
+}
+
 export function channelLabel(id) {
   return CHANNELS.find((c) => c.id === id)?.label ?? id;
 }

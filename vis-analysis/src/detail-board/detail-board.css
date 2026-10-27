@@ -1,0 +1,379 @@
+.dan-board {
+  --db-accent: #2f8bb8;
+  --db-danger: #cf1322;
+  --db-text-2: #64748b;
+  --db-line: #e8edf2;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.dan-board .db-period {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 20px;
+  font-size: 13px;
+  color: var(--db-text-2);
+}
+
+.dan-board .db-focus {
+  font-size: 14px;
+}
+
+.dan-board .db-kpi {
+  height: 100%;
+}
+
+.dan-board .db-kpi.is-alert {
+  border-color: #ffccc7;
+  box-shadow: inset 3px 0 0 var(--db-danger);
+}
+
+.dan-board .db-kpi-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  min-height: 24px;
+  margin-bottom: 4px;
+}
+
+.dan-board .db-kpi-title {
+  font-size: 13px;
+  color: var(--db-text-2);
+}
+
+.dan-board .db-kpi-foot {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 4px 12px;
+  margin-top: 8px;
+  font-size: 13px;
+}
+
+.dan-board .db-kpi-note {
+  color: var(--db-text-2);
+}
+
+.dan-board .db-delta {
+  color: var(--db-text-2);
+  white-space: nowrap;
+}
+
+.dan-board .db-delta.is-up {
+  color: #389e0d;
+}
+
+.dan-board .db-delta.is-down {
+  color: var(--db-danger);
+}
+
+.dan-board .db-section-head {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  margin-top: 12px;
+  padding-left: 10px;
+  border-left: 3px solid var(--db-accent);
+}
+
+.dan-board .db-section-head h2 {
+  margin: 0;
+  font-size: 17px;
+  font-weight: 650;
+  line-height: 1.3;
+}
+
+.dan-board .db-section-head span {
+  font-size: 13px;
+  color: var(--db-text-2);
+}
+
+.dan-board .db-fill {
+  height: 100%;
+}
+
+.dan-board .db-card-hint,
+.dan-board .db-chart-unit {
+  margin: 0 0 12px;
+  font-size: 12px;
+  color: var(--db-text-2);
+}
+
+.dan-board .db-chart-wait {
+  height: 280px;
+  border-radius: 6px;
+  background: #f7f9fb;
+}
+
+.dan-board .db-tag-mini {
+  margin-inline-start: 6px;
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 18px;
+}
+
+.dan-board .db-channel-name {
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.dan-board .db-mix {
+  display: flex;
+  gap: 2px;
+  height: 14px;
+  overflow: hidden;
+  border-radius: 4px;
+}
+
+.dan-board .db-mix span {
+  display: block;
+  height: 100%;
+}
+
+.dan-board .db-mix-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 18px;
+  margin: 10px 0 16px;
+  font-size: 13px;
+  color: var(--db-text-2);
+}
+
+.dan-board .db-mix-legend i {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  margin-right: 6px;
+  border-radius: 2px;
+  vertical-align: 1px;
+}
+
+.dan-board .db-mix-legend b {
+  margin-left: 2px;
+  color: #1e293b;
+  font-weight: 600;
+}
+
+.dan-board .db-sum-row > td {
+  background: #fafbfc;
+  font-weight: 600;
+}
+
+.dan-board .db-channel-dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  margin-right: 8px;
+  border-radius: 2px;
+  vertical-align: 1px;
+}
+
+.dan-board .is-pickable {
+  cursor: pointer;
+}
+
+.dan-board .is-picked > td {
+  background: #e6f4fb;
+}
+
+.dan-board .db-cell-sub {
+  font-size: 12px;
+  color: var(--db-text-2);
+}
+
+.dan-board .db-cell-bad,
+.dan-board .db-cell-bad .db-cell-sub {
+  color: var(--db-danger);
+}
+
+/* 排名列表：名称 + 数值一行，进度条一行，辅助信息一行 */
+.dan-board .db-rank {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.dan-board .db-rank-row {
+  display: grid;
+  grid-template-columns: 22px minmax(0, 1fr);
+  gap: 10px;
+  align-items: start;
+  width: 100%;
+  margin: 0;
+  padding: 6px 8px;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+}
+
+.dan-board .db-rank-row.is-btn {
+  cursor: pointer;
+}
+
+.dan-board .db-rank-row.is-btn:hover {
+  background: #f5f8fb;
+}
+
+.dan-board .db-rank-row.is-on {
+  border-color: #91caff;
+  background: #e6f4fb;
+}
+
+.dan-board .db-rank-no {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  margin-top: 1px;
+  border-radius: 4px;
+  background: #f1f4f8;
+  color: var(--db-text-2);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.dan-board .db-rank-dot {
+  width: 10px;
+  height: 10px;
+  margin: 6px 0 0 5px;
+  border-radius: 50%;
+}
+
+.dan-board .db-rank-no.is-top {
+  background: var(--db-accent);
+  color: #fff;
+}
+
+.dan-board .db-rank-main {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.dan-board .db-rank-line {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  min-width: 0;
+  font-size: 14px;
+  line-height: 22px;
+}
+
+.dan-board .db-rank-name {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.dan-board .db-rank-value {
+  margin-left: auto;
+  padding-left: 12px;
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.dan-board .db-rank-sub,
+.dan-board .db-rank-hint {
+  font-size: 12px;
+  color: var(--db-text-2);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.dan-board .db-rank-hint {
+  margin-left: 6px;
+}
+
+/* 漏斗 */
+.dan-board .db-funnel {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.dan-board .db-funnel-row {
+  padding: 8px 10px;
+  border-radius: 6px;
+}
+
+.dan-board .db-funnel-row.is-bad {
+  background: #fff1f0;
+}
+
+.dan-board .db-funnel-line {
+  display: flex;
+  justify-content: space-between;
+  font-size: 14px;
+}
+
+.dan-board .db-funnel-name {
+  font-weight: 600;
+}
+
+.dan-board .db-funnel-num {
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+}
+
+.dan-board .db-funnel-sub {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  color: var(--db-text-2);
+}
+
+.dan-board .db-funnel-sub b {
+  color: #1e293b;
+}
+
+.dan-board .db-funnel-row.is-bad .db-funnel-sub b {
+  color: var(--db-danger);
+}
+
+/* 网站承接筛选条 */
+.dan-board .db-filterbar {
+  margin-top: -4px;
+}
+
+.dan-board .db-filter-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px 32px;
+}
+
+.dan-board .db-filter {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.dan-board .db-filter-label {
+  font-size: 13px;
+  color: var(--db-text-2);
+  white-space: nowrap;
+}
+
+.dan-board .db-slice-note {
+  margin-top: -4px;
+}
+
+.dan-board .db-term-tabs {
+  margin-bottom: 12px;
+}
+
+.dan-board .db-term-alert {
+  margin-bottom: 12px;
+}

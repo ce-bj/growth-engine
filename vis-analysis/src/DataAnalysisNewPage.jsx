@@ -19,6 +19,7 @@ import {
   UnorderedListOutlined,
 } from "@ant-design/icons";
 import FunnelReviewApp from "./funnel-review/App.jsx";
+import DetailBoard from "./detail-board/DetailBoard.jsx";
 import "./funnel-review/styles.css";
 import "./data-analysis-new.css";
 import {
@@ -363,6 +364,15 @@ function Workbench() {
           >
             明细数据
           </button>
+          <button
+            type="button"
+            role="tab"
+            aria-selected={mainTab === "board"}
+            className={mainTab === "board" ? "is-on" : ""}
+            onClick={() => setMainTab("board")}
+          >
+            新-明细数据看板
+          </button>
         </nav>
 
         {mainTab === "agent" ? (
@@ -680,7 +690,7 @@ function Workbench() {
         </>
         )}
           </>
-        ) : (
+        ) : mainTab === "data" ? (
           <div className="dan-data-tab">
             <p className="dan-path-note dan-data-filter">
               漏斗、搜索词和路径都是 {week.label}，对照 {week.baselineLabel}。
@@ -756,6 +766,13 @@ function Workbench() {
               </div>
             </section>
           </div>
+        ) : (
+          <DetailBoard
+            weekLabel={week.label}
+            baselineLabel={week.baselineLabel}
+            authMap={authMap}
+            onAuthorize={openAuth}
+          />
         )}
       </div>
     </div>
