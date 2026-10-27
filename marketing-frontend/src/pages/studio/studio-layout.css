@@ -1,0 +1,170 @@
+/* A single module header inside the workbench; no second application rail. */
+.studio-app {
+  height: 100dvh;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.studio-main {
+  display: flex;
+  flex-direction: column;
+  margin-left: 0;
+  height: 100%;
+  overflow: auto;
+}
+
+.marketing-header {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex: 0 0 auto;
+  gap: 16px;
+  min-height: 64px;
+  padding: 12px 24px;
+  border-bottom: 1px solid var(--line);
+  background: #fff;
+}
+
+.marketing-header__identity,
+.marketing-header__actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+
+.marketing-header__identity { flex: 1; }
+.marketing-header__identity > button { flex-shrink: 0; }
+.marketing-header__title { min-width: 0; }
+.marketing-header__title strong {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 14px;
+  font-weight: 600;
+}
+.marketing-header__title > span {
+  display: block;
+  margin-top: 4px;
+  font-size: 11px;
+  color: #697586;
+}
+.marketing-header__actions { flex-wrap: wrap; gap: 4px; }
+.marketing-header__actions [aria-current="page"] { color: #314ed8; background: #edf1ff; }
+
+.studio-main > .studio-steps {
+  justify-content: flex-start;
+  height: auto;
+  min-height: 48px;
+  flex: 0 0 auto;
+  padding: 8px 24px;
+  gap: 16px;
+  overflow-x: auto;
+}
+.studio-steps > button { flex-shrink: 0; }
+.studio-workspace-switch { display: none; }
+
+/* Let flex layout use the actual iframe height instead of subtracting guessed headers. */
+.studio-main > .studio-workspace {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
+.studio-workspace > .workspace-panel,
+.studio-workspace > .workspace-canvas {
+  max-height: none;
+  min-height: 0;
+  overscroll-behavior: contain;
+}
+.studio-workspace > .workspace-panel {
+  width: 304px;
+  padding: 20px;
+  gap: 12px;
+}
+.studio-workspace.panel-collapsed > .workspace-panel { display: none; }
+.studio-workspace .panel-heading { margin: 0; }
+.studio-workspace .panel-heading h1 { margin: 0; font-size: 16px; line-height: 1.5; }
+.studio-workspace > .workspace-canvas { padding: 0 20px 20px; }
+.studio-workspace > .text-inspector {
+  position: absolute;
+  right: 12px;
+  top: 64px;
+  bottom: 12px;
+  z-index: 10;
+  width: min(280px, calc(100% - 24px));
+  max-height: none;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  box-shadow: 0 8px 24px #2127351a;
+}
+
+.studio-main > .conversation-start,
+.studio-main > .results-page {
+  width: 100%;
+  flex: 1 0 auto;
+  margin: 0 auto;
+  padding: 24px;
+}
+.conversation-start .start-intro { text-align: left; margin-bottom: 20px; }
+.conversation-start .start-symbol { display: none; }
+.conversation-start .start-intro h1 { font-size: 24px; margin: 0 0 8px; }
+.conversation-start .start-composer { max-width: none; border-radius: 12px; box-shadow: none; }
+.history-library .result-heading .eyebrow { display: none; }
+.history-library .result-heading h1 { font-size: 24px; }
+.history-library .history-filters { margin: 20px 0; }
+
+/* In narrow iframes switch between tools and canvas, rather than stacking long panes. */
+@media (max-width: 900px) {
+  .marketing-header { flex-wrap: wrap; gap: 8px; padding: 12px 16px; }
+  .marketing-header__identity { flex-basis: 260px; }
+  .marketing-header__actions { margin-left: auto; }
+  .marketing-header .marketing-panel-toggle { display: none; }
+  .studio-workspace-switch {
+    display: flex;
+    gap: 4px;
+    padding: 8px 16px;
+    background: #fff;
+    border-bottom: 1px solid var(--line);
+    flex: 0 0 auto;
+  }
+  .studio-workspace-switch > button { flex: 1; height: 32px; font-size: 12px; }
+  .studio-workspace-switch [aria-pressed="true"] { background: #edf1ff; color: #314ed8; }
+  .studio-main > .studio-steps { padding: 8px 16px; gap: 8px; }
+  .studio-main > .studio-workspace { flex-direction: row; }
+  .studio-workspace.pane-controls > .workspace-panel {
+    display: flex;
+    width: 100%;
+    border: 0;
+  }
+  .studio-workspace .panel-heading { display: none; }
+  .studio-workspace.pane-controls > .workspace-canvas,
+  .studio-workspace.pane-controls > .text-inspector,
+  .studio-workspace.pane-canvas > .workspace-panel { display: none; }
+  .studio-workspace.pane-canvas > .workspace-canvas { display: block; width: 100%; }
+  .studio-workspace .canvas-toolbar { position: sticky; top: 0; }
+}
+
+@media (max-width: 480px) {
+  .marketing-header__identity { flex-wrap: wrap; gap: 8px; flex-basis: 100%; }
+  .marketing-header__title { flex: 1 1 140px; }
+  .marketing-header__actions { width: 100%; justify-content: flex-end; }
+  .marketing-header:not(.has-page-actions) .marketing-header__actions {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    width: auto;
+  }
+  .marketing-header:not(.has-page-actions) .marketing-header__identity { padding-right: 32px; }
+  .studio-main > .conversation-start,
+  .studio-main > .results-page { padding: 16px; }
+  .studio-workspace > .workspace-panel { padding: 16px; }
+  .studio-workspace > .workspace-canvas { padding: 0 12px 16px; }
+  .studio-main .empty-result { padding: 32px 16px; }
+  .studio-main .start-required { grid-template-columns: 1fr; }
+  .studio-main .start-template-heading,
+  .studio-main .start-context { flex-wrap: wrap; }
+  .studio-main .start-context > span { min-width: 0; overflow-wrap: anywhere; }
+}
