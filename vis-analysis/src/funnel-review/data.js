@@ -13,6 +13,7 @@ export const CHANNELS = [
   { id: "direct", label: "直接访问" },
   { id: "referral", label: "外部链接" },
   { id: "ads", label: "广告" },
+  { id: "ai", label: "AI" },
 ];
 
 export const LAYERS = [
@@ -113,11 +114,18 @@ const STAGE = {
     leadCount: { cur: 13, prev: 13 },
   },
   referral: {
-    entry: { cur: 210, prev: 220 },
-    view: { cur: 84, prev: 92 },
-    interact: { cur: 12, prev: 14 },
-    lead: { cur: 6, prev: 7 },
-    leadCount: { cur: 6, prev: 7 },
+    entry: { cur: 140, prev: 162 },
+    view: { cur: 63, prev: 74 },
+    interact: { cur: 8, prev: 11 },
+    lead: { cur: 4, prev: 6 },
+    leadCount: { cur: 4, prev: 6 },
+  },
+  ai: {
+    entry: { cur: 70, prev: 58 },
+    view: { cur: 21, prev: 18 },
+    interact: { cur: 4, prev: 3 },
+    lead: { cur: 2, prev: 1 },
+    leadCount: { cur: 2, prev: 1 },
   },
   ads: {
     entry: { cur: 370, prev: 360 },
@@ -350,7 +358,7 @@ export const WALKS = [
     id: "w-pdp",
     types: ["产品详情"],
     implied: "只落在详情",
-    counts: { site: 280, search: 168, direct: 22, referral: 38, ads: 52 },
+    counts: { site: 280, search: 168, direct: 22, referral: 38, ads: 52, ai: 18 },
     byIntent: { browse: 248, explore: 22, compare: 0, decide: 10 },
     urls: [
       { line: ["/products/cnc-6061-bracket"], count: 214 },
@@ -369,7 +377,7 @@ export const WALKS = [
     id: "w-home",
     types: ["首页"],
     implied: "进了首页就走",
-    counts: { site: 52, search: 12, direct: 28, referral: 8, ads: 4 },
+    counts: { site: 52, search: 12, direct: 28, referral: 8, ads: 4, ai: 6 },
     byIntent: { browse: 40, explore: 8, compare: 0, decide: 4 },
     urls: [{ line: ["/"], count: 52 }],
   },
@@ -377,7 +385,7 @@ export const WALKS = [
     id: "w-guide-pdp",
     types: ["资讯/指南", "产品详情"],
     implied: "先读指南再进详情",
-    counts: { site: 96, search: 62, direct: 14, referral: 12, ads: 8 },
+    counts: { site: 96, search: 62, direct: 14, referral: 12, ads: 8, ai: 12 },
     byIntent: { browse: 14, explore: 74, compare: 0, decide: 8 },
     urls: [
       { line: ["/blog/cnc-tolerance-guide", "/products/cnc-6061-bracket"], count: 71 },
@@ -401,7 +409,7 @@ export const WALKS = [
     id: "w-guide",
     types: ["资讯/指南"],
     implied: "只读了文章",
-    counts: { site: 70, search: 48, direct: 10, referral: 8, ads: 4 },
+    counts: { site: 70, search: 48, direct: 10, referral: 8, ads: 4, ai: 8 },
     byIntent: { browse: 18, explore: 52, compare: 0, decide: 0 },
     urls: [{ line: ["/blog/cnc-tolerance-guide"], count: 64 }],
   },
@@ -442,7 +450,7 @@ export const WALKS = [
     id: "w-list-pdp",
     types: ["产品列表", "产品详情", "产品详情"],
     implied: "从列表进两个型号",
-    counts: { site: 41, search: 22, direct: 9, referral: 6, ads: 4 },
+    counts: { site: 41, search: 22, direct: 9, referral: 6, ads: 4, ai: 8 },
     byIntent: { browse: 0, explore: 10, compare: 31, decide: 0 },
     urls: [
       {
@@ -455,7 +463,7 @@ export const WALKS = [
     id: "w-pdp-about",
     types: ["产品详情", "资质/关于"],
     implied: "看完型号去核资质",
-    counts: { site: 48, search: 18, direct: 16, referral: 8, ads: 6 },
+    counts: { site: 48, search: 18, direct: 16, referral: 8, ads: 6, ai: 6 },
     byIntent: { browse: 0, explore: 10, compare: 0, decide: 38 },
     urls: [{ line: ["/products/cnc-6061-bracket", "/about"], count: 39 }],
   },
@@ -463,7 +471,7 @@ export const WALKS = [
     id: "w-about-pdp",
     types: ["资质/关于", "产品详情"],
     implied: "先核这家再回详情",
-    counts: { site: 32, search: 14, direct: 10, referral: 5, ads: 3 },
+    counts: { site: 32, search: 14, direct: 10, referral: 5, ads: 3, ai: 7 },
     byIntent: { browse: 0, explore: 8, compare: 0, decide: 24 },
     urls: [{ line: ["/about", "/products/cnc-6061-bracket"], count: 26 }],
   },
@@ -535,7 +543,7 @@ function withMeta(list) {
 /** onlyPatched：渠道只保留显式写出的页。落地页必须用，否则会把全站清单原样拷到每个渠道。 */
 function splitChannel(siteRows, patches, { onlyPatched = false } = {}) {
   const pack = { site: siteRows };
-  for (const ch of ["search", "direct", "referral", "ads"]) {
+  for (const ch of ["search", "direct", "referral", "ads", "ai"]) {
     const patch = patches[ch] || {};
     pack[ch] = siteRows
       .map((row) => {
@@ -621,12 +629,12 @@ export const PAGES = {
         "/contact": { pv: 24, uv: 22, qualifyRate: 0.76, pageStay: 44, p75: 0.66 },
       },
       referral: {
-        "/products/cnc-6061-bracket": { pv: 108, uv: 82, qualifyRate: 0.32, pageStay: 18, p75: 0.26 },
-        "/campaign/cnc-oem-q3": { pv: 24, uv: 18, qualifyRate: 0.4, pageStay: 22, p75: 0.36 },
-        "/": { pv: 68, uv: 50, qualifyRate: 0.58, pageStay: 32, p75: 0.5 },
-        "/blog/cnc-tolerance-guide": { pv: 34, uv: 28, qualifyRate: 0.76, pageStay: 48, p75: 0.7 },
-        "/about": { pv: 16, uv: 12, qualifyRate: 0.54, pageStay: 28, p75: 0.46 },
-        "/products": { pv: 32, uv: 24, qualifyRate: 0.44, pageStay: 21, p75: 0.35 },
+        "/products/cnc-6061-bracket": { pv: 72, uv: 54, qualifyRate: 0.32, pageStay: 18, p75: 0.26 },
+        "/campaign/cnc-oem-q3": { pv: 15, uv: 12, qualifyRate: 0.4, pageStay: 22, p75: 0.36 },
+        "/": { pv: 50, uv: 38, qualifyRate: 0.58, pageStay: 32, p75: 0.5 },
+        "/blog/cnc-tolerance-guide": { pv: 12, uv: 12, qualifyRate: 0.76, pageStay: 48, p75: 0.7 },
+        "/about": { pv: 4, uv: 4, qualifyRate: 0.54, pageStay: 28, p75: 0.46 },
+        "/products": { pv: 18, uv: 14, qualifyRate: 0.44, pageStay: 21, p75: 0.35 },
         "/cases/oem-bracket": { pv: 42, uv: 36, qualifyRate: 0.7, pageStay: 42, p75: 0.64 },
         "/contact": { pv: 8, uv: 6, qualifyRate: 0.7, pageStay: 36, p75: 0.56 },
       },
@@ -639,6 +647,16 @@ export const PAGES = {
         "/products": { pv: 26, uv: 20, qualifyRate: 0.4, pageStay: 18, p75: 0.3 },
         "/cases/oem-bracket": { pv: 8, uv: 6, qualifyRate: 0.66, pageStay: 38, p75: 0.58 },
         "/contact": { pv: 6, uv: 5, qualifyRate: 0.64, pageStay: 32, p75: 0.5 },
+      },
+      ai: {
+        "/products/cnc-6061-bracket": { pv: 36, uv: 28, qualifyRate: 0.3, pageStay: 18, p75: 0.28, leads: 1 },
+        "/blog/cnc-tolerance-guide": { pv: 22, uv: 16, qualifyRate: 0.62, pageStay: 40, p75: 0.58, leads: 1 },
+        "/": { pv: 18, uv: 12, qualifyRate: 0.42, pageStay: 22, p75: 0.34, leads: 0 },
+        "/products": { pv: 14, uv: 10, qualifyRate: 0.4, pageStay: 20, p75: 0.32, leads: 0 },
+        "/about": { pv: 12, uv: 8, qualifyRate: 0.5, pageStay: 26, p75: 0.4, leads: 0 },
+        "/campaign/cnc-oem-q3": { pv: 9, uv: 6, qualifyRate: 0.28, pageStay: 14, p75: 0.22, leads: 0 },
+        "/cases/oem-bracket": false,
+        "/contact": false,
       },
     }),
     land: splitChannel(L1_LAND_SITE, {
@@ -663,12 +681,12 @@ export const PAGES = {
       },
       // 外链：详情 + 案例目录站为主
       referral: {
-        "/products/cnc-6061-bracket": { land: 80, catchRate: 0.28, stay: 12, p75: 0.2, bounce: 0.52, leads: 1 },
-        "/cases/oem-bracket": { land: 45, catchRate: 0.58, stay: 40, p75: 0.62, bounce: 0.2, leads: 1 },
-        "/": { land: 40, catchRate: 0.58, stay: 32, p75: 0.5, bounce: 0.22, leads: 1 },
-        "/blog/cnc-tolerance-guide": { land: 25, catchRate: 0.6, stay: 44, p75: 0.68, bounce: 0.18, leads: 0 },
-        "/about": { land: 12, catchRate: 0.5, stay: 27, p75: 0.46, bounce: 0.26, leads: 0 },
-        "/campaign/cnc-oem-q3": { land: 8, catchRate: 0.4, stay: 20, p75: 0.34, bounce: 0.32, leads: 0 },
+        "/products/cnc-6061-bracket": { land: 52, catchRate: 0.28, stay: 12, p75: 0.2, bounce: 0.52, leads: 1 },
+        "/cases/oem-bracket": { land: 30, catchRate: 0.58, stay: 40, p75: 0.62, bounce: 0.2, leads: 1 },
+        "/": { land: 28, catchRate: 0.58, stay: 32, p75: 0.5, bounce: 0.22, leads: 1 },
+        "/blog/cnc-tolerance-guide": { land: 16, catchRate: 0.6, stay: 44, p75: 0.68, bounce: 0.18, leads: 0 },
+        "/about": { land: 8, catchRate: 0.5, stay: 27, p75: 0.46, bounce: 0.26, leads: 0 },
+        "/campaign/cnc-oem-q3": { land: 6, catchRate: 0.4, stay: 20, p75: 0.34, bounce: 0.32, leads: 0 },
       },
       // 广告：营销落地页第一，一部分仍投到铝支架详情
       ads: {
@@ -676,6 +694,13 @@ export const PAGES = {
         "/products/cnc-6061-bracket": { land: 120, catchRate: 0.2, catchRatePrev: 0.21, stay: 10, p75: 0.16, bounce: 0.62, leads: 1 },
         "/": { land: 28, catchRate: 0.49, stay: 26, p75: 0.4, bounce: 0.3, leads: 0 },
         "/products": { land: 12, catchRate: 0.4, stay: 16, p75: 0.28, bounce: 0.28, leads: 0 },
+      },
+      ai: {
+        "/products/cnc-6061-bracket": { land: 28, catchRate: 0.32, catchRatePrev: 0.3, stay: 14, p75: 0.24, bounce: 0.42, leads: 1 },
+        "/blog/cnc-tolerance-guide": { land: 16, catchRate: 0.56, catchRatePrev: 0.54, stay: 36, p75: 0.52, bounce: 0.22, leads: 1 },
+        "/": { land: 12, catchRate: 0.42, catchRatePrev: 0.4, stay: 20, p75: 0.32, bounce: 0.3, leads: 0 },
+        "/products": { land: 8, catchRate: 0.4, catchRatePrev: 0.38, stay: 18, p75: 0.28, bounce: 0.28, leads: 0 },
+        "/about": { land: 6, catchRate: 0.48, catchRatePrev: 0.46, stay: 24, p75: 0.38, bounce: 0.24, leads: 0 },
       },
     }, { onlyPatched: true }),
   },
@@ -720,7 +745,15 @@ export const PAGES = {
       "/cases/oem-bracket": { viewed: 6, interactRate: 0.03, detailReach: 0.28, exitShare: 0.3 },
       "/contact": { viewed: 4, interactRate: 0.32, detailReach: 0.1, exitShare: 0.12 },
     },
-  }),
+    ai: {
+      "/products/cnc-6061-bracket": { viewed: 10, interactRate: 0.1, detailReach: 1, exitShare: 0.32 },
+      "/blog/cnc-tolerance-guide": { viewed: 6, interactRate: 0.05, detailReach: 0.4, exitShare: 0.28 },
+      "/": { viewed: 4, interactRate: 0.05, detailReach: 0.35, exitShare: 0.24 },
+      "/products": { viewed: 4, interactRate: 0.05, detailReach: 0.55, exitShare: 0.2 },
+      "/about": { viewed: 3, interactRate: 0.12, detailReach: 0.3, exitShare: 0.18 },
+      "/campaign/cnc-oem-q3": { viewed: 2, interactRate: 0.08, detailReach: 0.25, exitShare: 0.3 },
+    },
+  }, { onlyPatched: true }),
   l3: splitChannel(L3_SITE, {
     search: {
       "/products/cnc-6061-bracket": { started: 8, formDone: 0.38, chatLead: 0.42 },
@@ -762,7 +795,12 @@ export const PAGES = {
       "/cases/oem-bracket": { started: 1, formDone: 0.5, chatLead: 0.4 },
       "/contact": { started: 1, formDone: 0.65, chatLead: 0.5 },
     },
-  }),
+    ai: {
+      "/products/cnc-6061-bracket": { started: 2, formDone: 0.5, chatLead: 0.5, leads: 1 },
+      "/blog/cnc-tolerance-guide": { started: 1, formDone: 0.5, chatLead: 0.5, leads: 1 },
+      "/": { started: 1, formDone: 0.4, chatLead: 0.4, leads: 0 },
+    },
+  }, { onlyPatched: true }),
 };
 
 const PAGES_INTENT = {
@@ -1665,7 +1703,7 @@ export function catalogRows(slice = "page", channelId = "site", intentId = null)
 /**
  * 具体来源 mock。每个渠道的 UV 之和 = 该渠道访问入口，
  * PV 之和 = 该渠道页面表浏览次数合计，留资访客之和 = 该渠道成功留资。
- * 四渠留资访客之和 = 全站成功留资 34。
+ * 五渠留资访客之和 = 全站成功留资 34。AI 从原外部链接中拆出。
  */
 export const TRAFFIC_SOURCE_MOCK = [
   { id: "google", cat: "search", name: "Google", uv: 516, pv: 655, leads: 8 },
@@ -1674,14 +1712,19 @@ export const TRAFFIC_SOURCE_MOCK = [
   { id: "yandex", cat: "search", name: "Yandex", uv: 28, pv: 28, leads: 0 },
   { id: "browser", cat: "direct", name: "浏览器直访", uv: 220, pv: 305, leads: 9 },
   { id: "bookmark", cat: "direct", name: "书签", uv: 70, pv: 118, leads: 3 },
-  { id: "di", cat: "referral", name: "DirectIndustry", uv: 92, pv: 150, leads: 3 },
-  { id: "thomasnet", cat: "referral", name: "Thomasnet", uv: 36, pv: 61, leads: 1 },
-  { id: "media", cat: "referral", name: "行业媒体", uv: 82, pv: 121, leads: 2 },
+  { id: "di", cat: "referral", name: "DirectIndustry", uv: 62, pv: 100, leads: 2 },
+  { id: "thomasnet", cat: "referral", name: "Thomasnet", uv: 24, pv: 41, leads: 1 },
+  { id: "media", cat: "referral", name: "行业媒体", uv: 54, pv: 80, leads: 1 },
   { id: "gads", cat: "ads", name: "Google Ads", uv: 261, pv: 334, leads: 3 },
   { id: "linkedin", cat: "ads", name: "LinkedIn", uv: 109, pv: 132, leads: 1 },
-  { id: "chatgpt", cat: "ai", name: "ChatGPT" },
-  { id: "perplexity", cat: "ai", name: "Perplexity" },
-  { id: "gemini", cat: "ai", name: "Gemini" },
+  { id: "doubao", cat: "ai", name: "豆包", uv: 18, pv: 28, leads: 1 },
+  { id: "deepseek", cat: "ai", name: "DeepSeek", uv: 14, pv: 22, leads: 1 },
+  { id: "qwen", cat: "ai", name: "通义千问", uv: 10, pv: 16, leads: 0 },
+  { id: "kimi", cat: "ai", name: "Kimi", uv: 8, pv: 14, leads: 0 },
+  { id: "wenxin", cat: "ai", name: "文心一言", uv: 6, pv: 11, leads: 0 },
+  { id: "yuanbao", cat: "ai", name: "腾讯元宝", uv: 5, pv: 8, leads: 0 },
+  { id: "chatgpt", cat: "ai", name: "ChatGPT", uv: 5, pv: 7, leads: 0 },
+  { id: "zhipu", cat: "ai", name: "智谱清言", uv: 4, pv: 5, leads: 0 },
 ];
 
 const TRAFFIC_CATS = [
@@ -1689,7 +1732,7 @@ const TRAFFIC_CATS = [
   { id: "direct", name: "直接访问", channelId: "direct" },
   { id: "referral", name: "外部链接", channelId: "referral" },
   { id: "ads", name: "广告", channelId: "ads" },
-  { id: "ai", name: "AI", channelId: null },
+  { id: "ai", name: "AI", channelId: "ai" },
 ];
 
 export function trafficBoard() {
@@ -1721,6 +1764,40 @@ export function trafficBoard() {
     };
   });
   return { siteUv, cats, sources: cats.flatMap((cat) => cat.sources) };
+}
+
+/**
+ * 地域 mock，按城市记。全部城市 UV 之和 = 全站访问入口 1650，
+ * PV 之和 = 全站页面表浏览次数 2159，留资访客之和 = 全站成功留资 34。
+ * isoId 为 ISO 3166-1 数字码，地图按它对上国家边界。
+ */
+export const REGION_MOCK = [
+  { country: "美国", isoId: "840", cities: [
+    ["洛杉矶", 120, 160, 3], ["休斯顿", 96, 128, 3], ["芝加哥", 88, 116, 2],
+    ["纽约", 82, 108, 2], ["底特律", 74, 98, 1], ["西雅图", 60, 80, 1],
+  ] },
+  { country: "德国", isoId: "276", cities: [["斯图加特", 78, 106, 2], ["慕尼黑", 66, 88, 2], ["汉堡", 66, 88, 1]] },
+  { country: "英国", isoId: "826", cities: [["伯明翰", 62, 82, 1], ["伦敦", 54, 70, 1], ["曼彻斯特", 34, 44, 1]] },
+  { country: "印度", isoId: "356", cities: [["浦那", 60, 72, 1], ["班加罗尔", 48, 58, 0], ["钦奈", 32, 38, 0]] },
+  { country: "墨西哥", isoId: "484", cities: [["蒙特雷", 70, 88, 2], ["墨西哥城", 50, 62, 1]] },
+  { country: "中国", isoId: "156", cities: [["深圳", 46, 64, 1], ["上海", 38, 52, 1], ["宁波", 36, 49, 1]] },
+  { country: "加拿大", isoId: "124", cities: [["多伦多", 64, 82, 1], ["温哥华", 46, 58, 1]] },
+  { country: "日本", isoId: "392", cities: [["名古屋", 40, 56, 1], ["大阪", 30, 42, 1]] },
+  { country: "澳大利亚", isoId: "036", cities: [["墨尔本", 34, 43, 1], ["悉尼", 26, 33, 0]] },
+  { country: "巴西", isoId: "076", cities: [["圣保罗", 50, 60, 1]] },
+  { country: "意大利", isoId: "380", cities: [["米兰", 40, 54, 1]] },
+  { country: "波兰", isoId: "616", cities: [["弗罗茨瓦夫", 30, 40, 0]] },
+  { country: "越南", isoId: "704", cities: [["胡志明市", 30, 40, 0]] },
+];
+
+export function regionBoard() {
+  const countries = REGION_MOCK.map(({ country, isoId, cities }) => {
+    const rows = cities.map(([city, uv, pv, leads]) => ({ id: `${isoId}-${city}`, city, country, uv, pv, leads }));
+    const sumOf = (key) => rows.reduce((sum, row) => sum + row[key], 0);
+    return { country, isoId, uv: sumOf("uv"), pv: sumOf("pv"), leads: sumOf("leads"), cities: rows };
+  }).sort((a, b) => b.pv - a.pv);
+  const cities = countries.flatMap((item) => item.cities).sort((a, b) => b.pv - a.pv);
+  return { countries, cities };
 }
 
 export function channelLabel(id) {
@@ -1818,6 +1895,14 @@ const STRIP = {
       落地平均停留时长: { v: 12, fmt: "sec" },
       秒退率: { v: 0.54, fmt: "pct" },
     },
+    ai: {
+      合格浏览率: { v: 0.36, fmt: "pct" },
+      页面平均停留时长: { v: 22, fmt: "sec" },
+      平均滚动深度: { v: 0.32, fmt: "pct" },
+      落地接住率: { v: 0.38, fmt: "pct" },
+      落地平均停留时长: { v: 20, fmt: "sec" },
+      秒退率: { v: 0.34, fmt: "pct" },
+    },
     browse: {
       合格浏览率: { v: 0.16, fmt: "pct" },
       页面平均停留时长: { v: 10, fmt: "sec" },
@@ -1887,6 +1972,13 @@ const STRIP = {
       未转化页出口率: { v: 0.45, fmt: "pct" },
       询价入口个数: { v: 1, fmt: "int" },
     },
+    ai: {
+      产品详情页到达率: { v: 0.58, fmt: "pct" },
+      表单开始率: { v: 0.09, fmt: "pct" },
+      开聊率: { v: 0.04, fmt: "pct" },
+      未转化页出口率: { v: 0.32, fmt: "pct" },
+      询价入口个数: { v: 1, fmt: "int" },
+    },
   },
   l3: {
     site: {
@@ -1908,6 +2000,10 @@ const STRIP = {
     ads: {
       表单完成率: { v: 0.33, fmt: "pct" },
       开聊留资率: { v: 0.4, fmt: "pct" },
+    },
+    ai: {
+      表单完成率: { v: 0.5, fmt: "pct" },
+      开聊留资率: { v: 0.5, fmt: "pct" },
     },
   },
 };

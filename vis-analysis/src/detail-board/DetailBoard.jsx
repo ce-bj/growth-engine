@@ -21,6 +21,7 @@ import { ArrowDownOutlined, ArrowUpOutlined } from "@ant-design/icons";
 import { DEPTH_INTENTS, CHURN_MARK } from "../diagnosisPeriod.js";
 import {
   INTENTS,
+  LOSSES,
   PAGE_CATALOG_COLS,
   PAGE_ID_COLS,
   SEARCH_TERM_COLS,
@@ -29,23 +30,25 @@ import {
   bottleneck,
   catalogRows,
   fmtInt,
-  getLeadCount,
   getStages,
   pct,
   rateBrokeDown,
   stateOfThrough,
+  stripMetric,
   through,
   searchTermRows,
-  trafficBoard,
   walksListed,
 } from "../funnel-review/data.js";
+import { allocate, BOARD_RANGES, buildBoardModel } from "./boardWindow.js";
 import "./detail-board.css";
 
 const Line = lazy(() => import("@ant-design/plots").then((mod) => ({ default: mod.Line })));
+const Funnel = lazy(() => import("@ant-design/plots").then((mod) => ({ default: mod.Funnel })));
+const RegionMap = lazy(() => import("./RegionMap.jsx"));
 
 const ACCENT = "#2f8bb8";
 const DANGER = "#cf1322";
-const MIX_COLORS = ["#2f8bb8", "#36b3a8", "#8e7cc3", "#e0a03b"];
+const MIX_COLORS = ["#2f8bb8", "#36b3a8", "#8e7cc3", "#e0a03b", "#6b7fd7"];
 
 const BOARD_THEME = {
   token: {
@@ -62,31 +65,24 @@ const BOARD_THEME = {
   },
 };
 
-function shiftDate(base, offset) {
-  const day = new Date(base.getTime() + offset * 86400000);
-  return `${String(day.getMonth() + 1).padStart(2, "0")}-${String(day.getDate()).padStart(2, "0")}`;
+const PAGE_COUNT_KEYS = ["pv", "uv", "pageLeads", "viewed", "started", "landPv", "landUv", "bounceUv", "landLeads"];
+const TERM_COUNT_KEYS = ["searches", "uv", "clicks", "impressions", "cost"];
+
+function scaleFields(row, factor, keys) {
+  if (factor === 1) return row;
+  const next = { ...row };
+  keys.forEach((key) => {
+    if (typeof next[key] === "number") next[key] = Math.round(next[key] * factor);
+  });
+  return next;
 }
 
-const TREND = {
-  d7: {
-    name: "近 7 天",
-    unit: "日独立访客",
-    labels: ["09-14", "09-15", "09-16", "09-17", "09-18", "09-19", "09-20"],
-    values: [198, 214, 236, 221, 248, 265, 268],
-  },
-  d30: {
-    name: "近 30 天",
-    unit: "日独立访客",
-    labels: Array.from({ length: 30 }, (_, index) => shiftDate(new Date(2026, 7, 22), index)),
-    values: [62, 58, 71, 66, 74, 69, 80, 77, 73, 81, 76, 84, 79, 88, 83, 90, 86, 92, 87, 95, 91, 98, 94, 101, 97, 104, 99, 108, 103, 110],
-  },
-  period: {
-    name: "按期",
-    unit: "周独立访客",
-    labels: ["7/27", "8/3", "8/10", "8/17", "8/24", "8/31", "9/7", "9/14"],
-    values: [1420, 1510, 1488, 1602, 1580, 1710, 1664, 1650],
-  },
-};
+function scaleTerm(row, factor) {
+  if (factor === 1) return row;
+  const next = scaleFields(row, factor, TERM_COUNT_KEYS);
+  if (typeof next.zeroHits === "number" && next.searches) next.zeroHits = Math.round((next.zeroRate || 0) * next.searches);
+  return next;
+}
 
 const TERM_TABS = [
   { value: "site", label: "站内搜索" },
@@ -134,7 +130,7 @@ function Delta({ cur, prev, mode = "count" }) {
   );
 }
 
-function KpiCard({ title, cur, prev, mode = "count", note, alert }) {
+function KpiCard({ title, cur, prev, mode = "count", note, alert, compare }) {
   const rateMode = mode === "rate";
   return (
     <Card className={`db-kpi${alert ? " is-alert" : ""}`} variant="outlined">
@@ -147,10 +143,12 @@ function KpiCard({ title, cur, prev, mode = "count", note, alert }) {
         precision={rateMode ? 1 : 0}
         suffix={rateMode ? "%" : undefined}
       />
-      <div className="db-kpi-foot">
-        <Delta cur={cur} prev={prev} mode={mode} />
-        {note ? <span className="db-kpi-note">{note}</span> : null}
-      </div>
+      {compare || note ? (
+        <div className="db-kpi-foot">
+          {compare ? <Delta cur={cur} prev={prev} mode={mode} /> : null}
+          {note ? <span className="db-kpi-note">{note}</span> : null}
+        </div>
+      ) : null}
     </Card>
   );
 }
@@ -203,6 +201,175 @@ function RankList({ items, empty = "暂无数据", onPick, pickedKey }) {
         );
       })}
     </ol>
+  );
+}
+
+const FUNNEL_COLORS = ["#155a7d", "#1f6f96", "#2f8bb8", "#4b9fc8"];
+const STATE_TAG = { 异常: "error", 提升: "success", 持平: "default" };
+const METRIC_GROUPS = [
+  { id: "layer", label: "漏斗" },
+  { id: "page", label: "页面" },
+  { id: "land", label: "落地页" },
+];
+
+/** 后两层只有入口的 2%~5%，按真实比例画放不下层名，宽度只示意收窄，人数以标注为准。 */
+function funnelData(stages) {
+  const entry = stages[0]?.cur || 1;
+  return stages.map((stage) => ({
+    stage: stage.name,
+    count: stage.cur,
+    share: stage.cur / entry,
+    width: 0.3 + 0.7 * Math.pow(stage.cur / entry, 0.35),
+  }));
+}
+
+function StageFunnel({ stages, height, withShare = false }) {
+  const config = {
+    data: funnelData(stages),
+    xField: "stage",
+    yField: "width",
+    height,
+    autoFit: true,
+    margin: 0,
+    padding: 0,
+    legend: false,
+    scale: { color: { range: FUNNEL_COLORS } },
+    style: { stroke: "#fff", lineWidth: 2 },
+    label: {
+      text: (d) => `${d.stage}\n${fmtInt(d.count)} 人${withShare ? ` · ${pct(d.share)}` : ""}`,
+      position: "inside",
+      transform: [],
+      fill: "#fff",
+      fontSize: 13,
+      fontWeight: 600,
+      lineHeight: 18,
+      textAlign: "center",
+    },
+    tooltip: {
+      title: "stage",
+      items: [{ field: "count", name: "人数", valueFormatter: (value) => `${fmtInt(value)} 人` }],
+    },
+  };
+  return (
+    <Suspense fallback={<div className="db-chart-wait" style={{ height }} />}>
+      <Funnel {...config} />
+    </Suspense>
+  );
+}
+
+function formatStrip(item) {
+  if (!item) return "—";
+  if (item.fmt === "pct") return pct(item.v);
+  if (item.fmt === "sec") return `${item.v} 秒`;
+  if (item.fmt === "int") return fmtInt(item.v);
+  return String(item.v);
+}
+
+function LossDetail({ gate, channelId, sliceName, compare }) {
+  const loss = LOSSES.find((item) => item.id === gate.lossId);
+  const state = compare ? stateOfThrough(gate.pass, gate.passPrev) : null;
+  const dpp = (gate.pass - gate.passPrev) * 100;
+  const rest = loss.metrics.filter(
+    (m) => m.name !== loss.primary && m.role !== "定位主指标" && m.name !== "留资访客 / 转化交互访客",
+  );
+  const groups = rest.some((m) => m.group)
+    ? METRIC_GROUPS.map((group) => ({ ...group, items: rest.filter((m) => m.group === group.id) })).filter((group) => group.items.length)
+    : [{ id: "all", label: null, items: rest }];
+
+  return (
+    <section className={`db-loss${state === "异常" ? " is-bad" : ""}`}>
+      <div className="db-loss-top">
+        <span className="db-loss-kicker">流失点 {loss.seq} · 关键指标</span>
+        {state ? <Tag color={STATE_TAG[state]}>{state}</Tag> : null}
+      </div>
+      <h3 className="db-loss-title">{loss.title}</h3>
+      <p className="db-loss-meta">
+        <span>{loss.meaning}</span>
+        <span>本期掉 {fmtInt(gate.dropped)} 人</span>
+        <span>{sliceName}</span>
+      </p>
+
+      <div className="db-loss-hero">
+        <div>
+          <span className="db-loss-hero-k">{loss.primary}</span>
+          <strong className="db-loss-hero-v">{pct(gate.pass)}</strong>
+        </div>
+        {compare ? (
+          <div className="db-loss-hero-side">
+            <span>上期 {pct(gate.passPrev)}</span>
+            {Math.abs(dpp) >= 0.05 ? (
+              <b className={dpp < 0 ? "is-down" : "is-up"}>{dpp > 0 ? "+" : ""}{dpp.toFixed(1)}pp</b>
+            ) : null}
+          </div>
+        ) : null}
+      </div>
+      <p className="db-loss-hint">{loss.primaryHint}</p>
+
+      {groups.map((group) => (
+        <div key={group.id} className="db-loss-group">
+          {group.label ? <h4>{group.label}</h4> : null}
+          <dl>
+            {group.items.map((m) => (
+              <div key={m.name} className="db-loss-row">
+                <dt>
+                  <Tooltip title={m.role}>{m.name}</Tooltip>
+                </dt>
+                <dd>{formatStrip(stripMetric(gate.lossId, channelId, m.name, gate))}</dd>
+              </div>
+            ))}
+          </dl>
+        </div>
+      ))}
+    </section>
+  );
+}
+
+function FunnelDetail({ stages, gates, channelId, sliceName, compare }) {
+  const stuck = bottleneck(gates);
+  const [active, setActive] = useState(stuck?.lossId || gates[0].lossId);
+  const activeGate = gates.find((gate) => gate.lossId === active) || gates[0];
+  const height = 88 * stages.length;
+
+  return (
+    <Row gutter={[24, 16]}>
+      <Col xs={24} lg={13}>
+        <div className="db-fd" style={{ height }}>
+          <div className="db-fd-chart">
+            <StageFunnel stages={stages} height={height} withShare />
+          </div>
+          <div className="db-fd-rail">
+            {gates.map((gate, index) => {
+              const state = compare ? stateOfThrough(gate.pass, gate.passPrev) : null;
+              const on = gate.lossId === activeGate.lossId;
+              return (
+                <button
+                  key={gate.lossId}
+                  type="button"
+                  className={`db-fd-loss${on ? " is-on" : ""}${state === "异常" ? " is-bad" : ""}`}
+                  style={{ top: `${((index + 1) / stages.length) * 100}%` }}
+                  aria-pressed={on}
+                  onMouseEnter={() => setActive(gate.lossId)}
+                  onFocus={() => setActive(gate.lossId)}
+                  onClick={() => setActive(gate.lossId)}
+                >
+                  <span className="db-fd-loss-k">
+                    流失点 {index + 1}
+                    {state === "异常" ? <Tag color="error" className="db-tag-mini">异常</Tag> : null}
+                  </span>
+                  <span className="db-fd-loss-v">
+                    留存 {pct(gate.pass)} · 流失 {fmtInt(gate.dropped)} 人
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+        <p className="db-card-hint db-fd-hint">指向流失点，右侧看这一层的关键指标。漏斗宽度只示意逐层收窄，人数以标注为准。</p>
+      </Col>
+      <Col xs={24} lg={11}>
+        <LossDetail gate={activeGate} channelId={channelId} sliceName={sliceName} compare={compare} />
+      </Col>
+    </Row>
   );
 }
 
@@ -262,14 +429,14 @@ function rateCell(value, prev) {
   );
 }
 
-function catalogColumns(cols) {
+function catalogColumns(cols, compare) {
   return cols.map((col) => {
     const base = { title: col.label, dataIndex: col.key, key: col.key };
     if (col.key === "name") return { ...base, fixed: "left", width: 220, ellipsis: { showTitle: true } };
     if (col.fmt === "url") return { ...base, width: 260, ellipsis: { showTitle: true }, render: (value) => value || "—" };
     if (col.key === "type") return { ...base, width: 120 };
     const sorter = (a, b) => (a[col.key] ?? -1) - (b[col.key] ?? -1);
-    if (col.fmt === "pct") return { ...base, align: "right", sorter, render: (value, row) => rateCell(value, col.prevKey ? row[col.prevKey] : null) };
+    if (col.fmt === "pct") return { ...base, align: "right", sorter, render: (value, row) => rateCell(value, compare && col.prevKey ? row[col.prevKey] : null) };
     if (col.fmt === "sec") return { ...base, align: "right", sorter, render: (value) => (value == null ? "—" : `${value} 秒`) };
     return { ...base, align: "right", sorter, render: (value) => (value == null ? "—" : fmtInt(value)) };
   });
@@ -284,9 +451,11 @@ const numCol = (title, dataIndex, render) => ({
   render: render || ((value) => (value == null ? "—" : fmtInt(value))),
 });
 
-export default function DetailBoard({ weekLabel, baselineLabel, authMap, onAuthorize }) {
-  const traffic = useMemo(() => trafficBoard(), []);
+export default function DetailBoard({ authMap, onAuthorize }) {
   const [range, setRange] = useState("d7");
+  const model = useMemo(() => buildBoardModel(range), [range]);
+  const { traffic, regions, stages: stageBook, leadCount, frame } = model;
+  const compare = frame.compare;
   const [catchCat, setCatchCat] = useState("all");
   const [catchSrc, setCatchSrc] = useState(null);
   const [intentId, setIntentId] = useState(null);
@@ -295,8 +464,7 @@ export default function DetailBoard({ weekLabel, baselineLabel, authMap, onAutho
   const [termTab, setTermTab] = useState("site");
   const [openDetail, setOpenDetail] = useState("");
 
-  const siteStages = getStages("site");
-  const leadCount = getLeadCount("site");
+  const siteStages = stageBook.site;
   const [entry, view, , lead] = siteStages;
   const siteGates = through(siteStages);
   const siteStuck = bottleneck(siteGates);
@@ -326,10 +494,10 @@ export default function DetailBoard({ weekLabel, baselineLabel, authMap, onAutho
   const userPickedSource = userSrc ? traffic.sources.find((item) => item.id === userSrc) : null;
   const userSlice = channelSlice(userCat, userPickedCat);
 
-  const stages = slice.empty ? [] : getStages(slice.channelId);
+  const stages = slice.empty ? [] : stageBook[slice.channelId];
   const gates = stages.length ? through(stages) : [];
-  const pageRows = slice.empty ? [] : catalogRows("page", slice.channelId);
-  const landRows = slice.empty ? [] : catalogRows("land", slice.channelId);
+  const pageRows = slice.empty ? [] : catalogRows("page", slice.channelId).map((row) => scaleFields(row, frame.factor, PAGE_COUNT_KEYS));
+  const landRows = slice.empty ? [] : catalogRows("land", slice.channelId).map((row) => scaleFields(row, frame.factor, PAGE_COUNT_KEYS));
   const pageMax = pageRows[0]?.uv || 1;
   const landMax = landRows[0]?.landUv || 1;
 
@@ -339,7 +507,7 @@ export default function DetailBoard({ weekLabel, baselineLabel, authMap, onAutho
       id: `${walk.id}-${index}`,
       names: row.pages.map((page) => page.name).join(" → "),
       types: walk.types.join(" → "),
-      count: row.count,
+      count: frame.factor === 1 ? row.count : Math.round(row.count * frame.factor),
     })))
     .sort((a, b) => b.count - a.count);
   const pathSum = namedPaths.reduce((sum, row) => sum + row.count, 0);
@@ -347,15 +515,22 @@ export default function DetailBoard({ weekLabel, baselineLabel, authMap, onAutho
   const intentName = intentId ? INTENTS.find((item) => item.id === intentId)?.name : "全部意图";
   const intentRows = userSlice.empty
     ? []
-    : DEPTH_INTENTS.map((item) => {
-      const intentStages = getStages(userSlice.channelId, item.id);
-      return { ...item, count: intentStages[0].cur, leads: intentStages[3].cur };
-    });
+    : (() => {
+      const base = DEPTH_INTENTS.map((item) => {
+        const intentStages = getStages(userSlice.channelId, item.id);
+        return { ...item, count: intentStages[0].cur, leads: intentStages[3].cur };
+      });
+      if (frame.factor === 1) return base;
+      const channelStages = stageBook[userSlice.channelId];
+      const counts = allocate(base.map((item) => item.count), channelStages[0].cur);
+      const leads = allocate(base.map((item) => item.leads), channelStages[3].cur);
+      return base.map((item, index) => ({ ...item, count: counts[index], leads: leads[index] }));
+    })();
   const intentTotal = intentRows.reduce((sum, item) => sum + item.count, 0);
 
   const termSource = SEARCH_TERM_SOURCES.find((item) => item.key === termTab);
   const termBlocked = Boolean(termSource?.authKey && authMap && authMap[termSource.authKey] === false);
-  const termRows = termBlocked ? [] : searchTermRows(termTab, authMap);
+  const termRows = (termBlocked ? [] : searchTermRows(termTab, authMap)).map((row) => scaleTerm(row, frame.factor));
   const termMetric = termTab === "site" ? "searches" : "clicks";
   const termMax = termRows[0]?.[termMetric] || 1;
 
@@ -395,8 +570,7 @@ export default function DetailBoard({ weekLabel, baselineLabel, authMap, onAutho
     </Button>
   );
 
-  const trendPack = TREND[range];
-  const trendData = trendPack.values.map((value, index) => ({ label: trendPack.labels[index], value }));
+  const trendData = frame.labels.map((label, index) => ({ label, value: frame.values[index] }));
   const trendConfig = {
     data: trendData,
     xField: "label",
@@ -412,7 +586,7 @@ export default function DetailBoard({ weekLabel, baselineLabel, authMap, onAutho
     scale: { y: { nice: true } },
     tooltip: {
       title: "label",
-      items: [{ channel: "y", name: trendPack.unit, valueFormatter: (value) => `${fmtInt(value)} 人` }],
+      items: [{ channel: "y", name: frame.unit, valueFormatter: (value) => `${fmtInt(value)} 人` }],
     },
   };
 
@@ -494,6 +668,7 @@ export default function DetailBoard({ weekLabel, baselineLabel, authMap, onAutho
     intents: `用户意图 · ${userSlice.name}`,
     paths: `页面访问路径 · ${userSlice.name} · ${intentName}`,
     terms: "访客搜索词",
+    regions: "地域分布 · 全站",
   }[openDetail];
 
   function renderDetail() {
@@ -509,30 +684,7 @@ export default function DetailBoard({ weekLabel, baselineLabel, authMap, onAutho
       );
     }
     if (openDetail === "funnel") {
-      return (
-        <Table
-          size="small"
-          rowKey="id"
-          pagination={false}
-          dataSource={stages}
-          columns={[
-            { title: "层级", dataIndex: "name", key: "name" },
-            numCol("本期人数", "cur"),
-            numCol("上周人数", "prev"),
-            { title: "占入口", key: "ofEntry", align: "right", render: (_, row) => pct(stages[0].cur ? row.cur / stages[0].cur : 0) },
-            {
-              title: "从上一层过来",
-              key: "pass",
-              align: "right",
-              render: (_, row, index) => {
-                if (!index) return "—";
-                const gate = gates[index - 1];
-                return rateCell(gate.pass, gate.passPrev);
-              },
-            },
-          ]}
-        />
-      );
+      return <FunnelDetail stages={stages} gates={gates} channelId={slice.channelId} sliceName={slice.name} compare={compare} />;
     }
     if (openDetail === "pages" || openDetail === "lands") {
       const land = openDetail === "lands";
@@ -541,7 +693,7 @@ export default function DetailBoard({ weekLabel, baselineLabel, authMap, onAutho
           size="small"
           rowKey="path"
           dataSource={land ? landRows : pageRows}
-          columns={catalogColumns([...PAGE_ID_COLS, ...PAGE_CATALOG_COLS[land ? "land" : "page"]])}
+          columns={catalogColumns([...PAGE_ID_COLS, ...PAGE_CATALOG_COLS[land ? "land" : "page"]], compare)}
           pagination={false}
           scroll={{ x: "max-content" }}
         />
@@ -582,6 +734,38 @@ export default function DetailBoard({ weekLabel, baselineLabel, authMap, onAutho
             numCol("人数", "count"),
             { title: "占比", key: "share", align: "right", render: (_, row) => pct(pathSum ? row.count / pathSum : 0) },
           ]}
+        />
+      );
+    }
+    if (openDetail === "regions") {
+      return (
+        <Table
+          size="small"
+          rowKey="id"
+          pagination={false}
+          dataSource={regions.cities}
+          scroll={{ y: 400 }}
+          columns={[
+            { title: "城市", dataIndex: "city", key: "city" },
+            {
+              title: "国家",
+              dataIndex: "country",
+              key: "country",
+              filters: regions.countries.map((item) => ({ text: item.country, value: item.country })),
+              onFilter: (value, row) => row.country === value,
+            },
+            { ...numCol("PV", "pv"), defaultSortOrder: "descend" },
+            numCol("人数(UV)", "uv"),
+            numCol("留资访客", "leads"),
+          ]}
+          summary={() => (
+            <Table.Summary.Row className="db-sum-row">
+              <Table.Summary.Cell index={0} colSpan={2}>合计（{regions.countries.length} 个国家 / {regions.cities.length} 个城市）</Table.Summary.Cell>
+              <Table.Summary.Cell index={2} align="right">{fmtInt(regions.countries.reduce((sum, item) => sum + item.pv, 0))}</Table.Summary.Cell>
+              <Table.Summary.Cell index={3} align="right">{fmtInt(regions.countries.reduce((sum, item) => sum + item.uv, 0))}</Table.Summary.Cell>
+              <Table.Summary.Cell index={4} align="right">{fmtInt(regions.countries.reduce((sum, item) => sum + item.leads, 0))}</Table.Summary.Cell>
+            </Table.Summary.Row>
+          )}
         />
       );
     }
@@ -640,47 +824,23 @@ export default function DetailBoard({ weekLabel, baselineLabel, authMap, onAutho
   const funnelBody = slice.empty ? (
     <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description={`${slice.name} 还没有漏斗数据`} />
   ) : (
-    <div className="db-funnel">
-      {stages.map((layer, index) => {
-        const gate = index ? gates[index - 1] : null;
-        const bad = gate ? stateOfThrough(gate.pass, gate.passPrev) === "异常" : false;
-        return (
-          <div key={layer.id} className={`db-funnel-row${bad ? " is-bad" : ""}`}>
-            <div className="db-funnel-line">
-              <span className="db-funnel-name">{layer.name}</span>
-              <span className="db-funnel-num">{fmtInt(layer.cur)} 人</span>
-            </div>
-            <Progress
-              percent={stages[0].cur ? (layer.cur / stages[0].cur) * 100 : 0}
-              showInfo={false}
-              strokeColor={bad ? DANGER : ACCENT}
-            />
-            <div className="db-funnel-sub">
-              {gate ? (
-                <>
-                  上一层过来 <b>{pct(gate.pass)}</b>
-                  <span>上周 {pct(gate.passPrev)}</span>
-                  {bad ? <Tag color="error" className="db-tag-mini">异常</Tag> : null}
-                </>
-              ) : (
-                <>上周 {fmtInt(layer.prev)} 人</>
-              )}
-            </div>
-          </div>
-        );
-      })}
-    </div>
+    <StageFunnel stages={stages} height={300} />
   );
 
   return (
     <ConfigProvider theme={BOARD_THEME}>
       <div className="dan-board">
-        <div className="db-period">
-          <span>统计周期：{weekLabel}</span>
-          <span>对照：{baselineLabel}</span>
+        <div className="db-window">
+          <span>时间窗口</span>
+          <Segmented
+            value={range}
+            onChange={setRange}
+            options={BOARD_RANGES.map(({ value, label }) => ({ value, label }))}
+          />
+          <span className="db-window-span">{frame.span}</span>
         </div>
 
-        {siteStuck ? (
+        {compare && siteStuck ? (
           <Alert
             className="db-focus"
             type="warning"
@@ -691,10 +851,10 @@ export default function DetailBoard({ weekLabel, baselineLabel, authMap, onAutho
 
         <Row gutter={[16, 16]} className="db-kpis">
           <Col xs={24} sm={12} xl={6}>
-            <KpiCard title="访问人数" cur={entry.cur} prev={entry.prev} note={`上周 ${fmtInt(entry.prev)} 人`} />
+            <KpiCard title="访问人数" cur={entry.cur} prev={entry.prev} compare={compare} note={compare ? `上周 ${fmtInt(entry.prev)} 人` : null} />
           </Col>
           <Col xs={24} sm={12} xl={6}>
-            <KpiCard title="询盘条数" cur={leadCount.cur} prev={leadCount.prev} note={`留资访客 ${fmtInt(lead.cur)} 人`} />
+            <KpiCard title="询盘条数" cur={leadCount.cur} prev={leadCount.prev} compare={compare} note={`留资访客 ${fmtInt(lead.cur)} 人`} />
           </Col>
           <Col xs={24} sm={12} xl={6}>
             <KpiCard
@@ -702,8 +862,9 @@ export default function DetailBoard({ weekLabel, baselineLabel, authMap, onAutho
               cur={view.cur / entry.cur}
               prev={view.prev / entry.prev}
               mode="rate"
-              note={`上周 ${pct(view.prev / entry.prev)}`}
-              alert={rateBrokeDown(view.cur / entry.cur, view.prev / entry.prev)}
+              compare={compare}
+              note={compare ? `上周 ${pct(view.prev / entry.prev)}` : null}
+              alert={compare && rateBrokeDown(view.cur / entry.cur, view.prev / entry.prev)}
             />
           </Col>
           <Col xs={24} sm={12} xl={6}>
@@ -712,8 +873,9 @@ export default function DetailBoard({ weekLabel, baselineLabel, authMap, onAutho
               cur={lead.cur / entry.cur}
               prev={lead.prev / entry.prev}
               mode="rate"
-              note={`上周 ${pct(lead.prev / entry.prev)}`}
-              alert={rateBrokeDown(lead.cur / entry.cur, lead.prev / entry.prev)}
+              compare={compare}
+              note={compare ? `上周 ${pct(lead.prev / entry.prev)}` : null}
+              alert={compare && rateBrokeDown(lead.cur / entry.cur, lead.prev / entry.prev)}
             />
           </Col>
         </Row>
@@ -721,24 +883,10 @@ export default function DetailBoard({ weekLabel, baselineLabel, authMap, onAutho
         <SectionTitle title="流量" hint="从哪来、来了多少" />
         <Row gutter={[16, 16]}>
           <Col span={24}>
-            <Card
-              title="独立访客走势"
-              extra={(
-                <Segmented
-                  size="small"
-                  value={range}
-                  onChange={setRange}
-                  options={[
-                    { value: "d7", label: "近 7 天" },
-                    { value: "d30", label: "近 30 天" },
-                    { value: "period", label: "按期" },
-                  ]}
-                />
-              )}
-            >
-              <div className="db-chart-unit">单位：人（{trendPack.unit}）</div>
+            <Card title="独立访客走势">
+              <div className="db-chart-unit">单位：人（{frame.unit}）</div>
               <Suspense fallback={<div className="db-chart-wait" />}>
-                <Line {...trendConfig} />
+                <Line key={range} {...trendConfig} />
               </Suspense>
             </Card>
           </Col>
@@ -843,7 +991,7 @@ export default function DetailBoard({ weekLabel, baselineLabel, authMap, onAutho
               <RankList
                 empty={`${slice.name} 还没有落地页数据`}
                 items={landRows.slice(0, 5).map((row) => {
-                  const bad = rateBrokeDown(row.catchRate, row.catchRatePrev);
+                  const bad = compare && rateBrokeDown(row.catchRate, row.catchRatePrev);
                   return {
                     key: row.path,
                     name: row.name,
@@ -851,7 +999,7 @@ export default function DetailBoard({ weekLabel, baselineLabel, authMap, onAutho
                     valueText: `UV ${fmtInt(row.landUv)}`,
                     percent: (row.landUv / landMax) * 100,
                     alert: bad,
-                    sub: `接住 ${row.catchRate == null ? "—" : pct(row.catchRate)}${row.catchRatePrev == null ? "" : `（上周 ${pct(row.catchRatePrev)}）`} · 秒退 ${row.bounce == null ? "—" : pct(row.bounce)}`,
+                    sub: `接住 ${row.catchRate == null ? "—" : pct(row.catchRate)}${compare && row.catchRatePrev != null ? `（上周 ${pct(row.catchRatePrev)}）` : ""} · 秒退 ${row.bounce == null ? "—" : pct(row.bounce)}`,
                   };
                 })}
               />
@@ -859,7 +1007,7 @@ export default function DetailBoard({ weekLabel, baselineLabel, authMap, onAutho
           </Col>
         </Row>
 
-        <SectionTitle title="用户" hint="什么意图、怎么走、搜了什么" />
+        <SectionTitle title="用户" hint="什么意图、怎么走、在哪、搜了什么" />
         <SliceBar
           cats={traffic.cats}
           cat={userCat}
@@ -873,11 +1021,11 @@ export default function DetailBoard({ weekLabel, baselineLabel, authMap, onAutho
             className="db-slice-note"
             type="info"
             showIcon
-            title={`${userPickedSource.name} 暂无单独的意图和访问路径，下面展示 ${userPickedSource.catName} 整个渠道。搜索词按来源分，不随渠道变。`}
+            title={`${userPickedSource.name} 暂无单独的意图和访问路径，下面展示 ${userPickedSource.catName} 整个渠道。地域分布按全站、搜索词按来源分，不随渠道变。`}
           />
         ) : null}
         <Row gutter={[16, 16]}>
-          <Col xs={24} lg={12} xl={8}>
+          <Col xs={24} lg={12}>
             <Card
               title={<>用户意图 <Tag className="db-tag-mini">{userSlice.name}</Tag></>}
               extra={userSlice.empty ? null : detailLink("intents")}
@@ -908,7 +1056,7 @@ export default function DetailBoard({ weekLabel, baselineLabel, authMap, onAutho
               )}
             </Card>
           </Col>
-          <Col xs={24} lg={12} xl={8}>
+          <Col xs={24} lg={12}>
             <Card
               title={<>页面访问路径 TOP5 <Tag className="db-tag-mini">{userSlice.name} · {intentName}</Tag></>}
               extra={userSlice.empty ? null : detailLink("paths")}
@@ -927,7 +1075,19 @@ export default function DetailBoard({ weekLabel, baselineLabel, authMap, onAutho
               />
             </Card>
           </Col>
-          <Col xs={24} lg={24} xl={8}>
+          <Col xs={24} lg={12}>
+            <Card
+              title={<>地域分布 <Tag className="db-tag-mini">全站</Tag></>}
+              extra={detailLink("regions")}
+              className="db-fill db-map-card"
+              classNames={{ body: "db-map-body" }}
+            >
+              <Suspense fallback={<div className="db-chart-wait" style={{ height: 300 }} />}>
+                <RegionMap countries={regions.countries} height={300} />
+              </Suspense>
+            </Card>
+          </Col>
+          <Col xs={24} lg={12}>
             <Card title="搜索词 TOP5" extra={detailLink("terms")} className="db-fill">
               <p className="db-card-hint">和「明细数据」同一套搜索词，按来源分开排。</p>
               <Segmented block size="small" value={termTab} onChange={setTermTab} options={TERM_TABS} className="db-term-tabs" />
@@ -949,6 +1109,8 @@ export default function DetailBoard({ weekLabel, baselineLabel, authMap, onAutho
           open={Boolean(openDetail)}
           title={modalTitle}
           width={1040}
+          rootClassName="db-modal"
+          styles={openDetail === "regions" ? { body: { height: 496, overflow: "hidden" } } : undefined}
           footer={null}
           destroyOnHidden
           onCancel={() => setOpenDetail("")}

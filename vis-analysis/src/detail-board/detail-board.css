@@ -1,17 +1,27 @@
-.dan-board {
+/* 弹窗渲染在 body 下，不在 .dan-board 里，弹窗内用到的类要同时挂在 .db-modal 下 */
+.dan-board,
+.db-modal {
   --db-accent: #2f8bb8;
   --db-danger: #cf1322;
   --db-text-2: #64748b;
   --db-line: #e8edf2;
+}
+
+.dan-board {
   display: flex;
   flex-direction: column;
   gap: 16px;
 }
 
-.dan-board .db-period {
+.dan-board .db-window {
   display: flex;
   flex-wrap: wrap;
-  gap: 4px 20px;
+  align-items: center;
+  gap: 8px 12px;
+}
+
+.dan-board .db-window > span,
+.dan-board .db-window-span {
   font-size: 13px;
   color: var(--db-text-2);
 }
@@ -94,19 +104,22 @@
 }
 
 .dan-board .db-card-hint,
+.db-modal .db-card-hint,
 .dan-board .db-chart-unit {
   margin: 0 0 12px;
   font-size: 12px;
   color: var(--db-text-2);
 }
 
-.dan-board .db-chart-wait {
+.dan-board .db-chart-wait,
+.db-modal .db-chart-wait {
   height: 280px;
   border-radius: 6px;
   background: #f7f9fb;
 }
 
-.dan-board .db-tag-mini {
+.dan-board .db-tag-mini,
+.db-modal .db-tag-mini {
   margin-inline-start: 6px;
   font-size: 12px;
   font-weight: 400;
@@ -155,6 +168,38 @@
   font-weight: 600;
 }
 
+.dan-board .db-map-card {
+  display: flex;
+  flex-direction: column;
+}
+
+.dan-board .db-map-body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.dan-board .db-map-legend {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 8px;
+  font-size: 12px;
+  color: var(--db-text-2);
+}
+
+.dan-board .db-map-legend span:first-child {
+  margin-right: 4px;
+}
+
+.dan-board .db-map-legend i {
+  width: 160px;
+  height: 8px;
+  border-radius: 4px;
+}
+
 .dan-board .db-sum-row > td {
   background: #fafbfc;
   font-weight: 600;
@@ -177,13 +222,16 @@
   background: #e6f4fb;
 }
 
-.dan-board .db-cell-sub {
+.dan-board .db-cell-sub,
+.db-modal .db-cell-sub {
   font-size: 12px;
   color: var(--db-text-2);
 }
 
 .dan-board .db-cell-bad,
-.dan-board .db-cell-bad .db-cell-sub {
+.dan-board .db-cell-bad .db-cell-sub,
+.db-modal .db-cell-bad,
+.db-modal .db-cell-bad .db-cell-sub {
   color: var(--db-danger);
 }
 
@@ -296,50 +344,205 @@
 }
 
 /* 漏斗 */
-.dan-board .db-funnel {
+/* 漏斗明细弹窗：左漏斗 + 流失点，右流失点关键指标 */
+.db-modal .db-fd {
+  position: relative;
+  display: flex;
+}
+
+.db-modal .db-fd-chart {
+  flex: 0 0 58%;
+  min-width: 0;
+}
+
+.db-modal .db-fd-rail {
+  position: relative;
+  flex: 1;
+}
+
+.db-modal .db-fd-loss {
+  position: absolute;
+  left: 22px;
+  right: 0;
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  align-items: flex-start;
+  gap: 2px;
+  padding: 6px 10px;
+  border: 1px solid var(--db-line);
+  border-radius: 8px;
+  background: #fff;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  transform: translateY(-50%);
+  transition: border-color 0.15s, box-shadow 0.15s;
 }
 
-.dan-board .db-funnel-row {
-  padding: 8px 10px;
-  border-radius: 6px;
+.db-modal .db-fd-loss::before {
+  content: "";
+  position: absolute;
+  top: 50%;
+  right: 100%;
+  width: 22px;
+  border-top: 1px dashed #94a3b8;
 }
 
-.dan-board .db-funnel-row.is-bad {
-  background: #fff1f0;
+.db-modal .db-fd-loss:hover,
+.db-modal .db-fd-loss:focus-visible,
+.db-modal .db-fd-loss.is-on {
+  border-color: var(--db-accent);
+  box-shadow: 0 0 0 2px rgba(47, 139, 184, 0.15);
+  outline: none;
 }
 
-.dan-board .db-funnel-line {
+.db-modal .db-fd-loss.is-bad {
+  border-color: #ffccc7;
+  background: #fff7f6;
+}
+
+.db-modal .db-fd-loss.is-bad.is-on {
+  border-color: var(--db-danger);
+  box-shadow: 0 0 0 2px rgba(207, 19, 34, 0.12);
+}
+
+.db-modal .db-fd-loss.is-on::before {
+  border-top: 2px solid var(--db-accent);
+}
+
+.db-modal .db-fd-loss.is-bad.is-on::before {
+  border-top-color: var(--db-danger);
+}
+
+.db-modal .db-fd-loss-k {
+  display: inline-flex;
+  align-items: center;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.db-modal .db-fd-loss-v {
+  font-size: 12px;
+  color: var(--db-text-2);
+  font-variant-numeric: tabular-nums;
+}
+
+.db-modal .db-fd-hint {
+  margin-top: 12px;
+}
+
+.db-modal .db-loss {
+  height: 100%;
+  padding: 18px 20px;
+  border: 1px solid var(--db-line);
+  border-radius: 10px;
+}
+
+.db-modal .db-loss-top {
   display: flex;
   justify-content: space-between;
-  font-size: 14px;
-}
-
-.dan-board .db-funnel-name {
-  font-weight: 600;
-}
-
-.dan-board .db-funnel-num {
-  font-variant-numeric: tabular-nums;
-  font-weight: 600;
-}
-
-.dan-board .db-funnel-sub {
-  display: flex;
   align-items: center;
-  gap: 8px;
+}
+
+.db-modal .db-loss-kicker {
+  font-size: 12px;
+  color: #b4532a;
+}
+
+.db-modal .db-loss-title {
+  margin: 6px 0 2px;
+  font-size: 20px;
+  font-weight: 600;
+}
+
+.db-modal .db-loss-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 14px;
+  margin: 0;
+  font-size: 13px;
+  color: var(--db-text-2);
+}
+
+.db-modal .db-loss-hero {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  margin-top: 16px;
+}
+
+.db-modal .db-loss-hero-k {
+  display: block;
+  font-size: 13px;
+  color: var(--db-text-2);
+}
+
+.db-modal .db-loss-hero-v {
+  font-size: 34px;
+  font-weight: 650;
+  line-height: 1.2;
+  font-variant-numeric: tabular-nums;
+}
+
+.db-modal .db-loss.is-bad .db-loss-hero-v {
+  color: var(--db-danger);
+}
+
+.db-modal .db-loss-hero-side {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  font-size: 13px;
+  color: var(--db-text-2);
+}
+
+.db-modal .db-loss-hero-side .is-down {
+  color: var(--db-danger);
+}
+
+.db-modal .db-loss-hero-side .is-up {
+  color: #389e0d;
+}
+
+.db-modal .db-loss-hint {
+  margin: 4px 0 0;
+  padding-bottom: 14px;
+  border-bottom: 1px solid var(--db-line);
   font-size: 12px;
   color: var(--db-text-2);
 }
 
-.dan-board .db-funnel-sub b {
-  color: #1e293b;
+.db-modal .db-loss-group h4 {
+  margin: 14px 0 4px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--db-text-2);
 }
 
-.dan-board .db-funnel-row.is-bad .db-funnel-sub b {
-  color: var(--db-danger);
+.db-modal .db-loss-group dl {
+  margin: 0;
+}
+
+.db-modal .db-loss-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 9px 0;
+  border-bottom: 1px solid #f1f4f7;
+  font-size: 14px;
+}
+
+.db-modal .db-loss-row:last-child {
+  border-bottom: 0;
+}
+
+.db-modal .db-loss-row dt {
+  cursor: help;
+}
+
+.db-modal .db-loss-row dd {
+  margin: 0;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
 }
 
 /* 网站承接筛选条 */
@@ -374,6 +577,7 @@
   margin-bottom: 12px;
 }
 
-.dan-board .db-term-alert {
+.dan-board .db-term-alert,
+.db-modal .db-term-alert {
   margin-bottom: 12px;
 }

@@ -315,33 +315,37 @@ function Workbench() {
               }))}
               onChange={(id) => setSiteId(id)}
             />
-            <Select
-              className="dan-site-select dan-week-select"
-              size="middle"
-              value={week.id}
-              showSearch={false}
-              allowClear={false}
-              suffixIcon={<DownOutlined />}
-              aria-label="分析周"
-              style={{ minWidth: 220 }}
-              options={WEEKS.map((item) => ({
-                value: item.id,
-                label: item.label,
-              }))}
-              onChange={(id) => setWeekId(id)}
-            />
-            <span className="dan-pill">对照上一周 · {week.baselineLabel}</span>
-            {missingAuth.map((item) => (
-              <button
-                key={item.key}
-                type="button"
-                className="dan-pill is-miss"
-                title={`${item.use}。点击去授权`}
-                onClick={() => openAuth(item.key)}
-              >
-                {item.name}未授权
-              </button>
-            ))}
+            {mainTab === "board" ? null : (
+              <>
+                <Select
+                  className="dan-site-select dan-week-select"
+                  size="middle"
+                  value={week.id}
+                  showSearch={false}
+                  allowClear={false}
+                  suffixIcon={<DownOutlined />}
+                  aria-label="分析周"
+                  style={{ minWidth: 220 }}
+                  options={WEEKS.map((item) => ({
+                    value: item.id,
+                    label: item.label,
+                  }))}
+                  onChange={(id) => setWeekId(id)}
+                />
+                <span className="dan-pill">对照上一周 · {week.baselineLabel}</span>
+                {missingAuth.map((item) => (
+                  <button
+                    key={item.key}
+                    type="button"
+                    className="dan-pill is-miss"
+                    title={`${item.use}。点击去授权`}
+                    onClick={() => openAuth(item.key)}
+                  >
+                    {item.name}未授权
+                  </button>
+                ))}
+              </>
+            )}
           </div>
         </header>
 
@@ -768,8 +772,6 @@ function Workbench() {
           </div>
         ) : (
           <DetailBoard
-            weekLabel={week.label}
-            baselineLabel={week.baselineLabel}
             authMap={authMap}
             onAuthorize={openAuth}
           />
