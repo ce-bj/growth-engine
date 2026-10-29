@@ -65,7 +65,7 @@ const THEME = {
   },
 };
 
-function AuthConnect({ sourceKey, onBack, onDone }) {
+function AuthConnect({ sourceKey, backLabel, onBack, onDone }) {
   const { message } = AntApp.useApp();
   const [busy, setBusy] = useState(false);
   const copy = SOURCE_AUTH_PAGES[sourceKey] || {
@@ -87,7 +87,7 @@ function AuthConnect({ sourceKey, onBack, onDone }) {
     <div className="dan-blank">
       <div className="dan-blank-bar">
         <Button icon={<ArrowLeftOutlined />} onClick={onBack}>
-          返回明细数据
+          {backLabel}
         </Button>
       </div>
       <div className="dan-blank-body">
@@ -190,7 +190,7 @@ function scrollToId(id) {
   document.getElementById(id)?.scrollIntoView({ behavior: "smooth", block: "start" });
 }
 
-function Workbench() {
+function Workbench({ boardOnly }) {
   const { message } = AntApp.useApp();
   const [taskState, setTaskState] = useState({});
   const [openKey, setOpenKey] = useState(null);
@@ -257,6 +257,7 @@ function Workbench() {
   function finishAuth(key) {
     setGranted((prev) => ({ ...prev, [key]: true }));
     setAuthKey(null);
+    if (boardOnly) return;
     setMainTab("data");
     setPreferSource(key === "gsc" || key === "ads" || key === "site" ? key : "all");
     setScrollSearch(true);
@@ -275,6 +276,7 @@ function Workbench() {
     return (
       <AuthConnect
         sourceKey={authKey}
+        backLabel={boardOnly ? "返回数据看板" : "返回明细数据"}
         onBack={() => setAuthKey(null)}
         onDone={finishAuth}
       />
@@ -291,6 +293,41 @@ function Workbench() {
     );
   }
 
+  const siteSelect = (
+    <Select
+      className="dan-site-select"
+      size="middle"
+      value={siteId}
+      showSearch={false}
+      allowClear={false}
+      suffixIcon={<DownOutlined />}
+      aria-label="已绑定网站"
+      style={{ minWidth: 280 }}
+      options={SITES.map((item) => ({
+        value: item.id,
+        label: `${item.name.replace("Demo · ", "")}`,
+      }))}
+      onChange={(id) => setSiteId(id)}
+    />
+  );
+
+  if (boardOnly) {
+    return (
+      <div className="dan-page">
+        <div className="dan-inner">
+          <header className="dan-hero">
+            <div>
+              <p className="dan-kicker">数据来自访客行为分析智能体</p>
+              <h1 className="dan-title">数据看板</h1>
+            </div>
+            <div className="dan-hero-tools">{siteSelect}</div>
+          </header>
+          <DetailBoard authMap={authMap} onAuthorize={openAuth} />
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="dan-page">
       <div className="dan-inner">
@@ -300,52 +337,34 @@ function Workbench() {
             <h1 className="dan-title">AI 访客行为分析智能体</h1>
           </div>
           <div className="dan-hero-tools">
+            {siteSelect}
             <Select
-              className="dan-site-select"
+              className="dan-site-select dan-week-select"
               size="middle"
-              value={siteId}
+              value={week.id}
               showSearch={false}
               allowClear={false}
               suffixIcon={<DownOutlined />}
-              aria-label="已绑定网站"
-              style={{ minWidth: 280 }}
-              options={SITES.map((item) => ({
+              aria-label="分析周"
+              style={{ minWidth: 220 }}
+              options={WEEKS.map((item) => ({
                 value: item.id,
-                label: `${item.name.replace("Demo · ", "")}`,
+                label: item.label,
               }))}
-              onChange={(id) => setSiteId(id)}
+              onChange={(id) => setWeekId(id)}
             />
-            {mainTab === "board" ? null : (
-              <>
-                <Select
-                  className="dan-site-select dan-week-select"
-                  size="middle"
-                  value={week.id}
-                  showSearch={false}
-                  allowClear={false}
-                  suffixIcon={<DownOutlined />}
-                  aria-label="分析周"
-                  style={{ minWidth: 220 }}
-                  options={WEEKS.map((item) => ({
-                    value: item.id,
-                    label: item.label,
-                  }))}
-                  onChange={(id) => setWeekId(id)}
-                />
-                <span className="dan-pill">对照上一周 · {week.baselineLabel}</span>
-                {missingAuth.map((item) => (
-                  <button
-                    key={item.key}
-                    type="button"
-                    className="dan-pill is-miss"
-                    title={`${item.use}。点击去授权`}
-                    onClick={() => openAuth(item.key)}
-                  >
-                    {item.name}未授权
-                  </button>
-                ))}
-              </>
-            )}
+            <span className="dan-pill">对照上一周 · {week.baselineLabel}</span>
+            {missingAuth.map((item) => (
+              <button
+                key={item.key}
+                type="button"
+                className="dan-pill is-miss"
+                title={`${item.use}。点击去授权`}
+                onClick={() => openAuth(item.key)}
+              >
+                {item.name}未授权
+              </button>
+            ))}
           </div>
         </header>
 
@@ -367,15 +386,6 @@ function Workbench() {
             onClick={() => setMainTab("data")}
           >
             明细数据
-          </button>
-          <button
-            type="button"
-            role="tab"
-            aria-selected={mainTab === "board"}
-            className={mainTab === "board" ? "is-on" : ""}
-            onClick={() => setMainTab("board")}
-          >
-            新-明细数据看板
           </button>
         </nav>
 
@@ -694,7 +704,7 @@ function Workbench() {
         </>
         )}
           </>
-        ) : mainTab === "data" ? (
+        ) : (
           <div className="dan-data-tab">
             <p className="dan-path-note dan-data-filter">
               漏斗、搜索词和路径都是 {week.label}，对照 {week.baselineLabel}。
@@ -770,22 +780,17 @@ function Workbench() {
               </div>
             </section>
           </div>
-        ) : (
-          <DetailBoard
-            authMap={authMap}
-            onAuthorize={openAuth}
-          />
         )}
       </div>
     </div>
   );
 }
 
-export default function DataAnalysisNewPage() {
+export default function DataAnalysisNewPage({ view = "agent" }) {
   return (
     <ConfigProvider locale={zhCN} theme={THEME} button={{ autoInsertSpace: false }}>
       <AntApp style={{ flex: 1, minWidth: 0, minHeight: 0, height: "100%", display: "flex" }}>
-        <Workbench />
+        <Workbench boardOnly={view === "board"} />
       </AntApp>
     </ConfigProvider>
   );

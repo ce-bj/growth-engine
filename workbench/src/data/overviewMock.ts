@@ -1,183 +1,154 @@
 import type { ViewId } from '../types'
 
-/** 智能体概览 mock：对齐访客分析 CNC 贯穿案例，给「很少登录」的人看价值 */
+/** 智能体概览 mock：只讲智能体本身——干了多少、等你批什么、各自跑到哪了。
+ *  时间对齐访客分析贯穿案例：9月21日（周一）刚出完 9月14日–20日的诊断。 */
 
-export const overviewPeriod = {
-  label: '9月14日 – 9月20日',
+export const overviewMonth = {
+  label: '9 月',
+  span: '9月1日 – 9月21日',
+  updatedAt: '09-21 09:30',
 }
 
-export const overviewKpis = [
+export type AgentStatus = 'running' | 'waiting' | 'soon'
+
+export type OverviewAgent = {
+  key: string
+  name: string
+  view?: ViewId
+  status: AgentStatus
+  cadence: string
+  lastRun: string
+  lastResult: string
+  nextRun: string
+  monthRuns: number
+}
+
+export const overviewAgents: OverviewAgent[] = [
   {
-    key: 'uv',
-    label: '本期访问',
-    value: 1650,
-    suffix: '人',
-    delta: '与上期持平',
-    tone: 'flat' as const,
+    key: 'visitor',
+    name: '访客行为分析智能体',
+    view: 'visitor',
+    status: 'waiting',
+    cadence: '每周一 02:00 诊断上一自然周',
+    lastRun: '09-21 02:14',
+    lastResult: '卡点在有效浏览，写好 2 份任务说明',
+    nextRun: '09-28 02:00',
+    monthRuns: 3,
   },
   {
-    key: 'leads',
-    label: '留资',
-    value: 36,
-    suffix: '条',
-    delta: '上期 47 · 少 11',
-    tone: 'down' as const,
+    key: 'marketing',
+    name: '智能营销页智能体',
+    view: 'marketing',
+    status: 'waiting',
+    cadence: '收到任务说明后出落地页草稿',
+    lastRun: '09-18 09:20',
+    lastResult: '「CNC 打样」落地页草稿已出',
+    nextRun: '有新任务说明时',
+    monthRuns: 2,
   },
   {
-    key: 'cvr',
-    label: '询盘转化率',
-    value: '2.2%',
-    suffix: '',
-    delta: '上期 2.8%',
-    tone: 'down' as const,
+    key: 'content',
+    name: '内容发布智能体',
+    view: 'content',
+    status: 'waiting',
+    cadence: '每周二、五 10:00 发布',
+    lastRun: '09-19 10:05',
+    lastResult: '2 篇内容过质检，等待发布',
+    nextRun: '09-22 10:00',
+    monthRuns: 6,
   },
   {
-    key: 'browse',
-    label: '有效浏览率',
-    value: '30%',
-    suffix: '',
-    delta: '上期 40% · 异常',
-    tone: 'down' as const,
+    key: 'ready',
+    name: 'AI 友好度',
+    view: 'ready',
+    status: 'running',
+    cadence: '每周一 03:00 全站复检',
+    lastRun: '09-21 03:00',
+    lastResult: '被看见 100 · 被理解 100',
+    nextRun: '09-28 03:00',
+    monthRuns: 3,
+  },
+  {
+    key: 'service',
+    name: 'AI 智能客服 Pro',
+    status: 'soon',
+    cadence: '接待询盘，对话沉淀回知识库',
+    lastRun: '—',
+    lastResult: '即将上线',
+    nextRun: '—',
+    monthRuns: 0,
   },
 ]
 
-export const overviewWork = {
-  autoRuns: 12,
-  closedTickets: 3,
-  pendingConfirm: 1,
-  pendingTitle: '营销落地页草稿待确认发布',
+export type PendingTask = {
+  id: string
+  agent: string
+  view: ViewId
+  title: string
+  desc: string
+  submittedAt: string
+  waiting: string
 }
 
-export const overviewFunnel = {
-  summary:
-    '人来了，但没看进去。有效浏览率 40% 掉到 30%。访客分析已定位，营销页智能体已按广告承诺重做落地页草稿。',
-  stages: [
-    { id: 'entry', name: '到达', hint: '来了多少人', value: 1650, prev: 1650 },
-    { id: 'view', name: '有效浏览', hint: '看进去没', value: 495, prev: 660, drop: true },
-    { id: 'interact', name: '互动', hint: '动手没', value: 74, prev: 99 },
-    { id: 'lead', name: '留资', hint: '留下没', value: 34, prev: 45, note: '36 条' },
-  ],
-}
-
-export const overviewTimeline = [
+/** 待审批：按等待时长从长到短 */
+export const overviewPending: PendingTask[] = [
   {
-    time: '09-21 02:20',
-    title: '询价意图落在详情首屏',
-    desc: '这一周询价意向访客增多，多数停在首屏就走。',
-    agent: 'AI访客行为分析',
-    action: 'view' as const,
-    view: 'visitor' as const,
+    id: 'p-marketing-draft',
+    agent: '智能营销页智能体',
+    view: 'marketing',
+    title: '「CNC 打样」落地页草稿待确认发布',
+    desc: '首屏对齐「48 小时打样 + ISO」，发布前需要你拍板。',
+    submittedAt: '09-18 09:20',
+    waiting: '已等 3 天',
   },
   {
-    time: '09-21 02:14',
-    title: '上一自然周诊断完成',
-    desc: '9月14日–9月20日，对照上一周。访问持平，留资下跌，卡点在有效浏览。',
-    agent: 'AI访客行为分析',
-    action: 'view' as const,
-    view: 'visitor' as const,
-  },
-  {
-    time: '08-31 09:20',
-    title: '落地页草稿待确认发布',
-    desc: '首屏对齐「48 小时打样 + ISO」，发布前需您拍板。',
-    agent: 'AI智能营销页',
-    action: 'confirm' as const,
-    view: 'marketing' as const,
-  },
-  {
-    time: '08-31 09:05',
+    id: 'p-content-publish',
+    agent: '内容发布智能体',
+    view: 'content',
     title: '2 篇内容过质检待发布',
     desc: 'SDPH 产品介绍、PT100 选型指南已自检通过。',
-    agent: 'AI内容运营',
-    action: 'confirm' as const,
-    view: 'content' as const,
+    submittedAt: '09-19 10:05',
+    waiting: '已等 2 天',
   },
   {
-    time: '08-29 11:20',
-    title: '本周 6 篇增信内容已发布',
-    desc: '全部通过 EEAT / GEO 门禁，无需再处理。',
-    agent: 'AI内容运营',
-    action: 'view' as const,
-    view: 'content' as const,
+    id: 'p-visitor-6061',
+    agent: '访客行为分析智能体',
+    view: 'visitor',
+    title: 'CNC-6061 铝支架详情 · 改第一屏',
+    desc: '落地接住率 53.8% → 21.9%。确认后任务说明交给智能营销页智能体。',
+    submittedAt: '09-21 02:20',
+    waiting: '今天',
+  },
+  {
+    id: 'p-visitor-oem',
+    agent: '访客行为分析智能体',
+    view: 'visitor',
+    title: 'CNC OEM 询价留资页',
+    desc: '询价来意没有专属承接页。确认后任务说明交给智能营销页智能体。',
+    submittedAt: '09-21 02:20',
+    waiting: '今天',
   },
 ]
 
-type AiReadinessPillar = {
-  key: string
+export type DoneTask = {
+  id: string
+  time: string
+  agent: string
   title: string
-  status: string
-  tone: 'ok' | 'warn'
-  score: number
-  summary: string
-  checks: { label: string; detail: string; score: number }[]
-  action?: string
-  view?: ViewId
+  result: string
+  byHand: boolean
 }
 
-/** 站点是否具备被 AI 发现、被 AI 读懂的条件。分数是条件分，不是引用次数。 */
-export const overviewAiReadiness: {
-  title: string
-  note: string
-  checkedLabel: string
-  channels: { name: string; open: boolean }[]
-  pillars: AiReadinessPillar[]
-} = {
-  title: 'AI 现在怎么看你的站',
-  note: '这是站点条件分，不是被引用的次数。',
-  checkedLabel: '本周已核验',
-  channels: [
-    { name: 'ChatGPT', open: true },
-    { name: 'Claude', open: true },
-    { name: 'Perplexity', open: true },
-    { name: 'Gemini', open: true },
-    { name: 'Copilot', open: true },
-  ],
-  pillars: [
-    {
-      key: 'seen',
-      title: '被 AI 看见',
-      status: '找得到',
-      tone: 'ok',
-      score: 100,
-      summary: '这些助手找得到这个站，产品页在目录里。',
-      checks: [
-        {
-          label: '允许抓取',
-          detail: 'robots.txt 已放行',
-          score: 100,
-        },
-        {
-          label: '站点目录',
-          detail: 'sitemap.xml 含产品页 · 9月20日',
-          score: 100,
-        },
-        {
-          label: '站点说明',
-          detail: '/llms.txt 已链到主力产品页',
-          score: 100,
-        },
-      ],
-    },
-    {
-      key: 'understood',
-      title: '被 AI 理解',
-      status: '有',
-      tone: 'ok',
-      score: 100,
-      summary: '页面已有结构化标签，助手能抽出型号、参数这些字段。',
-      checks: [
-        {
-          label: '结构化标签',
-          detail: '已有 JSON-LD',
-          score: 100,
-        },
-      ],
-    },
-  ],
-}
-
-export const overviewOutcomes = [
-  { label: '已定位卡点', value: '有效浏览率 -10pp', tone: 'warn' as const },
-  { label: '已自动修好', value: 'sitemap / 死链', tone: 'ok' as const },
-  { label: '已出草稿', value: '1 份落地页', tone: 'ok' as const },
+/** 本月已完成：byHand 表示经你确认后执行 */
+export const overviewDone: DoneTask[] = [
+  { id: 'd10', time: '09-21 03:00', agent: 'AI 友好度', title: '全站 AI 友好度复检', result: '被看见 100 · 被理解 100', byHand: false },
+  { id: 'd9', time: '09-21 02:14', agent: '访客行为分析智能体', title: '9月14日–20日周诊断', result: '有效浏览率 40% → 30%，出 2 份任务说明', byHand: false },
+  { id: 'd8', time: '09-17 16:40', agent: '智能营销页智能体', title: '「询价」落地页 v2 上线', result: '经你确认后发布', byHand: true },
+  { id: 'd7', time: '09-16 10:00', agent: '内容发布智能体', title: '发布 3 篇产品选型内容', result: '通过 EEAT / GEO 门禁', byHand: false },
+  { id: 'd6', time: '09-15 02:30', agent: 'AI 友好度', title: '修复 sitemap 与 2 处死链', result: '已自动修好', byHand: false },
+  { id: 'd5', time: '09-14 03:00', agent: 'AI 友好度', title: '全站 AI 友好度复检', result: '发现 sitemap 缺产品页', byHand: false },
+  { id: 'd4', time: '09-14 02:10', agent: '访客行为分析智能体', title: '9月7日–13日周诊断', result: '无异常，不出任务', byHand: false },
+  { id: 'd3', time: '09-12 10:00', agent: '内容发布智能体', title: '「六角螺栓 M8×30」产品页发布', result: '经你确认后发布', byHand: true },
+  { id: 'd2', time: '09-09 10:00', agent: '内容发布智能体', title: '发布 2 篇行业问答', result: '通过 EEAT / GEO 门禁', byHand: false },
+  { id: 'd1', time: '09-07 02:12', agent: '访客行为分析智能体', title: '8月31日–9月6日周诊断', result: '无异常，不出任务', byHand: false },
 ]

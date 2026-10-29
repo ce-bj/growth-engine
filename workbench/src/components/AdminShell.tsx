@@ -1,5 +1,6 @@
 import {
   BookOpen,
+  ChartColumn,
   ChevronDown,
   Coins,
   FileText,
@@ -49,19 +50,20 @@ const NAV_GROUPS: Array<{ title: string; items: NavItem[] }> = [
   {
     title: '概览',
     items: [
+      { id: 'board', label: '数据看板', icon: ChartColumn },
       { id: 'dashboard', label: '智能体概览', icon: LayoutDashboard },
     ],
   },
   {
     title: '诊断分析',
     items: [
-      { id: 'visitor', label: '访客行为分析智能体', icon: ScanSearch },
       { id: 'ready', label: 'AI 友好度', icon: ShieldCheck },
     ],
   },
   {
     title: '执行生产',
     items: [
+      { id: 'visitor', label: '访客行为分析智能体', icon: ScanSearch },
       { id: 'marketing', label: '智能营销页智能体', icon: PanelsTopLeft },
       { id: 'content', label: '内容发布智能体', icon: FileText },
       { id: 'assistant', label: 'AI运营助手', icon: MessageSquare },
@@ -83,9 +85,10 @@ const FOOT_NAV: NavItem[] = [
 /** 内容区自带内边距的原一期页面，需要抵消宿主内边距 */
 const ONEAIVIEWS: ViewId[] = ['ready', 'credits']
 /** 以 iframe 整页嵌入的外部智能体页 */
-const EMBED_VIEWS: ViewId[] = ['visitor', 'marketing', 'content', 'assistant']
+const EMBED_VIEWS: ViewId[] = ['board', 'visitor', 'marketing', 'content', 'assistant']
 
 const PAGE_META: Record<string, { title: string; crumb: string }> = {
+  board: { title: '数据看板', crumb: '概览' },
   dashboard: { title: '智能体概览', crumb: '概览' },
   visitor: { title: '访客行为分析智能体', crumb: '智能体' },
   marketing: { title: '智能营销页智能体', crumb: '智能体' },
@@ -198,7 +201,7 @@ export function AdminShell({ children }: { children: ReactNode }) {
                 className="admin-portalnav__item admin-portalnav__ai is-current"
                 aria-label="AI 工作台 · 返回本项目"
                 aria-current="page"
-                onClick={() => navigate('dashboard')}
+                onClick={() => navigate('board')}
               >
                 <img src="/ai-icon.png" alt="" />
               </button>

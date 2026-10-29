@@ -1,225 +1,194 @@
-import { ArrowRight, Hexagon } from 'lucide-react'
-import { Button, Card, Statistic, Tag, Timeline } from 'antd'
-import { ValueFlywheel } from '../components/ValueFlywheel'
+import { ArrowRight } from 'lucide-react'
+import { Badge, Button, Card, Statistic, Table, Tag } from 'antd'
+import type { TableColumnsType } from 'antd'
 import { useWorkbench } from '../context/WorkbenchContext'
 import {
-  overviewAiReadiness,
-  overviewFunnel,
-  overviewKpis,
-  overviewPeriod,
-  overviewTimeline,
-  overviewWork,
+  overviewAgents,
+  overviewDone,
+  overviewMonth,
+  overviewPending,
+  type AgentStatus,
+  type DoneTask,
 } from '../data/overviewMock'
-import type { ViewId } from '../types'
+import { initialBalance } from './oneai/creditsData.js'
 
-const TONE_COLOR = {
-  down: '#ef4444',
-  up: '#16a34a',
-  flat: '#1e293b',
+const STATUS: Record<AgentStatus, { badge: 'processing' | 'warning' | 'default'; label: string }> = {
+  running: { badge: 'processing', label: '运行中' },
+  waiting: { badge: 'warning', label: '有待审批' },
+  soon: { badge: 'default', label: '即将上线' },
 }
 
-function ScoreRing({ score, tone }: { score: number; tone: 'ok' | 'warn' }) {
-  const radius = 26
-  const circ = 2 * Math.PI * radius
-  const offset = circ * (1 - Math.min(100, Math.max(0, score)) / 100)
-  return (
-    <div className={`ov-ai__ring is-${tone}`}>
-      <svg viewBox="0 0 64 64" aria-hidden>
-        <circle className="ov-ai__ring-track" cx="32" cy="32" r={radius} />
-        <circle
-          className="ov-ai__ring-value"
-          cx="32"
-          cy="32"
-          r={radius}
-          strokeDasharray={circ}
-          strokeDashoffset={offset}
-        />
-      </svg>
-      <strong>{score}</strong>
-    </div>
-  )
-}
+const autoRuns = overviewAgents.reduce((sum, agent) => sum + agent.monthRuns, 0)
+const doneByHand = overviewDone.filter((task) => task.byHand).length
+const onlineCount = overviewAgents.filter((agent) => agent.status !== 'soon').length
+
+const DONE_COLUMNS: TableColumnsType<DoneTask> = [
+  {
+    title: '完成时间',
+    dataIndex: 'time',
+    width: 120,
+    render: (value: string) => <span className="ov-mono">{value}</span>,
+  },
+  {
+    title: '智能体',
+    dataIndex: 'agent',
+    width: 180,
+    filters: [...new Set(overviewDone.map((task) => task.agent))].map((name) => ({
+      text: name,
+      value: name,
+    })),
+    onFilter: (value, record) => record.agent === value,
+    render: (value: string) => <Tag variant="filled">{value}</Tag>,
+  },
+  { title: '任务', dataIndex: 'title' },
+  { title: '结果', dataIndex: 'result' },
+  {
+    title: '方式',
+    dataIndex: 'byHand',
+    width: 110,
+    render: (byHand: boolean) =>
+      byHand ? <Tag color="blue">经你确认</Tag> : <Tag color="green">自动完成</Tag>,
+  },
+]
 
 export function AgentOverviewView() {
-  const { navigate, currentSite } = useWorkbench()
-  const maxFunnel = overviewFunnel.stages[0]?.value || 1
-
-  const openTask = (view: ViewId) => {
-    navigate(view)
-  }
+  const { navigate } = useWorkbench()
 
   return (
     <div className="agent-overview">
-      <section className="ov-hero" aria-label="运行状态">
-        <div className="agent-overview__mark">
-          <Hexagon size={18} strokeWidth={2.2} />
-        </div>
-        <div className="agent-overview__hero-copy">
-          <h2>增长智能体自动运行中</h2>
+      <header className="ov-head">
+        <div>
+          <h2>智能体概览</h2>
           <p>
-            本周一已出上一自然周的诊断。技术止血和营销页草稿也在进行。您无需每天登录。
-            <span className="agent-overview__url">
-              {currentSite.name} · {overviewPeriod.label}
-            </span>
+            {overviewMonth.span} · 更新于 {overviewMonth.updatedAt}
           </p>
         </div>
-        <span className="agent-overview__live">
-          <i className="agent-overview__pulse" />
-          自动运行中
+        <span className="ov-live">
+          <i />
+          {onlineCount} 个智能体在线
         </span>
-      </section>
+      </header>
 
-      <section className="ov-kpis">
-        {overviewKpis.map((kpi) => (
-          <Card key={kpi.key} size="small" classNames={{ root: 'ov-panel' }}>
-            <Statistic
-              title={kpi.label}
-              value={kpi.value}
-              suffix={kpi.suffix}
-              styles={{ content: { color: TONE_COLOR[kpi.tone], fontFamily: 'var(--font-mono)' } }}
-            />
-            <div className={`ov-delta is-${kpi.tone}`}>{kpi.delta}</div>
-          </Card>
-        ))}
-      </section>
-
-      <section className="ov-ai" aria-label={overviewAiReadiness.title}>
-        <div className="ov-ai__panel">
-          <header className="ov-ai__head">
-            <div>
-              <h3>{overviewAiReadiness.title}</h3>
-              <p>{overviewAiReadiness.note}</p>
-            </div>
-            <span className="ov-ai__checked">
-              <i />
-              {overviewAiReadiness.checkedLabel}
-            </span>
-          </header>
-          <div className="ov-ai__grid">
-            {overviewAiReadiness.pillars.map((pillar) => (
-              <article key={pillar.key} className={`ov-ai__card is-${pillar.tone}`}>
-                <div className="ov-ai__top">
-                  <ScoreRing score={pillar.score} tone={pillar.tone} />
-                  <div className="ov-ai__identity">
-                    <div className="ov-ai__name">
-                      <h4>{pillar.title}</h4>
-                      <span className={`ov-ai__status is-${pillar.tone}`}>{pillar.status}</span>
-                    </div>
-                    <p>{pillar.summary}</p>
-                  </div>
-                </div>
-                <ul className="ov-ai__checks">
-                  {pillar.checks.map((check) => (
-                    <li key={check.label}>
-                      <div className="ov-ai__check-meta">
-                        <b>{check.label}</b>
-                        <span>{check.score}</span>
-                      </div>
-                      <div className="ov-ai__meter" aria-hidden>
-                        <i style={{ width: `${check.score}%` }} />
-                      </div>
-                      <small>{check.detail}</small>
-                    </li>
-                  ))}
-                </ul>
-                {pillar.key === 'seen' ? (
-                  <div className="ov-ai__channels" aria-label="抓取通道">
-                    {overviewAiReadiness.channels.map((channel) => (
-                      <span key={channel.name} className={channel.open ? 'is-open' : ''}>
-                        <i />
-                        {channel.name}
-                      </span>
-                    ))}
-                  </div>
-                ) : null}
-              </article>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      <ValueFlywheel onOpen={navigate} />
-
-      <section className="ov-work">
+      <section className="ov-stats">
         <Card size="small" classNames={{ root: 'ov-panel' }}>
-          <Statistic title="本月自动执行" value={overviewWork.autoRuns} suffix="次" />
-          <p className="ov-work__hint">诊断、修复、出草稿都算一次</p>
+          <Statistic title="本月自动执行" value={autoRuns} suffix="次" />
+          <p className="ov-stat__hint">诊断、复检、出草稿、发布各算一次</p>
         </Card>
         <Card size="small" classNames={{ root: 'ov-panel' }}>
-          <Statistic title="已完成任务" value={overviewWork.closedTickets} suffix="项" />
-          <p className="ov-work__hint">sitemap、死链等系统已做完</p>
+          <Statistic title="已完成任务" value={overviewDone.length} suffix="项" />
+          <p className="ov-stat__hint">其中 {doneByHand} 项经你确认后执行</p>
+        </Card>
+        <Card size="small" classNames={{ root: 'ov-panel is-attention' }}>
+          <Statistic title="待审批任务" value={overviewPending.length} suffix="项" />
+          <p className="ov-stat__hint">最早一条{overviewPending[0]?.waiting}</p>
+        </Card>
+        <Card size="small" classNames={{ root: 'ov-panel' }}>
+          <Statistic title="积分余额" value={initialBalance} />
+          <p className="ov-stat__hint">
+            智能体执行按次扣积分
+            <Button
+              type="link"
+              size="small"
+              classNames={{ root: 'ov-stat__link' }}
+              onClick={() => navigate('credits')}
+            >
+              看明细
+            </Button>
+          </p>
         </Card>
       </section>
 
       <div className="ov-split">
         <Card
-          classNames={{ root: 'ov-panel ov-funnel-card', body: 'ov-funnel-body' }}
-          title="漏斗转化"
+          classNames={{ root: 'ov-panel', body: 'ov-list' }}
+          title={
+            <span className="ov-card-title">
+              待审批任务
+              <Tag color="orange">{overviewPending.length}</Tag>
+            </span>
+          }
+          extra={<span className="ov-card-extra">按等待时长排序</span>}
         >
-          <p className="ov-funnel__summary">{overviewFunnel.summary}</p>
-          <div className="ov-funnel">
-            {overviewFunnel.stages.map((stage) => (
-              <div
-                key={stage.id}
-                className={`ov-funnel__row${stage.drop ? ' is-drop' : ''}`}
-              >
-                <div className="ov-funnel__meta">
-                  <b>{stage.name}</b>
-                  <span>{stage.hint}</span>
+          {overviewPending.map((task) => (
+            <div key={task.id} className="ov-pending">
+              <div className="ov-pending__main">
+                <div className="ov-pending__top">
+                  <b>{task.title}</b>
+                  <Tag variant="filled">{task.agent}</Tag>
                 </div>
-                <div className="ov-funnel__track">
-                  <div
-                    className="ov-funnel__bar"
-                    style={{ width: `${Math.max(8, (stage.value / maxFunnel) * 100)}%` }}
-                  />
-                </div>
-                <div className="ov-funnel__num">
-                  <strong>{stage.value.toLocaleString()}</strong>
-                  {stage.note ? <small>{stage.note}</small> : null}
-                </div>
+                <p>{task.desc}</p>
+                <small>
+                  {task.submittedAt} 提交 · <em>{task.waiting}</em>
+                </small>
               </div>
-            ))}
-          </div>
-          <Button
-            type="link"
-            classNames={{ root: 'ov-funnel__foot' }}
-            onClick={() => navigate('visitor')}
-          >
-            去访客行为分析智能体查看具体诊断
-            <ArrowRight size={14} />
-          </Button>
+              <Button type="primary" onClick={() => navigate(task.view)}>
+                去审批
+              </Button>
+            </div>
+          ))}
         </Card>
 
-        <Card classNames={{ root: 'ov-panel' }} title="最近在干活">
-          <Timeline
-            classNames={{ root: 'ov-timeline' }}
-            items={overviewTimeline.map((item) => ({
-              color: '#3B9FD0',
-              content: (
-                <div className="ov-tl">
-                  <div className="ov-tl__top">
-                    <div className="ov-tl__meta">
-                      <b>{item.title}</b>
-                      <Tag variant="filled">{item.agent}</Tag>
-                    </div>
-                    <Button
-                      type="link"
-                      size="small"
-                      classNames={{ root: 'ov-tl__action' }}
-                      onClick={() => openTask(item.view)}
-                    >
-                      {item.action === 'confirm' ? '去确认' : '去查看'}
-                      <ArrowRight size={12} />
-                    </Button>
-                  </div>
-                  <p>{item.desc}</p>
-                  <small>{item.time}</small>
+        <Card classNames={{ root: 'ov-panel', body: 'ov-list' }} title="智能体运行状态">
+          {overviewAgents.map((agent) => {
+            const status = STATUS[agent.status]
+            const body = (
+              <>
+                <div className="ov-agent__head">
+                  <Badge status={status.badge} text={<b>{agent.name}</b>} />
+                  <span className={`ov-agent__state is-${agent.status}`}>{status.label}</span>
                 </div>
-              ),
-            }))}
-          />
+                <p className="ov-agent__cadence">{agent.cadence}</p>
+                {agent.status === 'soon' ? null : (
+                  <dl className="ov-agent__meta">
+                    <div>
+                      <dt>上次</dt>
+                      <dd>
+                        <span className="ov-mono">{agent.lastRun}</span> · {agent.lastResult}
+                      </dd>
+                    </div>
+                    <div>
+                      <dt>下次</dt>
+                      <dd>
+                        <span className="ov-mono">{agent.nextRun}</span>
+                        <span className="ov-agent__runs">本月 {agent.monthRuns} 次</span>
+                      </dd>
+                    </div>
+                  </dl>
+                )}
+              </>
+            )
+            return agent.view ? (
+              <button
+                key={agent.key}
+                type="button"
+                className="ov-agent"
+                onClick={() => navigate(agent.view!)}
+              >
+                {body}
+                <ArrowRight className="ov-agent__go" size={14} />
+              </button>
+            ) : (
+              <div key={agent.key} className="ov-agent is-soon">
+                {body}
+              </div>
+            )
+          })}
         </Card>
       </div>
+
+      <Card
+        classNames={{ root: 'ov-panel' }}
+        title={`${overviewMonth.label}已完成`}
+        extra={<span className="ov-card-extra">共 {overviewDone.length} 项</span>}
+      >
+        <Table<DoneTask>
+          rowKey="id"
+          size="small"
+          columns={DONE_COLUMNS}
+          dataSource={overviewDone}
+          pagination={{ pageSize: 5, hideOnSinglePage: true, showSizeChanger: false }}
+        />
+      </Card>
     </div>
   )
 }

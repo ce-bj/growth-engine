@@ -173,7 +173,7 @@ function createInitialHealth(): HealthSnapshot {
 let toastSeq = 0
 
 export function WorkbenchProvider({ children }: { children: ReactNode }) {
-  const [view, setView] = useState<ViewId>('dashboard')
+  const [view, setView] = useState<ViewId>('board')
   const [hasDetected, setHasDetected] = useState(true)
   const [showGuide, setShowGuide] = useState(false)
   const [loadingDashboard, setLoadingDashboard] = useState(false)
