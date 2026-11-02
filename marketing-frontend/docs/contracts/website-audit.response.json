@@ -1,163 +1,36 @@
 {
-  "schemaVersion": "0.1",
-  "requestId": "audit-request-001",
-  "reportId": "audit-report-001",
-  "pageId": "landing-001",
-  "contentRevision": "draft-revision-008",
-  "phase": "initial",
+  "requestId": "brand-check-001",
+  "reportId": "brand-report-001",
+  "pageId": "page-001",
+  "contentRevision": 9,
+  "sourceModule": "ai-readiness",
+  "featureTitle": "品牌一致性检测与自动优化",
+  "brandBaselineRevision": 4,
   "status": "completed",
-  "checkedAt": "2026-09-16T10:01:00+08:00",
-  "ruleSetVersion": "prd-v1.4",
-  "completeness": {
-    "score": 68,
-    "level": "有短板",
-    "layers": [
-      {
-        "key": "foundation",
-        "label": "基础层",
-        "weight": 25,
-        "score": 60
-      },
-      {
-        "key": "value",
-        "label": "价值层",
-        "weight": 25,
-        "score": 70
-      },
-      {
-        "key": "trust",
-        "label": "信任层",
-        "weight": 15,
-        "score": 50
-      },
-      {
-        "key": "conversion",
-        "label": "转化层",
-        "weight": 20,
-        "score": 80
-      },
-      {
-        "key": "seo",
-        "label": "SEO 层",
-        "weight": 15,
-        "score": 80
-      }
-    ],
-    "bodyCharacterCount": 260,
-    "depthStatus": "too-short",
-    "freshnessStatus": "unknown"
-  },
-  "aiReadiness": {
-    "score": 72,
-    "pillars": [
-      {
-        "key": "discoverability",
-        "weight": 25,
-        "score": 60
-      },
-      {
-        "key": "parseability",
-        "weight": 40,
-        "score": 80
-      },
-      {
-        "key": "authority",
-        "weight": 35,
-        "score": 70
-      }
-    ],
-    "dimensions": [
-      {
-        "key": "site-discovery",
-        "score": 60,
-        "status": "reviewed"
-      },
-      {
-        "key": "page-accessibility",
-        "score": 60,
-        "status": "reviewed"
-      },
-      {
-        "key": "structured-index",
-        "score": 60,
-        "status": "reviewed"
-      },
-      {
-        "key": "content-structure",
-        "score": 80,
-        "status": "reviewed"
-      },
-      {
-        "key": "self-containment",
-        "score": 80,
-        "status": "reviewed"
-      },
-      {
-        "key": "semantic-clarity",
-        "score": 80,
-        "status": "reviewed"
-      },
-      {
-        "key": "fact-density",
-        "score": 70,
-        "status": "needs-improvement"
-      },
-      {
-        "key": "authority-signals",
-        "score": 70,
-        "status": "needs-improvement"
-      },
-      {
-        "key": "freshness",
-        "score": 70,
-        "status": "needs-improvement"
-      }
-    ]
-  },
   "findings": [
     {
-      "id": "finding-001",
-      "mechanism": "B",
-      "dimension": "self-containment",
-      "severity": "warning",
-      "sectionId": "faq",
-      "evidence": "回答依赖前文，缺少独立的问题背景。",
-      "recommendation": "使用已有知识来源，将回答改写为独立完整的问答。",
-      "resolution": "auto-adjust",
-      "sourceIds": [
-        "knowledge-product-001"
-      ]
-    },
-    {
-      "id": "finding-002",
-      "mechanism": "A",
-      "dimension": "foundation",
-      "severity": "warning",
-      "sectionId": "parameters",
-      "evidence": "参数区域为空，知识来源没有对应规格。",
-      "recommendation": "补充经确认的产品参数。",
-      "resolution": "request-user-input",
-      "requiredFields": [
-        "产品规格/型号"
+      "id": "brand-finding-001",
+      "category": "brand_name",
+      "componentIds": [
+        "header",
+        "footer"
       ],
-      "sourceIds": []
+      "evidence": [
+        {
+          "location": "header.brand",
+          "observed": "<页头实际名称>"
+        },
+        {
+          "location": "footer.company",
+          "observed": "<页脚实际名称>"
+        }
+      ],
+      "canonicalValueRef": "current_site.brand.canonical_name",
+      "canonicalValueStatus": "confirmed",
+      "reason": "当前页面不同位置的品牌名称不一致。",
+      "solutionText": "仅调整本营销页页头和页脚的品牌名称，使其与当前站点已确认的品牌主名称一致。保留其他内容，不修改站点档案或其他页面。若主名称尚未确认，请先向用户确认。",
+      "executionStatus": "not_applied"
     }
   ],
-  "siteDependencies": [
-    {
-      "key": "sitemap",
-      "status": "pending-verification"
-    },
-    {
-      "key": "llms-txt",
-      "status": "pending-verification"
-    }
-  ],
-  "publishDecision": {
-    "status": "warning",
-    "requiresAcknowledgement": true,
-    "reasons": [
-      "AI 友好度处于 65–79 分区间"
-    ]
-  }
+  "copyText": "来源：AI友好度／品牌一致性检测与自动优化\n报告：brand-report-001；页面：page-001；内容修订：9\n问题：页头与页脚品牌名称不一致。\n解决方案：仅将本营销页页头、页脚的品牌名称统一为当前站点已确认的品牌主名称；主名称未确认则先询问。保留其他内容，不修改站点档案或其他页面。"
 }

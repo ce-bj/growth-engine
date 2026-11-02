@@ -1,9 +1,52 @@
-# 营销落地页文档入口
+# 营销落地页文档索引
 
-- **产品、运营、研发统一阅读：**[AI 营销落地页产品设计](AI营销落地页-产品设计.md)。包含背景、产品设计、功能页面、模板组件、发布策略、Agent 架构与 JSON 契约。
-- **其他 Agent 调用：**[意图任务 Skill](skills/marketing-intent-handoff/SKILL.md)、[JSON Schema](skills/marketing-intent-handoff/references/intent.schema.json)、[可导入示例](skills/marketing-intent-handoff/references/intent.example.json)。
-- **研发接口样例：**[网站检测请求](contracts/website-audit.request.json)、[检测结果](contracts/website-audit.response.json)、[生成修改任务](contracts/generation-adjustment.request.json)。
-- **业务与研究依据：**[数字门户 PRD](数字门户-PRD.html)、[运营链与访客链](AI智能落地页-运营链与访客链.drawio)、[Open Design 运行记录](open-design-reuse/observed-run.json)。
-- **历史记录：**[归档目录](archive/README.md)。
+## 1. 正式规范
 
-产品说明只维护统一文档。Skill、Schema 和 JSON 是配套交付物，不另起一份产品方案。`mock/` 为早期向导数据，`open-design-reuse/` 为上游研究快照，均不代表当前前端或正式服务已经接入。
+| 文档 | 内容范围 | 主要读者 |
+| --- | --- | --- |
+| [产品设计](AI营销落地页-产品设计.md) | 功能范围、页面交互、模板与组件、发布与效果、智能体协作、数据契约、异常及验收 | 产品、设计、研发、测试、运营 |
+| [提示词设计](落地页提示词设计.md) | 各输入块的规则与独立示例、完整提示词、输出约定、恢复与编辑上下文、检测交接 | 产品、研发、测试 |
+
+产品功能和交互规则以产品设计为准；模型消息、输入输出和上下文规则以提示词设计为准。配套 JSON、实现文件和参考资料通过这两份规范关联。
+
+## 2. 按任务查阅
+
+| 工作任务 | 查阅入口 |
+| --- | --- |
+| 确认包含哪些功能、拆分研发任务 | [产品设计第 4 章：115 项功能清单](AI营销落地页-产品设计.md#prd-4) |
+| 确认点击、选区、弹窗、对话和资料补充行为 | [产品设计第 5 章：页面交互规则](AI营销落地页-产品设计.md#prd-5) |
+| 查看模板与组件的职责及目录 | [产品设计第 6 章](AI营销落地页-产品设计.md#prd-6) |
+| 实现发布版本、推广与效果 | [产品设计第 7 章](AI营销落地页-产品设计.md#prd-7) |
+| 确认智能体分工与统一生成入口 | [产品设计第 8–9 章](AI营销落地页-产品设计.md#prd-8) |
+| 对接服务请求、报告和页面提示 | [产品设计第 10 章](AI营销落地页-产品设计.md#prd-10) |
+| 覆盖异常和验收 | [产品设计第 11–12 章](AI营销落地页-产品设计.md#prd-11) |
+| 查看一次完整模型请求 | [提示词设计第 11 章](落地页提示词设计.md#prompt-11) |
+| 处理资料补充和自然语言编辑 | [提示词设计第 14 章](落地页提示词设计.md#prompt-14) |
+| 查找代码对应文件 | [产品设计附录 A](AI营销落地页-产品设计.md#prd-appendix-a) |
+
+## 3. 配套配置与契约
+
+| 文件 | 用途 | 规范位置 |
+| --- | --- | --- |
+| [模板预设 JSON](../src/pages/studio/config/template-presets.json) | 整页初始结构、推荐配置与资源要求 | 提示词设计第 13 章 |
+| [组件默认值 JSON](../src/pages/studio/config/component-defaults.json) | 单个组件的初始状态、布局与绑定 | 提示词设计第 15 章 |
+| [品牌检测请求](contracts/website-audit.request.json) | 调用当前页品牌一致性能力 | 产品设计第 10.4 节 |
+| [品牌问题与解决方案](contracts/website-audit.response.json) | 展示报告、证据与可复制方案 | 产品设计第 10.5 节 |
+| [采用方案后的编辑请求](contracts/generation-adjustment.request.json) | 用户发送方案后形成局部编辑任务 | 产品设计第 10.6 节 |
+
+模板定义整页组合，组件定义单个模块。12 份模板与 12 类组件不一一对应，均使用当前页面的产品、表单、品牌和资料配置。
+
+## 4. 意图交接 Skill 与兼容资料
+
+[marketing-intent-handoff](skills/marketing-intent-handoff/SKILL.md) 保留为业务入口或其他智能体向营销页交接任务的配套资料，其现行职责边界见[产品设计第 9.5 节](AI营销落地页-产品设计.md#prd-9)。
+
+意图正文进入统一提示词，模板与资源映射到页面配置，来源及请求标识由应用层保存。用户通过意图文字入口操作，不要求上传 JSON。
+
+包内的 v1.0 协议、Schema 和示例属于旧任务兼容资料，其中 JSON 上传、评分门槛及 automatic 发布规则不属于当前需求，不能据此实现另一套生成或发布流程。
+
+## 5. 参考资料与维护约定
+
+- [研究归档](archive/README.md)及产品设计附录 B 中的交互参考、OpenDesign 来源用于追溯设计依据。
+- 用户功能变化时更新产品功能编号对应项及交互规则；提示词变化时更新提示词规范、配套配置及契约。
+- 调整章节后同步导航、交叉引用和文件索引；保留稳定功能编号。
+- 产品规则、提示词规范、旧协议兼容资料分别标明用途，旧资料不覆盖正式规范。

@@ -1,0 +1,918 @@
+[
+  {
+    "preset_id": "precision",
+    "version": "1.0",
+    "name": "精工 · 产品方案",
+    "page_type": "产品营销",
+    "defaults": {
+      "goal": "获取报价",
+      "layout": "split",
+      "form_ref": "lead_form",
+      "brand_ref": "current_site",
+      "hero": {
+        "visible": true,
+        "image_slot": "hero"
+      },
+      "footer": {
+        "visible": true
+      }
+    },
+    "design_spec": {
+      "composition": "左侧产品价值主张，右侧工程产品主图；克制、清晰的工业风格",
+      "narrative": "能力→场景→服务支持→询价",
+      "imageLanguage": "产品实物或明确标识的工业示意",
+      "heroColumns": "1.08fr 1fr",
+      "headingWidth": "430px",
+      "sectionSpace": 45,
+      "mobile": "按阅读顺序单栏重排，不缩小整页、不隐藏表单字段"
+    },
+    "components": [
+      {
+        "slot_id": "s0",
+        "kind": "products",
+        "title": "产品能力",
+        "defaults_ref": "component:products@1.0"
+      },
+      {
+        "slot_id": "s1",
+        "kind": "text",
+        "title": "应用场景",
+        "defaults_ref": "component:text@1.0"
+      },
+      {
+        "slot_id": "s2",
+        "kind": "features",
+        "title": "技术支持",
+        "defaults_ref": "component:features@1.0"
+      },
+      {
+        "slot_id": "s3",
+        "kind": "form",
+        "title": "联系与询价",
+        "defaults_ref": "component:form@1.0"
+      }
+    ],
+    "requirements": [
+      {
+        "id": "product-binding",
+        "target_kinds": [
+          "products",
+          "comparison"
+        ],
+        "predicate": "selected_authorized_products_count >= 1",
+        "on_missing": "ask_user",
+        "blocks": [
+          "generate_affected_content",
+          "publish"
+        ]
+      },
+      {
+        "id": "form-binding",
+        "target_kinds": [
+          "form",
+          "cta"
+        ],
+        "predicate": "valid_form_config",
+        "on_missing": "ask_user",
+        "blocks": [
+          "publish"
+        ]
+      }
+    ],
+    "override_policy": "confirmed_user_values_win",
+    "facts_policy": "evidence_only"
+  },
+  {
+    "preset_id": "consult",
+    "version": "1.0",
+    "name": "协作 · 行业方案",
+    "page_type": "线索获取",
+    "defaults": {
+      "goal": "提交需求",
+      "layout": "form-side",
+      "form_ref": "lead_form",
+      "brand_ref": "current_site",
+      "hero": {
+        "visible": true,
+        "image_slot": "hero"
+      },
+      "footer": {
+        "visible": true
+      }
+    },
+    "design_spec": {
+      "composition": "左侧业务问题与解决方案，右侧首屏留资表单",
+      "narrative": "业务挑战→解决方案→协作流程→提交需求",
+      "imageLanguage": "辅助业务说明，表单为转化焦点",
+      "heroColumns": "1.15fr 1fr",
+      "headingWidth": "410px",
+      "sectionSpace": 42,
+      "mobile": "按阅读顺序单栏重排，不缩小整页、不隐藏表单字段"
+    },
+    "components": [
+      {
+        "slot_id": "s0",
+        "kind": "text",
+        "title": "业务挑战",
+        "defaults_ref": "component:text@1.0"
+      },
+      {
+        "slot_id": "s1",
+        "kind": "text",
+        "title": "解决方案",
+        "defaults_ref": "component:text@1.0"
+      },
+      {
+        "slot_id": "s2",
+        "kind": "timeline",
+        "title": "协作流程",
+        "defaults_ref": "component:timeline@1.0"
+      },
+      {
+        "slot_id": "s3",
+        "kind": "form",
+        "title": "提交需求",
+        "defaults_ref": "component:form@1.0"
+      }
+    ],
+    "requirements": [
+      {
+        "id": "form-binding",
+        "target_kinds": [
+          "form",
+          "cta"
+        ],
+        "predicate": "valid_form_config",
+        "on_missing": "ask_user",
+        "blocks": [
+          "publish"
+        ]
+      }
+    ],
+    "override_policy": "confirmed_user_values_win",
+    "facts_policy": "evidence_only"
+  },
+  {
+    "preset_id": "heritage",
+    "version": "1.0",
+    "name": "远见 · 品牌叙事",
+    "page_type": "品牌介绍",
+    "defaults": {
+      "goal": "发起咨询",
+      "layout": "editorial",
+      "form_ref": "lead_form",
+      "brand_ref": "current_site",
+      "hero": {
+        "visible": true,
+        "image_slot": "hero"
+      },
+      "footer": {
+        "visible": true
+      }
+    },
+    "design_spec": {
+      "composition": "编辑式双栏，品牌叙事与大幅企业视觉并重，充足留白",
+      "narrative": "企业介绍→专业能力→服务网络→联系",
+      "imageLanguage": "品牌授权的企业与项目照片，缺失保留占位",
+      "heroColumns": "1fr 1.15fr",
+      "headingWidth": "460px",
+      "sectionSpace": 60,
+      "mobile": "按阅读顺序单栏重排，不缩小整页、不隐藏表单字段"
+    },
+    "components": [
+      {
+        "slot_id": "s0",
+        "kind": "text",
+        "title": "关于我们",
+        "defaults_ref": "component:text@1.0"
+      },
+      {
+        "slot_id": "s1",
+        "kind": "features",
+        "title": "专业能力",
+        "defaults_ref": "component:features@1.0"
+      },
+      {
+        "slot_id": "s2",
+        "kind": "features",
+        "title": "服务网络",
+        "defaults_ref": "component:features@1.0"
+      },
+      {
+        "slot_id": "s3",
+        "kind": "text",
+        "title": "联系团队",
+        "defaults_ref": "component:text@1.0"
+      }
+    ],
+    "requirements": [
+      {
+        "id": "form-binding",
+        "target_kinds": [
+          "form",
+          "cta"
+        ],
+        "predicate": "valid_form_config",
+        "on_missing": "ask_user",
+        "blocks": [
+          "publish"
+        ]
+      }
+    ],
+    "override_policy": "confirmed_user_values_win",
+    "facts_policy": "evidence_only"
+  },
+  {
+    "preset_id": "campaign",
+    "version": "1.0",
+    "name": "聚焦 · 采购季",
+    "page_type": "促销活动",
+    "defaults": {
+      "goal": "活动报名",
+      "layout": "center",
+      "form_ref": "lead_form",
+      "brand_ref": "current_site",
+      "hero": {
+        "visible": true,
+        "image_slot": "hero"
+      },
+      "footer": {
+        "visible": true
+      }
+    },
+    "design_spec": {
+      "composition": "居中聚焦主标题、活动信息和单一主要行动，主视觉居下",
+      "narrative": "活动产品→参与规则→支持→报名",
+      "imageLanguage": "与活动产品相关的主视觉",
+      "heroColumns": "1fr",
+      "headingWidth": "530px",
+      "sectionSpace": 40,
+      "mobile": "按阅读顺序单栏重排，不缩小整页、不隐藏表单字段"
+    },
+    "components": [
+      {
+        "slot_id": "s0",
+        "kind": "products",
+        "title": "活动产品",
+        "defaults_ref": "component:products@1.0"
+      },
+      {
+        "slot_id": "s1",
+        "kind": "text",
+        "title": "参与说明",
+        "defaults_ref": "component:text@1.0"
+      },
+      {
+        "slot_id": "s2",
+        "kind": "features",
+        "title": "服务支持",
+        "defaults_ref": "component:features@1.0"
+      },
+      {
+        "slot_id": "s3",
+        "kind": "form",
+        "title": "活动报名",
+        "defaults_ref": "component:form@1.0"
+      }
+    ],
+    "requirements": [
+      {
+        "id": "product-binding",
+        "target_kinds": [
+          "products",
+          "comparison"
+        ],
+        "predicate": "selected_authorized_products_count >= 1",
+        "on_missing": "ask_user",
+        "blocks": [
+          "generate_affected_content",
+          "publish"
+        ]
+      },
+      {
+        "id": "form-binding",
+        "target_kinds": [
+          "form",
+          "cta"
+        ],
+        "predicate": "valid_form_config",
+        "on_missing": "ask_user",
+        "blocks": [
+          "publish"
+        ]
+      }
+    ],
+    "override_policy": "confirmed_user_values_win",
+    "facts_policy": "evidence_only"
+  },
+  {
+    "preset_id": "summit",
+    "version": "1.0",
+    "name": "交汇 · 展会邀请",
+    "page_type": "展会页面",
+    "defaults": {
+      "goal": "预约沟通",
+      "layout": "editorial",
+      "form_ref": "lead_form",
+      "brand_ref": "current_site",
+      "hero": {
+        "visible": true,
+        "image_slot": "hero"
+      },
+      "footer": {
+        "visible": true
+      }
+    },
+    "design_spec": {
+      "composition": "有秩序的展会邀请双栏，时间地点层次清晰，保持仪式感",
+      "narrative": "展会信息→展品→议程→预约",
+      "imageLanguage": "展会或展品授权图片，禁止虚构场馆照片",
+      "heroColumns": "1.1fr 1fr",
+      "headingWidth": "440px",
+      "sectionSpace": 52,
+      "mobile": "按阅读顺序单栏重排，不缩小整页、不隐藏表单字段"
+    },
+    "components": [
+      {
+        "slot_id": "s0",
+        "kind": "text",
+        "title": "展会信息",
+        "defaults_ref": "component:text@1.0"
+      },
+      {
+        "slot_id": "s1",
+        "kind": "products",
+        "title": "精选展品",
+        "defaults_ref": "component:products@1.0"
+      },
+      {
+        "slot_id": "s2",
+        "kind": "timeline",
+        "title": "现场议程",
+        "defaults_ref": "component:timeline@1.0"
+      },
+      {
+        "slot_id": "s3",
+        "kind": "form",
+        "title": "预约洽谈",
+        "defaults_ref": "component:form@1.0"
+      }
+    ],
+    "requirements": [
+      {
+        "id": "product-binding",
+        "target_kinds": [
+          "products",
+          "comparison"
+        ],
+        "predicate": "selected_authorized_products_count >= 1",
+        "on_missing": "ask_user",
+        "blocks": [
+          "generate_affected_content",
+          "publish"
+        ]
+      },
+      {
+        "id": "form-binding",
+        "target_kinds": [
+          "form",
+          "cta"
+        ],
+        "predicate": "valid_form_config",
+        "on_missing": "ask_user",
+        "blocks": [
+          "publish"
+        ]
+      }
+    ],
+    "override_policy": "confirmed_user_values_win",
+    "facts_policy": "evidence_only"
+  },
+  {
+    "preset_id": "noir",
+    "version": "1.0",
+    "name": "黑曜 · 技术发布",
+    "page_type": "产品营销",
+    "defaults": {
+      "goal": "预约沟通",
+      "layout": "dark",
+      "form_ref": "lead_form",
+      "brand_ref": "current_site",
+      "hero": {
+        "visible": true,
+        "image_slot": "hero"
+      },
+      "footer": {
+        "visible": true
+      }
+    },
+    "design_spec": {
+      "composition": "深色科技首屏与高对比标题，后续模块形成有节奏的技术说明",
+      "narrative": "优势→参数对比→视频→预约",
+      "imageLanguage": "清晰的技术产品视觉，避免无意义霓虹装饰",
+      "heroColumns": "1.12fr 1fr",
+      "headingWidth": "480px",
+      "sectionSpace": 48,
+      "mobile": "按阅读顺序单栏重排，不缩小整页、不隐藏表单字段"
+    },
+    "components": [
+      {
+        "slot_id": "s0",
+        "kind": "features",
+        "title": "核心优势",
+        "defaults_ref": "component:features@1.0"
+      },
+      {
+        "slot_id": "s1",
+        "kind": "comparison",
+        "title": "参数对比",
+        "defaults_ref": "component:comparison@1.0"
+      },
+      {
+        "slot_id": "s2",
+        "kind": "video",
+        "title": "产品演示视频",
+        "defaults_ref": "component:video@1.0"
+      },
+      {
+        "slot_id": "s3",
+        "kind": "form",
+        "title": "预约演示",
+        "defaults_ref": "component:form@1.0"
+      }
+    ],
+    "requirements": [
+      {
+        "id": "product-binding",
+        "target_kinds": [
+          "products",
+          "comparison"
+        ],
+        "predicate": "selected_authorized_products_count >= 1",
+        "on_missing": "ask_user",
+        "blocks": [
+          "generate_affected_content",
+          "publish"
+        ]
+      },
+      {
+        "id": "form-binding",
+        "target_kinds": [
+          "form",
+          "cta"
+        ],
+        "predicate": "valid_form_config",
+        "on_missing": "ask_user",
+        "blocks": [
+          "publish"
+        ]
+      },
+      {
+        "id": "video-binding",
+        "target_kinds": [
+          "video"
+        ],
+        "predicate": "playable_authorized_video",
+        "on_missing": "show_placeholder",
+        "blocks": [
+          "publish"
+        ]
+      }
+    ],
+    "override_policy": "confirmed_user_values_win",
+    "facts_policy": "evidence_only"
+  },
+  {
+    "preset_id": "craft",
+    "version": "1.0",
+    "name": "匠作 · 产品细节",
+    "page_type": "产品营销",
+    "defaults": {
+      "goal": "获取报价",
+      "layout": "showcase",
+      "form_ref": "lead_form",
+      "brand_ref": "current_site",
+      "hero": {
+        "visible": true,
+        "image_slot": "hero"
+      },
+      "footer": {
+        "visible": true
+      }
+    },
+    "design_spec": {
+      "composition": "品牌色沉浸首屏，大图强调产品细节，后接工艺画廊",
+      "narrative": "细节画廊→工艺→案例→询价",
+      "imageLanguage": "产品细节与工艺实拍，完整展示产品主体",
+      "heroColumns": "1fr 1.2fr",
+      "headingWidth": "400px",
+      "sectionSpace": 58,
+      "mobile": "按阅读顺序单栏重排，不缩小整页、不隐藏表单字段"
+    },
+    "components": [
+      {
+        "slot_id": "s0",
+        "kind": "gallery",
+        "title": "产品画廊",
+        "defaults_ref": "component:gallery@1.0"
+      },
+      {
+        "slot_id": "s1",
+        "kind": "features",
+        "title": "工艺优势",
+        "defaults_ref": "component:features@1.0"
+      },
+      {
+        "slot_id": "s2",
+        "kind": "testimonials",
+        "title": "客户案例",
+        "defaults_ref": "component:testimonials@1.0"
+      },
+      {
+        "slot_id": "s3",
+        "kind": "form",
+        "title": "询价表单",
+        "defaults_ref": "component:form@1.0"
+      }
+    ],
+    "requirements": [
+      {
+        "id": "form-binding",
+        "target_kinds": [
+          "form",
+          "cta"
+        ],
+        "predicate": "valid_form_config",
+        "on_missing": "ask_user",
+        "blocks": [
+          "publish"
+        ]
+      }
+    ],
+    "override_policy": "confirmed_user_values_win",
+    "facts_policy": "evidence_only"
+  },
+  {
+    "preset_id": "guide",
+    "version": "1.0",
+    "name": "知行 · 资料领取",
+    "page_type": "线索获取",
+    "defaults": {
+      "goal": "领取资料",
+      "layout": "form-side",
+      "form_ref": "lead_form",
+      "brand_ref": "current_site",
+      "hero": {
+        "visible": true,
+        "image_slot": "hero"
+      },
+      "footer": {
+        "visible": true
+      }
+    },
+    "design_spec": {
+      "composition": "资料价值说明与首屏精简表单并排，正文强调目录与适用人群",
+      "narrative": "目录→适用人群→常见问题→领取",
+      "imageLanguage": "真实资料封面或清晰占位，表单保持可见",
+      "heroColumns": "1.1fr 1fr",
+      "headingWidth": "420px",
+      "sectionSpace": 40,
+      "mobile": "按阅读顺序单栏重排，不缩小整页、不隐藏表单字段"
+    },
+    "components": [
+      {
+        "slot_id": "s0",
+        "kind": "text",
+        "title": "资料目录",
+        "defaults_ref": "component:text@1.0"
+      },
+      {
+        "slot_id": "s1",
+        "kind": "text",
+        "title": "适用人群",
+        "defaults_ref": "component:text@1.0"
+      },
+      {
+        "slot_id": "s2",
+        "kind": "faq",
+        "title": "常见问题",
+        "defaults_ref": "component:faq@1.0"
+      },
+      {
+        "slot_id": "s3",
+        "kind": "form",
+        "title": "领取资料表单",
+        "defaults_ref": "component:form@1.0"
+      }
+    ],
+    "requirements": [
+      {
+        "id": "form-binding",
+        "target_kinds": [
+          "form",
+          "cta"
+        ],
+        "predicate": "valid_form_config",
+        "on_missing": "ask_user",
+        "blocks": [
+          "publish"
+        ]
+      }
+    ],
+    "override_policy": "confirmed_user_values_win",
+    "facts_policy": "evidence_only"
+  },
+  {
+    "preset_id": "atelier",
+    "version": "1.0",
+    "name": "序章 · 品牌杂志",
+    "page_type": "品牌介绍",
+    "defaults": {
+      "goal": "发起咨询",
+      "layout": "editorial",
+      "form_ref": "lead_form",
+      "brand_ref": "current_site",
+      "hero": {
+        "visible": true,
+        "image_slot": "hero"
+      },
+      "footer": {
+        "visible": true
+      }
+    },
+    "design_spec": {
+      "composition": "品牌杂志式排版，标题与大幅项目视觉相互呼应，宽松阅读节奏",
+      "narrative": "品牌故事→项目画廊→发展历程→联系",
+      "imageLanguage": "企业与项目授权视觉，不用模板建筑图假冒企业",
+      "heroColumns": "1fr 1.25fr",
+      "headingWidth": "470px",
+      "sectionSpace": 64,
+      "mobile": "按阅读顺序单栏重排，不缩小整页、不隐藏表单字段"
+    },
+    "components": [
+      {
+        "slot_id": "s0",
+        "kind": "text",
+        "title": "品牌故事",
+        "defaults_ref": "component:text@1.0"
+      },
+      {
+        "slot_id": "s1",
+        "kind": "gallery",
+        "title": "项目画廊",
+        "defaults_ref": "component:gallery@1.0"
+      },
+      {
+        "slot_id": "s2",
+        "kind": "timeline",
+        "title": "发展历程",
+        "defaults_ref": "component:timeline@1.0"
+      },
+      {
+        "slot_id": "s3",
+        "kind": "text",
+        "title": "联系团队",
+        "defaults_ref": "component:text@1.0"
+      }
+    ],
+    "requirements": [
+      {
+        "id": "form-binding",
+        "target_kinds": [
+          "form",
+          "cta"
+        ],
+        "predicate": "valid_form_config",
+        "on_missing": "ask_user",
+        "blocks": [
+          "publish"
+        ]
+      }
+    ],
+    "override_policy": "confirmed_user_values_win",
+    "facts_policy": "evidence_only"
+  },
+  {
+    "preset_id": "wholesale",
+    "version": "1.0",
+    "name": "集采 · 产品系列",
+    "page_type": "促销活动",
+    "defaults": {
+      "goal": "获取报价",
+      "layout": "split",
+      "form_ref": "lead_form",
+      "brand_ref": "current_site",
+      "hero": {
+        "visible": true,
+        "image_slot": "hero"
+      },
+      "footer": {
+        "visible": true
+      }
+    },
+    "design_spec": {
+      "composition": "左右分栏导入采购主题，主体使用清晰的产品矩阵",
+      "narrative": "产品系列→采购优势→参与说明→询价",
+      "imageLanguage": "统一角度和比例的真实产品图片",
+      "heroColumns": "1.05fr 1fr",
+      "headingWidth": "430px",
+      "sectionSpace": 38,
+      "mobile": "按阅读顺序单栏重排，不缩小整页、不隐藏表单字段"
+    },
+    "components": [
+      {
+        "slot_id": "s0",
+        "kind": "products",
+        "title": "产品系列",
+        "defaults_ref": "component:products@1.0"
+      },
+      {
+        "slot_id": "s1",
+        "kind": "features",
+        "title": "采购优势",
+        "defaults_ref": "component:features@1.0"
+      },
+      {
+        "slot_id": "s2",
+        "kind": "text",
+        "title": "参与说明",
+        "defaults_ref": "component:text@1.0"
+      },
+      {
+        "slot_id": "s3",
+        "kind": "form",
+        "title": "采购询价表单",
+        "defaults_ref": "component:form@1.0"
+      }
+    ],
+    "requirements": [
+      {
+        "id": "product-binding",
+        "target_kinds": [
+          "products",
+          "comparison"
+        ],
+        "predicate": "selected_authorized_products_count >= 1",
+        "on_missing": "ask_user",
+        "blocks": [
+          "generate_affected_content",
+          "publish"
+        ]
+      },
+      {
+        "id": "form-binding",
+        "target_kinds": [
+          "form",
+          "cta"
+        ],
+        "predicate": "valid_form_config",
+        "on_missing": "ask_user",
+        "blocks": [
+          "publish"
+        ]
+      }
+    ],
+    "override_policy": "confirmed_user_values_win",
+    "facts_policy": "evidence_only"
+  },
+  {
+    "preset_id": "offer",
+    "version": "1.0",
+    "name": "启程 · 专属活动",
+    "page_type": "促销活动",
+    "defaults": {
+      "goal": "活动报名",
+      "layout": "showcase",
+      "form_ref": "lead_form",
+      "brand_ref": "current_site",
+      "hero": {
+        "visible": true,
+        "image_slot": "hero"
+      },
+      "footer": {
+        "visible": true
+      }
+    },
+    "design_spec": {
+      "composition": "品牌色大面积沉浸首屏，突出活动权益、期限和主要 CTA",
+      "narrative": "权益→参与步骤→常见问题→报名",
+      "imageLanguage": "服务于权益说明的品牌素材",
+      "heroColumns": "1.1fr 1fr",
+      "headingWidth": "450px",
+      "sectionSpace": 42,
+      "mobile": "按阅读顺序单栏重排，不缩小整页、不隐藏表单字段"
+    },
+    "components": [
+      {
+        "slot_id": "s0",
+        "kind": "cta",
+        "title": "活动权益",
+        "defaults_ref": "component:cta@1.0"
+      },
+      {
+        "slot_id": "s1",
+        "kind": "timeline",
+        "title": "参与流程",
+        "defaults_ref": "component:timeline@1.0"
+      },
+      {
+        "slot_id": "s2",
+        "kind": "faq",
+        "title": "常见问题",
+        "defaults_ref": "component:faq@1.0"
+      },
+      {
+        "slot_id": "s3",
+        "kind": "form",
+        "title": "活动报名",
+        "defaults_ref": "component:form@1.0"
+      }
+    ],
+    "requirements": [
+      {
+        "id": "form-binding",
+        "target_kinds": [
+          "form",
+          "cta"
+        ],
+        "predicate": "valid_form_config",
+        "on_missing": "ask_user",
+        "blocks": [
+          "publish"
+        ]
+      }
+    ],
+    "override_policy": "confirmed_user_values_win",
+    "facts_policy": "evidence_only"
+  },
+  {
+    "preset_id": "session",
+    "version": "1.0",
+    "name": "共创 · 专题交流",
+    "page_type": "展会页面",
+    "defaults": {
+      "goal": "活动报名",
+      "layout": "form-side",
+      "form_ref": "lead_form",
+      "brand_ref": "current_site",
+      "hero": {
+        "visible": true,
+        "image_slot": "hero"
+      },
+      "footer": {
+        "visible": true
+      }
+    },
+    "design_spec": {
+      "composition": "主题与交流价值在左，报名表单在右，后续议程与嘉宾信息清晰分层",
+      "narrative": "主题→嘉宾→议程→报名",
+      "imageLanguage": "仅采用有来源的嘉宾照片及身份，缺失保留占位",
+      "heroColumns": "1.1fr 1fr",
+      "headingWidth": "440px",
+      "sectionSpace": 50,
+      "mobile": "按阅读顺序单栏重排，不缩小整页、不隐藏表单字段"
+    },
+    "components": [
+      {
+        "slot_id": "s0",
+        "kind": "text",
+        "title": "活动主题",
+        "defaults_ref": "component:text@1.0"
+      },
+      {
+        "slot_id": "s1",
+        "kind": "gallery",
+        "title": "嘉宾画廊",
+        "defaults_ref": "component:gallery@1.0"
+      },
+      {
+        "slot_id": "s2",
+        "kind": "timeline",
+        "title": "现场议程",
+        "defaults_ref": "component:timeline@1.0"
+      },
+      {
+        "slot_id": "s3",
+        "kind": "form",
+        "title": "预约报名",
+        "defaults_ref": "component:form@1.0"
+      }
+    ],
+    "requirements": [
+      {
+        "id": "form-binding",
+        "target_kinds": [
+          "form",
+          "cta"
+        ],
+        "predicate": "valid_form_config",
+        "on_missing": "ask_user",
+        "blocks": [
+          "publish"
+        ]
+      }
+    ],
+    "override_policy": "confirmed_user_values_win",
+    "facts_policy": "evidence_only"
+  }
+]

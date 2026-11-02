@@ -1,6 +1,8 @@
 # AI 营销落地页前端
 
-React 19 + TypeScript + Vite 6 的营销落地页交互原型。包含对话创建、12 个模板、公共组件编辑、资料补充、网站检测交互、推广位置与客服消息预览、发布版本、效果页及跨 Agent 意图任务导入。
+**文档入口：**[文档索引](docs/README.md) · [产品功能与交互规范](docs/AI营销落地页-产品设计.md) · [提示词与生成规范](docs/落地页提示词设计.md)。
+
+React 19 + TypeScript + Vite 6 的营销落地页交互原型。包含对话创建、12 个模板、公共组件编辑、资料补充、网站检测交互、推广位置与客服消息预览、发布版本、效果页及意图文字输入。
 
 当前入口为 `src/App.tsx` → `src/pages/studio/MarketingStudio.tsx`。当前 Studio 使用前端 Mock，可以独立运行，无需后端、模型服务、API Key 或环境变量。
 
@@ -44,7 +46,7 @@ npm run preview -- --host 127.0.0.1 --port 4186 --strictPort
 4. 配置链接与推广位置；智能客服推送在客服对话预览中查看。
 5. 发布后查看效果与发布版本，或从历史列表继续编辑。
 
-跨 Agent 流程：点击对话框下方“导入意图”，选择 [意图示例 JSON](docs/skills/marketing-intent-handoff/references/intent.example.json)，查看摘要后点击“导入并生成”。导入后生成页面并直接进入编辑与预览，展示关联意图和检测结果；手动导入不会自动发布，用户可继续编辑并配置发布。相同站点与 requestId 会返回已有任务；需要另一任务时修改 requestId，建议同时使用新 slug。
+意图输入：在创建页或编辑页打开“意图说明”，粘贴任务目标、内容约束和确认点，与当前模板及页面配置一起进入生成流程。外部业务入口的交接职责见[产品设计第 9.5 节](docs/AI营销落地页-产品设计.md#prd-9)；旧任务 JSON 保留作兼容参考。
 
 ## 数据与能力边界
 
@@ -68,7 +70,7 @@ frontend/
 ├── docs/
 │   ├── AI营销落地页-产品设计.md
 │   ├── contracts/          # 网站检测与修改任务 JSON
-│   ├── skills/             # 意图交接 Skill、Schema 与示例
+│   ├── skills/             # 意图交接资料与旧协议兼容文件
 │   ├── reference/          # 交互参考图片
 │   ├── open-design-reuse/  # 已保存的上游研究快照与许可文件
 │   └── archive/            # 历史方案，不作为当前要求

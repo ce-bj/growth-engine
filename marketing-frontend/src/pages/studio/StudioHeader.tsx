@@ -6,6 +6,7 @@ interface StudioHeaderProps {
   pageTitle: string
   hasDraft: boolean
   published: boolean
+  publishedVersion?: string
   busy: boolean
   panelCollapsed: boolean
   onLibrary: () => void
@@ -33,7 +34,7 @@ export default function StudioHeader(props: StudioHeaderProps) {
           <strong title={inLibrary ? '智能营销页' : props.pageTitle}>
             {inLibrary ? '智能营销页' : props.pageTitle}
           </strong>
-          <span>{inLibrary ? '创建、发布与管理营销页面' : props.published ? '已发布 · 修改保存在本地草稿' : '草稿保存在当前浏览器'}</span>
+          <span>{inLibrary ? '创建、发布与管理营销页面' : props.published ? `已发布 ${props.publishedVersion?'v'+props.publishedVersion:''} · 修改保存在草稿` : '草稿保存在当前浏览器'}</span>
         </div>
       </div>
       <nav className="marketing-header__actions" aria-label="营销页面操作">
@@ -56,7 +57,7 @@ export default function StudioHeader(props: StudioHeaderProps) {
               <BarChart3 size={14} />效果分析
             </Button>
             <Button variant="ghost" size="sm" onClick={props.onVersions} disabled={props.busy}>
-              <Clock3 size={14} />发布版本
+              <Clock3 size={14} />发布历史
             </Button>
           </>
         )}

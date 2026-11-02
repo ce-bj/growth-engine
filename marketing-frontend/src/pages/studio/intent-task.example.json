@@ -17,20 +17,36 @@
     "conversionAction": "获取报价",
     "market": "中国大陆",
     "language": "中文简体",
-    "primaryColor": "#314ed8",
-    "fontStyle": "现代无衬线"
+    "primaryColor": "#2165b7",
+    "fontStyle": "现代无衬线",
+    "form": {
+      "mode": "recommended",
+      "guidance": "增加电话，去掉邮箱"
+    },
+    "businessFields": {
+      "核心卖点": "围绕水利控制场景提供选型沟通服务"
+    }
   },
   "resources": {
-    "knowledgeDirectories": ["产品资料", "企业与品牌"],
-    "productIds": ["gate"],
+    "knowledgeDirectories": [
+      "产品资料",
+      "企业与品牌"
+    ],
+    "productIds": [
+      "gate"
+    ],
     "imageAssetId": "demo-product-image"
   },
   "publication": {
-    "mode": "automatic",
-    "authorizationRef": "demo-publish-grant",
+    "mode": "draft",
+    "authorizationRef": "",
     "slug": "gate-quotation",
-    "placements": ["智能客服推送"],
-    "navigationPages": ["产品中心"],
+    "placements": [
+      "智能客服推送"
+    ],
+    "navigationPages": [
+      "产品中心"
+    ],
     "onMissingResources": "pause",
     "minimumAiScore": 80
   }

@@ -1,0 +1,222 @@
+[
+  {
+    "kind": "features",
+    "schema_version": "1.0",
+    "default_instance": {
+      "id": "<运行时新建唯一ID>",
+      "kind": "features",
+      "title": "核心优势",
+      "visible": true,
+      "content_status": "pending",
+      "props": {
+        "columns": 3,
+        "items": []
+      },
+      "bindings": {
+        "evidence_refs": []
+      }
+    },
+    "empty_behavior": "显示待补充的能力说明，不生成三个假卖点"
+  },
+  {
+    "kind": "products",
+    "schema_version": "1.0",
+    "default_instance": {
+      "id": "<运行时新建唯一ID>",
+      "kind": "products",
+      "title": "产品列表",
+      "visible": true,
+      "content_status": "pending",
+      "props": {
+        "columns": 3
+      },
+      "bindings": {
+        "product_ids": []
+      }
+    },
+    "empty_behavior": "显示选择产品入口，不填示例产品"
+  },
+  {
+    "kind": "comparison",
+    "schema_version": "1.0",
+    "default_instance": {
+      "id": "<运行时新建唯一ID>",
+      "kind": "comparison",
+      "title": "参数对比",
+      "visible": true,
+      "content_status": "pending",
+      "props": {
+        "columns": [],
+        "rows": []
+      },
+      "bindings": {
+        "product_ids": [],
+        "evidence_refs": []
+      }
+    },
+    "empty_behavior": "保留空表结构，待关联可比较产品及参数"
+  },
+  {
+    "kind": "testimonials",
+    "schema_version": "1.0",
+    "default_instance": {
+      "id": "<运行时新建唯一ID>",
+      "kind": "testimonials",
+      "title": "客户案例",
+      "visible": true,
+      "content_status": "pending",
+      "props": {
+        "items": []
+      },
+      "bindings": {
+        "evidence_refs": []
+      }
+    },
+    "empty_behavior": "不创建客户姓名、引语或评价，提示提供经确认案例"
+  },
+  {
+    "kind": "gallery",
+    "schema_version": "1.0",
+    "default_instance": {
+      "id": "<运行时新建唯一ID>",
+      "kind": "gallery",
+      "title": "图片画廊",
+      "visible": true,
+      "content_status": "pending",
+      "props": {
+        "columns": 3,
+        "slots": 3
+      },
+      "bindings": {
+        "image_asset_ids": []
+      }
+    },
+    "empty_behavior": "保留三张占位，缺图不复制同一素材凑数"
+  },
+  {
+    "kind": "stats",
+    "schema_version": "1.0",
+    "default_instance": {
+      "id": "<运行时新建唯一ID>",
+      "kind": "stats",
+      "title": "实力数据",
+      "visible": true,
+      "content_status": "pending",
+      "props": {
+        "items": []
+      },
+      "bindings": {
+        "evidence_refs": []
+      }
+    },
+    "empty_behavior": "数值显示待补充，不填工厂面积或产能默认值"
+  },
+  {
+    "kind": "timeline",
+    "schema_version": "1.0",
+    "default_instance": {
+      "id": "<运行时新建唯一ID>",
+      "kind": "timeline",
+      "title": "流程与议程",
+      "visible": true,
+      "content_status": "pending",
+      "props": {
+        "items": []
+      },
+      "bindings": {
+        "evidence_refs": []
+      }
+    },
+    "empty_behavior": "提供添加步骤入口，不生成虚构日期或承诺"
+  },
+  {
+    "kind": "faq",
+    "schema_version": "1.0",
+    "default_instance": {
+      "id": "<运行时新建唯一ID>",
+      "kind": "faq",
+      "title": "常见问题",
+      "visible": true,
+      "content_status": "pending",
+      "props": {
+        "items": []
+      },
+      "bindings": {
+        "evidence_refs": []
+      }
+    },
+    "empty_behavior": "无依据不生成技术答案，可先列待确认问题"
+  },
+  {
+    "kind": "form",
+    "schema_version": "1.0",
+    "default_instance": {
+      "id": "<运行时新建唯一ID>",
+      "kind": "form",
+      "title": "留资表单",
+      "visible": true,
+      "content_status": "pending",
+      "props": {},
+      "bindings": {
+        "form_ref": "lead_form"
+      }
+    },
+    "empty_behavior": "引用统一 FORM_JSON；无有效表单则提示配置，不自造字段"
+  },
+  {
+    "kind": "cta",
+    "schema_version": "1.0",
+    "default_instance": {
+      "id": "<运行时新建唯一ID>",
+      "kind": "cta",
+      "title": "行动横幅",
+      "visible": true,
+      "content_status": "pending",
+      "props": {
+        "text": null
+      },
+      "bindings": {
+        "goal_ref": "page_goal.objective",
+        "form_ref": "lead_form"
+      }
+    },
+    "empty_behavior": "按钮沿用主转化动作，不自动承诺优惠"
+  },
+  {
+    "kind": "text",
+    "schema_version": "1.0",
+    "default_instance": {
+      "id": "<运行时新建唯一ID>",
+      "kind": "text",
+      "title": "图文介绍",
+      "visible": true,
+      "content_status": "pending",
+      "props": {
+        "body": null
+      },
+      "bindings": {
+        "evidence_refs": []
+      }
+    },
+    "empty_behavior": "正文标待补充，不把模板示例当事实"
+  },
+  {
+    "kind": "video",
+    "schema_version": "1.0",
+    "default_instance": {
+      "id": "<运行时新建唯一ID>",
+      "kind": "video",
+      "title": "视频区域",
+      "visible": true,
+      "content_status": "pending",
+      "props": {
+        "autoplay": false
+      },
+      "bindings": {
+        "video_asset_id": null,
+        "poster_asset_id": null
+      }
+    },
+    "empty_behavior": "显示视频占位和补充入口，不伪造播放地址"
+  }
+]

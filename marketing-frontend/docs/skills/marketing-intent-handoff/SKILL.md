@@ -24,3 +24,9 @@ description: 为访客分析、个性化体验或客服智能体创建营销落�
 ## 当前可用能力
 
 这里是可复制分发的 Skill 包，尚未安装到任何 Agent 运行环境。当前项目只有前端导入与本地发布状态演示，无真实接口、鉴权、Agent 执行或网站发布。不要调用示例中的 demo 标识执行真实业务。
+
+## 生成配置一致性
+
+统一设计与完整示例见 [落地页提示词设计](../../落地页提示词设计.md)，本 Skill 只负责组织可导入的任务文件。
+
+意图任务按 references/protocol.md 映射到统一生成提示词，不自行附加 systemPrompt/userPrompt。可在 generation.form 中限定表单推荐或指定 1–6 项平台字段，在 generation.businessFields 中提供当前页面类型的业务信息；省略时沿用平台推荐。publication 属于编排层配置，authorizationRef 不进入模型提示词。默认使用 draft，只有已有正式授权时才使用 automatic。

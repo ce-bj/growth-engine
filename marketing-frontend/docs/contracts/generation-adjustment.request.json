@@ -1,29 +1,29 @@
 {
-  "schemaVersion": "0.1",
-  "taskId": "adjustment-001",
-  "pageId": "landing-001",
-  "baseContentRevision": "draft-revision-008",
-  "sourceReportId": "audit-report-001",
-  "targetAgent": "generation-agent",
-  "actions": [
-    {
-      "findingId": "finding-001",
-      "sectionId": "faq",
-      "operation": "rewrite-from-sources",
-      "instruction": "结论前置，答案自包含，保留原始事实与来源。",
-      "sourceIds": [
-        "knowledge-product-001"
-      ]
-    }
+  "requestId": "edit-brand-001",
+  "operation": "edit",
+  "pageId": "page-001",
+  "base_revision": 9,
+  "initiator": "user",
+  "sourceType": "pasted_solution",
+  "sourceReportId": "brand-report-001",
+  "sourceFindingIds": [
+    "brand-finding-001"
   ],
-  "deferredFindings": [
-    "finding-002"
-  ],
-  "constraints": {
-    "preserveTemplate": true,
-    "preserveConversionAction": true,
-    "allowUnsupportedFacts": false,
-    "allowAutomaticPublishing": false
+  "userText": "来源：AI友好度／品牌一致性检测与自动优化\n报告：brand-report-001；页面：page-001；内容修订：9\n问题：页头与页脚品牌名称不一致。\n解决方案：仅将本营销页页头、页脚的品牌名称统一为当前站点已确认的品牌主名称；主名称未确认则先询问。保留其他内容，不修改站点档案或其他页面。",
+  "allowedScope": {
+    "componentIds": [
+      "header",
+      "footer"
+    ],
+    "fieldPaths": [
+      "brand_name",
+      "company_name"
+    ]
   },
-  "nextAction": "request-website-reaudit"
+  "constraints": {
+    "preserveOtherContent": true,
+    "allowSiteWideChanges": false,
+    "allowPublishing": false
+  },
+  "nextAction": "generate_patch_and_validate"
 }

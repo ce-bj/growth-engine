@@ -1,3 +1,5 @@
+export const GOALS=['获取报价','预约沟通','领取资料','发起咨询','提交需求','活动报名']
+export const KNOWLEDGE_DIRS=['企业与品牌','产品资料','行业解决方案','客户案例','活动与展会','服务与常见问题']
 export type BlockKind='features'|'products'|'comparison'|'testimonials'|'gallery'|'stats'|'timeline'|'faq'|'form'|'cta'|'text'|'video'
 export const BLOCKS:{kind:BlockKind;label:string;description:string}[]=[
  {kind:'features',label:'核心优势',description:'图标与三列能力卡片'},
