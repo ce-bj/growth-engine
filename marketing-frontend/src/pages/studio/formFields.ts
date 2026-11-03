@@ -8,6 +8,14 @@ const aliases: Record<string, string[]> = {
   采购量: ['采购量', '采购数量'], 需求说明: ['需求说明', '需求描述'], 预约日期: ['预约日期', '预约时间'],
 }
 
+const FIELD_TYPES: Record<string, string> = { 邮箱: 'email', 电话: 'tel', 预约日期: 'date', 需求说明: 'textarea', '国家/地区': 'select' }
+
+/** Default field rules (产品设计 5.6): name plus the first contact field are required, the rest optional. */
+export function formFieldSpecs(fields: string[]) {
+  const contact = fields.find(field => field === '邮箱' || field === '电话')
+  return fields.map(label => ({ label, type: FIELD_TYPES[label] === 'textarea' || FIELD_TYPES[label] === 'select' ? 'text' : FIELD_TYPES[label] || 'text', control: FIELD_TYPES[label] || 'text', required: label === '姓名' || label === contact }))
+}
+
 export function getFormFields(draft: FormDraft): string[] {
   if (draft.formConfigured) return draft.formFields.filter(field => FORM_FIELDS.includes(field)).slice(0, 6)
   const preset = draft.goal === '活动报名' ? '活动报名' : draft.goal === '领取资料' ? '资料领取' : draft.goal === '获取报价' ? '采购询价' : '基础联系'

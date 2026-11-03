@@ -3,13 +3,14 @@ import { createComponent } from './componentDefaults'
 import { inspectMarketingPage, requiresProducts } from './marketingInspection'
 import { buildGenerationRequest } from './generation'
 import { inferKind } from './blocks'
+import { draftExpressionContent } from './firstDraft'
 
 export function prepareFirstDraft(draft:Draft):Draft {
  let sections=draft.sections
  if(requiresProducts(draft)&&!sections.some(s=>!s.hidden&&['products','comparison'].includes(s.kind||inferKind(s.title)))){
   sections=[...sections,createComponent('products',crypto.randomUUID(),'关联产品')]
  }
- return applySupplementContent({...draft,sections},{},sections.map(s=>s.id))
+ return draftExpressionContent(applySupplementContent({...draft,sections},{},sections.map(s=>s.id)))
 }
 export function applySupplementContent(base:Draft,patch:Partial<Draft>,targetIds:string[]):Draft {
  const next={...base,...patch}
@@ -17,6 +18,8 @@ export function applySupplementContent(base:Draft,patch:Partial<Draft>,targetIds
  const sections=next.sections.map(s=>{
   const individual=patch.componentInputs?.[s.id]?.trim()||next.componentInputs?.[s.id]?.trim()
   const content=individual||(targetIds.length===1&&['text','features','timeline','faq','testimonials'].includes(s.kind||inferKind(s.title))?text:'')
+  // User-provided text replaces empty or AI-drafted content; it never overwrites the user's own edits.
+  if(individual&&targetIds.includes(s.id)&&s.drafted)return {...s,body:individual,items:undefined,drafted:false}
   return targetIds.includes(s.id)&&(!s.body.trim()||/^(?:\[?待补充|请补充)/.test(s.body))&&content?{...s,body:content}:s
  })
  return {...next,sections,pendingSupplement:undefined,supplementTargets:undefined,supplementChecked:true,knowledgeReady:next.knowledgeReady||!!text}

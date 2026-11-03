@@ -1172,6 +1172,7 @@ create 输出完整页面；resume/edit 输出绑定 base_revision 的白名单�
 - [主工作台](../src/pages/studio/MarketingStudio.tsx)：流程、草稿、意图任务、发布和效果。
 - [创建页](../src/pages/studio/StudioStart.tsx)、[资源选择](../src/pages/studio/ResourcePanel.tsx)、[配置反馈](../src/pages/studio/ComposerContext.tsx)。
 - [画布](../src/pages/studio/StudioCanvas.tsx)、[文字面板](../src/pages/studio/TextInspector.tsx)。
+- [首版起草示意](../src/pages/studio/firstDraft.ts)（3.3、6.4）、[缺口判定](../src/pages/studio/marketingInspection.ts)（5.4.2）、[待完善清单](../src/pages/studio/RequiredInputs.tsx)。原型用固定文案示意起草结果，未接入真实模型；system 提示词运行时拼合（9.1）仅在文档中约定。
 - [推广设置](../src/pages/studio/StrategyEditor.tsx)、[网站预览](../src/pages/studio/CombinedPreview.tsx)、[客服预览](../src/pages/studio/ChatPlacementPreview.tsx)。
 - [网站检测交互](../src/pages/studio/WebsiteAuditReport.tsx)、[品牌能力适配](../src/pages/studio/websiteAudit.ts)。
 - Agent 交接数据以本文第 10 章为准，意图以文字块进入生成上下文。

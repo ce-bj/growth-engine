@@ -200,9 +200,9 @@
       },
       {
         "slot_id": "s3",
-        "kind": "text",
+        "kind": "form",
         "title": "联系团队",
-        "defaults_ref": "component:text@1.0"
+        "defaults_ref": "component:form@1.0"
       }
     ],
     "requirements": [
@@ -670,9 +670,9 @@
       },
       {
         "slot_id": "s3",
-        "kind": "text",
+        "kind": "form",
         "title": "联系团队",
-        "defaults_ref": "component:text@1.0"
+        "defaults_ref": "component:form@1.0"
       }
     ],
     "requirements": [

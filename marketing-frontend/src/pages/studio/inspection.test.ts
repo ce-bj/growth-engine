@@ -17,7 +17,7 @@ test('明确意图中的产品要求保持有效，隐藏组件不能绕过要�
  assert.ok(!inspectMarketingPage({...draft(),need:'不需要产品，只收集线索'}).some(g=>g.label==='关联产品'))
 })
 test('品牌报告不改页面；方案只允许作用于同一页面及内容快照',()=>{
- const d={...draft(),elementTexts:{'header:brand':'旧品牌'},optionalFields:{'核心卖点':'可靠制造','联系方式':'010-12345678'}}
+ const d={...draft(),elementTexts:{'header:brand':'旧品牌'},siteSellingPoints:'可靠制造',siteContact:'010-12345678'}
  const before=JSON.stringify(d); const report=inspectBrandConsistency(d)
  assert.equal(JSON.stringify(d),before)
  assert.equal(report.providerModule,'ai-readiness')
@@ -39,7 +39,7 @@ test('缺少品牌基准不能宣称检测通过，也不能生成事实替换�
 })
 
 test('同意后自动优化单项，保留其他内容并支持继续处理同一报告',()=>{
- const d={...draft(),elementTexts:{'header:brand':'旧品牌','footer:contact':'旧电话','other:title':'保留'},optionalFields:{'核心卖点':'可靠制造','联系方式':'010-12345678'}}
+ const d={...draft(),elementTexts:{'header:brand':'旧品牌','footer:contact':'旧电话','other:title':'保留'},siteSellingPoints:'可靠制造',siteContact:'010-12345678'}
  d.websiteAudit=inspectBrandConsistency(d)
  const before=JSON.stringify(d)
  const next=optimizeBrandFinding(d,d.websiteAudit,'brand-name')!
@@ -62,4 +62,15 @@ test('自动优化不会为缺失基准造事实，也不执行范围外替换',
  changed.websiteAudit=inspectBrandConsistency(changed)
  changed.websiteAudit.findings[0].replacements={'other:title':changed.company}
  assert.equal(optimizeBrandFinding(changed,changed.websiteAudit,'brand-name'),null)
+})
+test('品牌基准来自站点档案；核心卖点按语义补充，不整段替换首屏文案',()=>{
+ const pageOnly={...draft(),optionalFields:{'核心卖点':'本页卖点','联系方式':'本页电话'}}
+ assert.equal(inspectBrandConsistency(pageOnly).findings.find(f=>f.checkId==='brand-selling')!.status,'needs_input')
+ const d={...draft(),subtitle:'面向工程项目的选型支持。',siteSellingPoints:'耐腐蚀'}
+ d.websiteAudit=inspectBrandConsistency(d)
+ const selling=d.websiteAudit.findings.find(f=>f.checkId==='brand-selling')!
+ assert.equal(selling.status,'review')
+ const next=optimizeBrandFinding(d,d.websiteAudit,'brand-selling')!
+ assert.equal(next.elementTexts?.['hero:body'],'面向工程项目的选型支持，耐腐蚀。')
+ assert.equal(inspectBrandConsistency({...d,subtitle:'产品耐腐蚀，适用于工程项目。'}).findings.find(f=>f.checkId==='brand-selling')!.status,'consistent')
 })

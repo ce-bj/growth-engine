@@ -7,6 +7,7 @@ import {OPEN_DESIGN_PROVENANCE} from './openDesignPrompt'
 import {readFileSync} from 'node:fs'
 import {createHash} from 'node:crypto'
 import { selectTemplate, applyConfiguration, buildGenerationRequest, SYSTEM_PROMPT } from './generation'
+import { formFieldSpecs } from './formFields'
 
 const base = (): Draft => ({
   stage:'templates', templateId:'', need:'', goal:'获取报价', company:'测试企业', website:'https://example.com', industry:'机械', business:'阀门',
@@ -89,7 +90,7 @@ test('生成请求实际包含 OpenDesign 原文，来源摘要与仓库原文�
   assert.ok(!request.systemPrompt.includes('Ship on write:'))
   assert.deepEqual(request.promptSources,OPEN_DESIGN_PROVENANCE)
   for(const source of request.promptSources.sources){
-    const text=readFileSync(new URL('../../../'+source.path,import.meta.url),'utf8')
+    const text=readFileSync(source.path,'utf8')
     assert.equal(createHash('sha256').update(text).digest('hex'),source.sha256)
   }
   assert.ok(request.userPrompt.endsWith(JSON.stringify(request.blocks.KNOWLEDGE_SCOPE_JSON,null,2)))
@@ -110,4 +111,16 @@ test('12 个模板各有明确视觉规范，配置替换后保留参考布局�
     compositions.add(spec.composition)
   }
   assert.equal(compositions.size,12)
+})
+
+test('每份模板都有表单承接主 CTA；表单默认只要求姓名和第一个联系字段',()=>{
+  for(const template of mockTemplatesData){
+    const draft={...base(),...selectTemplate(base(),template)}
+    assert.ok(draft.layout==='form-side'||draft.sections.some(s=>s.kind==='form'),template.id)
+  }
+  const fields=formFieldSpecs(['姓名','邮箱','电话','公司','需求说明'])
+  assert.deepEqual(fields.filter(f=>f.required).map(f=>f.label),['姓名','邮箱'])
+  assert.equal(fields.find(f=>f.label==='电话')?.type,'tel')
+  const request=buildGenerationRequest({...base(),...selectTemplate(base(),mockTemplatesData[0])},mockTemplatesData[0])
+  assert.ok(request.blocks.FORM_JSON.fields.some(f=>!f.required))
 })
