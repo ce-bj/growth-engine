@@ -4,6 +4,7 @@ import { AdminShell } from './components/AdminShell'
 import {
   EmbedFrame,
   contentAgentUrl,
+  dataBoardUrl,
   marketingAgentUrl,
   opsAssistantUrl,
   visitorAnalysisUrl,
@@ -26,6 +27,7 @@ function Pages() {
 
   return (
     <AdminShell>
+      {view === 'board' && <EmbedFrame src={dataBoardUrl()} title="数据看板" />}
       {view === 'dashboard' && <AgentOverviewView />}
       {view === 'scanning' && <ScanProgressView />}
       {view === 'visitor' && (

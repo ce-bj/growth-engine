@@ -1,0 +1,583 @@
+/* 弹窗渲染在 body 下，不在 .dan-board 里，弹窗内用到的类要同时挂在 .db-modal 下 */
+.dan-board,
+.db-modal {
+  --db-accent: #2f8bb8;
+  --db-danger: #cf1322;
+  --db-text-2: #64748b;
+  --db-line: #e8edf2;
+}
+
+.dan-board {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.dan-board .db-window {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 12px;
+}
+
+.dan-board .db-window > span,
+.dan-board .db-window-span {
+  font-size: 13px;
+  color: var(--db-text-2);
+}
+
+.dan-board .db-focus {
+  font-size: 14px;
+}
+
+.dan-board .db-kpi {
+  height: 100%;
+}
+
+.dan-board .db-kpi.is-alert {
+  border-color: #ffccc7;
+  box-shadow: inset 3px 0 0 var(--db-danger);
+}
+
+.dan-board .db-kpi-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  min-height: 24px;
+  margin-bottom: 4px;
+}
+
+.dan-board .db-kpi-title {
+  font-size: 13px;
+  color: var(--db-text-2);
+}
+
+.dan-board .db-kpi-foot {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 4px 12px;
+  margin-top: 8px;
+  font-size: 13px;
+}
+
+.dan-board .db-kpi-note {
+  color: var(--db-text-2);
+}
+
+.dan-board .db-delta {
+  color: var(--db-text-2);
+  white-space: nowrap;
+}
+
+.dan-board .db-delta.is-up {
+  color: #389e0d;
+}
+
+.dan-board .db-delta.is-down {
+  color: var(--db-danger);
+}
+
+.dan-board .db-section-head {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  margin-top: 12px;
+  padding-left: 10px;
+  border-left: 3px solid var(--db-accent);
+}
+
+.dan-board .db-section-head h2 {
+  margin: 0;
+  font-size: 17px;
+  font-weight: 650;
+  line-height: 1.3;
+}
+
+.dan-board .db-section-head span {
+  font-size: 13px;
+  color: var(--db-text-2);
+}
+
+.dan-board .db-fill {
+  height: 100%;
+}
+
+.dan-board .db-card-hint,
+.db-modal .db-card-hint,
+.dan-board .db-chart-unit {
+  margin: 0 0 12px;
+  font-size: 12px;
+  color: var(--db-text-2);
+}
+
+.dan-board .db-chart-wait,
+.db-modal .db-chart-wait {
+  height: 280px;
+  border-radius: 6px;
+  background: #f7f9fb;
+}
+
+.dan-board .db-tag-mini,
+.db-modal .db-tag-mini {
+  margin-inline-start: 6px;
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 18px;
+}
+
+.dan-board .db-channel-name {
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.dan-board .db-mix {
+  display: flex;
+  gap: 2px;
+  height: 14px;
+  overflow: hidden;
+  border-radius: 4px;
+}
+
+.dan-board .db-mix span {
+  display: block;
+  height: 100%;
+}
+
+.dan-board .db-mix-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 18px;
+  margin: 10px 0 16px;
+  font-size: 13px;
+  color: var(--db-text-2);
+}
+
+.dan-board .db-mix-legend i {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  margin-right: 6px;
+  border-radius: 2px;
+  vertical-align: 1px;
+}
+
+.dan-board .db-mix-legend b {
+  margin-left: 2px;
+  color: #1e293b;
+  font-weight: 600;
+}
+
+.dan-board .db-map-card {
+  display: flex;
+  flex-direction: column;
+}
+
+.dan-board .db-map-body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.dan-board .db-map-legend {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 8px;
+  font-size: 12px;
+  color: var(--db-text-2);
+}
+
+.dan-board .db-map-legend span:first-child {
+  margin-right: 4px;
+}
+
+.dan-board .db-map-legend i {
+  width: 160px;
+  height: 8px;
+  border-radius: 4px;
+}
+
+.dan-board .db-sum-row > td {
+  background: #fafbfc;
+  font-weight: 600;
+}
+
+.dan-board .db-channel-dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  margin-right: 8px;
+  border-radius: 2px;
+  vertical-align: 1px;
+}
+
+.dan-board .is-pickable {
+  cursor: pointer;
+}
+
+.dan-board .is-picked > td {
+  background: #e6f4fb;
+}
+
+.dan-board .db-cell-sub,
+.db-modal .db-cell-sub {
+  font-size: 12px;
+  color: var(--db-text-2);
+}
+
+.dan-board .db-cell-bad,
+.dan-board .db-cell-bad .db-cell-sub,
+.db-modal .db-cell-bad,
+.db-modal .db-cell-bad .db-cell-sub {
+  color: var(--db-danger);
+}
+
+/* 排名列表：名称 + 数值一行，进度条一行，辅助信息一行 */
+.dan-board .db-rank {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.dan-board .db-rank-row {
+  display: grid;
+  grid-template-columns: 22px minmax(0, 1fr);
+  gap: 10px;
+  align-items: start;
+  width: 100%;
+  margin: 0;
+  padding: 6px 8px;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+}
+
+.dan-board .db-rank-row.is-btn {
+  cursor: pointer;
+}
+
+.dan-board .db-rank-row.is-btn:hover {
+  background: #f5f8fb;
+}
+
+.dan-board .db-rank-row.is-on {
+  border-color: #91caff;
+  background: #e6f4fb;
+}
+
+.dan-board .db-rank-no {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  margin-top: 1px;
+  border-radius: 4px;
+  background: #f1f4f8;
+  color: var(--db-text-2);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.dan-board .db-rank-dot {
+  width: 10px;
+  height: 10px;
+  margin: 6px 0 0 5px;
+  border-radius: 50%;
+}
+
+.dan-board .db-rank-no.is-top {
+  background: var(--db-accent);
+  color: #fff;
+}
+
+.dan-board .db-rank-main {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.dan-board .db-rank-line {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  min-width: 0;
+  font-size: 14px;
+  line-height: 22px;
+}
+
+.dan-board .db-rank-name {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.dan-board .db-rank-value {
+  margin-left: auto;
+  padding-left: 12px;
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.dan-board .db-rank-sub,
+.dan-board .db-rank-hint {
+  font-size: 12px;
+  color: var(--db-text-2);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.dan-board .db-rank-hint {
+  margin-left: 6px;
+}
+
+/* 漏斗 */
+/* 漏斗明细弹窗：左漏斗 + 流失点，右流失点关键指标 */
+.db-modal .db-fd {
+  position: relative;
+  display: flex;
+}
+
+.db-modal .db-fd-chart {
+  flex: 0 0 58%;
+  min-width: 0;
+}
+
+.db-modal .db-fd-rail {
+  position: relative;
+  flex: 1;
+}
+
+.db-modal .db-fd-loss {
+  position: absolute;
+  left: 22px;
+  right: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  padding: 6px 10px;
+  border: 1px solid var(--db-line);
+  border-radius: 8px;
+  background: #fff;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  transform: translateY(-50%);
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.db-modal .db-fd-loss::before {
+  content: "";
+  position: absolute;
+  top: 50%;
+  right: 100%;
+  width: 22px;
+  border-top: 1px dashed #94a3b8;
+}
+
+.db-modal .db-fd-loss:hover,
+.db-modal .db-fd-loss:focus-visible,
+.db-modal .db-fd-loss.is-on {
+  border-color: var(--db-accent);
+  box-shadow: 0 0 0 2px rgba(47, 139, 184, 0.15);
+  outline: none;
+}
+
+.db-modal .db-fd-loss.is-bad {
+  border-color: #ffccc7;
+  background: #fff7f6;
+}
+
+.db-modal .db-fd-loss.is-bad.is-on {
+  border-color: var(--db-danger);
+  box-shadow: 0 0 0 2px rgba(207, 19, 34, 0.12);
+}
+
+.db-modal .db-fd-loss.is-on::before {
+  border-top: 2px solid var(--db-accent);
+}
+
+.db-modal .db-fd-loss.is-bad.is-on::before {
+  border-top-color: var(--db-danger);
+}
+
+.db-modal .db-fd-loss-k {
+  display: inline-flex;
+  align-items: center;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.db-modal .db-fd-loss-v {
+  font-size: 12px;
+  color: var(--db-text-2);
+  font-variant-numeric: tabular-nums;
+}
+
+.db-modal .db-fd-hint {
+  margin-top: 12px;
+}
+
+.db-modal .db-loss {
+  height: 100%;
+  padding: 18px 20px;
+  border: 1px solid var(--db-line);
+  border-radius: 10px;
+}
+
+.db-modal .db-loss-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.db-modal .db-loss-kicker {
+  font-size: 12px;
+  color: #b4532a;
+}
+
+.db-modal .db-loss-title {
+  margin: 6px 0 2px;
+  font-size: 20px;
+  font-weight: 600;
+}
+
+.db-modal .db-loss-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 14px;
+  margin: 0;
+  font-size: 13px;
+  color: var(--db-text-2);
+}
+
+.db-modal .db-loss-hero {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  margin-top: 16px;
+}
+
+.db-modal .db-loss-hero-k {
+  display: block;
+  font-size: 13px;
+  color: var(--db-text-2);
+}
+
+.db-modal .db-loss-hero-v {
+  font-size: 34px;
+  font-weight: 650;
+  line-height: 1.2;
+  font-variant-numeric: tabular-nums;
+}
+
+.db-modal .db-loss.is-bad .db-loss-hero-v {
+  color: var(--db-danger);
+}
+
+.db-modal .db-loss-hero-side {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  font-size: 13px;
+  color: var(--db-text-2);
+}
+
+.db-modal .db-loss-hero-side .is-down {
+  color: var(--db-danger);
+}
+
+.db-modal .db-loss-hero-side .is-up {
+  color: #389e0d;
+}
+
+.db-modal .db-loss-hint {
+  margin: 4px 0 0;
+  padding-bottom: 14px;
+  border-bottom: 1px solid var(--db-line);
+  font-size: 12px;
+  color: var(--db-text-2);
+}
+
+.db-modal .db-loss-group h4 {
+  margin: 14px 0 4px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--db-text-2);
+}
+
+.db-modal .db-loss-group dl {
+  margin: 0;
+}
+
+.db-modal .db-loss-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 9px 0;
+  border-bottom: 1px solid #f1f4f7;
+  font-size: 14px;
+}
+
+.db-modal .db-loss-row:last-child {
+  border-bottom: 0;
+}
+
+.db-modal .db-loss-row dt {
+  cursor: help;
+}
+
+.db-modal .db-loss-row dd {
+  margin: 0;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+/* 网站承接筛选条 */
+.dan-board .db-filterbar {
+  margin-top: -4px;
+}
+
+.dan-board .db-filter-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px 32px;
+}
+
+.dan-board .db-filter {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.dan-board .db-filter-label {
+  font-size: 13px;
+  color: var(--db-text-2);
+  white-space: nowrap;
+}
+
+.dan-board .db-slice-note {
+  margin-top: -4px;
+}
+
+.dan-board .db-term-tabs {
+  margin-bottom: 12px;
+}
+
+.dan-board .db-term-alert,
+.db-modal .db-term-alert {
+  margin-bottom: 12px;
+}

@@ -19,6 +19,13 @@ export function visitorAnalysisUrl() {
   return lanServiceUrl(import.meta.env.VITE_VISITOR_ANALYSIS_URL, 5177)
 }
 
+/** 访客行为分析里单独拆出的数据看板（?view=board） */
+export function dataBoardUrl() {
+  const url = new URL(visitorAnalysisUrl(), window.location.origin)
+  url.searchParams.set('view', 'board')
+  return url.toString()
+}
+
 export function marketingAgentUrl() {
   return lanServiceUrl(import.meta.env.VITE_MARKETING_AGENT_URL, 5186)
 }

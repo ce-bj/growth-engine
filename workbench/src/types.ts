@@ -40,6 +40,7 @@ export const DIMENSION_META: Array<{
  *  knowledge 为新增的知识库页
  */
 export type ViewId =
+  | 'board'
   | 'dashboard'
   | 'visitor'
   | 'marketing'

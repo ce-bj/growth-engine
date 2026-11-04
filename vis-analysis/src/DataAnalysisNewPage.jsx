@@ -19,6 +19,7 @@ import {
   UnorderedListOutlined,
 } from "@ant-design/icons";
 import FunnelReviewApp from "./funnel-review/App.jsx";
+import DetailBoard from "./detail-board/DetailBoard.jsx";
 import "./funnel-review/styles.css";
 import "./data-analysis-new.css";
 import {
@@ -64,7 +65,7 @@ const THEME = {
   },
 };
 
-function AuthConnect({ sourceKey, onBack, onDone }) {
+function AuthConnect({ sourceKey, backLabel, onBack, onDone }) {
   const { message } = AntApp.useApp();
   const [busy, setBusy] = useState(false);
   const copy = SOURCE_AUTH_PAGES[sourceKey] || {
@@ -86,7 +87,7 @@ function AuthConnect({ sourceKey, onBack, onDone }) {
     <div className="dan-blank">
       <div className="dan-blank-bar">
         <Button icon={<ArrowLeftOutlined />} onClick={onBack}>
-          返回明细数据
+          {backLabel}
         </Button>
       </div>
       <div className="dan-blank-body">
@@ -189,7 +190,7 @@ function scrollToId(id) {
   document.getElementById(id)?.scrollIntoView({ behavior: "smooth", block: "start" });
 }
 
-function Workbench() {
+function Workbench({ boardOnly }) {
   const { message } = AntApp.useApp();
   const [taskState, setTaskState] = useState({});
   const [openKey, setOpenKey] = useState(null);
@@ -256,6 +257,7 @@ function Workbench() {
   function finishAuth(key) {
     setGranted((prev) => ({ ...prev, [key]: true }));
     setAuthKey(null);
+    if (boardOnly) return;
     setMainTab("data");
     setPreferSource(key === "gsc" || key === "ads" || key === "site" ? key : "all");
     setScrollSearch(true);
@@ -274,6 +276,7 @@ function Workbench() {
     return (
       <AuthConnect
         sourceKey={authKey}
+        backLabel={boardOnly ? "返回数据看板" : "返回明细数据"}
         onBack={() => setAuthKey(null)}
         onDone={finishAuth}
       />
@@ -290,6 +293,41 @@ function Workbench() {
     );
   }
 
+  const siteSelect = (
+    <Select
+      className="dan-site-select"
+      size="middle"
+      value={siteId}
+      showSearch={false}
+      allowClear={false}
+      suffixIcon={<DownOutlined />}
+      aria-label="已绑定网站"
+      style={{ minWidth: 280 }}
+      options={SITES.map((item) => ({
+        value: item.id,
+        label: `${item.name.replace("Demo · ", "")}`,
+      }))}
+      onChange={(id) => setSiteId(id)}
+    />
+  );
+
+  if (boardOnly) {
+    return (
+      <div className="dan-page">
+        <div className="dan-inner">
+          <header className="dan-hero">
+            <div>
+              <p className="dan-kicker">数据来自访客行为分析智能体</p>
+              <h1 className="dan-title">数据看板</h1>
+            </div>
+            <div className="dan-hero-tools">{siteSelect}</div>
+          </header>
+          <DetailBoard authMap={authMap} onAuthorize={openAuth} />
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="dan-page">
       <div className="dan-inner">
@@ -299,21 +337,7 @@ function Workbench() {
             <h1 className="dan-title">AI 访客行为分析智能体</h1>
           </div>
           <div className="dan-hero-tools">
-            <Select
-              className="dan-site-select"
-              size="middle"
-              value={siteId}
-              showSearch={false}
-              allowClear={false}
-              suffixIcon={<DownOutlined />}
-              aria-label="已绑定网站"
-              style={{ minWidth: 280 }}
-              options={SITES.map((item) => ({
-                value: item.id,
-                label: `${item.name.replace("Demo · ", "")}`,
-              }))}
-              onChange={(id) => setSiteId(id)}
-            />
+            {siteSelect}
             <Select
               className="dan-site-select dan-week-select"
               size="middle"
@@ -762,11 +786,11 @@ function Workbench() {
   );
 }
 
-export default function DataAnalysisNewPage() {
+export default function DataAnalysisNewPage({ view = "agent" }) {
   return (
     <ConfigProvider locale={zhCN} theme={THEME} button={{ autoInsertSpace: false }}>
       <AntApp style={{ flex: 1, minWidth: 0, minHeight: 0, height: "100%", display: "flex" }}>
-        <Workbench />
+        <Workbench boardOnly={view === "board"} />
       </AntApp>
     </ConfigProvider>
   );

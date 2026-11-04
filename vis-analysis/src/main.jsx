@@ -5,8 +5,10 @@ import './embed.css'
 
 document.documentElement.dataset.visitorEmbed = '1'
 
+const view = new URLSearchParams(window.location.search).get('view') === 'board' ? 'board' : 'agent'
+
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
-    <DataAnalysisNewPage />
+    <DataAnalysisNewPage view={view} />
   </React.StrictMode>,
 )
