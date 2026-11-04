@@ -39,6 +39,14 @@ export function opsAssistantUrl() {
   return lanServiceUrl(import.meta.env.VITE_OPS_ASSISTANT_URL, 5174, '/?embed=assistant')
 }
 
+/** 工作台悬浮窗：同一套会话和对话，精简操作 */
+export function opsAssistantFloatUrl() {
+  const url = new URL(opsAssistantUrl(), window.location.origin)
+  url.searchParams.set('embed', 'float')
+  url.hash = ''
+  return url.toString()
+}
+
 export function EmbedFrame({ src, title }: { src: string; title: string }) {
   return (
     <div className="admin-embed-wrap">

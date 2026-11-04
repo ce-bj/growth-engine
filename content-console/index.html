@@ -1830,7 +1830,52 @@ function closeConfirm(ok){
   if(ok && cb) cb();
 }
 
+/* 从访客行为分析跳进来时，先看这一条任务 */
+function showAgentTask() {
+  const raw = new URLSearchParams(location.search).get('task');
+  if (!raw) return;
+  let task = null;
+  try {
+    const binary = atob(raw);
+    const bytes = Uint8Array.from(binary, (char) => char.charCodeAt(0));
+    task = JSON.parse(new TextDecoder().decode(bytes));
+  } catch (error) {
+    return;
+  }
+  if (!task || typeof task.title !== 'string') return;
+  const lines = Array.isArray(task.requirements) ? task.requirements.filter((item) => typeof item === 'string' && item) : [];
+  const stay = { marketing: '留在智能营销页', assistant: '留在 AI 运营助手', content: '留在内容发布' }[task.view] || '留在当前智能体';
+  const mask = document.createElement('div');
+  mask.style.cssText = 'position:fixed;inset:0;z-index:9000;display:flex;align-items:flex-start;justify-content:center;overflow:auto;padding:48px 20px;background:rgba(15,23,42,.28)';
+  const meta = [
+    task.stage ? `<div><dt>当前步骤</dt><dd>${escapeHtml(task.stage)}</dd></div>` : '',
+    task.executor ? `<div><dt>执行</dt><dd>${escapeHtml(task.executor)}</dd></div>` : '',
+    task.from ? `<div><dt>来源</dt><dd>${escapeHtml(task.from)}</dd></div>` : '',
+    task.approvedAt ? `<div><dt>批准</dt><dd>${escapeHtml(task.approvedAt)}</dd></div>` : '',
+  ].join('');
+  mask.innerHTML = `<style>.agent-task-detail dt{margin:0;font-size:12px;color:#64748b}.agent-task-detail dd{margin:2px 0 0;font-size:14px}</style><article class="agent-task-detail" style="width:min(640px,100%);padding:28px 32px;border-radius:16px;background:#fff;box-shadow:0 18px 50px rgba(15,23,42,.16);color:#1e293b">
+    <p style="margin:0;font-size:13px;color:#2f8bb8">任务明细</p>
+    <h1 style="margin:8px 0 0;font-size:24px;line-height:1.35">${escapeHtml(task.title)}</h1>
+    ${task.summary ? `<p style="margin:12px 0 0;font-size:15px;line-height:1.7">${escapeHtml(task.summary)}</p>` : ''}
+    <dl style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px 20px;margin:18px 0 0">${meta}</dl>
+    ${task.target ? `<p style="margin:16px 0 0;font-size:14px;line-height:1.7"><b>对象 </b>${escapeHtml(task.target)}</p>` : ''}
+    ${task.note ? `<p style="margin:16px 0 0;font-size:14px;line-height:1.7">${escapeHtml(task.note)}</p>` : ''}
+    ${lines.length ? `<h2 style="margin:20px 0 0;font-size:15px">要做的事</h2><ol style="margin:8px 0 0;padding-left:20px;font-size:14px;line-height:1.7">${lines.map((line) => `<li>${escapeHtml(line)}</li>`).join('')}</ol>` : ''}
+    ${task.extra ? `<p style="margin:16px 0 0;font-size:14px;line-height:1.7"><b>额外补充 </b>${escapeHtml(task.extra)}</p>` : ''}
+    <button type="button" id="agentTaskStay" style="margin-top:22px;border:0;border-radius:8px;padding:8px 16px;background:#2f8bb8;color:#fff;font-size:14px;cursor:pointer">${escapeHtml(stay)}</button>
+  </article>`;
+  document.body.appendChild(mask);
+  document.getElementById('agentTaskStay').onclick = () => {
+    const url = new URL(location.href);
+    url.searchParams.delete('task');
+    url.searchParams.delete('handoff');
+    history.replaceState(null, '', url.pathname + url.search + url.hash);
+    mask.remove();
+  };
+}
+
 /* ===================== 初始化 ===================== */
+showAgentTask();
 renderAudit();
 renderDashboard();
 renderCalendar();

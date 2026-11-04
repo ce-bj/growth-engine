@@ -62,21 +62,11 @@ export const overviewAgents: OverviewAgent[] = [
     name: 'AI 友好度',
     view: 'ready',
     status: 'running',
-    cadence: '每周一 03:00 全站复检',
-    lastRun: '09-21 03:00',
-    lastResult: '被看见 100 · 被理解 100',
-    nextRun: '09-28 03:00',
-    monthRuns: 3,
-  },
-  {
-    key: 'service',
-    name: 'AI 智能客服 Pro',
-    status: 'soon',
-    cadence: '接待询盘，对话沉淀回知识库',
-    lastRun: '—',
-    lastResult: '即将上线',
-    nextRun: '—',
-    monthRuns: 0,
+    cadence: '发现 sitemap、死链问题时自动修',
+    lastRun: '09-15 02:30',
+    lastResult: '修复 sitemap 与 2 处死链',
+    nextRun: '有问题时',
+    monthRuns: 1,
   },
 ]
 
@@ -141,14 +131,12 @@ export type DoneTask = {
 
 /** 本月已完成：byHand 表示经你确认后执行 */
 export const overviewDone: DoneTask[] = [
-  { id: 'd10', time: '09-21 03:00', agent: 'AI 友好度', title: '全站 AI 友好度复检', result: '被看见 100 · 被理解 100', byHand: false },
   { id: 'd9', time: '09-21 02:14', agent: '访客行为分析智能体', title: '9月14日–20日周诊断', result: '有效浏览率 40% → 30%，出 2 份任务说明', byHand: false },
   { id: 'd8', time: '09-17 16:40', agent: '智能营销页智能体', title: '「询价」落地页 v2 上线', result: '经你确认后发布', byHand: true },
   { id: 'd7', time: '09-16 10:00', agent: '内容发布智能体', title: '发布 3 篇产品选型内容', result: '通过 EEAT / GEO 门禁', byHand: false },
   { id: 'd6', time: '09-15 02:30', agent: 'AI 友好度', title: '修复 sitemap 与 2 处死链', result: '已自动修好', byHand: false },
-  { id: 'd5', time: '09-14 03:00', agent: 'AI 友好度', title: '全站 AI 友好度复检', result: '发现 sitemap 缺产品页', byHand: false },
   { id: 'd4', time: '09-14 02:10', agent: '访客行为分析智能体', title: '9月7日–13日周诊断', result: '无异常，不出任务', byHand: false },
   { id: 'd3', time: '09-12 10:00', agent: '内容发布智能体', title: '「六角螺栓 M8×30」产品页发布', result: '经你确认后发布', byHand: true },
   { id: 'd2', time: '09-09 10:00', agent: '内容发布智能体', title: '发布 2 篇行业问答', result: '通过 EEAT / GEO 门禁', byHand: false },
-  { id: 'd1', time: '09-07 02:12', agent: '访客行为分析智能体', title: '8月31日–9月6日周诊断', result: '无异常，不出任务', byHand: false },
+  { id: 'd1', time: '09-07 02:12', agent: '访客行为分析智能体', title: '8月31日–9月6日周诊断', result: '出 1 份任务说明：「CNC 打样」落地页，09-08 经你批准', byHand: true },
 ]

@@ -62,6 +62,7 @@ from langfuse_otel import (  # noqa: E402
     setup_langfuse_otel,
 )
 from session_log import TurnRecorder, ensure_log_dirs, sanitize_chat_request  # noqa: E402
+from suggest_questions import complete_page_questions  # noqa: E402
 from specialist_session import (  # noqa: E402
     append_message as specialist_append_message,
     enter as specialist_enter_session,
@@ -1171,6 +1172,11 @@ async def stream_agent_events(req: ChatRequest) -> AsyncIterator[str]:
 
     try:
         yield emit({"type": "ping", "stage": "connected", "ts": time.time()})
+        if resolved_action == "suggest_questions":
+            text = await asyncio.to_thread(complete_page_questions, req.message)
+            yield emit({"type": "text", "id": "page-suggest", "text": text})
+            yield emit({"type": "done"})
+            return
         bind_draft_session(session_id)
         bind_brief_session(session_id)
         hydrate_draft_history(req.draft_history)

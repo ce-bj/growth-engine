@@ -3,9 +3,12 @@ const ACTIVE_SESSION_KEY = "ai-ops-chat-active-session-v1";
 const SESSION_IMAGES_PREFIX = "ai-ops-session-images-v1:";
 const MAX_DRAFT_HISTORY = 12;
 
+const WELCOME_TEXT = "你好，我是 AI 运营助手，今天想做点什么？";
+const PREVIOUS_WELCOME = "你好，我是 AI 运营助手。你可以上传产品实拍图并描述需求，我会识图、查行业规范并生成详情页内容。";
+
 const WELCOME_MESSAGE = {
   type: "ai",
-  html: "你好，我是 AI 运营助手。你可以上传产品实拍图并描述需求，我会识图、查行业规范并生成详情页内容。",
+  html: WELCOME_TEXT,
   time: formatTime(new Date()),
 };
 
@@ -210,6 +213,12 @@ function sanitizeMessagesForRestore(messages) {
   return messages
     .filter((msg) => msg.type !== "thinking" && msg.type !== "brief_card")
     .map((msg) => {
+      if (msg.type === "ai") {
+        const plain = String(msg.html || "").replace(/<[^>]+>/g, "").trim();
+        if (plain === PREVIOUS_WELCOME) {
+          return { ...msg, html: WELCOME_TEXT, rawText: WELCOME_TEXT };
+        }
+      }
       if (msg.type === "timeline" && msg.status === "running") {
         const steps = (msg.steps || []).map((s) =>
           s.status === "running" ? { ...s, status: "done" } : s,

@@ -40,30 +40,14 @@ import {
   walksListed,
 } from "../funnel-review/data.js";
 import { allocate, BOARD_RANGES, buildBoardModel } from "./boardWindow.js";
+import { ACCENT, BOARD_THEME, DANGER } from "../board-theme.js";
 import "./detail-board.css";
 
 const Line = lazy(() => import("@ant-design/plots").then((mod) => ({ default: mod.Line })));
 const Funnel = lazy(() => import("@ant-design/plots").then((mod) => ({ default: mod.Funnel })));
 const RegionMap = lazy(() => import("./RegionMap.jsx"));
 
-const ACCENT = "#2f8bb8";
-const DANGER = "#cf1322";
 const MIX_COLORS = ["#2f8bb8", "#36b3a8", "#8e7cc3", "#e0a03b", "#6b7fd7"];
-
-const BOARD_THEME = {
-  token: {
-    colorPrimary: ACCENT,
-    colorInfo: ACCENT,
-    borderRadius: 8,
-    fontSize: 14,
-    controlHeight: 32,
-  },
-  components: {
-    Card: { headerFontSize: 15, headerHeight: 52, bodyPadding: 20 },
-    Table: { cellPaddingBlockSM: 8, headerBg: "#f7f9fb" },
-    Statistic: { contentFontSize: 30, titleFontSize: 13 },
-  },
-};
 
 const PAGE_COUNT_KEYS = ["pv", "uv", "pageLeads", "viewed", "started", "landPv", "landUv", "bounceUv", "landLeads"];
 const TERM_COUNT_KEYS = ["searches", "uv", "clicks", "impressions", "cost"];
@@ -291,7 +275,9 @@ function LossDetail({ gate, channelId, sliceName, compare }) {
 
       <div className="db-loss-hero">
         <div>
-          <span className="db-loss-hero-k">{loss.primary}</span>
+          <Tooltip title={loss.primaryHint} placement="topLeft" styles={{ container: { maxWidth: 360 } }}>
+            <span className="db-loss-hero-k db-loss-tip">{loss.primary}</span>
+          </Tooltip>
           <strong className="db-loss-hero-v">{pct(gate.pass)}</strong>
         </div>
         {compare ? (
@@ -303,8 +289,6 @@ function LossDetail({ gate, channelId, sliceName, compare }) {
           </div>
         ) : null}
       </div>
-      <p className="db-loss-hint">{loss.primaryHint}</p>
-
       {groups.map((group) => (
         <div key={group.id} className="db-loss-group">
           {group.label ? <h4>{group.label}</h4> : null}
@@ -312,7 +296,9 @@ function LossDetail({ gate, channelId, sliceName, compare }) {
             {group.items.map((m) => (
               <div key={m.name} className="db-loss-row">
                 <dt>
-                  <Tooltip title={m.role}>{m.name}</Tooltip>
+                  <Tooltip title={m.hint || m.role} placement="topLeft" styles={{ container: { maxWidth: 360 } }}>
+                    <span className="db-loss-tip">{m.name}</span>
+                  </Tooltip>
                 </dt>
                 <dd>{formatStrip(stripMetric(gate.lossId, channelId, m.name, gate))}</dd>
               </div>

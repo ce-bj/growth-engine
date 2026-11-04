@@ -1,0 +1,1621 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>AI运营助手 · 原型</title>
+  <style>
+    :root {
+      --color-primary: #3b9fd0;
+      --color-primary-hover: #2f8bb8;
+      --color-btn: #1d6f96;
+      --color-btn-hover: #185e80;
+      --color-primary-light: rgba(59, 159, 208, 0.12);
+      --color-success: #10b981;
+      --color-success-light: #dcfce7;
+      --color-success-text: #166534;
+      --color-warning: #d97706;
+      --color-warning-light: #fffbeb;
+      --color-warning-text: #92400e;
+      --color-danger: #ef4444;
+      --color-danger-light: #fef2f2;
+      --color-danger-text: #991b1b;
+      --color-bg: #f5f7fa;
+      --color-card: #ffffff;
+      --color-border: #e2e8f0;
+      --color-text: #1e293b;
+      --color-text-secondary: #475569;
+      --color-muted: #64748b;
+      --font: "PingFang SC", "Microsoft YaHei", "Noto Sans SC", sans-serif;
+      --mono: "IBM Plex Mono", "Cascadia Mono", Consolas, monospace;
+      --shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
+    }
+
+    * { box-sizing: border-box; }
+    html, body { height: 100%; }
+    #app { height: 100%; display: flex; flex-direction: column; overflow: hidden; }
+    body {
+      margin: 0;
+      overflow: hidden;
+      font-family: var(--font);
+      font-size: 14px;
+      line-height: 1.5;
+      color: var(--color-text);
+      background: var(--color-bg);
+    }
+    button, input, select, textarea { font: inherit; color: inherit; }
+    button { cursor: pointer; }
+    h1, h2, h3, p { margin: 0; }
+    [hidden] { display: none !important; }
+    :focus { outline: none; }
+    :focus-visible { outline: 2px solid var(--color-btn); outline-offset: 2px; }
+    .num { font-family: var(--mono); font-variant-numeric: tabular-nums; }
+
+    .review {
+      height: 36px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 0 12px;
+      background: #0f172a;
+      color: #e2e8f0;
+      font-size: 12px;
+    }
+    .review strong { font-weight: 600; color: #fff; }
+    .review span { color: #94a3b8; }
+    .review .spacer { flex: 1; }
+    .review button {
+      height: 26px;
+      padding: 0 8px;
+      border-radius: 6px;
+      border: 1px solid #334155;
+      background: transparent;
+      color: #e2e8f0;
+    }
+    .review button.is-on { background: #fff; color: #0f172a; border-color: #fff; }
+    .review button:focus-visible { outline-color: #fff; }
+
+    .admin { flex: 1; min-height: 0; display: flex; flex-direction: column; }
+    .top {
+      height: 52px;
+      flex: none;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      padding: 0 16px;
+      background: #fff;
+      border-bottom: 1px solid var(--color-border);
+    }
+    .brand { display: flex; align-items: center; gap: 8px; min-width: 132px; }
+    .brand i {
+      width: 22px; height: 22px; border-radius: 50%;
+      border: 1.5px solid var(--color-btn); display: grid; place-items: center;
+    }
+    .brand i::before {
+      content: ""; width: 14px; height: 6px; border: 1.5px solid var(--color-btn); border-radius: 50%;
+    }
+    .brand strong { display: block; font-size: 14px; line-height: 1.2; }
+    .brand small { display: block; font-size: 10px; letter-spacing: 0.04em; color: var(--color-muted); }
+    .portal-tabs { display: flex; gap: 4px; min-width: 0; overflow: auto; }
+    .portal-tabs button, .ai-pill {
+      border: 0; background: transparent; color: var(--color-text-secondary);
+      height: 32px; padding: 0 8px; border-radius: 6px; white-space: nowrap;
+    }
+    .portal-tabs button:hover { background: #f1f5f9; }
+    .ai-pill { background: var(--color-primary-light); color: var(--color-btn); font-weight: 650; }
+    .top .spacer { flex: 1; }
+    .who { border: 0; background: transparent; color: var(--color-text); height: 32px; }
+
+    .body { flex: 1; min-height: 0; display: flex; }
+    .sider {
+      width: 208px; flex: none; background: #fff;
+      border-right: 1px solid var(--color-border);
+      display: flex; flex-direction: column; min-height: 0;
+    }
+    .sitebox { margin: 12px; padding: 10px; border: 1px solid var(--color-border); border-radius: 8px; }
+    .sitebox span, .sitebox small { display: block; color: var(--color-text-secondary); font-size: 12px; }
+    .sitebox strong { display: block; margin: 2px 0; font-size: 14px; }
+    .nav { overflow: auto; padding-bottom: 12px; }
+    .nav-label { margin: 10px 16px 4px; font-size: 12px; color: var(--color-text-secondary); }
+    .nav button {
+      width: calc(100% - 16px); margin: 1px 8px; border: 0; background: transparent;
+      text-align: left; height: 36px; border-radius: 6px; padding: 0 8px; color: var(--color-text);
+    }
+    .nav button:hover { background: #f8fafc; }
+    .nav button.is-on { background: var(--color-primary-light); color: var(--color-btn); font-weight: 650; }
+    .stage { flex: 1; min-width: 0; min-height: 0; position: relative; background: var(--color-bg); display: flex; overflow: hidden; }
+
+    .full, .host { flex: 1; min-width: 0; min-height: 0; overflow: hidden; }
+    .full { display: flex; }
+    .col-left, .col-right { background: #fff; min-height: 0; display: flex; flex-direction: column; }
+    .col-left { overflow: hidden; }
+    .col-right { overflow: auto; }
+    .col-left { width: 252px; flex: none; border-right: 1px solid var(--color-border); }
+    .col-right { width: 300px; flex: none; border-left: 1px solid var(--color-border); }
+    .col-mid { flex: 1; min-width: 0; min-height: 0; display: flex; flex-direction: column; overflow: hidden; }
+    .region-tag {
+      margin: 0; padding: 4px 10px; background: #0f172a; color: #fff; font-size: 12px;
+    }
+    .left-top { padding: 12px; display: flex; flex-direction: column; gap: 8px; }
+    .search { position: relative; }
+    .search svg { position: absolute; left: 8px; top: 8px; color: var(--color-muted); }
+    .search input, .title-input, .composer textarea, .pop input {
+      width: 100%; border: 1px solid var(--color-border); border-radius: 6px; background: #fff;
+    }
+    .search input { height: 32px; padding: 0 8px 0 30px; }
+    #sessions, #fold-sessions, #right, .templates, .stream { overflow: auto; }
+    #sessions { flex: 1; min-height: 80px; padding: 0 8px 8px; }
+    .templates { max-height: 46%; border-top: 1px solid var(--color-border); padding: 10px 8px 12px; }
+    .group-label { margin: 8px 8px 4px; font-size: 12px; color: var(--color-text-secondary); }
+    .conv { display: flex; align-items: stretch; border-radius: 8px; }
+    .conv:hover { background: #f8fafc; }
+    .conv.is-on { background: var(--color-primary-light); }
+    .conv-main {
+      flex: 1; min-width: 0; text-align: left; border: 0; background: transparent;
+      padding: 8px; min-height: 44px;
+    }
+    .conv-title { display: block; font-size: 13px; font-weight: 650; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .conv-meta { display: flex; gap: 6px; align-items: center; margin-top: 2px; color: var(--color-text-secondary); font-size: 12px; }
+    .conv-tools { display: flex; align-items: center; padding-right: 4px; }
+    .icon-btn, .tool-btn {
+      width: 32px; height: 32px; border: 0; background: transparent; color: var(--color-text-secondary);
+      border-radius: 6px; display: grid; place-items: center;
+    }
+    .icon-btn:hover, .tool-btn:hover { background: #f1f5f9; color: var(--color-text); }
+    .icon-btn.is-on { color: #b45309; }
+    .icon-btn.is-pin { color: var(--color-btn); }
+    .confirm-inline { display: flex; align-items: center; gap: 4px; font-size: 12px; color: var(--color-danger-text); padding-right: 4px; }
+    .confirm-inline button { height: 24px; border-radius: 4px; border: 1px solid var(--color-border); background: #fff; padding: 0 6px; }
+    .tpl {
+      width: 100%; text-align: left; border: 0; background: transparent; border-radius: 6px;
+      padding: 6px 8px; min-height: 36px; display: flex; flex-direction: column; align-items: flex-start;
+    }
+    .tpl:hover { background: #f8fafc; }
+    .tpl strong { font-size: 13px; font-weight: 600; }
+    .tpl small { color: var(--color-text-secondary); font-size: 12px; }
+
+    .badge { display: inline-flex; align-items: center; height: 18px; padding: 0 6px; border-radius: 99px; font-size: 12px; font-weight: 600; }
+    .badge-lead { background: #e7f5fb; color: #1d6f96; }
+    .badge-report { background: var(--color-success-light); color: var(--color-success-text); }
+    .badge-content { background: #fef3c7; color: var(--color-warning-text); }
+    .badge-mkt { background: #f1f5f9; color: #334155; }
+    .badge-high { background: #e7f5fb; color: #1d6f96; }
+    .badge-mid { background: #f1f5f9; color: #334155; }
+
+    .head { padding: 10px 14px; background: #fff; border-bottom: 1px solid var(--color-border); }
+    .head-row { display: flex; align-items: center; gap: 8px; }
+    .titleline { display: flex; align-items: center; gap: 4px; min-width: 0; flex: 1; }
+    .titleline h1 { font-size: 16px; line-height: 1.3; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .title-input { height: 32px; padding: 0 8px; font-weight: 650; }
+    .head-actions { display: flex; align-items: center; gap: 8px; flex: none; }
+    .contextline { margin-top: 4px; font-size: 12px; color: var(--color-text-secondary); }
+    .seg { display: flex; padding: 2px; background: #f1f5f9; border-radius: 8px; }
+    .seg button { border: 0; background: transparent; height: 28px; padding: 0 10px; border-radius: 6px; color: var(--color-text-secondary); }
+    .seg button.is-on { background: #fff; color: var(--color-text); box-shadow: 0 1px 2px rgba(15, 23, 42, 0.06); font-weight: 650; }
+    .mode-hint { font-size: 12px; color: var(--color-text-secondary); white-space: nowrap; }
+    .menu-root { position: relative; }
+    .pop {
+      position: absolute; top: calc(100% + 6px); right: 0; z-index: 20; min-width: 180px;
+      background: #fff; border: 1px solid var(--color-border); border-radius: 8px;
+      box-shadow: var(--shadow); padding: 6px;
+    }
+    .pop.left { right: auto; left: 0; }
+    .pop button, .pop label {
+      display: flex; width: 100%; text-align: left; align-items: center; gap: 6px;
+      border: 0; background: transparent; min-height: 32px; padding: 4px 8px; border-radius: 6px;
+    }
+    .pop button:hover, .pop label:hover { background: #f8fafc; }
+    .pop .danger { color: var(--color-danger-text); }
+
+    .stream { flex: 1; padding: 16px; display: flex; flex-direction: column; gap: 12px; }
+    .msg-user { align-self: flex-end; max-width: min(560px, 86%); }
+    .bubble { background: #e7f5fb; border-radius: 10px 10px 4px 10px; padding: 8px 12px; }
+    .scene, .hint { font-size: 12px; color: var(--color-text-secondary); }
+    .scene { text-align: right; margin-top: 4px; }
+    .uchips { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 6px; }
+    .uchips span, .obj, .filechip {
+      display: inline-flex; align-items: center; gap: 4px; height: 22px; padding: 0 6px;
+      border-radius: 99px; background: #fff; border: 1px solid #b9d7e6; font-size: 12px;
+    }
+    .answer, .sys {
+      background: #fff; border: 1px solid var(--color-border); border-radius: 8px; padding: 12px 14px;
+      border-left: 3px solid var(--color-btn);
+    }
+    .sys.confirm { background: var(--color-warning-light); border-color: #fde68a; border-left-color: var(--color-warning); }
+    .sys.blocked { background: var(--color-danger-light); border-color: #fecaca; border-left-color: var(--color-danger); }
+    .sys.done { background: #f0fdf4; border-color: #bbf7d0; border-left-color: var(--color-success); }
+    .sys.cancel { background: #f8fafc; border-left-color: #94a3b8; }
+    .kicker { font-size: 12px; font-weight: 650; margin-bottom: 6px; }
+    .lead { font-size: 15px; }
+    .points { margin: 8px 0 0; padding-left: 18px; }
+    .points li + li { margin-top: 4px; }
+    .done-steps, .progress { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 8px; }
+    .step {
+      display: inline-flex; align-items: center; gap: 4px; font-size: 12px; color: var(--color-text-secondary);
+      background: #f8fafc; border-radius: 99px; padding: 2px 8px;
+    }
+    .step.is-run { color: var(--color-btn); background: var(--color-primary-light); }
+    .step.is-wait { color: var(--color-muted); }
+    .table-card { margin-top: 12px; border: 1px solid var(--color-border); border-radius: 8px; overflow: hidden; }
+    .table-bar { display: flex; gap: 8px; align-items: center; padding: 8px; background: #f8fafc; }
+    .table-bar select { height: 28px; border: 1px solid var(--color-border); border-radius: 6px; background: #fff; }
+    .table-bar .spacer { flex: 1; }
+    .table-scroll { overflow: auto; }
+    table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    th, td { padding: 6px 8px; text-align: left; border-top: 1px solid var(--color-border); white-space: nowrap; }
+    th button { border: 0; background: transparent; padding: 0; font-weight: 650; display: inline-flex; gap: 4px; }
+    tr.is-picked td { background: #f3fafc; }
+    .miss { color: var(--color-danger-text); font-weight: 650; }
+    .ok { color: var(--color-success-text); font-weight: 650; }
+    .chart { margin-top: 12px; }
+    .chart h3 { font-size: 13px; margin-bottom: 6px; }
+    .legend { display: flex; gap: 12px; align-items: center; font-size: 12px; color: var(--color-text-secondary); margin-bottom: 6px; }
+    .swatch { width: 10px; height: 10px; border-radius: 2px; display: inline-block; margin-right: 4px; }
+    .swatch.a { background: #94a3b8; }
+    .swatch.b, .bar-fill { background: var(--color-btn); }
+    .bar-row {
+      width: 100%; display: grid; grid-template-columns: 96px 1fr 48px; gap: 8px; align-items: center;
+      border: 0; background: transparent; padding: 3px 0; text-align: left; border-radius: 4px;
+    }
+    .bar-row:hover { background: #f8fafc; }
+    .bar-label { font-size: 12px; }
+    .bar-track { height: 8px; background: #e8eef3; border-radius: 99px; overflow: hidden; }
+    .bar-fill { display: block; height: 100%; }
+    .bar-fill.alt { background: #94a3b8; }
+    .bar-value { font-size: 12px; text-align: right; }
+    .dual { display: flex; flex-direction: column; gap: 2px; }
+    .cards { margin-top: 12px; display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 8px; }
+    .biz { border: 1px solid var(--color-border); border-radius: 8px; padding: 8px; background: #fff; text-align: left; }
+    .biz:hover { border-color: #b9d7e6; }
+    .biz strong { display: block; margin: 4px 0; }
+    .biz p { font-size: 12px; color: var(--color-text-secondary); }
+    .guide { list-style: none; margin: 12px 0 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+    .guide li { display: flex; gap: 8px; align-items: flex-start; }
+    .n {
+      width: 20px; height: 20px; border-radius: 50%; background: var(--color-primary-light); color: var(--color-btn);
+      display: grid; place-items: center; font-size: 12px; flex: none;
+    }
+    .guide button { border: 0; background: transparent; color: var(--color-btn); padding: 0; font-weight: 650; }
+    .actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+    .source { display: flex; justify-content: space-between; gap: 8px; margin-top: 12px; font-size: 12px; color: var(--color-text-secondary); }
+    .source button, .linkish { border: 0; background: transparent; color: var(--color-btn); padding: 0; font-weight: 650; }
+    .tools { display: flex; flex-wrap: wrap; gap: 2px; border-top: 1px solid var(--color-border); margin-top: 10px; padding-top: 6px; }
+    .defs { display: grid; grid-template-columns: 72px 1fr; gap: 4px 8px; font-size: 13px; }
+    .defs dt { color: var(--color-text-secondary); }
+    .risk { margin-top: 8px; color: var(--color-warning-text); font-size: 13px; }
+    .empty { margin: auto; max-width: 520px; text-align: left; }
+    .empty h2 { font-size: 20px; margin-bottom: 6px; }
+    .empty-grid { display: grid; gap: 8px; margin-top: 12px; }
+    .empty-grid button { text-align: left; background: #fff; border: 1px solid var(--color-border); border-radius: 8px; padding: 10px 12px; }
+    .empty-grid button:hover { border-color: #b9d7e6; }
+
+    .composer { border-top: 1px solid var(--color-border); background: #fff; padding: 8px 12px 10px; }
+    .composer-tools, .pending { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+    .pending { margin-bottom: 6px; }
+    .chip-btn {
+      height: 28px; border-radius: 99px; border: 1px solid var(--color-border); background: #fff;
+      padding: 0 8px; color: var(--color-text-secondary); font-size: 12px;
+    }
+    .chip-btn.is-on { background: var(--color-primary-light); border-color: transparent; color: var(--color-btn); }
+    .suggest { margin-bottom: 6px; }
+    .composer textarea { min-height: 52px; max-height: 140px; padding: 8px 10px; resize: vertical; }
+    .composer textarea:focus-visible { outline: 2px solid var(--color-btn); outline-offset: 1px; }
+    .sendrow { display: flex; justify-content: space-between; align-items: center; margin-top: 6px; }
+    .filechip button { border: 0; background: transparent; color: var(--color-text-secondary); padding: 0 2px; }
+
+    .btn {
+      height: 32px; padding: 0 12px; border-radius: 6px; border: 1px solid transparent;
+      background: #fff; display: inline-flex; align-items: center; gap: 6px; font-size: 13px;
+    }
+    .btn-primary { background: var(--color-btn); color: #fff; }
+    .btn-primary:hover { background: var(--color-btn-hover); }
+    .btn-ghost { border-color: var(--color-border); }
+    .btn-ghost:hover { background: #f8fafc; }
+    .btn-block { width: 100%; justify-content: center; height: 36px; }
+    .btn:disabled { color: var(--color-muted); background: #f1f5f9; cursor: not-allowed; }
+
+    .side-sec { padding: 12px 14px; border-bottom: 1px solid var(--color-border); }
+    .side-sec h2 { font-size: 13px; margin-bottom: 8px; }
+    .k { font-size: 12px; color: var(--color-text-secondary); margin-top: 8px; }
+    .objs { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
+    .obj button { border: 0; background: transparent; color: var(--color-text-secondary); }
+    .perm { display: grid; gap: 4px; font-size: 13px; }
+    .perm div { display: flex; gap: 8px; }
+    .perm b { flex: none; font-weight: 650; width: 52px; }
+    .artifact, .ref, .log {
+      width: 100%; text-align: left; border: 0; background: transparent; padding: 6px 0;
+      display: flex; justify-content: space-between; gap: 8px; align-items: center;
+    }
+    .artifact:hover, .ref:hover { color: var(--color-btn); }
+    .excerpt { font-size: 12px; color: var(--color-text-secondary); background: #f8fafc; border-radius: 6px; padding: 8px; }
+    .log { font-size: 12px; }
+    .pill { border-radius: 99px; padding: 0 6px; font-weight: 650; flex: none; }
+    .pill.ok { background: var(--color-success-light); color: var(--color-success-text); }
+    .pill.wait { background: #fef3c7; color: var(--color-warning-text); }
+    .pill.no { background: var(--color-danger-light); color: var(--color-danger-text); }
+    .pill.mute { background: #f1f5f9; color: #334155; }
+    .only-narrow { display: none; }
+
+    .host-page { height: 100%; overflow: auto; padding: 20px; }
+    .host-page h1 { font-size: 20px; }
+    .host-sub { color: var(--color-text-secondary); margin: 4px 0 14px; }
+    .metrics { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; }
+    .metric { background: #fff; border: 1px solid var(--color-border); border-radius: 8px; padding: 12px; text-align: left; }
+    .metric span { display: block; color: var(--color-text-secondary); font-size: 12px; }
+    .metric strong { display: block; margin-top: 4px; font-size: 26px; font-weight: 650; }
+    .metric em { display: block; margin-top: 4px; font-style: normal; font-size: 12px; color: var(--color-btn); }
+    .metric.is-warn strong { color: var(--color-warning-text); }
+    .stub { margin-top: 16px; background: #fff; border: 1px solid var(--color-border); border-radius: 8px; overflow: auto; }
+    .stub h2 { font-size: 14px; padding: 12px 12px 0; }
+
+    .host { position: relative; display: flex; }
+    .panel {
+      position: relative; width: 0; min-width: 0; flex: none; overflow: hidden;
+      background: #fff; display: flex; flex-direction: column; z-index: 25;
+    }
+    .panel.is-open {
+      width: min(440px, 56vw);
+      border-left: 1px solid var(--color-border);
+      box-shadow: -12px 0 32px rgba(11, 31, 51, 0.08);
+    }
+    .panel.is-half.is-open {
+      position: absolute; right: 0; bottom: 0; top: auto; height: 70%;
+      border-top: 1px solid var(--color-border);
+    }
+    .panel-bar { display: flex; flex-direction: column; gap: 8px; align-items: stretch; padding: 10px 12px; border-bottom: 1px solid var(--color-border); background: #fff; }
+    .panel-actions { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+    .panel-bar .grow { min-width: 0; }
+    .panel-bar strong { display: block; font-size: 14px; }
+    .panel-bar small { display: block; color: var(--color-text-secondary); font-size: 12px; }
+    .fold { max-height: 240px; overflow: auto; border-bottom: 1px solid var(--color-border); background: #fff; }
+    .fab {
+      position: absolute; right: 20px; bottom: 20px; z-index: 24; height: 48px; padding: 0 14px 0 12px;
+      border: 0; border-radius: 999px; background: var(--color-btn); color: #fff;
+      display: inline-flex; align-items: center; gap: 8px; font-weight: 650;
+      box-shadow: 0 8px 20px rgba(29, 111, 150, 0.28);
+    }
+    .fab:hover { background: var(--color-btn-hover); }
+    #toast {
+      position: fixed; left: 50%; bottom: 24px; transform: translateX(-50%);
+      background: #0f172a; color: #fff; border-radius: 8px; padding: 8px 14px; z-index: 80; font-size: 13px;
+    }
+
+    @media (max-width: 1180px) {
+      .only-narrow { display: inline-flex; }
+      .mode-hint, .review .quiet { display: none; }
+      .col-right {
+        position: absolute; top: 0; right: 0; bottom: 0; z-index: 6; width: min(320px, 92vw);
+        transform: translateX(104%); box-shadow: -8px 0 24px rgba(15, 23, 42, 0.08);
+      }
+      .col-right.is-open { transform: none; }
+    }
+    @media (min-width: 1181px) {
+      .col-right { transform: none; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      * { transition: none !important; animation: none !important; }
+    }
+  </style>
+</head>
+<body>
+  <div id="app"></div>
+  <div id="toast" role="status" aria-live="polite" hidden></div>
+  <script>
+    const pages = {
+      board: { name: "数据看板", group: "概览", range: "2026-10-26 至 2026-11-02", desc: "全英文站本月线索与页面表现。" },
+      visitor: { name: "访客行为分析", group: "执行生产", range: "近 7 天", desc: "按页面和来源查看停留、回访与流失。" },
+      marketing: { name: "智能营销页", group: "执行生产", range: "在投页面", desc: "在投营销页的线索和转化。" },
+      content: { name: "内容发布", group: "执行生产", range: "在线产品", desc: "产品详情与待发布内容。" },
+      knowledge: { name: "知识库", group: "支撑与配置", range: "已发布文档", desc: "助手回答时引用的规则和帮助文档。" },
+      settings: { name: "站点设置", group: "支撑与配置", range: "全英文站", desc: "站点语言、域名和成员。市场运营不可修改。" }
+    };
+
+    const templates = [
+      { group: "数据看板", title: "生成本月各渠道线索对照", tag: "报表", tone: "report", sessionId: "s-channel", prompt: "生成本月各渠道线索量和高意向占比，整理成能交周会的表。" },
+      { group: "访客与线索", title: "排查近7天高意向未跟进", tag: "线索", tone: "lead", sessionId: "s-leads", prompt: "排查近 7 天高意向但没有跟进的线索，标出该先联系的公司。" },
+      { group: "内容", title: "列出信息不足的产品详情", tag: "内容", tone: "content", sessionId: "s-pdp", prompt: "哪些在线产品详情还达不到内容标准？先给我处理顺序。" },
+      { group: "营销", title: "分析营销页转化下滑", tag: "营销", tone: "mkt", sessionId: "s-mkt", prompt: "阀门专题营销页这周转化掉了，先看原因，先别改页面。" }
+    ];
+
+    const catalog = [
+      { name: "Nordic Pipe AB", kind: "线索" },
+      { name: "Gulf Valve LLC", kind: "线索" },
+      { name: "HDPE 管材页", kind: "页面" },
+      { name: "阀门专题营销页", kind: "营销页" },
+      { name: "HDPE 双壁波纹管", kind: "产品" }
+    ];
+
+    const vars = [
+      { token: "{{当前页面}}", label: "当前页面" },
+      { token: "{{数据范围}}", label: "数据范围" },
+      { token: "{{站点名称}}", label: "站点名称" }
+    ];
+
+    let seq = 10;
+    const mid = () => "m" + (seq++);
+
+    function leadsAnswer() {
+      return {
+        id: mid(), role: "assistant", logText: "生成排查结果", logResult: "成功",
+        doneSteps: ["查询线索明细", "对照跟进记录", "生成排查结果"],
+        lead: "近 7 天高意向线索 **23** 条，未跟进 **6** 条。下表是优先级最高的 5 条，前 3 条还没有跟进人。",
+        table: {
+          customCols: true, filterFollow: true,
+          columns: [
+            { key: "company", label: "公司" },
+            { key: "intent", label: "意向", kind: "intent" },
+            { key: "page", label: "最近访问" },
+            { key: "stay", label: "停留", sort: "stayN" },
+            { key: "follow", label: "跟进", kind: "follow" },
+            { key: "signal", label: "信号" }
+          ],
+          rows: [
+            { company: "Nordic Pipe AB", intent: "高", page: "HDPE 管材页", stay: "6分12秒", stayN: 372, follow: "无", signal: "7天内访问 4 次" },
+            { company: "Gulf Valve LLC", intent: "高", page: "阀门选型页", stay: "5分03秒", stayN: 303, follow: "无", signal: "下载过规格书" },
+            { company: "Andes Mining", intent: "高", page: "工程案例页", stay: "4分40秒", stayN: 280, follow: "无", signal: "来自广告落地页" },
+            { company: "Osaka Fluid", intent: "高", page: "法兰产品页", stay: "3分16秒", stayN: 196, follow: "已联系", signal: "昨天建过跟进" },
+            { company: "Rhine Packaging", intent: "中", page: "首页", stay: "2分34秒", stayN: 154, follow: "已联系", signal: "只看了首页" }
+          ]
+        },
+        chart: {
+          title: "6 条未跟进的原因（条）",
+          items: [
+            { label: "无负责人", value: 3 },
+            { label: "超时未响应", value: 2 },
+            { label: "线索重复未合并", value: 1 }
+          ]
+        },
+        cards: [
+          { kind: "线索", title: "Nordic Pipe AB", meta: "HDPE 管材页 · 停留 6分12秒 · 回访 4 次" },
+          { kind: "线索", title: "Gulf Valve LLC", meta: "阀门选型页 · 停留 5分03秒 · 下载规格书" },
+          { kind: "线索", title: "Andes Mining", meta: "工程案例页 · 停留 4分40秒 · 广告落地页" }
+        ],
+        actions: [
+          { id: "task", label: "创建跟进任务", kind: "write" },
+          { id: "save", label: "保存至报表中心", kind: "write" },
+          { id: "goto-visitor", label: "前往访客分析", kind: "nav" }
+        ],
+        source: { label: "2026-10-26 至 2026-11-02 线索与跟进记录", refId: "r-rule" }
+      };
+    }
+
+    function channelAnswer() {
+      return {
+        id: mid(), role: "assistant", logText: "生成渠道对照", logResult: "成功",
+        doneSteps: ["汇总渠道线索", "计算高意向占比", "生成对照表"],
+        lead: "10 月全英文站线索 **88** 条。自然搜索 **42** 条，高意向占比也最高。广告线索量第二，高意向占比低一截。",
+        table: {
+          columns: [
+            { key: "channel", label: "渠道" },
+            { key: "leads", label: "线索", sort: "leadsN" },
+            { key: "high", label: "高意向", sort: "highN" },
+            { key: "rate", label: "高意向占比" }
+          ],
+          rows: [
+            { channel: "自然搜索", leads: "42", leadsN: 42, high: "18", highN: 18, rate: "43%" },
+            { channel: "广告", leads: "28", leadsN: 28, high: "9", highN: 9, rate: "32%" },
+            { channel: "直接访问", leads: "11", leadsN: 11, high: "3", highN: 3, rate: "27%" },
+            { channel: "外部推荐", leads: "7", leadsN: 7, high: "2", highN: 2, rate: "29%" }
+          ]
+        },
+        chart: {
+          title: "各渠道线索量（条）",
+          items: [
+            { label: "自然搜索", value: 42 },
+            { label: "广告", value: 28 },
+            { label: "直接访问", value: 11 },
+            { label: "外部推荐", value: 7 }
+          ]
+        },
+        actions: [{ id: "save-channel", label: "保存至报表中心", kind: "write" }],
+        source: { label: "2026年10月线索来源报表", refId: "r-source" }
+      };
+    }
+
+    function pdpAnswer() {
+      return {
+        id: mid(), role: "assistant", logText: "生成详情缺口清单", logResult: "成功",
+        doneSteps: ["读取在线产品", "对照内容标准", "排列处理顺序"],
+        lead: "在线产品里有 **4** 个详情达不到内容标准。先补规格参数，证书和案例可以排在后面。",
+        table: {
+          columns: [
+            { key: "product", label: "产品" },
+            { key: "miss", label: "缺失" },
+            { key: "state", label: "状态" },
+            { key: "order", label: "顺序", sort: "orderN" }
+          ],
+          rows: [
+            { product: "HDPE 双壁波纹管", miss: "规格参数、案例", state: "在线", order: "1", orderN: 1 },
+            { product: "美标法兰闸阀", miss: "规格参数", state: "在线", order: "2", orderN: 2 },
+            { product: "PVC 排水管", miss: "证书", state: "在线", order: "3", orderN: 3 },
+            { product: "不锈钢卡箍", miss: "案例", state: "草稿", order: "4", orderN: 4 }
+          ]
+        },
+        guide: [
+          { n: "1", text: "先处理缺少规格参数的 2 个在线产品。", link: "前往内容发布", page: "content" },
+          { n: "2", text: "规格补齐后，再补案例和证书。", link: "查看内容标准", page: "knowledge" },
+          { n: "3", text: "要改正文时交给内容发布智能体，不在对话里直接改线上正文。", link: "前往内容发布", page: "content" }
+        ],
+        actions: [{ id: "content-task", label: "创建内容优化任务", kind: "write" }],
+        source: { label: "产品详情内容标准 · 在线产品清单", refId: "r-pdp" }
+      };
+    }
+
+    function mktAnswer() {
+      return {
+        id: mid(), role: "assistant", logText: "生成下滑原因", logResult: "成功",
+        doneSteps: ["对比上周与本周", "拆开渠道", "核对停留"],
+        lead: "阀门专题营销页本周线索 **11** 条，上周 **17** 条。掉下去的主要是广告，页面停留没有一起变差。",
+        points: [
+          "广告线索从 7 条降到 3 条，自然搜索从 8 条降到 6 条。",
+          "停留中位数仍大约 1 分 40 秒，不像首屏突然失效。",
+          "先核对这周广告有没有改受众或停计划。先不要改页面。"
+        ],
+        chart: {
+          title: "阀门专题营销页线索（条）",
+          series: ["上周", "本周"],
+          items: [
+            { label: "自然搜索", values: [8, 6] },
+            { label: "广告", values: [7, 3] },
+            { label: "直接访问", values: [2, 2] }
+          ]
+        },
+        actions: [{ id: "goto-marketing", label: "前往营销页", kind: "nav" }],
+        source: { label: "阀门专题营销页 · 近两周线索", refId: "r-mkt" }
+      };
+    }
+
+    let sessions = [
+      {
+        id: "s-leads", title: "近7天高意向未跟进", tag: "线索", tone: "lead", group: "今天", time: "10:42",
+        starred: true, pinned: true, mode: "execute",
+        context: { page: "board", range: "2026-10-26 至 2026-11-02" },
+        objects: ["Nordic Pipe AB"], pending: [],
+        messages: [
+          { id: mid(), role: "user", text: "排查近 7 天高意向但没有跟进的线索，标出该先联系的公司。", scene: "提问时处于：数据看板 · 全英文站", chips: [] },
+          leadsAnswer()
+        ],
+        artifacts: [
+          { id: "a1", name: "高意向未跟进线索", kind: "表格" },
+          { id: "a2", name: "未跟进原因分布", kind: "图表" }
+        ],
+        refs: [
+          { id: "r-rule", title: "线索意向分级规则", kind: "系统规则", excerpt: "高意向：7 天内访问产品页不少于 2 次，或单次停留超过 4 分钟，或下载规格书。未跟进：线索下没有未关闭的跟进任务。" },
+          { id: "r-metric", title: "访客行为指标说明", kind: "帮助文档", excerpt: "停留按页面可见时间计，不含切到后台的时间。重复访问按自然日去重。" }
+        ],
+        logs: [
+          { id: "l1", time: "10:41:08", text: "查询线索明细", result: "成功" },
+          { id: "l2", time: "10:41:21", text: "对照跟进记录", result: "成功" },
+          { id: "l3", time: "10:42:02", text: "生成排查结果", result: "成功" }
+        ]
+      },
+      {
+        id: "s-channel", title: "本月各渠道线索对照", tag: "报表", tone: "report", group: "今天", time: "09:16",
+        starred: false, pinned: false, mode: "execute",
+        context: { page: "board", range: "2026年10月" },
+        objects: [], pending: [],
+        messages: [
+          { id: mid(), role: "user", text: "生成本月各渠道线索量和高意向占比，整理成能交周会的表。", scene: "提问时处于：数据看板 · 全英文站", chips: [] },
+          channelAnswer()
+        ],
+        artifacts: [{ id: "a3", name: "10月渠道线索对照", kind: "表格" }],
+        refs: [{ id: "r-source", title: "线索来源口径", kind: "系统规则", excerpt: "渠道取线索创建时的首次来源。高意向沿用线索分级规则，不按成交计算。" }],
+        logs: [{ id: "l4", time: "09:16:40", text: "生成渠道对照", result: "成功" }]
+      },
+      {
+        id: "s-pdp", title: "产品详情信息不足", tag: "内容", tone: "content", group: "昨天", time: "16:05",
+        starred: false, pinned: false, mode: "execute",
+        context: { page: "content", range: "在线产品" },
+        objects: ["HDPE 双壁波纹管"], pending: [],
+        messages: [
+          { id: mid(), role: "user", text: "哪些在线产品详情还达不到内容标准？先给我处理顺序。", scene: "提问时处于：内容发布 · 全英文站", chips: [{ type: "obj", name: "HDPE 双壁波纹管" }] },
+          pdpAnswer()
+        ],
+        artifacts: [{ id: "a4", name: "详情缺口清单", kind: "表格" }],
+        refs: [{ id: "r-pdp", title: "产品详情内容标准", kind: "内部规范", excerpt: "在线详情至少要有规格参数。案例和证书缺失可以后补，但不算达标。" }],
+        logs: [{ id: "l5", time: "16:05:12", text: "生成详情缺口清单", result: "成功" }]
+      },
+      {
+        id: "s-mkt", title: "阀门营销页转化下滑", tag: "营销", tone: "mkt", group: "7天内", time: "周一",
+        starred: false, pinned: false, mode: "qa",
+        context: { page: "marketing", range: "近两周" },
+        objects: ["阀门专题营销页"], pending: [],
+        messages: [
+          { id: mid(), role: "user", text: "阀门专题营销页这周转化掉了，先看原因，先别改页面。", scene: "提问时处于：智能营销页 · 全英文站", chips: [] },
+          mktAnswer()
+        ],
+        artifacts: [{ id: "a5", name: "阀门页两周对照", kind: "图表" }],
+        refs: [{ id: "r-mkt", title: "营销页转化口径", kind: "帮助文档", excerpt: "转化按提交有效线索计。同一访客 7 天内重复提交只计 1 条。" }],
+        logs: [{ id: "l6", time: "周一 11:20", text: "生成下滑原因", result: "成功" }]
+      }
+    ];
+
+    const ui = {
+      shell: "full",
+      page: "board",
+      id: "s-leads",
+      annotate: false,
+      q: "",
+      draft: "",
+      carry: true,
+      menu: null,
+      follow: "all",
+      sortKey: "",
+      sortDir: -1,
+      cols: {},
+      openRef: null,
+      fold: false,
+      sideOpen: true,
+      panelHeight: "full",
+      rightOpen: false,
+      editTitle: false,
+      titleDraft: "",
+      pendingDelete: null,
+      stick: "top",
+      focusDraft: false,
+      draftCaret: null,
+      scrollTo: null,
+      keepSearch: false,
+      searchPos: 0
+    };
+
+    const app = document.getElementById("app");
+    let toastTimer = 0;
+
+    function esc(s) {
+      return String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+    }
+    function rich(s) {
+      return esc(s).replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>");
+    }
+    function svg(path, fill) {
+      return `<svg viewBox="0 0 24 24" width="16" height="16" fill="${fill || "none"}" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${path}</svg>`;
+    }
+    const icon = {
+      plus: svg('<path d="M12 5v14M5 12h14"/>'),
+      search: svg('<circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/>'),
+      star: (on) => svg('<path d="M12 3.6l2.5 5.2 5.7.8-4.1 4 1 5.7L12 16.8 6.9 19.3l1-5.7-4.1-4 5.7-.8L12 3.6z"/>', on ? "currentColor" : "none"),
+      pin: svg('<path d="M9 4h6l-1 5 3 3H7l3-3-1-5zM12 15v5"/>'),
+      trash: svg('<path d="M4 7h16M9 7V5h6v2M8 7l1 12h6l1-12"/>'),
+      send: svg('<path d="M4 12L20 4l-6 16-2.2-6.2L4 12z"/>'),
+      x: svg('<path d="M6 6l12 12M18 6L6 18"/>'),
+      file: svg('<path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5"/>'),
+      box: svg('<path d="M3 8l9-4 9 4-9 4-9-4z"/><path d="M3 8v8l9 4 9-4V8"/>'),
+      braces: svg('<path d="M8 6c-2 1.2-2 3-2 6s0 4.8 2 6M16 6c2 1.2 2 3 2 6s0 4.8-2 6"/>'),
+      spark: svg('<path d="M12 3l1.1 3.8L17 8l-3.9 1.2L12 13l-1.1-3.8L7 8l3.9-1.2L12 3z"/>'),
+      more: svg('<circle cx="6" cy="12" r="1" fill="currentColor"/><circle cx="12" cy="12" r="1" fill="currentColor"/><circle cx="18" cy="12" r="1" fill="currentColor"/>'),
+      check: svg('<path d="M5 12l5 5L20 7"/>'),
+      pencil: svg('<path d="M4 20h4L18 10l-4-4L4 16v4z"/>')
+    };
+
+    function current() { return sessions.find((s) => s.id === ui.id) || null; }
+    function nowTime() {
+      const d = new Date();
+      const p = (n) => String(n).padStart(2, "0");
+      return `${p(d.getHours())}:${p(d.getMinutes())}:${p(d.getSeconds())}`;
+    }
+    function showToast(text) {
+      const el = document.getElementById("toast");
+      el.hidden = false;
+      el.textContent = text;
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => { el.hidden = true; }, 2400);
+    }
+    function badge(tone, text) { return `<span class="badge badge-${tone}">${esc(text)}</span>`; }
+
+    function grouped(list) {
+      const pinned = list.filter((s) => s.pinned);
+      const rest = list.filter((s) => !s.pinned);
+      const out = [];
+      if (pinned.length) out.push(["置顶", pinned]);
+      ["今天", "昨天", "7天内", "更早"].forEach((name) => {
+        const items = rest.filter((s) => s.group === name);
+        if (items.length) out.push([name, items]);
+      });
+      return out;
+    }
+    function visibleSessions() {
+      const q = ui.q.trim().toLowerCase();
+      if (!q) return sessions;
+      return sessions.filter((s) => [s.title, s.tag, s.time, s.group, ...s.messages.map((m) => m.text || m.lead || "")].join(" ").toLowerCase().includes(q));
+    }
+
+    function renderSessionButtons(compact) {
+      const list = visibleSessions();
+      if (!list.length) return `<p class="hint" style="padding:8px">没有匹配的会话</p>`;
+      return grouped(list).map(([name, items]) => `
+        <p class="group-label">${esc(name)}</p>
+        ${items.map((s) => `
+          <div class="conv${s.id === ui.id ? " is-on" : ""}">
+            <button type="button" class="conv-main" data-act="pick" data-id="${s.id}">
+              <span class="conv-title">${esc(s.title)}</span>
+              <span class="conv-meta">${badge(s.tone, s.tag)}<span>${esc(s.time)}</span></span>
+            </button>
+            <div class="conv-tools">
+              ${ui.pendingDelete === s.id ? `
+                <span class="confirm-inline">删除？
+                  <button type="button" data-act="delete-yes" data-id="${s.id}">删除</button>
+                  <button type="button" data-act="delete-no">取消</button>
+                </span>` : `
+                <button type="button" class="icon-btn${s.starred ? " is-on" : ""}" data-act="star" data-id="${s.id}" aria-pressed="${s.starred}" aria-label="${s.starred ? "取消星标" : "星标"}">${icon.star(s.starred)}</button>
+                ${compact ? "" : `<button type="button" class="icon-btn${s.pinned ? " is-pin" : ""}" data-act="pin" data-id="${s.id}" aria-pressed="${s.pinned}" aria-label="${s.pinned ? "取消置顶" : "置顶"}">${icon.pin}</button>
+                <button type="button" class="icon-btn" data-act="delete-ask" data-id="${s.id}" aria-label="删除会话">${icon.trash}</button>`}
+              `}
+            </div>
+          </div>`).join("")}
+      `).join("");
+    }
+
+    function renderTemplates() {
+      const groups = [];
+      templates.forEach((t) => { if (!groups.includes(t.group)) groups.push(t.group); });
+      return groups.map((g) => `
+        <p class="group-label">${esc(g)}</p>
+        ${templates.filter((t) => t.group === g).map((t) => `
+          <button type="button" class="tpl" data-act="open-template" data-id="${t.sessionId}">
+            <strong>${esc(t.title)}</strong><small>企业指令 · 打开现成结果</small>
+          </button>`).join("")}
+      `).join("");
+    }
+
+    function renderNav() {
+      const item = (id, label) => {
+        const on = id === "assistant" ? ui.shell === "full" : ui.shell === "side" && ui.page === id;
+        return `<button type="button" data-act="nav" data-page="${id}" class="${on ? "is-on" : ""}"${on ? ' aria-current="page"' : ""}>${esc(label)}</button>`;
+      };
+      return `
+        <div class="sitebox"><span>当前站点</span><strong>全英文站</strong><small>www.example.com</small></div>
+        <div class="nav" aria-label="工作台">
+          <p class="nav-label">概览</p>
+          ${item("board", "数据看板")}
+          <p class="nav-label">执行生产</p>
+          ${item("visitor", "访客行为分析")}
+          ${item("marketing", "智能营销页")}
+          ${item("content", "内容发布")}
+          ${item("assistant", "AI运营助手")}
+          <p class="nav-label">支撑与配置</p>
+          ${item("knowledge", "知识库")}
+          ${item("settings", "站点设置")}
+        </div>`;
+    }
+
+    function contextLine(session) {
+      const bound = `已关联【${pages[session.context.page].name}】，当前数据范围：${session.context.range}`;
+      if (!ui.carry) return bound + "。新提问不自动附带正在浏览的页面。";
+      if (ui.page !== session.context.page) return bound + `。你正在浏览${pages[ui.page].name}，下一条会注明。`;
+      return bound;
+    }
+
+    function renderMenu(name, align, inner) {
+      if (ui.menu !== name) return "";
+      return `<div class="pop ${align || ""}" data-menu-root>${inner}</div>`;
+    }
+
+    function renderMode(session) {
+      return `<div class="seg" role="radiogroup" aria-label="对话模式">
+        <button type="button" role="radio" aria-checked="${session.mode === "qa"}" class="${session.mode === "qa" ? "is-on" : ""}" data-act="mode" data-mode="qa">问答</button>
+        <button type="button" role="radio" aria-checked="${session.mode === "execute"}" class="${session.mode === "execute" ? "is-on" : ""}" data-act="mode" data-mode="execute">执行</button>
+      </div>`;
+    }
+
+    function renderHead(session) {
+      const title = ui.editTitle
+        ? `<input class="title-input" data-role="title" aria-label="会话标题" value="${esc(ui.titleDraft)}" />`
+        : `<h1>${esc(session.title)}</h1><button type="button" class="icon-btn" data-act="edit-title" aria-label="重命名会话">${icon.pencil}</button>`;
+      return `
+        <header class="head">
+          <div class="head-row">
+            <div class="titleline">${title}</div>
+            <div class="head-actions">
+              <button type="button" class="btn btn-ghost only-narrow" data-act="right">${ui.rightOpen ? "收起上下文" : "上下文"}</button>
+              ${renderMode(session)}
+              <span class="mode-hint">${session.mode === "execute" ? "写入前会确认" : "只读，不写数据"}</span>
+              <div class="menu-root" data-menu-root>
+                <button type="button" class="icon-btn" data-act="menu" data-menu="more" aria-label="会话操作" aria-expanded="${ui.menu === "more"}">${icon.more}</button>
+                ${renderMenu("more", "", `
+                  <button type="button" data-act="export-md">导出 Markdown</button>
+                  <button type="button" data-act="export-xls">导出表格</button>
+                  <button type="button" data-act="share">分享给同事</button>
+                  <button type="button" data-act="clear">清空对话</button>
+                  <button type="button" class="danger" data-act="delete-current">删除会话</button>
+                `)}
+              </div>
+            </div>
+          </div>
+          <p class="contextline">${esc(contextLine(session))}</p>
+        </header>`;
+    }
+
+    function renderUser(m) {
+      return `<div class="msg-user">
+        <div class="bubble"><p>${rich(m.text)}</p>${(m.chips || []).length ? `<div class="uchips">${m.chips.map((c) => `<span>${esc(c.name)}</span>`).join("")}</div>` : ""}</div>
+        <p class="scene">${esc(m.scene || "")}</p>
+      </div>`;
+    }
+
+    function sortedRows(table) {
+      const rows = table.rows.slice();
+      if (table.filterFollow && ui.follow !== "all") {
+        const wantNone = ui.follow === "none";
+        rows.splice(0, rows.length, ...rows.filter((r) => (r.follow === "无") === wantNone));
+      }
+      const col = table.columns.find((c) => (c.sort || c.key) === ui.sortKey || c.key === ui.sortKey);
+      if (col) {
+        const key = col.sort || col.key;
+        rows.sort((a, b) => {
+          const va = a[key]; const vb = b[key];
+          if (typeof va === "number" && typeof vb === "number") return (va - vb) * ui.sortDir;
+          return String(va).localeCompare(String(vb), "zh") * ui.sortDir;
+        });
+      }
+      return rows;
+    }
+
+    function renderTable(m) {
+      const table = m.table;
+      const cols = table.columns.filter((c) => !table.customCols || ui.cols[c.key] !== false);
+      const rows = sortedRows(table);
+      return `<div class="table-card">
+        <div class="table-bar">
+          ${table.filterFollow ? `<select data-role="follow" aria-label="按跟进筛选">
+            <option value="all"${ui.follow === "all" ? " selected" : ""}>跟进：全部</option>
+            <option value="none"${ui.follow === "none" ? " selected" : ""}>只看未跟进</option>
+            <option value="yes"${ui.follow === "yes" ? " selected" : ""}>只看已联系</option>
+          </select>` : `<span class="hint">表格</span>`}
+          <span class="spacer"></span>
+          ${table.customCols ? `<div class="menu-root" data-menu-root>
+            <button type="button" class="btn btn-ghost" data-act="menu" data-menu="cols" aria-expanded="${ui.menu === "cols"}">列</button>
+            ${renderMenu("cols", "", table.columns.map((c) => `<label><input type="checkbox" data-act="set-col" data-key="${c.key}" ${ui.cols[c.key] === false ? "" : "checked"}/>${esc(c.label)}</label>`).join(""))}
+          </div>` : ""}
+          <button type="button" class="btn btn-ghost" data-act="table-export" data-mid="${m.id}">导出 Excel</button>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr>${cols.map((c) => {
+            const key = c.sort || c.key;
+            const on = ui.sortKey === key;
+            const aria = on ? (ui.sortDir > 0 ? "ascending" : "descending") : "none";
+            return `<th aria-sort="${aria}"><button type="button" data-act="sort" data-key="${key}">${esc(c.label)}${on ? (ui.sortDir > 0 ? " ↑" : " ↓") : ""}</button></th>`;
+          }).join("")}</tr></thead>
+          <tbody>${rows.map((r) => {
+            const picked = current().objects.includes(r.company || r.product || "");
+            return `<tr class="${picked ? "is-picked" : ""}">${cols.map((c) => `<td>${cell(m, r, c)}</td>`).join("")}</tr>`;
+          }).join("") || `<tr><td colspan="${cols.length}">这个筛选下没有数据</td></tr>`}</tbody>
+        </table></div>
+      </div>`;
+    }
+
+    function cell(m, row, col) {
+      const name = row.company || row.product || row.channel || "";
+      if (col.kind === "intent") return badge(row.intent === "高" ? "high" : "mid", row.intent);
+      if (col.kind === "follow") {
+        return row.follow === "无" ? `<span class="miss">无跟进</span>` : `<span class="ok">${esc(row.follow)}</span>`;
+      }
+      if (col.key === "company" || col.key === "product") {
+        return `<button type="button" class="linkish" data-act="pick-row" data-name="${esc(name)}">${esc(row[col.key])}</button>`;
+      }
+      if (col.sort || col.key === "leads" || col.key === "high" || col.key === "order") return `<span class="num">${esc(row[col.key])}</span>`;
+      return esc(row[col.key]);
+    }
+
+    function renderChart(chart) {
+      const max = Math.max(...chart.items.map((item) => item.value || Math.max(...item.values)));
+      const legend = chart.series ? `<p class="legend"><span><span class="swatch a"></span>${esc(chart.series[0])}</span><span><span class="swatch b"></span>${esc(chart.series[1])}</span></p>` : "";
+      const rows = chart.items.map((item) => {
+        if (chart.series) {
+          return `<div class="bar-row" role="group" aria-label="${esc(item.label)}">
+            <span class="bar-label">${esc(item.label)}</span>
+            <span class="dual">
+              <span class="bar-track"><span class="bar-fill alt" style="width:${item.values[0] / max * 100}%"></span></span>
+              <span class="bar-track"><span class="bar-fill" style="width:${item.values[1] / max * 100}%"></span></span>
+            </span>
+            <span class="bar-value num">${item.values[0]} / ${item.values[1]}</span>
+          </div>`;
+        }
+        return `<button type="button" class="bar-row" data-act="chart" data-label="${esc(item.label)}">
+          <span class="bar-label">${esc(item.label)}</span>
+          <span class="bar-track"><span class="bar-fill" style="width:${item.value / max * 100}%"></span></span>
+          <span class="bar-value num">${item.value}</span>
+        </button>`;
+      }).join("");
+      return `<div class="chart"><h3>${esc(chart.title)}</h3>${legend}${rows}</div>`;
+    }
+
+    function renderAssistant(m) {
+      const tools = `
+        <div class="tools">
+          <button type="button" data-act="feedback" data-mid="${m.id}" data-val="up" class="${m.feedback === "up" ? "is-on" : ""}" aria-pressed="${m.feedback === "up"}">有用</button>
+          <button type="button" data-act="feedback" data-mid="${m.id}" data-val="down" class="${m.feedback === "down" ? "is-on" : ""}" aria-pressed="${m.feedback === "down"}">无用</button>
+          <button type="button" data-act="copy" data-mid="${m.id}">复制</button>
+          <button type="button" data-act="regen" data-mid="${m.id}">重新生成</button>
+          <button type="button" data-act="edit-q" data-mid="${m.id}">编辑提问</button>
+          <button type="button" data-act="save-result" data-mid="${m.id}">保存结果</button>
+        </div>`;
+      return `<article class="answer">
+        ${m.doneSteps ? `<p class="done-steps">${m.doneSteps.map((s) => `<span class="step is-done">${icon.check}${esc(s)}</span>`).join("")}</p>` : ""}
+        ${m.lead ? `<p class="lead">${rich(m.lead)}</p>` : ""}
+        ${m.points ? `<ul class="points">${m.points.map((p) => `<li>${rich(p)}</li>`).join("")}</ul>` : ""}
+        ${m.table ? renderTable(m) : ""}
+        ${m.chart ? renderChart(m.chart) : ""}
+        ${m.cards ? `<div class="cards">${m.cards.map((c) => `<button type="button" class="biz" data-act="card" data-name="${esc(c.title)}"><span class="badge badge-lead">${esc(c.kind)}</span><strong>${esc(c.title)}</strong><p>${esc(c.meta)}</p></button>`).join("")}</div>` : ""}
+        ${m.guide ? `<ol class="guide">${m.guide.map((g) => `<li><span class="n">${g.n}</span><span>${esc(g.text)} <button type="button" data-act="goto-page" data-page="${g.page}">${esc(g.link)}</button></span></li>`).join("")}</ol>` : ""}
+        ${m.actions ? `<div class="actions">${m.actions.map((a) => `<button type="button" class="${a.kind === "write" ? "btn btn-primary" : "btn btn-ghost"}" data-act="run-action" data-action="${a.id}">${esc(a.label)}</button>`).join("")}</div>` : ""}
+        ${m.source ? `<div class="source"><span>数据来源：${esc(m.source.label)}</span><button type="button" data-act="source" data-ref="${m.source.refId || ""}">核对</button></div>` : ""}
+        ${m.role === "assistant" && m.lead ? tools : ""}
+      </article>`;
+    }
+
+    function renderSys(m) {
+      if (m.status === "done") {
+        return `<article class="sys done"><p class="kicker">已写入</p><p>${esc(m.doneText)}</p></article>`;
+      }
+      if (m.status === "cancel") {
+        return `<article class="sys cancel"><p class="kicker">已取消</p><p>没有写入数据。</p></article>`;
+      }
+      if (m.role === "blocked") {
+        return `<article class="sys blocked"><p class="kicker">已拦截</p><p>${esc(m.reason)}</p><div class="actions"><button type="button" class="btn btn-ghost" data-act="show-perm">查看我的权限</button></div></article>`;
+      }
+      return `<article class="sys confirm">
+        <p class="kicker">${esc(m.title)}</p>
+        <dl class="defs">${m.lines.map((line) => `<dt>${esc(line[0])}</dt><dd>${esc(line[1])}</dd>`).join("")}</dl>
+        <p class="risk">${esc(m.risk)}</p>
+        <div class="actions">
+          <button type="button" class="btn btn-ghost" data-act="confirm-no" data-mid="${m.id}">取消</button>
+          <button type="button" class="btn btn-primary" data-act="confirm-yes" data-mid="${m.id}">确认执行</button>
+        </div>
+      </article>`;
+    }
+
+    function renderMsg(m) {
+      if (m.role === "user") return renderUser(m);
+      if (m.role === "confirm" || m.role === "blocked") return renderSys(m);
+      return renderAssistant(m);
+    }
+
+    function renderLoading(steps) {
+      return `<div class="answer" aria-live="polite"><div class="progress">${steps.map((s) => `<span class="step is-${s.state}">${s.state === "done" ? icon.check : ""}${esc(s.state === "run" ? "进行中 · " + s.t : s.state === "done" ? s.t : "等待 · " + s.t)}</span>`).join("")}</div></div>`;
+    }
+
+    function suggestion() {
+      const q = ui.draft.trim();
+      if (q.length < 2) return null;
+      return templates.find((t) => t.prompt !== q && (t.title.includes(q) || t.prompt.includes(q) || (q.includes("排查") && t.sessionId === "s-leads") || (q.includes("渠道") && t.sessionId === "s-channel") || (q.includes("详情") && t.sessionId === "s-pdp") || (q.includes("下滑") && t.sessionId === "s-mkt"))) || null;
+    }
+
+    function renderComposer(session) {
+      const sug = suggestion();
+      const pageName = pages[ui.page].name;
+      return `<form class="composer" data-act="noop">
+        ${(session.pending || []).length ? `<div class="pending">${session.pending.map((c, i) => `<span class="filechip">${esc(c.name)}<button type="button" data-act="rm-pending" data-idx="${i}" aria-label="移除${esc(c.name)}">×</button></span>`).join("")}</div>` : ""}
+        ${sug ? `<div class="suggest"><button type="button" class="chip-btn" data-act="use-suggest" data-prompt="${esc(sug.prompt)}">补全：${esc(sug.title)}</button></div>` : ""}
+        <div class="composer-tools">
+          <button type="button" class="chip-btn${ui.carry ? " is-on" : ""}" data-act="carry" aria-pressed="${ui.carry}">${ui.carry ? "携带当前页：" + esc(pageName) : "不携带当前页"}</button>
+          <button type="button" class="chip-btn" data-act="add-file">${icon.file} 上传文件</button>
+          <div class="menu-root" data-menu-root>
+            <button type="button" class="chip-btn" data-act="menu" data-menu="obj" aria-expanded="${ui.menu === "obj"}">${icon.box} 业务对象</button>
+            ${renderMenu("obj", "left", catalog.map((o) => `<button type="button" data-act="add-pending-obj" data-name="${esc(o.name)}">${esc(o.kind)} · ${esc(o.name)}</button>`).join(""))}
+          </div>
+          <div class="menu-root" data-menu-root>
+            <button type="button" class="chip-btn" data-act="menu" data-menu="var" aria-expanded="${ui.menu === "var"}">${icon.braces} 变量</button>
+            ${renderMenu("var", "left", vars.map((v) => `<button type="button" data-act="insert-var" data-token="${esc(v.token)}">${esc(v.label)}</button>`).join(""))}
+          </div>
+          <div class="menu-root" data-menu-root>
+            <button type="button" class="chip-btn" data-act="menu" data-menu="cmd" aria-expanded="${ui.menu === "cmd"}">${icon.spark} 指令</button>
+            ${renderMenu("cmd", "left", templates.map((t) => `<button type="button" data-act="use-suggest" data-prompt="${esc(t.prompt)}">${esc(t.title)}</button>`).join(""))}
+          </div>
+        </div>
+        <textarea data-role="draft" rows="2" aria-label="输入问题" placeholder="${session.mode === "execute" ? "要查的数据，或要做的操作。写入前会先确认" : "只提问。这个模式不会改后台数据"}">${esc(ui.draft)}</textarea>
+        <div class="sendrow">
+          <span class="hint">Enter 发送，Shift+Enter 换行</span>
+          <button type="button" class="btn btn-primary" data-act="send" ${session.loading ? "disabled" : ""}>${icon.send} 发送</button>
+        </div>
+      </form>`;
+    }
+
+    function renderStream(session, id) {
+      if (!session.messages.length && !session.loading) {
+        return `<div class="stream" id="${id}"><div class="empty">
+          <h2>新会话</h2>
+          <p class="hint">${ui.carry ? `已携带进入助手前的页面：${esc(pages[ui.page].name)}。范围 ${esc(pages[ui.page].range)}。` : "没有携带当前页面。可以从下面的企业指令开始，或自己写问题。"}</p>
+          <div class="empty-grid">${templates.map((t) => `<button type="button" data-act="open-template" data-id="${t.sessionId}"><strong>${esc(t.title)}</strong><br><span class="hint">${esc(t.prompt)}</span></button>`).join("")}</div>
+        </div></div>`;
+      }
+      return `<div class="stream" id="${id}">${session.messages.map(renderMsg).join("")}${session.loading ? renderLoading(session.loading) : ""}</div>`;
+    }
+
+    function renderRight(session) {
+      const live = pages[ui.page];
+      const bound = pages[session.context.page];
+      const same = ui.carry && ui.page === session.context.page;
+      return `<aside class="col-right${ui.rightOpen ? " is-open" : ""}" id="right" aria-label="上下文与结果">
+        ${ui.annotate ? `<p class="region-tag">右栏 · 上下文、结果、资料、日志</p>` : ""}
+        <div class="side-sec">
+          <h2>当前上下文</h2>
+          ${same ? `<p>${esc(bound.name)}</p><p class="hint">${esc(session.context.range)} · 全英文站</p>` : `
+            <p class="k">正在浏览</p><p>${ui.carry ? esc(live.name) : "未携带当前页"}</p><p class="hint">${esc(live.range)} · 全英文站</p>
+            <p class="k">本会话关联</p><p>${esc(bound.name)} · ${esc(session.context.range)}</p>`}
+          <p class="k">业务对象</p>
+          <div class="objs">
+            ${session.objects.map((name) => `<span class="obj">${esc(name)}<button type="button" data-act="rm-obj" data-name="${esc(name)}" aria-label="移除${esc(name)}">×</button></span>`).join("") || `<span class="hint">还没有对象</span>`}
+            <div class="menu-root" data-menu-root>
+              <button type="button" class="chip-btn" data-act="menu" data-menu="obj-side">添加</button>
+              ${renderMenu("obj-side", "left", catalog.map((o) => `<button type="button" data-act="add-session-obj" data-name="${esc(o.name)}">${esc(o.kind)} · ${esc(o.name)}</button>`).join(""))}
+            </div>
+          </div>
+        </div>
+        <div class="side-sec" id="perm">
+          <h2>权限范围</h2>
+          <p class="hint">张敏 · 市场运营 · 与后台角色一致</p>
+          <div class="perm">
+            <div><b>可查询</b><span>本站点线索、访客、页面</span></div>
+            <div><b>可执行</b><span>创建跟进、保存报表、创建内容任务</span></div>
+            <div><b>不可执行</b><span>站点配置、成员与角色</span></div>
+          </div>
+        </div>
+        <div class="side-sec" id="artifacts">
+          <h2>生成结果</h2>
+          ${session.artifacts.map((a) => `<div class="artifact"><span><strong>${esc(a.name)}</strong><br><span class="hint">${esc(a.kind)}</span></span><button type="button" class="btn btn-ghost" data-act="artifact-save" data-name="${esc(a.name)}">保存</button></div>`).join("") || `<p class="hint">这条会话还没有结果</p>`}
+          ${session.artifacts.length ? `<button type="button" class="btn btn-ghost" data-act="artifacts-batch">批量导出</button>` : ""}
+        </div>
+        <div class="side-sec" id="refs">
+          <h2>参考资料</h2>
+          ${session.refs.map((r) => `<div id="ref-${r.id}"><button type="button" class="ref" data-act="ref" data-ref="${r.id}"><span>${esc(r.title)}<br><span class="hint">${esc(r.kind)}</span></span></button>${ui.openRef === r.id ? `<p class="excerpt">${esc(r.excerpt)}</p>` : ""}</div>`).join("")}
+        </div>
+        <div class="side-sec" id="logs">
+          <h2>操作日志</h2>
+          ${session.logs.map((l) => `<div class="log"><span><span class="num">${esc(l.time)}</span><br>${esc(l.text)}</span><span class="pill ${l.result === "成功" ? "ok" : l.result === "待确认" ? "wait" : l.result === "已拦截" ? "no" : "mute"}">${esc(l.result)}</span></div>`).join("")}
+        </div>
+      </aside>`;
+    }
+
+    function renderFull(session) {
+      return `<div class="full">
+        <aside class="col-left" aria-label="会话与指令">
+          ${ui.annotate ? `<p class="region-tag">左栏 · 会话与企业指令</p>` : ""}
+          <div class="left-top">
+            <button type="button" class="btn btn-primary btn-block" data-act="new">${icon.plus} 新建会话</button>
+            <div class="search">${icon.search}<input data-role="search" aria-label="搜索会话" placeholder="搜索标题、业务词、时间" value="${esc(ui.q)}" /></div>
+          </div>
+          <div id="sessions">${renderSessionButtons(false)}</div>
+          <div class="templates"><p class="group-label">企业指令</p>${renderTemplates()}</div>
+        </aside>
+        <section class="col-mid" aria-label="对话">
+          ${ui.annotate ? `<p class="region-tag">中栏 · 对话、结构化结果、确认</p>` : ""}
+          ${session ? renderHead(session) + renderStream(session, "stream") + renderComposer(session) : `<div class="stream"><div class="empty"><h2>还没有会话</h2><button type="button" class="btn btn-primary" data-act="new">新建会话</button></div></div>`}
+        </section>
+        ${session ? renderRight(session) : ""}
+      </div>`;
+    }
+
+    function renderHost() {
+      const page = pages[ui.page];
+      if (ui.page === "board") {
+        return `<div class="host-page">
+          <h1>数据看板</h1>
+          <p class="host-sub">全英文站 · 2026-10-26 至 2026-11-02</p>
+          <div class="metrics">
+            <div class="metric"><span>本月线索</span><strong class="num">86</strong></div>
+            <div class="metric"><span>高意向</span><strong class="num">23</strong></div>
+            <button type="button" class="metric is-warn" data-act="open-metric" data-id="s-leads"><span>未跟进</span><strong class="num">6</strong><em>交给助手排查</em></button>
+            <div class="metric"><span>营销页转化</span><strong class="num">3.8%</strong></div>
+          </div>
+          <div class="stub"><h2>页面表现</h2><table>
+            <thead><tr><th>页面</th><th>访客</th><th>线索</th><th>转化</th></tr></thead>
+            <tbody>
+              <tr><td>HDPE 管材</td><td class="num">420</td><td class="num">18</td><td class="num">4.3%</td></tr>
+              <tr><td>阀门选型</td><td class="num">310</td><td class="num">11</td><td class="num">3.5%</td></tr>
+              <tr><td>工程案例</td><td class="num">188</td><td class="num">6</td><td class="num">3.2%</td></tr>
+            </tbody>
+          </table></div>
+        </div>`;
+      }
+      const rows = {
+        visitor: ["HDPE 管材页 · 停留中位数 2分10秒", "阀门选型页 · 回访 38 人", "工程案例页 · 广告落地"],
+        marketing: ["阀门专题营销页 · 在投", "管材选型落地页 · 在投", "案例集页 · 暂停"],
+        content: ["HDPE 双壁波纹管 · 在线", "美标法兰闸阀 · 在线", "不锈钢卡箍 · 草稿"],
+        knowledge: ["线索意向分级规则", "产品详情内容标准", "营销页转化口径"],
+        settings: ["主语言 English", "域名 www.example.com", "成员 12 人"]
+      };
+      return `<div class="host-page"><h1>${esc(page.name)}</h1><p class="host-sub">${esc(page.desc)}</p><div class="stub"><h2>当前页摘要</h2><table><tbody>${(rows[ui.page] || []).map((r) => `<tr><td>${esc(r)}</td></tr>`).join("")}</tbody></table></div></div>`;
+    }
+
+    function renderSide() {
+      const session = current();
+      return `<div class="host">${renderHost()}
+        <button type="button" class="fab" data-act="side-open" ${ui.sideOpen ? "hidden" : ""}>${icon.spark} AI运营助手</button>
+        <aside class="panel${ui.sideOpen ? " is-open" : ""}${ui.panelHeight === "half" ? " is-half" : ""}" aria-label="AI运营助手" aria-hidden="${ui.sideOpen ? "false" : "true"}" ${ui.sideOpen ? "" : "inert"}>
+          ${ui.annotate ? `<p class="region-tag">侧边面板 · 消息流与输入</p>` : ""}
+          <div class="panel-bar">
+            <div class="grow"><strong>AI运营助手</strong><small>${session ? `已关联【${esc(pages[session.context.page].name)}】· ${esc(session.context.range)}` : "边看当前页，边提问"}</small></div>
+            <div class="panel-actions">
+              ${session ? renderMode(session) : ""}
+              <button type="button" class="btn btn-ghost" data-act="side-fold" aria-expanded="${ui.fold}">${ui.fold ? "收起" : "会话与指令"}</button>
+              <button type="button" class="btn btn-ghost" data-act="panel-height">${ui.panelHeight === "half" ? "全高" : "半高"}</button>
+              <button type="button" class="btn btn-ghost" data-act="shell" data-shell="full">全功能页</button>
+              <button type="button" class="icon-btn" data-act="side-close" aria-label="关闭运营助手">${icon.x}</button>
+            </div>
+          </div>
+          ${ui.fold ? `<div class="fold" id="fold-sessions">${renderSessionButtons(true)}<div class="templates">${renderTemplates()}</div></div>` : ""}
+          ${session ? renderStream(session, "side-stream") + renderComposer(session) : `<div class="stream"><div class="empty"><h2>还没有会话</h2><button type="button" class="btn btn-primary" data-act="new">新建会话</button></div></div>`}
+        </aside>
+      </div>`;
+    }
+
+    function render() {
+      const searchEl = document.querySelector("[data-role=search]");
+      ui.keepSearch = document.activeElement === searchEl;
+      ui.searchPos = ui.keepSearch ? searchEl.selectionStart : 0;
+      const scrolls = {};
+      ["stream", "side-stream", "sessions", "right", "fold-sessions"].forEach((id) => {
+        const el = document.getElementById(id);
+        if (el) scrolls[id] = el.scrollTop;
+      });
+      const session = current();
+      const portal = ["概况", "网站管理", "营销管理", "数据分析"].map((t) => `<button type="button" data-act="portal" data-name="${esc(t)}">${esc(t)}</button>`).join("");
+      app.innerHTML = `
+        <div class="review">
+          <strong>原型审阅</strong><span class="quiet">非正式规范 · 顶栏和左侧是工作台缩样</span>
+          <button type="button" class="${ui.shell === "full" ? "is-on" : ""}" data-act="shell" data-shell="full">全功能对话页</button>
+          <button type="button" class="${ui.shell === "side" ? "is-on" : ""}" data-act="shell" data-shell="side">全局侧边面板</button>
+          <button type="button" class="${ui.annotate ? "is-on" : ""}" data-act="annotate">区域名称</button>
+          <span class="spacer"></span>
+          <span>张敏 · 市场运营 · 全英文站</span>
+        </div>
+        <div class="admin">
+          <header class="top">
+            <div class="brand"><i></i><div><strong>数字门户</strong><small>AI WORKBENCH</small></div></div>
+            <nav class="portal-tabs" aria-label="数字门户">${portal}</nav>
+            <button type="button" class="ai-pill" data-act="nav" data-page="assistant">AI工作台</button>
+            <span class="spacer"></span>
+            <button type="button" class="who" data-act="who">张敏</button>
+          </header>
+          <div class="body">
+            <aside class="sider">${renderNav()}</aside>
+            <main class="stage">${ui.shell === "full" ? renderFull(session) : renderSide()}</main>
+          </div>
+        </div>`;
+      Object.entries(scrolls).forEach(([id, top]) => {
+        const el = document.getElementById(id);
+        if (el) el.scrollTop = top;
+      });
+      if (ui.stick) {
+        const el = document.getElementById("stream") || document.getElementById("side-stream");
+        if (el) el.scrollTop = ui.stick === "bottom" ? el.scrollHeight : 0;
+        ui.stick = null;
+      }
+      if (ui.keepSearch) {
+        const el = document.querySelector("[data-role=search]");
+        if (el) { el.focus(); el.setSelectionRange(ui.searchPos, ui.searchPos); }
+      } else if (ui.focusDraft) {
+        const el = document.querySelector("[data-role=draft]");
+        if (el) {
+          el.focus();
+          const pos = ui.draftCaret ?? el.value.length;
+          el.setSelectionRange(pos, pos);
+        }
+        ui.focusDraft = false;
+        ui.draftCaret = null;
+      } else if (ui.editTitle) {
+        const el = document.querySelector("[data-role=title]");
+        if (el && document.activeElement !== el) { el.focus(); el.select(); }
+      }
+      if (ui.scrollTo) {
+        document.getElementById(ui.scrollTo)?.scrollIntoView({ block: "nearest" });
+        ui.scrollTo = null;
+      }
+    }
+
+    function findMsg(id) { return current()?.messages.find((m) => m.id === id); }
+
+    function plain(m) {
+      const parts = [m.text, m.lead, ...(m.points || [])].filter(Boolean).map((t) => t.replace(/\*\*/g, ""));
+      if (m.table) {
+        parts.push(m.table.columns.map((c) => c.label).join("\t"));
+        m.table.rows.forEach((r) => parts.push(m.table.columns.map((c) => r[c.key]).join("\t")));
+      }
+      if (m.guide) m.guide.forEach((g) => parts.push(g.n + ". " + g.text));
+      if (m.source) parts.push("数据来源：" + m.source.label);
+      if (m.reason) parts.push(m.reason);
+      return parts.join("\n");
+    }
+
+    function download(filename, text, type) {
+      const blob = new Blob([text], { type });
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(blob);
+      a.download = filename;
+      a.click();
+      URL.revokeObjectURL(a.href);
+    }
+
+    function exportMd(session) {
+      const body = [`# ${session.title}`, "", contextLine(session), "", ...session.messages.map((m) => `## ${m.role === "user" ? "用户" : "助手"}\n\n${plain(m)}`)].join("\n\n");
+      download(`${session.title}.md`, body, "text/markdown");
+      showToast("已导出 Markdown");
+    }
+
+    function tableCsv(table) {
+      const cols = table.columns.filter((c) => !table.customCols || ui.cols[c.key] !== false);
+      const lines = [cols.map((c) => c.label).join(",")];
+      sortedRows(table).forEach((r) => lines.push(cols.map((c) => csvEscape(r[c.key])).join(",")));
+      return "\uFEFF" + lines.join("\n");
+    }
+    function csvEscape(v) {
+      const s = String(v ?? "");
+      return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
+    }
+
+    function autoTitle(text) {
+      if (/渠道|周报|来源/.test(text)) return "本月各渠道线索对照";
+      if (/产品详情|信息不足|内容标准/.test(text)) return "产品详情信息不足";
+      if (/营销页|转化|下滑/.test(text)) return "营销页转化下滑";
+      if (/跟进|线索/.test(text)) return "高意向未跟进排查";
+      if (/主语言|站点配置|成员/.test(text)) return "站点配置权限确认";
+      return text.replace(/\s+/g, " ").slice(0, 18) || "未命名会话";
+    }
+
+    function blockedMsg() {
+      return { id: mid(), role: "blocked", logText: "修改站点配置", logResult: "已拦截", reason: "当前角色是市场运营，不能修改站点配置，也不能调整成员权限。这次没有写入。要改主语言，请交给站点管理员。" };
+    }
+    function qaMsg() {
+      return { id: mid(), role: "assistant", logText: "问答模式说明做法", logResult: "成功", lead: "现在是问答模式，我只说明做法，不会写入。", points: ["切到执行模式后，创建、修改和批量操作都会先出现确认卡。", "确认卡会写明操作、影响范围和风险。"], source: { label: "当前账号权限", refId: null } };
+    }
+    function genericMsg(text) {
+      const page = pages[current().context.page];
+      return { id: mid(), role: "assistant", logText: "整理回答", logResult: "成功", lead: `按本会话关联的${page.name}来理解：「${text.replace(/\s+/g, " ").slice(0, 42)}」`, points: ["样例数据里没有可以直接算出的新结果。", "可以改问渠道、未跟进线索、产品详情或某个营销页。"], source: { label: page.name + " · 样例数据", refId: null } };
+    }
+
+    function plan(session, text) {
+      if (/主语言|站点配置|成员权限|改成中文/.test(text)) return { steps: ["正在核对角色权限", "正在核对操作范围", "正在决定是否拦截"], build: blockedMsg };
+      if (session.mode === "qa" && /创建|修改|删除|保存|配置|批量|改成|应用/.test(text)) return { steps: ["正在确认对话模式", "正在整理做法"], build: qaMsg };
+      if (/渠道|周报|来源/.test(text)) return { steps: ["正在汇总渠道线索", "正在计算高意向占比", "正在生成对照表"], build: channelAnswer };
+      if (/产品详情|信息不足|内容标准/.test(text)) return { steps: ["正在读取在线产品", "正在对照内容标准", "正在排列处理顺序"], build: pdpAnswer };
+      if (/营销页|转化|下滑/.test(text)) return { steps: ["正在对比上周与本周", "正在拆开渠道", "正在核对停留"], build: mktAnswer };
+      if (/跟进|线索|异常/.test(text)) return { steps: ["正在查询线索明细", "正在对照跟进记录", "正在生成排查结果"], build: leadsAnswer };
+      return { steps: ["正在读取当前上下文", "正在整理回答"], build: () => genericMsg(text) };
+    }
+
+    function startJob(session, labels, build) {
+      const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      const finish = () => {
+        if (!sessions.includes(session)) return;
+        session.loading = null;
+        const msg = build();
+        if (msg) {
+          session.messages.push(msg);
+          session.logs.unshift({ id: msg.id, time: nowTime(), text: msg.logText || "生成回复", result: msg.logResult || "成功" });
+        }
+        ui.stick = "bottom";
+        render();
+      };
+      if (reduce) { finish(); return; }
+      let i = 0;
+      const tick = () => {
+        if (!sessions.includes(session)) return;
+        if (i >= labels.length) { finish(); return; }
+        session.loading = labels.map((t, idx) => ({ t, state: idx < i ? "done" : idx === i ? "run" : "wait" }));
+        ui.stick = "bottom";
+        render();
+        i += 1;
+        setTimeout(tick, 650);
+      };
+      tick();
+    }
+
+    function confirmFor(action) {
+      const id = mid();
+      if (action === "task") {
+        return { id, role: "confirm", status: "pending", actionKey: action, title: "确认创建跟进任务", logText: "创建跟进任务", lines: [["操作", "为 3 家公司创建跟进任务"], ["影响范围", "Nordic Pipe AB、Gulf Valve LLC、Andes Mining"], ["负责人", "张敏"]], risk: "将写入跟进记录，并通知同组销售。上面的排查结果保持原样。", doneText: "已创建 3 条跟进任务。排查结果没有改写，写入记在本条和右侧操作日志。", artifact: { id, name: "跟进任务草案", kind: "任务" } };
+      }
+      if (action === "content-task") {
+        return { id, role: "confirm", status: "pending", actionKey: action, title: "确认创建内容优化任务", logText: "创建内容优化任务", lines: [["操作", "交给内容发布智能体"], ["影响范围", "HDPE 双壁波纹管、美标法兰闸阀"], ["不会发生", "不直接改线上正文"]], risk: "对方会收到任务，发布前仍要人工确认。", doneText: "已创建内容优化任务。线上正文没有改动。", artifact: { id, name: "内容优化任务", kind: "任务" } };
+      }
+      const name = action === "save-channel" ? "2026年10月渠道线索对照" : "高意向未跟进线索";
+      return { id, role: "confirm", status: "pending", actionKey: action, title: "确认保存到报表中心", logText: "保存至报表中心", lines: [["操作", "新增一份报表"], ["名称", name], ["位置", "报表中心 · 我的报表"]], risk: "同企业可查看这份报表的人，与你能看到的数据范围一致。", doneText: `已保存《${name}》到报表中心。`, artifact: { id, name, kind: "报表" } };
+    }
+
+    function pushConfirm(session, msg) {
+      session.messages.push(msg);
+      session.logs.unshift({ id: msg.id, time: nowTime(), text: msg.logText, result: "待确认" });
+      ui.stick = "bottom";
+      render();
+    }
+
+    function send() {
+      const session = current();
+      if (!session) { showToast("先新建一个会话"); return; }
+      if (session.loading) { showToast("上一条还在生成"); return; }
+      const text = ui.draft.trim();
+      if (!text) return;
+      const chips = session.pending.slice();
+      const page = ui.carry ? pages[ui.page].name : "未携带页面";
+      const objs = chips.filter((c) => c.type === "obj").map((c) => c.name);
+      session.messages.push({ id: mid(), role: "user", text, chips, scene: `提问时处于：${page} · 全英文站${objs.length ? " · 对象 " + objs.join("、") : ""}` });
+      chips.filter((c) => c.type === "obj").forEach((c) => { if (!session.objects.includes(c.name)) session.objects.push(c.name); });
+      session.pending = [];
+      ui.draft = "";
+      if (session.title === "新会话") session.title = autoTitle(text);
+      const job = plan(session, text);
+      startJob(session, job.steps, job.build);
+    }
+
+    function commitTitle() {
+      if (!ui.editTitle) return;
+      const session = current();
+      if (!session) { ui.editTitle = false; return; }
+      session.title = (ui.titleDraft || "").trim() || "未命名会话";
+      ui.editTitle = false;
+      render();
+    }
+
+    function blankSession() {
+      const id = mid();
+      const session = {
+        id, title: "新会话", tag: "未分类", tone: "mkt", group: "今天", time: "刚刚",
+        starred: false, pinned: false, mode: "execute",
+        context: { page: ui.page, range: pages[ui.page].range },
+        objects: [], pending: [], messages: [], artifacts: [], refs: [
+          { id: "r-page", title: pages[ui.page].name + "说明", kind: "帮助文档", excerpt: "这条会话创建时关联的是" + pages[ui.page].name + "，范围是" + pages[ui.page].range + "。" }
+        ],
+        logs: [{ id: mid(), time: nowTime(), text: "新建会话", result: "成功" }]
+      };
+      sessions.unshift(session);
+      ui.id = id;
+      ui.stick = "top";
+    }
+
+    function handle(act, el) {
+      const session = current();
+      if (act !== "menu" && act !== "set-col") ui.menu = null;
+      if (act === "shell") {
+        ui.shell = el.dataset.shell;
+        if (ui.shell === "side") ui.sideOpen = true;
+        render();
+        return;
+      }
+      if (act === "annotate") { ui.annotate = !ui.annotate; render(); return; }
+      if (act === "portal") { showToast(`「${el.dataset.name}」是数字门户页签，这份原型不跳转`); return; }
+      if (act === "who") { showToast("张敏 · 市场运营 · Example Trading Co."); return; }
+      if (act === "nav") {
+        if (el.dataset.page === "assistant") ui.shell = "full";
+        else { ui.page = el.dataset.page; ui.shell = "side"; ui.sideOpen = true; }
+        render();
+        return;
+      }
+      if (act === "new") { blankSession(); render(); return; }
+      if (act === "pick" || act === "open-template") {
+        ui.id = el.dataset.id; ui.stick = "top"; ui.pendingDelete = null; render(); return;
+      }
+      if (act === "open-metric") {
+        ui.id = el.dataset.id; ui.shell = "side"; ui.sideOpen = true; ui.stick = "top"; render(); return;
+      }
+      if (act === "star" || act === "pin") {
+        const s = sessions.find((item) => item.id === el.dataset.id);
+        if (!s) return;
+        if (act === "star") s.starred = !s.starred; else s.pinned = !s.pinned;
+        render(); return;
+      }
+      if (act === "delete-ask") { ui.pendingDelete = el.dataset.id; render(); return; }
+      if (act === "delete-no") { ui.pendingDelete = null; render(); return; }
+      if (act === "delete-yes" || act === "delete-current") {
+        const id = act === "delete-current" ? ui.id : el.dataset.id;
+        sessions = sessions.filter((s) => s.id !== id);
+        if (ui.id === id) ui.id = sessions[0]?.id || null;
+        ui.pendingDelete = null;
+        showToast("会话已删除");
+        render(); return;
+      }
+      if (act === "edit-title") {
+        ui.editTitle = true; ui.titleDraft = session.title; render(); return;
+      }
+      if (act === "menu") { ui.menu = ui.menu === el.dataset.menu ? null : el.dataset.menu; render(); return; }
+      if (!session && !["side-open", "side-close", "side-fold", "panel-height"].includes(act)) return;
+      if (act === "export-md") { exportMd(session); return; }
+      if (act === "export-xls" || act === "table-export") {
+        const msg = act === "table-export" ? findMsg(el.dataset.mid) : session.messages.find((m) => m.table);
+        if (!msg?.table) { showToast("这条会话没有表格"); return; }
+        download(`${session.title}.csv`, tableCsv(msg.table), "text/csv");
+        showToast("已导出 CSV，可用 Excel 打开");
+        return;
+      }
+      if (act === "share") { showToast("已生成站内链接，只有同企业成员能打开"); return; }
+      if (act === "clear") {
+        session.messages = [];
+        session.logs.unshift({ id: mid(), time: nowTime(), text: "清空对话", result: "成功" });
+        showToast("对话已清空。操作日志还在");
+        render(); return;
+      }
+      if (act === "mode") { session.mode = el.dataset.mode; render(); return; }
+      if (act === "send") { send(); return; }
+      if (act === "carry") { ui.carry = !ui.carry; render(); return; }
+      if (act === "add-file") {
+        if (session.pending.some((c) => c.type === "file")) { showToast("已经附上文件"); return; }
+        session.pending.push({ type: "file", name: "线索明细.csv" });
+        render(); return;
+      }
+      if (act === "add-pending-obj") {
+        if (!session.pending.some((c) => c.name === el.dataset.name)) session.pending.push({ type: "obj", name: el.dataset.name });
+        render(); return;
+      }
+      if (act === "add-session-obj") {
+        if (!session.objects.includes(el.dataset.name)) session.objects.push(el.dataset.name);
+        showToast("已加入本会话上下文");
+        render(); return;
+      }
+      if (act === "rm-pending") { session.pending.splice(Number(el.dataset.idx), 1); render(); return; }
+      if (act === "rm-obj") { session.objects = session.objects.filter((n) => n !== el.dataset.name); render(); return; }
+      if (act === "use-suggest") { ui.draft = el.dataset.prompt; ui.focusDraft = true; render(); return; }
+      if (act === "insert-var") {
+        const elDraft = document.querySelector("[data-role=draft]");
+        const start = elDraft ? elDraft.selectionStart : ui.draft.length;
+        const end = elDraft ? elDraft.selectionEnd : ui.draft.length;
+        ui.draft = ui.draft.slice(0, start) + el.dataset.token + ui.draft.slice(end);
+        ui.draftCaret = start + el.dataset.token.length;
+        ui.focusDraft = true;
+        render(); return;
+      }
+      if (act === "set-col") {
+        const key = el.dataset.key;
+        const turningOff = el.checked === false || ui.cols[key] !== false && !el.checked;
+        const remain = session.messages.find((m) => m.table?.customCols)?.table.columns.filter((c) => c.key !== key && ui.cols[c.key] !== false) || [];
+        if (!el.checked && remain.length === 0) { showToast("至少留一列"); render(); return; }
+        ui.cols[key] = el.checked;
+        ui.menu = "cols";
+        render(); return;
+      }
+      if (act === "sort") {
+        if (ui.sortKey === el.dataset.key) ui.sortDir *= -1;
+        else { ui.sortKey = el.dataset.key; ui.sortDir = el.dataset.key === "company" ? 1 : -1; }
+        render(); return;
+      }
+      if (act === "pick-row" || act === "card") {
+        const name = el.dataset.name;
+        if (session.objects.includes(name)) showToast("已经在本会话上下文里");
+        else { session.objects.push(name); showToast("已加入上下文，可在右侧移除"); }
+        render(); return;
+      }
+      if (act === "chart") { showToast(`下钻「${el.dataset.label}」会打开对应明细，原型里先停在这里`); return; }
+      if (act === "run-action") {
+        const action = el.dataset.action;
+        if (action.startsWith("goto-")) {
+          const page = action.replace("goto-", "");
+          ui.page = page; ui.shell = "side"; ui.sideOpen = true;
+          showToast(`已打开${pages[page].name}，助手还在右侧`);
+          render(); return;
+        }
+        if (session.mode === "qa") {
+          session.messages.push(qaMsg());
+          ui.stick = "bottom";
+          showToast("问答模式不会写入");
+          render(); return;
+        }
+        if (session.messages.some((m) => m.role === "confirm" && m.status === "pending")) { showToast("还有一条操作待确认"); return; }
+        pushConfirm(session, confirmFor(action));
+        return;
+      }
+      if (act === "confirm-yes" || act === "confirm-no") {
+        const msg = findMsg(el.dataset.mid);
+        if (!msg || msg.status !== "pending") return;
+        const log = session.logs.find((l) => l.id === msg.id);
+        if (act === "confirm-yes") {
+          msg.status = "done";
+          if (log) log.result = "成功";
+          if (msg.artifact && !session.artifacts.some((a) => a.name === msg.artifact.name)) session.artifacts.unshift(msg.artifact);
+          showToast("已写入");
+        } else {
+          msg.status = "cancel";
+          if (log) log.result = "已取消";
+          showToast("已取消，没有写入");
+        }
+        ui.stick = "bottom";
+        render(); return;
+      }
+      if (act === "show-perm") { ui.shell = "full"; ui.scrollTo = "perm"; render(); return; }
+      if (act === "feedback") {
+        const msg = findMsg(el.dataset.mid);
+        msg.feedback = msg.feedback === el.dataset.val ? null : el.dataset.val;
+        showToast(msg.feedback ? "已记下这条反馈" : "已取消反馈");
+        render(); return;
+      }
+      if (act === "copy") {
+        const text = plain(findMsg(el.dataset.mid));
+        navigator.clipboard?.writeText(text).then(() => showToast("已复制")).catch(() => showToast("复制没有成功"));
+        return;
+      }
+      if (act === "regen") {
+        if (session.loading) return;
+        startJob(session, ["正在复核数据口径", "正在重算结论"], () => ({ id: mid(), role: "assistant", logText: "重新生成", logResult: "成功", lead: "已按同一问题和同一数据范围重新生成。样例数据没有变化，结论与上一条一致。", source: findMsg(el.dataset.mid)?.source || null }));
+        return;
+      }
+      if (act === "edit-q") {
+        const idx = session.messages.findIndex((m) => m.id === el.dataset.mid);
+        const prev = [...session.messages.slice(0, idx)].reverse().find((m) => m.role === "user");
+        if (!prev) return;
+        ui.draft = prev.text; ui.focusDraft = true; render(); return;
+      }
+      if (act === "save-result") {
+        const name = "回复摘录 " + nowTime();
+        session.artifacts.unshift({ id: mid(), name, kind: "摘录" });
+        showToast("已放进本次结果库");
+        render(); return;
+      }
+      if (act === "source" || act === "ref") {
+        const ref = el.dataset.ref;
+        if (act === "ref") ui.openRef = ui.openRef === ref ? null : ref;
+        else ui.openRef = ref || ui.openRef;
+        ui.shell = "full";
+        ui.scrollTo = ref ? "ref-" + ref : "refs";
+        render(); return;
+      }
+      if (act === "goto-page") {
+        ui.page = el.dataset.page; ui.shell = "side"; ui.sideOpen = true;
+        showToast(`已打开${pages[ui.page].name}`);
+        render(); return;
+      }
+      if (act === "artifact-save") { showToast(`「${el.dataset.name}」会保存到对应业务模块，原型里只记这一下`); return; }
+      if (act === "artifacts-batch") {
+        download(`${session.title}-结果清单.txt`, session.artifacts.map((a) => `${a.kind}\t${a.name}`).join("\n"), "text/plain");
+        showToast("已导出结果清单");
+        return;
+      }
+      if (act === "side-open") { ui.sideOpen = true; render(); return; }
+      if (act === "side-close") { ui.sideOpen = false; render(); return; }
+      if (act === "side-fold") { ui.fold = !ui.fold; render(); return; }
+      if (act === "panel-height") { ui.panelHeight = ui.panelHeight === "half" ? "full" : "half"; render(); return; }
+    }
+
+    document.addEventListener("click", (e) => {
+      const el = e.target.closest("[data-act]");
+      if (!el) {
+        if (ui.menu && !e.target.closest("[data-menu-root]")) { ui.menu = null; render(); }
+        return;
+      }
+      if (el.dataset.act === "set-col") return;
+      handle(el.dataset.act, el);
+    });
+    document.addEventListener("change", (e) => {
+      if (e.target.dataset.role === "follow") { ui.follow = e.target.value; render(); }
+      if (e.target.dataset.act === "set-col") handle("set-col", e.target);
+    });
+    document.addEventListener("input", (e) => {
+      if (e.target.dataset.role === "search") { ui.q = e.target.value; render(); }
+      if (e.target.dataset.role === "draft") ui.draft = e.target.value;
+      if (e.target.dataset.role === "title") ui.titleDraft = e.target.value;
+      if (e.target.dataset.role === "draft") {
+        const sug = suggestion();
+        const slot = document.querySelector(".suggest");
+        const want = sug ? "补全：" + sug.title : "";
+        if ((slot?.textContent || "") !== want) {
+          ui.focusDraft = true;
+          ui.draftCaret = e.target.selectionStart;
+          render();
+        }
+      }
+    });
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Escape") {
+        ui.menu = null;
+        if (ui.shell === "side") ui.sideOpen = false;
+        ui.editTitle = false;
+        render();
+        return;
+      }
+      if (e.target.dataset?.role === "draft" && e.key === "Enter" && !e.shiftKey) {
+        e.preventDefault();
+        send();
+      }
+      if (e.target.dataset?.role === "title" && e.key === "Enter") {
+        e.preventDefault();
+        commitTitle();
+      }
+    });
+    document.addEventListener("focusout", (e) => {
+      if (e.target?.dataset?.role === "title") setTimeout(commitTitle, 0);
+    });
+    document.addEventListener("submit", (e) => e.preventDefault());
+    window.__errs = [];
+    window.addEventListener("error", (e) => window.__errs.push(String(e.message)));
+
+    render();
+  </script>
+</body>
+</html>

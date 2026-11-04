@@ -70,6 +70,8 @@ import {
   relocateArtifactAfterLastUser,
   upsertAnchoredMessage,
 } from "./chatMessageAnchors";
+import { ASSISTANT_COMMANDS } from "./assistantCommands";
+import { ReplyActions, withFeedback } from "./replyFeedback";
 
 const USE_LIVE_API = import.meta.env.VITE_USE_LIVE_API === "true";
 const CHAT_SCROLL_THRESHOLD = 80;
@@ -94,8 +96,17 @@ function isAssistantEmbed() {
   }
 }
 
-// 打开数字门户且没有指定页签时，默认进入同一台主机的一期 AI 工作台（5188）
-if (typeof window !== "undefined" && !isAssistantEmbed()) {
+function isEmbeddedView() {
+  try {
+    return Boolean(new URLSearchParams(window.location.search).get("embed"));
+  } catch {
+    return false;
+  }
+}
+
+// 打开数字门户且没有指定页签时，默认进入同一台主机的一期 AI 工作台（5188）。
+// 嵌入页（助手全页、悬浮窗、访客分析）留在当前地址。
+if (typeof window !== "undefined" && !isEmbeddedView()) {
   const rawHash = decodeURIComponent((window.location.hash || "").replace(/^#/, ""));
   if (!rawHash) window.location.replace(ONE_AI_WORKBENCH_URL);
 }
@@ -197,6 +208,7 @@ function renderChatMessage(msg, idx, ctx) {
     onOpenEmailMarketing,
     onOpsTaskExecute,
     onOpenOpsTaskRun,
+    onReplyFeedback,
   } = ctx;
   if (msg.type === "user") {
     const userImages = msg.attachments || msg.imageUrls;
@@ -257,6 +269,11 @@ function renderChatMessage(msg, idx, ctx) {
               dangerouslySetInnerHTML={{ __html: msg.html }}
             />
           )}
+          <ReplyActions
+            text={msg.rawText || String(msg.html || "").replace(/<[^>]+>/g, "")}
+            feedback={msg.feedback}
+            onFeedback={(feedback) => onReplyFeedback?.(msg.id, idx, feedback)}
+          />
           <div style={{ fontSize: 11, color: colors.textDim, marginTop: 4 }}>{msg.time}</div>
         </div>
       </div>
@@ -1325,6 +1342,24 @@ export default function App() {
   );
   const [activeSpecialist, setActiveSpecialist] = useState(null);
   const [inputValue, setInputValue] = useState("");
+  const [commandOpen, setCommandOpen] = useState(false);
+  const chatInputRef = useRef(null);
+  const commandMenuRef = useRef(null);
+  useEffect(() => {
+    if (!commandOpen) return undefined;
+    const onPointer = (event) => {
+      if (!commandMenuRef.current?.contains(event.target)) setCommandOpen(false);
+    };
+    const onKey = (event) => {
+      if (event.key === "Escape") setCommandOpen(false);
+    };
+    document.addEventListener("mousedown", onPointer);
+    document.addEventListener("keydown", onKey);
+    return () => {
+      document.removeEventListener("mousedown", onPointer);
+      document.removeEventListener("keydown", onKey);
+    };
+  }, [commandOpen]);
   const [pendingImages, setPendingImages] = useState([]);
   const [isSending, setIsSending] = useState(false);
   const [selectedModel, setSelectedModel] = useState("");
@@ -1355,6 +1390,33 @@ export default function App() {
   useEffect(() => {
     messagesRef.current = messages;
   }, [messages]);
+
+  useEffect(() => {
+    function threadKey(list) {
+      return (list || [])
+        .filter((msg) => msg && msg.type !== "typing")
+        .map((msg) => `${msg.id || ""}:${msg.type || ""}:${msg.html || ""}:${msg.rawText || ""}:${msg.status || ""}:${msg.feedback?.vote || ""}:${(msg.feedback?.tags || []).join(",")}:${msg.feedback?.comment || ""}`)
+        .join("|");
+    }
+    function onStorage(event) {
+      if (event.key !== "ai-ops-chat-sessions-v1") return;
+      const nextSessions = loadSessions();
+      setSessions(nextSessions);
+      if (isSending) return;
+      const currentId = sessionIdRef.current;
+      const session = nextSessions.find((item) => item.id === currentId);
+      if (!session) return;
+      const restored = restoreSessionMessages(currentId, session.messages);
+      if (threadKey(restored) === threadKey(messagesRef.current)) return;
+      setMessages(restored);
+      pageDraftRef.current = session.pageDraft || null;
+      setPageDraft(session.pageDraft || null);
+      draftHistoryRef.current = session.draftHistory || [];
+      setDraftHistory(session.draftHistory || []);
+    }
+    window.addEventListener("storage", onStorage);
+    return () => window.removeEventListener("storage", onStorage);
+  }, [isSending]);
 
   const handleChatScroll = useCallback(() => {
     const el = chatRef.current;
@@ -2306,7 +2368,8 @@ export default function App() {
       setMessages((prev) => {
         const withoutTyping = prev.filter((m) => m.id !== "chat-typing");
         const others = withoutTyping.filter((m) => m.id !== id);
-        return [...others, {
+        const previous = withoutTyping.find((item) => item.id === id);
+        return [...others, withFeedback(previous, {
           type: "ai",
           id,
           html: renderMarkdown(rawText),
@@ -2315,7 +2378,7 @@ export default function App() {
           rawText,
           speaker: meta.speaker || streamSpeaker || "supervisor",
           handoff_id: meta.handoff_id || streamHandoffId || undefined,
-        }];
+        })];
       });
     };
 
@@ -3076,6 +3139,12 @@ export default function App() {
               onOpenEmailMarketing: handleOpenEmailMarketing,
               onOpsTaskExecute: handleOpsTaskExecute,
               onOpenOpsTaskRun: handleOpenOpsTaskRun,
+              onReplyFeedback: (id, index, feedback) => {
+                setMessages((prev) => prev.map((item, itemIndex) => {
+                  const hit = id ? item.id === id : itemIndex === index;
+                  return hit ? { ...item, feedback } : item;
+                }));
+              },
             }))}
             {!messages.some((m) => m.type === "user" || m.type === "ops_tasks" || m.opsTaskRun || m.type === "tool") ? (
               <div style={{ display: "flex", flexWrap: "wrap", gap: 8, paddingLeft: 44 }}>
@@ -3134,6 +3203,81 @@ export default function App() {
                 ))}
               </div>
             )}
+            <div ref={commandMenuRef} style={{ position: "relative", marginBottom: 8 }}>
+              <button
+                type="button"
+                aria-expanded={commandOpen}
+                aria-haspopup="listbox"
+                onClick={() => setCommandOpen((open) => !open)}
+                style={{
+                  height: 32,
+                  padding: "0 12px",
+                  borderRadius: 8,
+                  border: `1px solid ${commandOpen ? C.brand : C.border}`,
+                  background: commandOpen ? C.brandSoft : "#fff",
+                  color: C.text,
+                  fontSize: 13,
+                  fontWeight: 600,
+                  fontFamily: "inherit",
+                  cursor: "pointer",
+                }}
+              >
+                指令
+              </button>
+              {commandOpen ? (
+                <div
+                  role="listbox"
+                  aria-label="选择指令"
+                  style={{
+                    position: "absolute",
+                    zIndex: 8,
+                    left: 0,
+                    bottom: "calc(100% + 4px)",
+                    width: 320,
+                    maxHeight: 320,
+                    overflow: "auto",
+                    padding: 4,
+                    background: "#fff",
+                    border: `1px solid ${C.border}`,
+                    borderRadius: 8,
+                    boxShadow: "0 8px 24px rgba(15, 23, 42, 0.12)",
+                  }}
+                >
+                  {ASSISTANT_COMMANDS.map(([name, prompt]) => (
+                    <button
+                      key={name}
+                      type="button"
+                      role="option"
+                      onClick={() => {
+                        setInputValue(prompt);
+                        setCommandOpen(false);
+                        chatInputRef.current?.focus();
+                      }}
+                      style={{
+                        display: "block",
+                        width: "100%",
+                        textAlign: "left",
+                        border: 0,
+                        background: "transparent",
+                        borderRadius: 6,
+                        padding: "8px 10px",
+                        cursor: "pointer",
+                        fontFamily: "inherit",
+                      }}
+                      onMouseEnter={(event) => {
+                        event.currentTarget.style.background = C.brandSoft;
+                      }}
+                      onMouseLeave={(event) => {
+                        event.currentTarget.style.background = "transparent";
+                      }}
+                    >
+                      <span style={{ display: "block", fontSize: 13, fontWeight: 650, color: C.text }}>{name}</span>
+                      <span style={{ display: "block", marginTop: 2, fontSize: 12, color: C.textSec }}>{prompt}</span>
+                    </button>
+                  ))}
+                </div>
+              ) : null}
+            </div>
             <div style={S.chatInputBox}>
               <input
                 ref={fileInputRef}
@@ -3153,11 +3297,12 @@ export default function App() {
                 {Icons.attach}
               </button>
               <input
+                ref={chatInputRef}
                 style={S.chatInputField}
                     placeholder={
                       activeSpecialist
                         ? "继续提问…"
-                        : "输入消息，或上传产品图后描述需求..."
+                        : "输入消息，或从指令里选一项"
                     }
                 value={inputValue}
                 onChange={(e) => setInputValue(e.target.value)}
