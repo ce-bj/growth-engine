@@ -71,6 +71,12 @@ function sectionCopy(d: Draft, s: Section, kind: BlockKind): Pick<Section, 'body
   return null
 }
 
+/** Draft one component added through the conversation (manual adds stay empty, 提示词 6.3). */
+export function draftSection(d: Draft, s: Section): Section {
+  const copy = sectionCopy(d, s, s.kind || inferKind(s.title))
+  return copy ? { ...s, ...copy, drafted: true } : s
+}
+
 /** Draft hero and expression-class sections; sections that already have content are kept. */
 export function draftExpressionContent(d: Draft): Draft {
   const template = mockTemplatesData.find(t => t.id === d.templateId)

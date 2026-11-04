@@ -1,20 +1,23 @@
 export const GOALS=['获取报价','预约沟通','领取资料','发起咨询','提交需求','活动报名']
 export const KNOWLEDGE_DIRS=['企业与品牌','产品资料','行业解决方案','客户案例','活动与展会','服务与常见问题']
 export type BlockKind='features'|'products'|'comparison'|'testimonials'|'gallery'|'stats'|'timeline'|'faq'|'form'|'cta'|'text'|'video'
-export const BLOCKS:{kind:BlockKind;label:string;description:string}[]=[
- {kind:'features',label:'核心优势',description:'图标与三列能力卡片'},
- {kind:'products',label:'产品列表',description:'产品图片、说明与行动入口'},
- {kind:'comparison',label:'参数对比',description:'表格呈现规格与差异'},
- {kind:'testimonials',label:'客户案例',description:'引用、案例说明与来源'},
- {kind:'gallery',label:'图片画廊',description:'项目与场景图片组'},
- {kind:'stats',label:'实力数据',description:'关键指标与说明'},
- {kind:'timeline',label:'流程与议程',description:'按步骤组织服务或活动'},
- {kind:'faq',label:'常见问题',description:'可折叠的问题与回答'},
- {kind:'form',label:'留资表单',description:'平台字段集或 Agent 推荐'},
- {kind:'cta',label:'行动横幅',description:'突出行动与收益'},
- {kind:'text',label:'图文介绍',description:'标题、正文与内容依据'},
- {kind:'video',label:'视频区域',description:'视频封面与素材占位'},
+// Component catalogue shown in the add menus; description = what it is for, needs = what it requires (产品设计 6.3).
+export const BLOCKS:{kind:BlockKind;label:string;description:string;needs:string}[]=[
+ {kind:'features',label:'核心优势',description:'用 3–4 张卡片概括产品或服务的关键能力，适合放在首屏之后，帮访客快速建立印象。',needs:'无需准备，AI 按需求起草；具体数值需有依据。'},
+ {kind:'products',label:'产品列表',description:'展示所选产品的图片、名称、规格摘要和咨询入口。',needs:'从产品库关联至少 1 个产品。'},
+ {kind:'comparison',label:'参数对比',description:'用表格对比两个及以上产品的类别与规格，帮助访客选型。',needs:'至少 2 个产品及其规格参数。'},
+ {kind:'testimonials',label:'客户案例',description:'引用真实客户的评价或项目案例，增强可信度。',needs:'经确认、可公开引用的案例及来源。'},
+ {kind:'gallery',label:'图片画廊',description:'展示项目现场、应用场景或产品细节的图片组。',needs:'至少 1 张授权图片，或使用 AI 示意图。'},
+ {kind:'stats',label:'实力数据',description:'用关键数字展示企业规模、产能或项目经验。',needs:'真实数值及来源。'},
+ {kind:'timeline',label:'流程与议程',description:'按步骤说明合作流程、服务过程或活动议程。',needs:'无需准备，AI 起草步骤；活动时间需填写。'},
+ {kind:'faq',label:'常见问题',description:'可折叠的问答，解答访客咨询前的常见疑虑。',needs:'无需准备，AI 起草问题；涉及事实的回答需有依据。'},
+ {kind:'form',label:'留资表单',description:'收集访客的联系方式和需求，页面主按钮会定位到这里。',needs:'至少 1 个表单字段，默认按转化目标推荐。'},
+ {kind:'cta',label:'行动横幅',description:'醒目的色块横幅，重复主行动号召，适合放在长页面中部或末尾。',needs:'无需准备；写优惠时需填写优惠内容。'},
+ {kind:'text',label:'图文介绍',description:'一段标题加正文，可配图，适合介绍企业、应用场景或解决方案。',needs:'无需准备，AI 按需求起草。'},
+ {kind:'video',label:'视频区域',description:'嵌入产品演示或企业宣传视频。',needs:'可访问的视频地址（MP4 或 WebM）。'},
 ]
+/** Hover text for a component: what it is for, then what it needs. */
+export const blockTip=(b:{description:string;needs:string})=>`${b.description}\n需要：${b.needs}`
 export const LAYOUTS=[{value:'split',label:'左右分栏'},{value:'center',label:'居中聚焦'},{value:'editorial',label:'编辑式叙事'},{value:'form-side',label:'首屏表单'},{value:'showcase',label:'沉浸展示'},{value:'dark',label:'深色科技'}]
 export const FIELD_SETS:Record<string,string[]>={'Agent 推荐':[],'基础联系':['姓名','邮箱','公司'],'采购询价':['姓名','邮箱','公司','采购量','需求说明'],'活动报名':['姓名','邮箱','公司','预约日期'],'资料领取':['姓名','邮箱']}
 export const FORM_FIELDS=['姓名','邮箱','电话','公司','职位','国家/地区','采购量','需求说明','预约日期']

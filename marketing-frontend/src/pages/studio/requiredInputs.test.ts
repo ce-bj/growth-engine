@@ -77,3 +77,27 @@ test('发布条件统一覆盖待补充、待应用、待发送与运行中的�
  // An authorized AI request itself never resolves the missing content.
  assert.ok(inspectMarketingPage(waiting).some(g=>g.id==='hero-image'))
 })
+test('自定义组件：只有激活组件参与生成，首屏标题按需求起草',()=>{
+ const sections=[{id:'a',kind:'faq' as const,title:'常见问题',body:''},{id:'b',kind:'features' as const,title:'核心优势',body:'',hidden:true}]
+ const draft=prepareFirstDraft({...base(),templateId:'custom',title:'',sections})
+ assert.ok(draft.title.trim())
+ assert.equal(draft.sections.find(s=>s.id==='a')?.items?.length,3)
+ assert.ok(!draft.sections.find(s=>s.id==='b')?.items)
+ assert.ok(!inspectMarketingPage(draft).some(g=>g.targetComponentIds.includes('b')))
+})
+import {applyAiCompletion} from './aiCompletion'
+test('AI 完善发送后直接应用结果，缺口关闭即可发布；查不到的项目保留',()=>{
+ const first=prepareFirstDraft({...base(),...selectTemplate(base(),mockTemplatesData[0])})
+ const gaps=inspectMarketingPage(first)
+ assert.ok(gaps.length>0)
+ const withJobs={...first,aiJobs:Object.fromEntries(gaps.map(g=>[g.id,{requestId:'r',label:g.label,mode:'draft_content',status:'requested' as const,baseRevision:1}]))}
+ const {draft,pending}=applyAiCompletion(withJobs,gaps)
+ assert.deepEqual(pending,[])
+ assert.deepEqual(inspectMarketingPage(draft),[])
+ assert.deepEqual(publicationReadiness(draft),[])
+ assert.ok(draft.productIds.length>0)
+ const video={...first,sections:[...first.sections,{id:'v',kind:'video' as const,title:'视频',body:''}]}
+ const result=applyAiCompletion(video,inspectMarketingPage(video))
+ assert.ok(inspectMarketingPage(result.draft).some(g=>g.id==='video-binding'))
+ assert.deepEqual(result.pending,['视频素材'])
+})

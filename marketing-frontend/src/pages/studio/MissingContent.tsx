@@ -9,8 +9,8 @@ export function MissingContent({gaps,pendingIds=[],onSupplement,onAi,canvas=fals
   {!canvas&&<header><strong>待补充 {gaps.length} 项</strong><p>已保留页面结构，补充后继续生成对应内容。</p></header>}
   {gaps.map(gap=><div className="content-gap" key={gap.id} data-gap-id={gap.id}>
    {canvas&&<ImageIcon size={24}/>}
-   <div><strong>{gap.label}{pendingIds.includes(gap.id)?' · 已提交待验证':' · 待补充'}</strong><p>{gap.reason}</p><small>{canvas?'可自行补充或让 AI 完善，继续编辑其他区域。':`影响：${gap.targetLabels?.join('、')||'当前页面'}`}</small></div>
-   <div className="placeholder-actions">{onAi&&<Button size="sm" onClick={event=>{event.stopPropagation();onAi(gap)}}><Sparkles size={13}/>{completionPolicy(gap).label}</Button>}{onSupplement&&<Button size="sm" variant="outline" onClick={event=>{event.stopPropagation();onSupplement(gap)}}>{pendingIds.includes(gap.id)?'调整补充':gapActionLabel(gap)}<ArrowRight size={13}/></Button>}</div>
+   <div><strong>{gap.label}{pendingIds.includes(gap.id)?' · 已提交待验证':' · 待补充'}</strong><p>{gap.reason}</p><small>{canvas?(completionPolicy(gap).mode==='none'?'请提供该素材，可继续编辑其他区域。':'可自行补充或让 AI 完善，继续编辑其他区域。'):`影响：${gap.targetLabels?.join('、')||'当前页面'}`}</small></div>
+   <div className="placeholder-actions">{onAi&&completionPolicy(gap).mode!=='none'&&<Button size="sm" onClick={event=>{event.stopPropagation();onAi(gap)}}><Sparkles size={13}/>{completionPolicy(gap).label}</Button>}{onSupplement&&<Button size="sm" variant="outline" onClick={event=>{event.stopPropagation();onSupplement(gap)}}>{pendingIds.includes(gap.id)?'调整补充':gapActionLabel(gap)}<ArrowRight size={13}/></Button>}</div>
   </div>)}
  </div>
 }
