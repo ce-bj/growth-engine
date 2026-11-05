@@ -34,9 +34,17 @@ export function contentAgentUrl() {
   return lanServiceUrl(import.meta.env.VITE_CONTENT_AGENT_URL, 5178, '/?embed=1')
 }
 
-/** 数字门户里的 AI 运营助手对话界面（?embed=assistant） */
+/** 数字门户里的 AI 运营助手对话界面（?embed=assistant）。
+ *  线上若只配了门户根地址，也要补上 embed，否则门户会跳到一期工作台的 AI Ready。 */
 export function opsAssistantUrl() {
-  return lanServiceUrl(import.meta.env.VITE_OPS_ASSISTANT_URL, 5174, '/?embed=assistant')
+  const raw = lanServiceUrl(import.meta.env.VITE_OPS_ASSISTANT_URL, 5174, '/?embed=assistant')
+  try {
+    const url = new URL(raw, window.location.origin)
+    if (!url.searchParams.get('embed')) url.searchParams.set('embed', 'assistant')
+    return url.toString()
+  } catch {
+    return raw
+  }
 }
 
 /** 工作台悬浮窗：同一套会话和对话，精简操作 */
