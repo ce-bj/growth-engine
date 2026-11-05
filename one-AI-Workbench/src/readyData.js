@@ -247,15 +247,15 @@ export const readyData = {
           "action": {
             "icon": "check",
             "ignorable": true,
-            "text": "确认并自动上线"
+            "text": "AI自动补充FAQ"
           },
           "auto": true,
           "explain": "全站未检测到 FAQ 问答内容。AI 回答客户问题时，最需要的就是成对的问答内容，没有它就失去了最容易被引用的素材。",
           "id": "readable-faq",
-          "proposal": "起订量、交期、材质、认证、包装",
-          "proposalField": "FAQ 覆盖范围",
-          "result": "12 条 FAQ 已自动生成并上线到网站",
-          "suggest": "AI 已根据企业知识库自动生成 12 条常见问答（起订量、交期、材质、认证、包装等），确认后即上线到网站",
+          "result": "20 条 FAQ 已自动生成并上线到数字门户常见问题应用",
+          "resultAction": "去常见问题查看",
+          "resultLink": "https://new2024022811021860861.fastindexs.com/npmanager/lowcode/np/app/60005/18509?instance=NEW2024022811021860861",
+          "suggest": "AI可以根据网站实际内容自动生成20条常见问题，包括产品相关、服务相关、公司实力与资质相关、案例相关，确认后即上线到数字门户常见问题应用中。",
           "tags": [],
           "title": "FAQ 问答内容缺失"
         },

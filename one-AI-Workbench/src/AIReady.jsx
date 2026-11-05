@@ -1266,7 +1266,18 @@ function OptimizeCard({ item, state, skipped, onSkip, onHandle, onAct, onToast }
               <button {...marks(S.card)} type="button" className="restore" onClick={() => onHandle(item, 'restore')}>
                 恢复处理
               </button>
-            ) : done ? null : (
+            ) : done ? (
+              item.resultLink ? (
+                <button
+                  {...marks(S.card)}
+                  type="button"
+                  className="btn primary"
+                  onClick={() => window.open(item.resultLink, '_blank', 'noopener,noreferrer')}
+                >
+                  {item.resultAction || '去查看'}
+                </button>
+              ) : null
+            ) : (
               <>
                 <button {...marks(S.card)} type="button" className="btn primary" disabled={allSkipped} onClick={handleAction}>
                   <AiIcon scopes={[S.card]} name={item.action.icon} size={14} /> {formOpen ? '收起' : item.action.text}
