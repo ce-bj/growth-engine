@@ -16,6 +16,7 @@ import { WorkbenchProvider, useWorkbench } from './context/WorkbenchContext'
 import { portalTheme } from './theme'
 import type { ViewId } from './types'
 import { AgentOverviewView } from './views/AgentOverviewView'
+import { GeoMonitorView } from './views/GeoMonitorView'
 import { KnowledgeBaseView } from './views/KnowledgeBaseView'
 import { ScanProgressView } from './views/ScanProgressView'
 import { SettingsView } from './views/WeeklySettingsViews'
@@ -93,6 +94,7 @@ function Pages() {
         <EmbedFrame src={withTask(opsAssistantUrl(), handoff, 'assistant')} title="AI 运营助手" />
       )}
       {view === 'knowledge' && <KnowledgeBaseView />}
+      {view === 'geoMonitor' && <GeoMonitorView />}
       <FixDrawer />
       <ToastStack toasts={toasts} onDismiss={dismissToast} />
     </AdminShell>

@@ -8,6 +8,7 @@ import {
   LayoutDashboard,
   MessageSquare,
   PanelsTopLeft,
+  Radar,
   ScanSearch,
   Search,
   ShieldCheck,
@@ -57,6 +58,7 @@ const NAV_GROUPS: Array<{ title: string; items: NavItem[] }> = [
     title: '诊断分析',
     items: [
       { id: 'ready', label: 'AI 友好度', icon: ShieldCheck },
+      { id: 'geoMonitor', label: 'GEO 信源监测', icon: Radar },
     ],
   },
   {
@@ -92,6 +94,7 @@ const PAGE_META: Record<string, { title: string; crumb: string }> = {
   visitor: { title: '访客行为分析智能体', crumb: '智能体' },
   marketing: { title: '智能营销页智能体', crumb: '智能体' },
   content: { title: '内容发布智能体', crumb: '智能体' },
+  geoMonitor: { title: 'GEO 信源监测', crumb: '诊断分析' },
   settings: { title: '站点设置', crumb: '配置' },
   scanning: { title: '正在检测', crumb: '站点' },
 }
