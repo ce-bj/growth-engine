@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { Button, ConfigProvider, Table, Tag } from 'antd'
+import { Button, ConfigProvider, Table, Tag, Tooltip } from 'antd'
 import { addSimSession } from './readySimStore'
 
 const CHECKED = 100
@@ -1021,15 +1021,28 @@ function moduleRows(product) {
       {ownStatus === 'passed' || ownStatus === 'failed' ? null : (
       <>
       <div className="pd-batch">
-        <button type="button" className={`pd-btn${batchReady.length && optimizeScope !== 'batch' ? ' is-primary' : ''}`} disabled={!batchReady.length || optimizeScope === 'batch'} onClick={() => optimizeProducts(batchReady, 'batch')}>
-          {optimizeScope === 'batch' ? (
+        <Tooltip
+          placement="topLeft"
+          styles={{ root: { maxWidth: 'none' } }}
+          title={
             <>
-              <i className="spin" /> AI优化中
+              <span className="pd-batch-tip-line">一键优化无需再补资料，或资料已补齐的产品。</span>
+              <span className="pd-batch-tip-line">尚未补充的，请先去补充资料。</span>
             </>
-          ) : (
-            `一键优化 ${batchReady.length} 个产品详情`
-          )}
-        </button>
+          }
+        >
+          <span className="pd-tip-wrap">
+            <button type="button" className={`pd-btn${batchReady.length && optimizeScope !== 'batch' ? ' is-primary' : ''}`} disabled={!batchReady.length || optimizeScope === 'batch'} onClick={() => optimizeProducts(batchReady, 'batch')}>
+              {optimizeScope === 'batch' ? (
+                <>
+                  <i className="spin" /> AI优化中
+                </>
+              ) : (
+                `一键优化 ${batchReady.length} 个产品详情`
+              )}
+            </button>
+          </span>
+        </Tooltip>
       </div>
       {readySharedOnly.length ? (
         <article className="pd-product">

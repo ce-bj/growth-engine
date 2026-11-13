@@ -38,6 +38,27 @@ html[data-visitor-embed] #root {
   padding: 28px 32px 72px;
 }
 
+.dan-inner.is-agent {
+  padding: 12px 16px 40px;
+}
+
+.dan-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.dan-toolbar .dan-site-select {
+  width: 220px;
+}
+
+.dan-toolbar .dan-week-select {
+  width: 168px;
+}
+
 .dan-hero {
   display: flex;
   justify-content: space-between;

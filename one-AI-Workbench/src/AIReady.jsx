@@ -948,11 +948,12 @@ function OptimizeCard({ item, state, skipped, onSkip, onHandle, onAct, onToast }
   const done = state === 'done'
   const ignored = state === 'ignored'
   const running = runStep !== null
-  const steps = item.action.form
-    ? item.action.form.type === 'upload'
-      ? ['解析上传的文件', 'AI 提取并生成内容', '校验并生效']
-      : ['读取你补充的资料', 'AI 生成网站内容', '校验并生效']
-    : ['扫描全站，定位待改内容', 'AI 改写并替换内容', '校验并生效']
+  const steps = item.steps
+    || (item.action.form
+      ? item.action.form.type === 'upload'
+        ? ['解析上传的文件', 'AI 提取并生成内容', '校验并生效']
+        : ['读取你补充的资料', 'AI 生成网站内容', '校验并生效']
+      : ['扫描全站，定位待改内容', 'AI 改写并替换内容', '校验并生效'])
   const percent = Math.round((Math.min(runStep || 0, steps.length) / steps.length) * 100)
   const doneNote = customCopy ? `已按你确认的文案生效：「${customCopy}」` : item.result || '已生效'
 

@@ -116,7 +116,7 @@ export function AdminShell({ children }: { children: ReactNode }) {
     setSiteId,
     scanning,
   } = useWorkbench()
-  const [assistantOpen, setAssistantOpen] = useState(true)
+  const [assistantOpen, setAssistantOpen] = useState(false)
   const [collapsed, setCollapsed] = useState(false)
   const embedView = EMBED_VIEWS.includes(view)
   const selectedKey = view === 'scanning' ? 'dashboard' : view

@@ -2,7 +2,7 @@
 import { useMemo, useState } from "react";
 import { App as AntApp, Button, ConfigProvider, Select } from "antd";
 import zhCN from "antd/locale/zh_CN";
-import { ArrowLeftOutlined, DownOutlined } from "@ant-design/icons";
+import { ArrowLeftOutlined, DownOutlined, FileTextOutlined, HistoryOutlined } from "@ant-design/icons";
 import AgentPage from "./agent-page/AgentPage.jsx";
 import DetailBoard from "./detail-board/DetailBoard.jsx";
 import "./data-analysis-new.css";
@@ -10,8 +10,8 @@ import { AUTH_SOURCES, QUIET_WEEK_IDS, SITES, SOURCE_AUTH_PAGES, WEEKS } from ".
 
 const THEME = {
   token: {
-    colorPrimary: "#e85d04",
-    colorInfo: "#e85d04",
+    colorPrimary: "#2f8bb8",
+    colorInfo: "#2f8bb8",
     colorSuccess: "#2f6b3a",
     colorWarning: "#b45309",
     colorError: "#b42318",
@@ -19,20 +19,15 @@ const THEME = {
     colorTextSecondary: "#5c6570",
     colorBorder: "#e6e9ee",
     colorBgContainer: "#ffffff",
-    colorBgLayout: "#f5f7fb",
-    borderRadius: 14,
-    fontFamily: "'Noto Sans SC', sans-serif",
-    fontSize: 15,
-    controlHeight: 40,
-    controlHeightLG: 48,
+    colorBgLayout: "#f5f7fa",
+    borderRadius: 8,
+    fontFamily: "'Noto Sans SC', 'PingFang SC', 'Microsoft YaHei', sans-serif",
+    fontSize: 14,
+    controlHeight: 32,
   },
   components: {
-    Button: {
-      fontWeight: 600,
-      paddingInlineLG: 28,
-    },
     Select: {
-      optionSelectedBg: "#fff4e5",
+      optionSelectedBg: "#e8f4fb",
     },
   },
 };
@@ -86,6 +81,10 @@ function Workbench({ boardOnly }) {
   const [granted, setGranted] = useState({});
   const [siteId, setSiteId] = useState(SITES[0].id);
   const [weekId, setWeekId] = useState(WEEKS[0].id);
+  const [monthlyOpen, setMonthlyOpen] = useState(false);
+  const [ledgerOpen, setLedgerOpen] = useState(false);
+
+  const site = SITES.find((item) => item.id === siteId) ?? SITES[0];
   const week = WEEKS.find((item) => item.id === weekId) ?? WEEKS[0];
   const quiet = QUIET_WEEK_IDS.has(week.id);
   const authMap = useMemo(() => {
@@ -120,7 +119,6 @@ function Workbench({ boardOnly }) {
       allowClear={false}
       suffixIcon={<DownOutlined />}
       aria-label="已绑定网站"
-      style={{ minWidth: 280 }}
       options={SITES.map((item) => ({
         value: item.id,
         label: `${item.name.replace("Demo · ", "")}`,
@@ -134,14 +132,8 @@ function Workbench({ boardOnly }) {
       <>
         {auth}
         <div className="dan-page" style={pageStyle}>
-          <div className="dan-inner">
-            <header className="dan-hero">
-              <div>
-                <p className="dan-kicker">数据来自访客行为分析智能体</p>
-                <h1 className="dan-title">数据看板</h1>
-              </div>
-              <div className="dan-hero-tools">{siteSelect}</div>
-            </header>
+          <div className="dan-inner is-agent">
+            <header className="dan-toolbar">{siteSelect}</header>
             <DetailBoard authMap={authMap} onAuthorize={setAuthKey} />
           </div>
         </div>
@@ -153,38 +145,47 @@ function Workbench({ boardOnly }) {
     <>
       {auth}
       <div className="dan-page" style={pageStyle}>
-        <div className="dan-inner">
-          <header className="dan-hero">
-            <div>
-              <p className="dan-kicker">诊断层 · 每周一更新</p>
-              <h1 className="dan-title">AI 访客行为分析智能体</h1>
-            </div>
-            <div className="dan-hero-tools">
-              {siteSelect}
-              <Select
-                className="dan-site-select dan-week-select"
-                size="middle"
-                value={week.id}
-                showSearch={false}
-                allowClear={false}
-                suffixIcon={<DownOutlined />}
-                aria-label="分析周"
-                style={{ minWidth: 220 }}
-                options={WEEKS.map((item) => ({
-                  value: item.id,
-                  label: item.label,
-                }))}
-                onChange={(id) => setWeekId(id)}
-              />
-              <span className="dan-pill">对照上一周 · {week.baselineLabel}</span>
-            </div>
+        <div className="dan-inner is-agent">
+          <header className="dan-toolbar">
+            {site.diagnosed ? (
+              <Button icon={<HistoryOutlined />} onClick={() => setLedgerOpen(true)}>
+                建议记录
+              </Button>
+            ) : null}
+            {siteSelect}
+            {site.diagnosed ? (
+              <>
+                <Select
+                  className="dan-site-select dan-week-select"
+                  size="middle"
+                  value={week.id}
+                  showSearch={false}
+                  allowClear={false}
+                  suffixIcon={<DownOutlined />}
+                  aria-label="已结束 7 天窗口"
+                  options={WEEKS.map((item) => ({
+                    value: item.id,
+                    label: item.label,
+                  }))}
+                  onChange={(id) => setWeekId(id)}
+                />
+                <Button icon={<FileTextOutlined />} onClick={() => setMonthlyOpen(true)}>
+                  月度价值报告
+                </Button>
+              </>
+            ) : null}
           </header>
           <AgentPage
-            key={week.id}
+            key={`${site.id}-${week.id}`}
+            site={site}
             weekLabel={week.label}
             quiet={quiet}
             authMap={authMap}
             onAuthorize={setAuthKey}
+            monthlyOpen={monthlyOpen}
+            onCloseMonthly={() => setMonthlyOpen(false)}
+            ledgerOpen={ledgerOpen}
+            onCloseLedger={() => setLedgerOpen(false)}
           />
         </div>
       </div>

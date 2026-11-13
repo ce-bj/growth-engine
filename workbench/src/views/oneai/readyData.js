@@ -255,6 +255,7 @@ export const readyData = {
           "result": "20 条 FAQ 已自动生成并上线到数字门户常见问题应用",
           "resultAction": "去常见问题查看",
           "resultLink": "https://new2024022811021860861.fastindexs.com/npmanager/lowcode/np/app/60005/18509?instance=NEW2024022811021860861",
+          "steps": ["读取网站已有内容", "AI 生成 20 条常见问题", "核对并写入常见问题"],
           "suggest": "AI可以根据网站实际内容自动生成20条常见问题，包括产品相关、服务相关、公司实力与资质相关、案例相关，确认后即上线到数字门户常见问题应用中。",
           "tags": [],
           "title": "FAQ 问答内容缺失"
