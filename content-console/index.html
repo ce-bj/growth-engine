@@ -64,6 +64,8 @@ button{font-family:inherit;cursor:pointer;border:none;background:none}
 .audit-item .st-ic{width:24px;height:24px;border-radius:8px;display:grid;place-items:center;font-size:12px;flex-shrink:0;font-weight:700}
 .audit-item.issue{border-color:#fecaca;background:#fff5f5}
 .audit-item.issue .st-ic{background:#fee2e2;color:var(--danger)}
+.audit-item.issue.done{border-color:#a7f3d0;background:#f0fdf4}
+.audit-item.issue.done .st-ic{background:#d1fae5;color:var(--ok)}
 .audit-item.pass{border-color:#a7f3d0;background:#f0fdf4}
 .audit-item.pass .st-ic{background:#d1fae5;color:var(--ok)}
 .audit-item .ai-body{flex:1;min-width:0}
@@ -77,6 +79,14 @@ button{font-family:inherit;cursor:pointer;border:none;background:none}
 .audit-item.kb-block .st-ic{background:#fef3c7;color:var(--warn)}
 .kb-hint{display:block;margin-top:5px;color:var(--warn);font-size:12.5px;line-height:1.65}
 .kb-note{margin-top:12px;font-size:13px;color:var(--txt-2)}
+/* 巡检结果底部：一次只给一个出口 */
+.audit-foot{margin-top:18px;padding-top:16px;border-top:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap}
+.audit-foot .af-note{font-size:13px;color:var(--txt-2);display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.audit-foot .af-note b{color:var(--danger);font-size:15px;margin:0 2px}
+.audit-foot .af-note.ok{color:var(--ok);font-weight:600}
+.audit-foot .af-link{background:none;color:var(--brand-600);font-size:13px;font-weight:600;text-decoration:underline;padding:0;cursor:pointer}
+.audit-foot .af-link:hover{color:var(--brand-400)}
+.btn[disabled]{opacity:.42;cursor:not-allowed;box-shadow:none;transform:none!important}
 .audit-item .acts2{display:flex;gap:8px;flex-shrink:0}
 .spinner{width:14px;height:14px;border:2px solid var(--line);border-top-color:var(--ai-1);border-radius:50%;animation:spin 1s linear infinite;flex-shrink:0}
 @keyframes spin{to{transform:rotate(360deg)}}
@@ -914,15 +924,20 @@ function renderAudit(){
     const needKb=allNeedKb.filter(c=>!c.skipped);
     const skippedCount=(allFixed.length+allNeedKb.length)-(fixed.length+needKb.length);
     const okCount=CONTENTS.length-allFixed.length-allNeedKb.length;
-    const items=fixed.map(c=>`
-      <div class="audit-item issue">
-        <div class="st-ic">✎</div>
+    // 待处理 = 还没确认发布的修正篇 + 还卡在知识库的篇；两者清完才算这一次巡检收尾
+    const pendFixed = fixed.filter(c=>c.audit!=='published');
+    const pending = pendFixed.length + needKb.length;
+    const allDone = pending===0;
+    const items=fixed.map(c=>{
+      const pub = c.audit==='published';
+      return `
+      <div class="audit-item issue${pub?' done':''}">
+        <div class="st-ic">${pub?'✓':'✎'}</div>
         <div class="ai-body"><b>《${c.title}》</b><span>修正：${c.fixNote}</span></div>
-        <div class="acts2">
-          <button class="btn approve" onclick="publishFixed('${c.id}')">确认发布</button>
-          <button class="btn ghost" onclick="skipItem('${c.id}')">暂不发布</button>
-        </div>
-      </div>`).join('');
+        <div class="acts2">${pub
+          ? '<span class="ai-tag pub">已发布</span>'
+          : `<button class="btn approve" onclick="publishFixed('${c.id}')">确认发布</button><button class="btn ghost" onclick="skipItem('${c.id}')">暂不发布</button>`}</div>
+      </div>`;}).join('');
     const kbItems=needKb.map(c=>`
       <div class="audit-item issue kb-block">
         <div class="st-ic">⚠</div>
@@ -937,14 +952,22 @@ function renderAudit(){
       </div>`).join('');
     const kbNote = needKb.length ? `<p class="kb-note">另有 <b>${needKb.length}</b> 篇因缺少知识库内容暂未修正，补充后可继续。</p>` : '';
     const skipNote = skippedCount ? `<p class="kb-note">已跳过 <b>${skippedCount}</b> 篇：改动保留在站点，可在<b>内容中心</b>稍后处理。</p>` : '';
+    const pubCount = fixed.length - pendFixed.length;
     hero.innerHTML=`
       <h2>整站巡检与修正完成</h2>
-      <p class="sub" style="margin-bottom:16px">智能体已完成全站内容巡检与自动修正：<b>${fixed.length}</b> 篇被修正并待你确认发布；其余 <b style="color:var(--ok)">${okCount} 篇</b>原本即合规，无需改动。</p>
+      <p class="sub" style="margin-bottom:16px">智能体已完成全站内容巡检与自动修正：<b>${fixed.length}</b> 篇被修正${pubCount?('，其中 <b style="color:var(--ok)">'+pubCount+'</b> 篇已确认发布'):''}${pendFixed.length?('，还有 <b>'+pendFixed.length+'</b> 篇待你确认'):''}；其余 <b style="color:var(--ok)">${okCount} 篇</b>原本即合规，无需改动。</p>
       <div class="audit-result-list">${items}${kbItems}</div>
       ${kbNote}${skipNote}
-      <div style="margin-top:16px;display:flex;gap:10px;flex-wrap:wrap">
-        <button class="btn approve" onclick="publishAllFixed()">全部确认发布并进入运营</button>
-        <button class="btn ghost" onclick="go('dashboard')">前往运营看板 →</button>
+      <div class="audit-foot">
+        <div class="af-note${allDone?' ok':''}">
+          ${allDone
+            ? '已全部处理完毕，可以进入运营'
+            : '还有 <b>'+pending+'</b> 篇待处理，处理完即可进入运营'}
+          ${(!allDone && pendFixed.length)
+            ? '<button class="af-link" onclick="publishAllRemaining()">全部确认发布</button>'
+            : ''}
+        </div>
+        <button class="btn approve"${allDone?'':' disabled'} onclick="go('dashboard')">进入运营看板 →</button>
       </div>`;
   }
 }
@@ -1047,6 +1070,18 @@ function publishAllFixed(){
   const left=CONTENTS.filter(c=>(c.fixed||c.audit==='needKb') && c.skipped).length;
   flashToast(left?('已发布未跳过的内容，另有 '+left+' 篇已跳过，可在内容中心稍后处理'):'全部修正内容已发布，进入上线运营');
   renderAudit();  ccTab='content'; ccView='list'; ccSeg='all'; go('calendar'); setCCTab('content');
+}
+
+/* 一次性确认剩余全部修正内容：只清账、不跳转，去向由底部那一个按钮决定 */
+function publishAllRemaining(){
+  const left=CONTENTS.filter(c=>c.fixed && !c.skipped && c.audit!=='published');
+  if(!left.length){ flashToast('没有待确认的内容了'); return; }
+  left.forEach(c=>{
+    c.audit='published'; c.skipped=false;
+    logAudit('发布','《'+c.title+'》已确认发布，进入上线运营','ok');
+  });
+  flashToast('已确认发布 '+left.length+' 篇');
+  renderAudit(); renderCalendar(); renderDashboard(); syncBadge();
 }
 
 /* ===================== ② 运营看板 ===================== */
