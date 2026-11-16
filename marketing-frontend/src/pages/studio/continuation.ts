@@ -3,12 +3,13 @@ import { createComponent } from './componentDefaults'
 import { inspectMarketingPage, requiresProducts } from './marketingInspection'
 import { buildGenerationRequest } from './generation'
 import { inferKind } from './blocks'
+import { generateId } from '@/lib/utils'
 import { draftExpressionContent } from './firstDraft'
 
 export function prepareFirstDraft(draft:Draft):Draft {
  let sections=draft.sections
  if(requiresProducts(draft)&&!sections.some(s=>!s.hidden&&['products','comparison'].includes(s.kind||inferKind(s.title)))){
-  sections=[...sections,createComponent('products',crypto.randomUUID(),'关联产品')]
+  sections=[...sections,createComponent('products',generateId(),'关联产品')]
  }
  return draftExpressionContent(applySupplementContent({...draft,sections},{},sections.map(s=>s.id)))
 }
@@ -30,7 +31,7 @@ export interface ContinuationOptions {
 const PATCH_OUTPUT={request_id:'same as RUNTIME_CONTEXT.request_id',base_revision:'same as RUNTIME_CONTEXT.base_revision',status:'patch_ready | needs_input',operations:[{op:'set_component_content | set_component_props | bind_resource | insert_component | remove_component | move_component | set_visibility | update_page_config',component_id:'authorized component',value:'validated value'}],remaining_gap_ids:[],confirmationItems:[]}
 export function buildContinuationRequest(current:Draft,template:Template,options:ContinuationOptions,effective:Draft=current) {
  const request=buildGenerationRequest(effective,template)
- const requestId=crypto.randomUUID()
+ const requestId=generateId()
  const gaps=inspectMarketingPage(effective)
  const runtime={...({} as {ai_task?:{gap_id:string;mode:string;requires_result_confirmation:boolean}}),operation:options.operation,page_id:current.id,request_id:requestId,base_revision:current.revision,preset_ref:{id:current.templateId,version:'1.0'},target_component_ids:options.targetComponentIds,locked_paths:['brand_style','FORM_JSON'],open_gap_ids:gaps.map(g=>g.id),resolved_gap_ids:options.resolvedGapIds||[],changed_blocks:options.changedBlocks||[],current_page:{revision:current.revision,title:current.title,subtitle:current.subtitle,components:current.sections,element_texts:current.elementTexts||{}},generation_scope:'affected_components',unrelated_components_policy:'preserve'}
  const {KNOWLEDGE_SCOPE_JSON,INSPECTION_CONTEXT,...inputs}=request.blocks

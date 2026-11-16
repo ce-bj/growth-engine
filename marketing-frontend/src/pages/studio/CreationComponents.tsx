@@ -1,6 +1,7 @@
 import { ArrowUp, Check, Plus, X } from 'lucide-react'
 import { BLOCKS, blockTip, inferKind, type BlockKind } from './blocks'
 import { createComponent } from './componentDefaults'
+import { generateId } from '@/lib/utils'
 import type { Section } from './MarketingStudio'
 
 // Component arrangement shown right before “生成落地页” (产品设计 5.2.1): template components start active,
@@ -10,7 +11,7 @@ export default function CreationComponents({sections,templateName,custom,onChang
  const label=(s:Section)=>BLOCKS.find(b=>b.kind===(s.kind||inferKind(s.title)))?.label||'图文介绍'
  const add=(kind:BlockKind)=>{
   const block=BLOCKS.find(b=>b.kind===kind)!
-  const next=[...sections,createComponent(kind,crypto.randomUUID(),block.label)]
+  const next=[...sections,createComponent(kind,generateId(),block.label)]
   // Adding a component without a template starts the custom-component mode.
   if(!templateName&&!custom)onStartCustom(next);else onChange(next)
  }
