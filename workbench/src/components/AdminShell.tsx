@@ -8,9 +8,9 @@ import {
   LayoutDashboard,
   MessageSquare,
   PanelsTopLeft,
+  Radar,
   ScanSearch,
   Search,
-  Settings,
   ShieldCheck,
 } from 'lucide-react'
 import { ConfigProvider, Dropdown, Layout, Menu, Select, Tooltip } from 'antd'
@@ -58,6 +58,7 @@ const NAV_GROUPS: Array<{ title: string; items: NavItem[] }> = [
     title: '诊断分析',
     items: [
       { id: 'ready', label: 'AI 友好度', icon: ShieldCheck },
+      { id: 'geoMonitor', label: 'GEO 信源监测', icon: Radar },
     ],
   },
   {
@@ -73,7 +74,7 @@ const NAV_GROUPS: Array<{ title: string; items: NavItem[] }> = [
     title: '支撑与配置',
     items: [
       { id: 'knowledge', label: '知识库', icon: BookOpen },
-      { id: 'settings', label: '站点设置', icon: Settings },
+      // 站点设置先隐藏，页面仍可通过 navigate('settings') 打开
     ],
   },
 ]
@@ -93,6 +94,7 @@ const PAGE_META: Record<string, { title: string; crumb: string }> = {
   visitor: { title: '访客行为分析智能体', crumb: '智能体' },
   marketing: { title: '智能营销页智能体', crumb: '智能体' },
   content: { title: '内容发布智能体', crumb: '智能体' },
+  geoMonitor: { title: 'GEO 信源监测', crumb: '诊断分析' },
   settings: { title: '站点设置', crumb: '配置' },
   scanning: { title: '正在检测', crumb: '站点' },
 }
@@ -118,19 +120,27 @@ export function AdminShell({ children }: { children: ReactNode }) {
     scanning,
   } = useWorkbench()
   const [assistantOpen, setAssistantOpen] = useState(false)
-  const [assistantLoaded, setAssistantLoaded] = useState(false)
   const [collapsed, setCollapsed] = useState(false)
   const embedView = EMBED_VIEWS.includes(view)
   const selectedKey = view === 'scanning' ? 'dashboard' : view
 
   useEffect(() => {
-    const onOpen = () => {
-      setAssistantLoaded(true)
-      setAssistantOpen(true)
-    }
+    const onOpen = () => setAssistantOpen(true)
     window.addEventListener('growth-open-assistant', onOpen)
     return () => window.removeEventListener('growth-open-assistant', onOpen)
   }, [])
+
+  useEffect(() => {
+    const known = new Set<string>([...NAV_GROUPS.flatMap((g) => g.items), ...FOOT_NAV].map((item) => item.id))
+    const onMessage = (event: MessageEvent) => {
+      const data = event.data as { type?: string; view?: string } | null
+      if (data?.type === 'growth-navigate' && data.view && known.has(data.view)) {
+        navigate(data.view as ViewId)
+      }
+    }
+    window.addEventListener('message', onMessage)
+    return () => window.removeEventListener('message', onMessage)
+  }, [navigate])
 
   useEffect(() => {
     if (!assistantOpen) return
@@ -152,7 +162,7 @@ export function AdminShell({ children }: { children: ReactNode }) {
 
   return (
     <Layout
-      className={`admin-shell${assistantOpen ? ' has-assistant' : ''}${embedView ? ' is-embed-view' : ''}${collapsed ? ' is-sider-collapsed' : ''}`}
+      className={`admin-shell${embedView ? ' is-embed-view' : ''}${collapsed ? ' is-sider-collapsed' : ''}`}
     >
       <Header className={`admin-topbar${embedView ? ' is-embed' : ''}`}>
         <div className="admin-topbar__left">
@@ -216,19 +226,7 @@ export function AdminShell({ children }: { children: ReactNode }) {
                 <Search size={17} />
               </span>
             </Tooltip>
-            <Tooltip title="站点设置">
-              <button
-                type="button"
-                className="admin-portalicon"
-                aria-label="站点设置"
-                onClick={() => navigate('settings')}
-              >
-                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.5">
-                  <rect x="3" y="4.5" width="18" height="15" rx="2.5" />
-                  <path d="M3.5 14.5c2 0 2.5-2 4.5-2s2.5 2 4.5 2 2.5-2 4.5-2 2.5 2 3.5 2" />
-                </svg>
-              </button>
-            </Tooltip>
+            {/* 站点设置入口先隐藏 */}
           </div>
 
           <Dropdown
@@ -339,14 +337,15 @@ export function AdminShell({ children }: { children: ReactNode }) {
             >
               {children}
             </div>
-            <OpsAssistantPanel
-              open={assistantOpen}
-              loaded={assistantLoaded}
-              onClose={() => setAssistantOpen(false)}
-            />
           </Content>
         </Layout>
       </Layout>
+      <OpsAssistantPanel
+        open={assistantOpen}
+        view={view}
+        onClose={() => setAssistantOpen(false)}
+        onOpen={() => setAssistantOpen(true)}
+      />
     </Layout>
   )
 }

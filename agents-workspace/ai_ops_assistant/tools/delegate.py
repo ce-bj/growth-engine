@@ -469,7 +469,7 @@ async def delegate_metrics_agent(
 
 
 async def delegate_marketing_page_agent(instruction: str = "") -> ToolChunk:
-    """（占位）委托智能营销页 Agent。Demo 尚未接入。"""
+    """仅当用户明确要求系统发布智能营销页时调用。写邮件、文案和运营建议不要调用。尚未接入。"""
     _ = instruction
     return ToolChunk(
         content=[
@@ -488,7 +488,7 @@ async def delegate_marketing_page_agent(instruction: str = "") -> ToolChunk:
 
 
 async def delegate_site_content_agent(instruction: str = "") -> ToolChunk:
-    """（占位）委托站点内容 Agent（资讯/案例等）。Demo 尚未接入。"""
+    """仅当用户明确要求把内容写入站点时调用。写资讯、案例和一般文案不要调用。尚未接入。"""
     _ = instruction
     return ToolChunk(
         content=[

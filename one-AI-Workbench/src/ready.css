@@ -632,6 +632,20 @@
   border: 1px solid #e5e7eb;
   border-radius: 10px;
 }
+.pd-tip-wrap {
+  display: inline-flex;
+  max-width: 100%;
+}
+.pd-batch-tip-line {
+  display: block;
+  white-space: nowrap;
+}
+.pd-tip-wrap:has(.pd-btn:disabled) {
+  cursor: not-allowed;
+}
+.pd-tip-wrap .pd-btn:disabled {
+  pointer-events: none;
+}
 .pd-fact-top,
 .pd-product-top,
 .pd-batch,

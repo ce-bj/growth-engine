@@ -56,6 +56,7 @@ export type ViewId =
   | 'credits'
   | 'assistant'
   | 'knowledge'
+  | 'geoMonitor'
 
 export type FunnelPeriod = 'week' | 'month'
 

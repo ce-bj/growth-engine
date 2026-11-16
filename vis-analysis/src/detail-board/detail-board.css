@@ -512,6 +512,11 @@
   color: var(--db-text-2);
 }
 
+.db-modal .db-loss-row dt,
+.db-modal .db-loss-tip {
+  cursor: help;
+}
+
 .db-modal .db-loss-group h4 {
   margin: 14px 0 4px;
   font-size: 12px;
@@ -533,10 +538,6 @@
 
 .db-modal .db-loss-row:last-child {
   border-bottom: 0;
-}
-
-.db-modal .db-loss-row dt {
-  cursor: help;
 }
 
 .db-modal .db-loss-row dd {

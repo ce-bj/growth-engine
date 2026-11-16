@@ -478,7 +478,7 @@ export default function SiteManageShell({ editing, onExitEdit, productList, prod
         </div>
       </section>
 
-      {dockOn ? (
+      {!honor && dockOn ? (
         <div className="sms-dock">
           <div className="sms-dock-avatar" aria-hidden>
             <svg width="28" height="28" viewBox="0 0 28 28">
@@ -501,9 +501,9 @@ export default function SiteManageShell({ editing, onExitEdit, productList, prod
             <button type="button" aria-label="收起侧栏" onClick={() => setDockOn(false)}>›</button>
           </div>
         </div>
-      ) : (
+      ) : !honor ? (
         <button type="button" className="sms-dock-tab" aria-label="展开运营助手" onClick={() => setDockOn(true)}>‹</button>
-      )}
+      ) : null}
     </div>
   );
 }

@@ -72,7 +72,7 @@ export function AgentOverviewView() {
       <section className="ov-stats">
         <Card size="small" classNames={{ root: 'ov-panel' }}>
           <Statistic title="本月自动执行" value={autoRuns} suffix="次" />
-          <p className="ov-stat__hint">诊断、复检、出草稿、发布各算一次</p>
+          <p className="ov-stat__hint">诊断、修复、出草稿、发布各算一次</p>
         </Card>
         <Card size="small" classNames={{ root: 'ov-panel' }}>
           <Statistic title="已完成任务" value={overviewDone.length} suffix="项" />
