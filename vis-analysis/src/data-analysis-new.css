@@ -42,6 +42,26 @@ html[data-visitor-embed] #root {
   padding: 12px 16px 40px;
 }
 
+.dan-board-switch {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 12px;
+  margin-bottom: 12px;
+}
+
+.dan-board-switch > span:first-child,
+.dan-board-switch-note {
+  font-size: 13px;
+  color: #64748b;
+}
+
+.dan-live-site {
+  font-size: 14px;
+  font-weight: 600;
+  color: #1e293b;
+}
+
 .dan-toolbar {
   display: flex;
   flex-wrap: wrap;
