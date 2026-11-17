@@ -1,4 +1,4 @@
-/** 访客行为分析智能体（Growth/vis-analysis）。与数字门户「数据分析-新」已拆开。 */
+/** 网站策略页（Growth/vis-analysis）。与数字门户「数据分析-旧」已拆开。 */
 import { useMemo, useState } from "react";
 import { App as AntApp, Button, ConfigProvider, Segmented, Select } from "antd";
 import zhCN from "antd/locale/zh_CN";
@@ -79,7 +79,7 @@ function AuthConnect({ sourceKey, backLabel, onBack, onDone }) {
   );
 }
 
-function Workbench({ boardOnly }) {
+function Workbench({ boardOnly, intakeOnly }) {
   const [authKey, setAuthKey] = useState(null);
   const [granted, setGranted] = useState({});
   const [siteId, setSiteId] = useState(SITES[0].id);
@@ -107,7 +107,7 @@ function Workbench({ boardOnly }) {
   const auth = authKey ? (
     <AuthConnect
       sourceKey={authKey}
-      backLabel={boardOnly ? "返回数据看板" : "返回智能体分析"}
+      backLabel={boardOnly ? "返回数据看板" : intakeOnly ? "返回网站承接数据" : "返回网站策略"}
       onBack={() => setAuthKey(null)}
       onDone={finishAuth}
     />
@@ -156,11 +156,11 @@ function Workbench({ boardOnly }) {
                     : `${MCP_SITE.name} · ${MCP_SITE.host} · 截至 ${MCP_SITE.asOf}`}
               </span>
             </div>
-            <header className="dan-toolbar">
-              {boardKind === "demo" ? siteSelect : (
+            {boardKind !== "demo" ? (
+              <header className="dan-toolbar">
                 <span className="dan-live-site">{boardKind === "live2" ? GOODY_SITE.name : MCP_SITE.name}</span>
-              )}
-            </header>
+              </header>
+            ) : null}
             {boardKind === "demo" ? (
               <DetailBoard authMap={authMap} onAuthorize={setAuthKey} />
             ) : boardKind === "live2" ? (
@@ -168,6 +168,19 @@ function Workbench({ boardOnly }) {
             ) : (
               <McpDetailBoard />
             )}
+          </div>
+        </div>
+      </>
+    );
+  }
+
+  if (intakeOnly) {
+    return (
+      <>
+        {auth}
+        <div className="dan-page" style={pageStyle}>
+          <div className="dan-inner is-agent">
+            <DetailBoard authMap={authMap} onAuthorize={setAuthKey} mode="intake" />
           </div>
         </div>
       </>
@@ -182,7 +195,7 @@ function Workbench({ boardOnly }) {
           <header className="dan-toolbar">
             {site.diagnosed ? (
               <Button icon={<HistoryOutlined />} onClick={() => setLedgerOpen(true)}>
-                建议记录
+                以前建议过的事
               </Button>
             ) : null}
             {siteSelect}
@@ -203,7 +216,7 @@ function Workbench({ boardOnly }) {
                   onChange={(id) => setWeekId(id)}
                 />
                 <Button icon={<FileTextOutlined />} onClick={() => setMonthlyOpen(true)}>
-                  月度价值报告
+                  这个月做了什么
                 </Button>
               </>
             ) : null}
@@ -230,7 +243,7 @@ export default function DataAnalysisNewPage({ view = "agent" }) {
   return (
     <ConfigProvider locale={zhCN} theme={THEME} button={{ autoInsertSpace: false }}>
       <AntApp style={{ flex: 1, minWidth: 0, minHeight: 0, height: "100%", display: "flex" }}>
-        <Workbench boardOnly={view === "board"} />
+        <Workbench boardOnly={view === "board"} intakeOnly={view === "intake"} />
       </AntApp>
     </ConfigProvider>
   );

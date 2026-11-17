@@ -18,7 +18,7 @@ import {
   Tooltip,
 } from "antd";
 import { ArrowDownOutlined, ArrowUpOutlined } from "@ant-design/icons";
-import { DEPTH_INTENTS, CHURN_MARK } from "../diagnosisPeriod.js";
+import { DEPTH_INTENTS, CHURN_MARK, WEEKS } from "../diagnosisPeriod.js";
 import {
   INTENTS,
   LOSSES,
@@ -39,7 +39,7 @@ import {
   searchTermRows,
   walksListed,
 } from "../funnel-review/data.js";
-import { allocate, BOARD_RANGES, buildBoardModel } from "./boardWindow.js";
+import { allocate, BOARD_RANGES, buildBoardModel, buildWeekModel } from "./boardWindow.js";
 import { ACCENT, BOARD_THEME, DANGER } from "../board-theme.js";
 import "./detail-board.css";
 
@@ -437,9 +437,22 @@ const numCol = (title, dataIndex, render) => ({
   render: render || ((value) => (value == null ? "—" : fmtInt(value))),
 });
 
-export default function DetailBoard({ authMap, onAuthorize }) {
+function openDataAnalysis() {
+  if (window.parent && window.parent !== window) {
+    window.parent.postMessage({ type: "growth-navigate", view: "board" }, "*");
+  }
+  const url = new URL(window.location.href);
+  url.searchParams.set("view", "board");
+  window.location.assign(url.toString());
+}
+
+export default function DetailBoard({ authMap, onAuthorize, mode = "full" }) {
   const [range, setRange] = useState("d7");
-  const model = useMemo(() => buildBoardModel(range), [range]);
+  const [weekId, setWeekId] = useState(WEEKS[0].id);
+  const model = useMemo(
+    () => (mode === "intake" ? buildWeekModel(weekId) : buildBoardModel(range)),
+    [mode, weekId, range],
+  );
   const { traffic, regions, stages: stageBook, leadCount, frame } = model;
   const compare = frame.compare;
   const [catchCat, setCatchCat] = useState("all");
@@ -479,6 +492,7 @@ export default function DetailBoard({ authMap, onAuthorize }) {
   const userPickedCat = traffic.cats.find((cat) => cat.id === userCat);
   const userPickedSource = userSrc ? traffic.sources.find((item) => item.id === userSrc) : null;
   const userSlice = channelSlice(userCat, userPickedCat);
+  const intentSlice = mode === "intake" ? slice : userSlice;
 
   const stages = slice.empty ? [] : stageBook[slice.channelId];
   const gates = stages.length ? through(stages) : [];
@@ -487,7 +501,7 @@ export default function DetailBoard({ authMap, onAuthorize }) {
   const pageMax = pageRows[0]?.uv || 1;
   const landMax = landRows[0]?.landUv || 1;
 
-  const walks = userSlice.empty ? [] : walksListed(userSlice.channelId, intentId);
+  const walks = intentSlice.empty ? [] : walksListed(intentSlice.channelId, intentId);
   const namedPaths = walks
     .flatMap((walk) => walk.urls.map((row, index) => ({
       id: `${walk.id}-${index}`,
@@ -499,15 +513,15 @@ export default function DetailBoard({ authMap, onAuthorize }) {
   const pathSum = namedPaths.reduce((sum, row) => sum + row.count, 0);
   const pathMax = namedPaths[0]?.count || 1;
   const intentName = intentId ? INTENTS.find((item) => item.id === intentId)?.name : "全部意图";
-  const intentRows = userSlice.empty
+  const intentRows = intentSlice.empty
     ? []
     : (() => {
       const base = DEPTH_INTENTS.map((item) => {
-        const intentStages = getStages(userSlice.channelId, item.id);
+        const intentStages = getStages(intentSlice.channelId, item.id);
         return { ...item, count: intentStages[0].cur, leads: intentStages[3].cur };
       });
       if (frame.factor === 1) return base;
-      const channelStages = stageBook[userSlice.channelId];
+      const channelStages = stageBook[intentSlice.channelId];
       const counts = allocate(base.map((item) => item.count), channelStages[0].cur);
       const leads = allocate(base.map((item) => item.leads), channelStages[3].cur);
       return base.map((item, index) => ({ ...item, count: counts[index], leads: leads[index] }));
@@ -812,6 +826,124 @@ export default function DetailBoard({ authMap, onAuthorize }) {
   ) : (
     <StageFunnel stages={stages} height={300} />
   );
+
+  if (mode === "intake") {
+    const intentColumns = [
+      { title: "意图", dataIndex: "name", key: "name" },
+      { title: "含义", dataIndex: "meaning", key: "meaning" },
+      numCol("人数", "count"),
+      {
+        title: "占比",
+        key: "share",
+        align: "right",
+        render: (_, row) => pct(intentTotal ? row.count / intentTotal : 0),
+      },
+      numCol("留资访客", "leads"),
+    ];
+    return (
+      <ConfigProvider theme={BOARD_THEME}>
+        <div className="dan-board">
+          <Alert
+            className="db-focus"
+            type="info"
+            showIcon
+            title="这里只看来了之后有没有看进去、留下联系方式。"
+            description="流量从哪来、搜索词、地域分布，到数据分析里看完整看板。"
+            action={
+              <Button type="primary" onClick={openDataAnalysis}>
+                去数据分析
+              </Button>
+            }
+          />
+          <div className="db-window">
+            <span>统计周</span>
+            <Select
+              className="db-week-select"
+              value={weekId}
+              showSearch={false}
+              allowClear={false}
+              options={WEEKS.map((item) => ({
+                value: item.id,
+                label: item.label,
+              }))}
+              onChange={(id) => {
+                setWeekId(id);
+                setIntentId(null);
+              }}
+            />
+            {weekId === WEEKS[0].id ? <Tag>最新一期</Tag> : null}
+            <span className="db-window-span">对照 {frame.baselineLabel}</span>
+          </div>
+          <SliceBar
+            cats={traffic.cats}
+            cat={catchCat}
+            source={catchSrc}
+            sourceOptions={sourceOptions}
+            onCat={(id) => {
+              pickCatchCat(id);
+              setIntentId(null);
+            }}
+            onSource={(id) => {
+              pickSource(id);
+              setIntentId(null);
+            }}
+          />
+          {pickedSource ? (
+            <Alert
+              className="db-slice-note"
+              type="info"
+              showIcon
+              title={`${pickedSource.name} 暂无单独的漏斗和意图数据，下面展示 ${pickedSource.catName} 整个渠道。`}
+            />
+          ) : null}
+          <Card title={<>漏斗明细 <Tag className="db-tag-mini">{slice.name}</Tag></>} className="db-fill">
+            {slice.empty ? (
+              <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description={`${slice.name} 还没有漏斗数据`} />
+            ) : (
+              <FunnelDetail stages={stages} gates={gates} channelId={slice.channelId} sliceName={slice.name} compare={compare} />
+            )}
+          </Card>
+          <Card title={<>用户意图 <Tag className="db-tag-mini">{slice.name}</Tag></>} className="db-fill">
+            {slice.empty ? (
+              <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description={`${slice.name} 还没有意图数据`} />
+            ) : (
+              <Row gutter={[24, 16]}>
+                <Col xs={24} xl={10}>
+                  <p className="db-card-hint">
+                    点一档，看这一类访客占多少。
+                    {slice.channelId === "site" ? `其中 ${CHURN_MARK.percent}% ${CHURN_MARK.label}。` : null}
+                  </p>
+                  <RankList
+                    onPick={(id) => setIntentId((prev) => (prev === id ? null : id))}
+                    pickedKey={intentId}
+                    items={intentRows.map((item) => ({
+                      key: item.id,
+                      color: item.color,
+                      name: item.name,
+                      tag: <span className="db-rank-hint">{item.meaning}</span>,
+                      valueText: `${fmtInt(item.count)} 人 · ${pct(intentTotal ? item.count / intentTotal : 0)}`,
+                      percent: intentTotal ? (item.count / intentTotal) * 100 : 0,
+                      sub: `留资访客 ${fmtInt(item.leads)} 人`,
+                    }))}
+                  />
+                </Col>
+                <Col xs={24} xl={14}>
+                  <p className="db-card-hint">{intentId ? `当前看「${intentName}」。再点一次取消筛选。` : "明细按人数从高到低排。"}</p>
+                  <Table
+                    size="small"
+                    rowKey="id"
+                    pagination={false}
+                    dataSource={intentId ? intentRows.filter((row) => row.id === intentId) : intentRows}
+                    columns={intentColumns}
+                  />
+                </Col>
+              </Row>
+            )}
+          </Card>
+        </div>
+      </ConfigProvider>
+    );
+  }
 
   return (
     <ConfigProvider theme={BOARD_THEME}>

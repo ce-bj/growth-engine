@@ -9,7 +9,8 @@ export const overviewMonth = {
   updatedAt: '09-21 09:30',
 }
 
-export type AgentStatus = 'running' | 'waiting' | 'soon'
+/** 有待审批：有事等你拍板；运行中：正在出诊断/草稿/扫描；待命：这会儿没有要你批的。 */
+export type AgentStatus = 'waiting' | 'running' | 'idle'
 
 export type OverviewAgent = {
   key: string
@@ -26,7 +27,7 @@ export type OverviewAgent = {
 export const overviewAgents: OverviewAgent[] = [
   {
     key: 'visitor',
-    name: '访客行为分析智能体',
+    name: '网站策略',
     view: 'visitor',
     status: 'waiting',
     cadence: '每周一 02:00 诊断上一自然周',
@@ -61,10 +62,10 @@ export const overviewAgents: OverviewAgent[] = [
     key: 'ready',
     name: 'AI 友好度',
     view: 'ready',
-    status: 'running',
-    cadence: '发现 sitemap、死链问题时自动修',
+    status: 'idle',
+    cadence: '发现 sitemap、死链问题时出修复，等你确认',
     lastRun: '09-15 02:30',
-    lastResult: '修复 sitemap 与 2 处死链',
+    lastResult: 'sitemap 与 2 处死链已按你确认修好',
     nextRun: '有问题时',
     monthRuns: 1,
   },
@@ -102,7 +103,7 @@ export const overviewPending: PendingTask[] = [
   },
   {
     id: 'p-visitor-6061',
-    agent: '访客行为分析智能体',
+    agent: '网站策略',
     view: 'visitor',
     title: 'CNC-6061 铝支架详情 · 改第一屏',
     desc: '落地接住率 53.8% → 21.9%。确认后任务说明交给智能营销页智能体。',
@@ -111,7 +112,7 @@ export const overviewPending: PendingTask[] = [
   },
   {
     id: 'p-visitor-oem',
-    agent: '访客行为分析智能体',
+    agent: '网站策略',
     view: 'visitor',
     title: 'CNC OEM 询价留资页',
     desc: '询价来意没有专属承接页。确认后任务说明交给智能营销页智能体。',
@@ -120,23 +121,29 @@ export const overviewPending: PendingTask[] = [
   },
 ]
 
+/** 已完成任务的收口方式：网站策略只出一轮策略；其余是各智能体的具体任务。 */
+export type DoneMethod = 'agreed' | 'manual' | 'strategy'
+
+export const DONE_METHOD_LABEL: Record<DoneMethod, string> = {
+  agreed: '你已同意',
+  manual: '人工处理',
+  strategy: '出策略',
+}
+
 export type DoneTask = {
   id: string
   time: string
   agent: string
   title: string
-  result: string
-  byHand: boolean
+  method: DoneMethod
 }
 
-/** 本月已完成：byHand 表示经你确认后执行 */
+/** 本月已完成：网站策略只留一条出策略，其余是营销页 / 内容 / AI 友好度的具体任务 */
 export const overviewDone: DoneTask[] = [
-  { id: 'd9', time: '09-21 02:14', agent: '访客行为分析智能体', title: '9月14日–20日周诊断', result: '有效浏览率 40% → 30%，出 2 份任务说明', byHand: false },
-  { id: 'd8', time: '09-17 16:40', agent: '智能营销页智能体', title: '「询价」落地页 v2 上线', result: '经你确认后发布', byHand: true },
-  { id: 'd7', time: '09-16 10:00', agent: '内容发布智能体', title: '发布 3 篇产品选型内容', result: '通过 EEAT / GEO 门禁', byHand: false },
-  { id: 'd6', time: '09-15 02:30', agent: 'AI 友好度', title: '修复 sitemap 与 2 处死链', result: '已自动修好', byHand: false },
-  { id: 'd4', time: '09-14 02:10', agent: '访客行为分析智能体', title: '9月7日–13日周诊断', result: '无异常，不出任务', byHand: false },
-  { id: 'd3', time: '09-12 10:00', agent: '内容发布智能体', title: '「六角螺栓 M8×30」产品页发布', result: '经你确认后发布', byHand: true },
-  { id: 'd2', time: '09-09 10:00', agent: '内容发布智能体', title: '发布 2 篇行业问答', result: '通过 EEAT / GEO 门禁', byHand: false },
-  { id: 'd1', time: '09-07 02:12', agent: '访客行为分析智能体', title: '8月31日–9月6日周诊断', result: '出 1 份任务说明：「CNC 打样」落地页，09-08 经你批准', byHand: true },
+  { id: 'd9', time: '09-21 02:14', agent: '网站策略', title: '9月14日–20日策略', method: 'strategy' },
+  { id: 'd8', time: '09-17 16:40', agent: '智能营销页智能体', title: '「询价」落地页 v2 上线', method: 'agreed' },
+  { id: 'd7', time: '09-16 10:00', agent: '内容发布智能体', title: '发布 3 篇产品选型内容', method: 'agreed' },
+  { id: 'd6', time: '09-15 02:30', agent: 'AI 友好度', title: '修复 sitemap 与 2 处死链', method: 'agreed' },
+  { id: 'd3', time: '09-12 10:00', agent: '内容发布智能体', title: '「六角螺栓 M8×30」产品页发布', method: 'agreed' },
+  { id: 'd2', time: '09-09 10:00', agent: '内容发布智能体', title: '发布 2 篇行业问答', method: 'agreed' },
 ]

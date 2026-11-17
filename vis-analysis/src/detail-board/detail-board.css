@@ -26,8 +26,16 @@
   color: var(--db-text-2);
 }
 
+.dan-board .db-week-select {
+  width: 220px;
+}
+
 .dan-board .db-focus {
   font-size: 14px;
+}
+
+.dan-board .db-focus .ant-alert-action {
+  align-self: center;
 }
 
 .dan-board .db-kpi {
@@ -343,23 +351,26 @@
   margin-left: 6px;
 }
 
-/* 漏斗 */
-/* 漏斗明细弹窗：左漏斗 + 流失点，右流失点关键指标 */
+/* 漏斗明细：左漏斗 + 流失点，右流失点关键指标（看板页与弹窗共用） */
+.dan-board .db-fd,
 .db-modal .db-fd {
   position: relative;
   display: flex;
 }
 
+.dan-board .db-fd-chart,
 .db-modal .db-fd-chart {
   flex: 0 0 58%;
   min-width: 0;
 }
 
+.dan-board .db-fd-rail,
 .db-modal .db-fd-rail {
   position: relative;
   flex: 1;
 }
 
+.dan-board .db-fd-loss,
 .db-modal .db-fd-loss {
   position: absolute;
   left: 22px;
@@ -379,6 +390,7 @@
   transition: border-color 0.15s, box-shadow 0.15s;
 }
 
+.dan-board .db-fd-loss::before,
 .db-modal .db-fd-loss::before {
   content: "";
   position: absolute;
@@ -388,6 +400,9 @@
   border-top: 1px dashed #94a3b8;
 }
 
+.dan-board .db-fd-loss:hover,
+.dan-board .db-fd-loss:focus-visible,
+.dan-board .db-fd-loss.is-on,
 .db-modal .db-fd-loss:hover,
 .db-modal .db-fd-loss:focus-visible,
 .db-modal .db-fd-loss.is-on {
@@ -396,24 +411,29 @@
   outline: none;
 }
 
+.dan-board .db-fd-loss.is-bad,
 .db-modal .db-fd-loss.is-bad {
   border-color: #ffccc7;
   background: #fff7f6;
 }
 
+.dan-board .db-fd-loss.is-bad.is-on,
 .db-modal .db-fd-loss.is-bad.is-on {
   border-color: var(--db-danger);
   box-shadow: 0 0 0 2px rgba(207, 19, 34, 0.12);
 }
 
+.dan-board .db-fd-loss.is-on::before,
 .db-modal .db-fd-loss.is-on::before {
   border-top: 2px solid var(--db-accent);
 }
 
+.dan-board .db-fd-loss.is-bad.is-on::before,
 .db-modal .db-fd-loss.is-bad.is-on::before {
   border-top-color: var(--db-danger);
 }
 
+.dan-board .db-fd-loss-k,
 .db-modal .db-fd-loss-k {
   display: inline-flex;
   align-items: center;
@@ -421,16 +441,19 @@
   font-weight: 600;
 }
 
+.dan-board .db-fd-loss-v,
 .db-modal .db-fd-loss-v {
   font-size: 12px;
   color: var(--db-text-2);
   font-variant-numeric: tabular-nums;
 }
 
+.dan-board .db-fd-hint,
 .db-modal .db-fd-hint {
   margin-top: 12px;
 }
 
+.dan-board .db-loss,
 .db-modal .db-loss {
   height: 100%;
   padding: 18px 20px;
@@ -438,23 +461,27 @@
   border-radius: 10px;
 }
 
+.dan-board .db-loss-top,
 .db-modal .db-loss-top {
   display: flex;
   justify-content: space-between;
   align-items: center;
 }
 
+.dan-board .db-loss-kicker,
 .db-modal .db-loss-kicker {
   font-size: 12px;
   color: #b4532a;
 }
 
+.dan-board .db-loss-title,
 .db-modal .db-loss-title {
   margin: 6px 0 2px;
   font-size: 20px;
   font-weight: 600;
 }
 
+.dan-board .db-loss-meta,
 .db-modal .db-loss-meta {
   display: flex;
   flex-wrap: wrap;
@@ -464,6 +491,7 @@
   color: var(--db-text-2);
 }
 
+.dan-board .db-loss-hero,
 .db-modal .db-loss-hero {
   display: flex;
   justify-content: space-between;
@@ -471,12 +499,14 @@
   margin-top: 16px;
 }
 
+.dan-board .db-loss-hero-k,
 .db-modal .db-loss-hero-k {
   display: block;
   font-size: 13px;
   color: var(--db-text-2);
 }
 
+.dan-board .db-loss-hero-v,
 .db-modal .db-loss-hero-v {
   font-size: 34px;
   font-weight: 650;
@@ -484,10 +514,12 @@
   font-variant-numeric: tabular-nums;
 }
 
+.dan-board .db-loss.is-bad .db-loss-hero-v,
 .db-modal .db-loss.is-bad .db-loss-hero-v {
   color: var(--db-danger);
 }
 
+.dan-board .db-loss-hero-side,
 .db-modal .db-loss-hero-side {
   display: flex;
   flex-direction: column;
@@ -496,14 +528,17 @@
   color: var(--db-text-2);
 }
 
+.dan-board .db-loss-hero-side .is-down,
 .db-modal .db-loss-hero-side .is-down {
   color: var(--db-danger);
 }
 
+.dan-board .db-loss-hero-side .is-up,
 .db-modal .db-loss-hero-side .is-up {
   color: #389e0d;
 }
 
+.dan-board .db-loss-hint,
 .db-modal .db-loss-hint {
   margin: 4px 0 0;
   padding-bottom: 14px;
@@ -512,11 +547,14 @@
   color: var(--db-text-2);
 }
 
+.dan-board .db-loss-row dt,
+.dan-board .db-loss-tip,
 .db-modal .db-loss-row dt,
 .db-modal .db-loss-tip {
   cursor: help;
 }
 
+.dan-board .db-loss-group h4,
 .db-modal .db-loss-group h4 {
   margin: 14px 0 4px;
   font-size: 12px;
@@ -524,10 +562,12 @@
   color: var(--db-text-2);
 }
 
+.dan-board .db-loss-group dl,
 .db-modal .db-loss-group dl {
   margin: 0;
 }
 
+.dan-board .db-loss-row,
 .db-modal .db-loss-row {
   display: flex;
   justify-content: space-between;
@@ -536,30 +576,12 @@
   font-size: 14px;
 }
 
+.dan-board .db-loss-row:last-child,
 .db-modal .db-loss-row:last-child {
   border-bottom: 0;
 }
 
-.db-modal .db-loss-row dd {
-  margin: 0;
-  font-weight: 600;
-  font-variant-numeric: tabular-nums;
-}
-
-/* 网站承接筛选条 */
-.dan-board .db-filterbar {
-  margin-top: -4px;
-}
-
-.dan-board .db-filter-row {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 12px 32px;
-}
-
-.dan-board .db-filter {
-  display: flex;
+.dan-board .db-loss-row dd,
   align-items: center;
   gap: 10px;
 }

@@ -1,20 +1,24 @@
 import {
+  BarChart3,
   BookOpen,
-  ChartColumn,
   ChevronDown,
   Coins,
   FileText,
+  Filter,
+  GitBranch,
   Globe,
   LayoutDashboard,
+  Mail,
   MessageSquare,
   PanelsTopLeft,
-  Radar,
   ScanSearch,
   Search,
   ShieldCheck,
+  UserCheck,
 } from 'lucide-react'
-import { ConfigProvider, Dropdown, Layout, Menu, Select, Tooltip } from 'antd'
+import { ConfigProvider, Dropdown, Layout, Menu, Select, Tag, Tooltip } from 'antd'
 import { Fragment, useEffect, useMemo, useState, type ReactNode } from 'react'
+import { ANALYSIS_NAV, isAnalysisView, type AnalysisViewId } from '../data/analysisNav'
 import { COMPANY_NAME, OPERATOR_NAME, OPERATOR_ROLE, PLATFORM_NAME } from '../data/mock'
 import { useWorkbench } from '../context/WorkbenchContext'
 import type { ViewId } from '../types'
@@ -43,30 +47,24 @@ function openPortalTab(tab: string) {
   window.location.assign(`${base}#${encodeURIComponent(tab)}`)
 }
 
-type NavItem = { id: ViewId; label: string; icon: typeof LayoutDashboard }
+type NavItem = { id: ViewId; label: string; icon: typeof LayoutDashboard; beta?: boolean }
 
-/** 侧栏按增长闭环的动作分组：看结果 → 找原因 → 干活 → 支撑与配置 */
+/** 侧栏：看结果 → 干活 → 支撑与配置。GEO 信源监测先从菜单拿掉，页面代码仍留着。 */
 const NAV_GROUPS: Array<{ title: string; items: NavItem[] }> = [
   {
     title: '概览',
     items: [
-      { id: 'board', label: '数据看板', icon: ChartColumn },
       { id: 'dashboard', label: '智能体概览', icon: LayoutDashboard },
-    ],
-  },
-  {
-    title: '诊断分析',
-    items: [
-      { id: 'ready', label: 'AI 友好度', icon: ShieldCheck },
-      { id: 'geoMonitor', label: 'GEO 信源监测', icon: Radar },
     ],
   },
   {
     title: '执行生产',
     items: [
-      { id: 'visitor', label: '访客行为分析智能体', icon: ScanSearch },
-      { id: 'marketing', label: '智能营销页智能体', icon: PanelsTopLeft },
-      { id: 'content', label: '内容发布智能体', icon: FileText },
+      { id: 'ready', label: 'AI 友好度', icon: ShieldCheck },
+      { id: 'intake', label: '网站承接数据', icon: Filter },
+      { id: 'visitor', label: '网站策略', icon: ScanSearch, beta: true },
+      { id: 'marketing', label: '智能营销页智能体', icon: PanelsTopLeft, beta: true },
+      { id: 'content', label: '内容发布智能体', icon: FileText, beta: true },
       { id: 'assistant', label: 'AI运营助手', icon: MessageSquare },
     ],
   },
@@ -86,25 +84,51 @@ const FOOT_NAV: NavItem[] = [
 /** 内容区自带内边距的原一期页面，需要抵消宿主内边距 */
 const ONEAIVIEWS: ViewId[] = ['ready', 'credits']
 /** 以 iframe 整页嵌入的外部智能体页 */
-const EMBED_VIEWS: ViewId[] = ['board', 'visitor', 'marketing', 'content', 'assistant']
+const EMBED_VIEWS: ViewId[] = ['board', 'intake', 'visitor', 'marketing', 'content', 'assistant']
+
+const ANALYSIS_ICONS: Record<AnalysisViewId, typeof LayoutDashboard> = {
+  board: LayoutDashboard,
+  analysisVisit: BarChart3,
+  analysisBounce: Filter,
+  analysisGoogle: Search,
+  analysisBehavior: GitBranch,
+  analysisLeads: UserCheck,
+  analysisOpsReport: Mail,
+}
 
 const PAGE_META: Record<string, { title: string; crumb: string }> = {
-  board: { title: '数据看板', crumb: '概览' },
+  board: { title: '数据分析总览', crumb: '数据分析' },
+  analysisVisit: { title: '网站访问统计', crumb: '数据分析' },
+  analysisBounce: { title: '落地页跳出分析', crumb: '数据分析' },
+  analysisGoogle: { title: 'Google收录分析', crumb: '数据分析' },
+  analysisBehavior: { title: '访问行为分析', crumb: '数据分析' },
+  analysisLeads: { title: '线索转化分析', crumb: '数据分析' },
+  analysisOpsReport: { title: '运营报告推送', crumb: '数据分析' },
   dashboard: { title: '智能体概览', crumb: '概览' },
-  visitor: { title: '访客行为分析智能体', crumb: '智能体' },
+  intake: { title: '网站承接数据', crumb: '执行生产' },
+  visitor: { title: '网站策略', crumb: '执行生产' },
   marketing: { title: '智能营销页智能体', crumb: '智能体' },
   content: { title: '内容发布智能体', crumb: '智能体' },
-  geoMonitor: { title: 'GEO 信源监测', crumb: '诊断分析' },
+  geoMonitor: { title: 'GEO 信源监测', crumb: '执行生产' },
   settings: { title: '站点设置', crumb: '配置' },
   scanning: { title: '正在检测', crumb: '站点' },
 }
 
-function navItem(item: { id: ViewId; label: string; icon: typeof LayoutDashboard }) {
+function navItem(item: NavItem) {
   const Icon = item.icon
   return {
     key: item.id,
     icon: <Icon size={16} />,
-    label: item.label,
+    label: item.beta ? (
+      <span className="admin-nav-with-beta">
+        <span>{item.label}</span>
+        <Tag className="admin-nav-beta" color="processing">
+          Beta
+        </Tag>
+      </span>
+    ) : (
+      item.label
+    ),
     title: item.label,
   }
 }
@@ -122,7 +146,9 @@ export function AdminShell({ children }: { children: ReactNode }) {
   const [assistantOpen, setAssistantOpen] = useState(false)
   const [collapsed, setCollapsed] = useState(false)
   const embedView = EMBED_VIEWS.includes(view)
+  const analysisView = isAnalysisView(view)
   const selectedKey = view === 'scanning' ? 'dashboard' : view
+  const dataAnalysisCurrent = analysisView
 
   useEffect(() => {
     const onOpen = () => setAssistantOpen(true)
@@ -131,7 +157,11 @@ export function AdminShell({ children }: { children: ReactNode }) {
   }, [])
 
   useEffect(() => {
-    const known = new Set<string>([...NAV_GROUPS.flatMap((g) => g.items), ...FOOT_NAV].map((item) => item.id))
+    const known = new Set<string>([
+      ...NAV_GROUPS.flatMap((g) => g.items).map((item) => item.id),
+      ...FOOT_NAV.map((item) => item.id),
+      ...ANALYSIS_NAV.map((item) => item.id),
+    ])
     const onMessage = (event: MessageEvent) => {
       const data = event.data as { type?: string; view?: string } | null
       if (data?.type === 'growth-navigate' && data.view && known.has(data.view)) {
@@ -162,7 +192,7 @@ export function AdminShell({ children }: { children: ReactNode }) {
 
   return (
     <Layout
-      className={`admin-shell${embedView ? ' is-embed-view' : ''}${collapsed ? ' is-sider-collapsed' : ''}`}
+      className={`admin-shell${embedView ? ' is-embed-view' : ''}${analysisView ? ' is-analysis-view' : ''}${collapsed ? ' is-sider-collapsed' : ''}`}
     >
       <Header className={`admin-topbar${embedView ? ' is-embed' : ''}`}>
         <div className="admin-topbar__left">
@@ -198,20 +228,27 @@ export function AdminShell({ children }: { children: ReactNode }) {
               <button
                 key={t}
                 type="button"
-                className="admin-portalnav__item"
-                onClick={() => openPortalTab(t)}
+                className={`admin-portalnav__item${t === '数据分析' && dataAnalysisCurrent ? ' is-current' : ''}`}
+                aria-current={t === '数据分析' && dataAnalysisCurrent ? 'page' : undefined}
+                onClick={() => {
+                  if (t === '数据分析') {
+                    navigate('board')
+                    return
+                  }
+                  openPortalTab(t)
+                }}
               >
                 {t}
               </button>
             ))}
-            {/* 本项目入口：紧邻「管理设置」放置，在当前项目内保持选中态 */}
+            {/* 本项目入口：紧邻「管理设置」放置，在工作台页保持选中态 */}
             <Tooltip title="AI 工作台 · 返回本项目">
               <button
                 type="button"
-                className="admin-portalnav__item admin-portalnav__ai is-current"
+                className={`admin-portalnav__item admin-portalnav__ai${dataAnalysisCurrent ? '' : ' is-current'}`}
                 aria-label="AI 工作台 · 返回本项目"
-                aria-current="page"
-                onClick={() => navigate('board')}
+                aria-current={dataAnalysisCurrent ? undefined : 'page'}
+                onClick={() => navigate('dashboard')}
               >
                 <img src="/ai-icon.png" alt="" />
               </button>
@@ -256,71 +293,96 @@ export function AdminShell({ children }: { children: ReactNode }) {
 
       <Layout hasSider className="admin-body-row">
         <Sider
-          width={220}
-          collapsedWidth={72}
-          collapsible
-          collapsed={collapsed}
+          width={analysisView ? 200 : 248}
+          collapsedWidth={analysisView ? 200 : 72}
+          collapsible={!analysisView}
+          collapsed={analysisView ? false : collapsed}
           onCollapse={(value) => setCollapsed(value)}
+          trigger={analysisView ? null : undefined}
           theme="light"
           classNames={{ root: 'admin-sider', body: 'admin-sider__body' }}
         >
-          {collapsed ? (
-            <Tooltip title={`${currentSite.name} · ${currentSite.url}`} placement="right">
-              <button
-                type="button"
-                className="admin-site-mini"
-                aria-label={`当前站点 ${currentSite.name}`}
-                onClick={() => setCollapsed(false)}
-              >
-                <Globe size={16} />
-              </button>
-            </Tooltip>
-          ) : (
-            <div className="admin-site-box">
-              <label className="admin-site-box__label" htmlFor="admin-site-select">
-                当前站点
-              </label>
-              <Select
-                id="admin-site-select"
-                aria-label="切换站点"
-                value={siteId}
-                onChange={(value) => setSiteId(value)}
-                options={sites.map((s) => ({ value: s.id, label: s.name }))}
-                className="admin-site-select"
-                popupMatchSelectWidth
-              />
-              <div className="admin-site-box__url">{currentSite.url}</div>
-            </div>
-          )}
-
-          {navGroups.map((group) => (
-            <Fragment key={group.title}>
-              {collapsed ? null : <div className="admin-nav-label-text">{group.title}</div>}
+          {analysisView ? (
+            <>
+              <div className="admin-analysis-title">数据分析</div>
               <Menu
                 mode="inline"
                 theme="light"
-                selectedKeys={
-                  group.items.some((item) => item.id === selectedKey) ? [selectedKey] : []
-                }
-                items={group.menuItems}
-                tooltip={{ placement: 'right' }}
-                classNames={{ root: 'admin-menu admin-menu--plain', item: 'admin-menu__item' }}
+                selectedKeys={[selectedKey]}
+                items={ANALYSIS_NAV.map((item) => {
+                  const Icon = ANALYSIS_ICONS[item.id]
+                  return {
+                    key: item.id,
+                    icon: <Icon size={16} />,
+                    label: item.label,
+                    title: item.label,
+                  }
+                })}
+                classNames={{ root: 'admin-menu admin-menu--analysis', item: 'admin-menu__item' }}
                 onClick={({ key }) => navigate(key as ViewId)}
               />
-            </Fragment>
-          ))}
+            </>
+          ) : (
+            <>
+              {collapsed ? (
+                <Tooltip title={`${currentSite.name} · ${currentSite.url}`} placement="right">
+                  <button
+                    type="button"
+                    className="admin-site-mini"
+                    aria-label={`当前站点 ${currentSite.name}`}
+                    onClick={() => setCollapsed(false)}
+                  >
+                    <Globe size={16} />
+                  </button>
+                </Tooltip>
+              ) : (
+                <div className="admin-site-box">
+                  <label className="admin-site-box__label" htmlFor="admin-site-select">
+                    当前站点
+                  </label>
+                  <Select
+                    id="admin-site-select"
+                    aria-label="切换站点"
+                    value={siteId}
+                    onChange={(value) => setSiteId(value)}
+                    options={sites.map((s) => ({ value: s.id, label: s.name }))}
+                    className="admin-site-select"
+                    popupMatchSelectWidth
+                  />
+                  <div className="admin-site-box__url">{currentSite.url}</div>
+                </div>
+              )}
 
-          <div className="admin-sidebar__foot">
-            <Menu
-              mode="inline"
-              theme="light"
-              selectedKeys={FOOT_NAV.some((item) => item.id === view) ? [view] : []}
-              items={footItems}
-              tooltip={{ placement: 'right' }}
-              classNames={{ root: 'admin-menu admin-menu--foot', item: 'admin-menu__item' }}
-              onClick={({ key }) => navigate(key as ViewId)}
-            />
-          </div>
+              {navGroups.map((group) => (
+                <Fragment key={group.title}>
+                  {collapsed ? null : <div className="admin-nav-label-text">{group.title}</div>}
+                  <Menu
+                    mode="inline"
+                    theme="light"
+                    selectedKeys={
+                      group.items.some((item) => item.id === selectedKey) ? [selectedKey] : []
+                    }
+                    items={group.menuItems}
+                    tooltip={{ placement: 'right' }}
+                    classNames={{ root: 'admin-menu admin-menu--plain', item: 'admin-menu__item' }}
+                    onClick={({ key }) => navigate(key as ViewId)}
+                  />
+                </Fragment>
+              ))}
+
+              <div className="admin-sidebar__foot">
+                <Menu
+                  mode="inline"
+                  theme="light"
+                  selectedKeys={FOOT_NAV.some((item) => item.id === view) ? [view] : []}
+                  items={footItems}
+                  tooltip={{ placement: 'right' }}
+                  classNames={{ root: 'admin-menu admin-menu--foot', item: 'admin-menu__item' }}
+                  onClick={({ key }) => navigate(key as ViewId)}
+                />
+              </div>
+            </>
+          )}
         </Sider>
 
         <Layout className="admin-main">
@@ -333,7 +395,7 @@ export function AdminShell({ children }: { children: ReactNode }) {
 
           <Content className="admin-body">
             <div
-              className={`admin-content${embedView ? ' is-embed' : ''}${view === 'dashboard' ? ' is-overview' : ''}${isOneAiPage ? ' is-oneai' : ''}`}
+              className={`admin-content${embedView ? ' is-embed' : ''}${view === 'dashboard' ? ' is-overview' : ''}${isOneAiPage ? ' is-oneai' : ''}${analysisView && view !== 'board' ? ' is-analysis-legacy' : ''}`}
             >
               {children}
             </div>

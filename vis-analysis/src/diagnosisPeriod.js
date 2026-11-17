@@ -71,18 +71,18 @@ export const SITES = [
 export const ONBOARD_TIMELINE = [
   {
     step: "第 1 周",
-    title: "攒满首个完整 7 天窗口，生成诊断与待批任务",
-    detail: "锁定最近已结束的 7 天访问数据，核对访客路径、搜索词与页面现状，输出可执行任务说明与预计判定周数。",
+    title: "攒满第一个完整的 7 天，再告诉你要改什么。",
+    detail: "我们先看最近这 7 天访客从哪来、打开了哪一页、搜了什么词，再写出要你决定的任务。",
   },
   {
     step: "第 2–3 周",
-    title: "任务上线即刻核验生效，跑满观察期出首批结论",
-    detail: "审批通过后由智能营销页智能体或内容运营智能体上线变更，当场确认生效，按冻结主指标做单侧 95% 检验。",
+    title: "你同意并上线之后，我们开始看效果。",
+    detail: "智能营销页智能体或内容运营智能体做好页面，你确认上线。我们当场检查页面能不能打开，再用约定的数字看有没有变好。",
   },
   {
     step: "持续迭代",
-    title: "小流量同类页合批评估，无效改法自动防重",
-    detail: "流量偏小的同类详情页按同一改法合并样本评估；未见变化或变差的做法自动记入本站防重，后续不再重复建议。",
+    title: "没有效果的改法，下次不再重复建议。",
+    detail: "访客少的同类页面会放在一起看。看不出变化或变差的做法会记下来，以后不再建议你做同样的修改。",
   },
 ];
 
@@ -187,16 +187,16 @@ export const RULE_CHECKS = [
     key: "DX-01",
     lossId: "l1",
     state: "hit",
-    title: "铝支架详情没接住询价",
-    phenomenon: "找型号和报价的人进了铝支架详情，第一屏看完就走",
+    title: "铝支架详情页留不住来询价的人",
+    phenomenon: "来看型号和报价的人打开了铝支架详情页，第一屏看完就离开了。",
     layerLabel: "主卡点 · 没看进去",
     page: "主力型号详情页 · CNC-6061 铝支架",
     hypothesis: "主力详情首屏缺少型号参数与询价入口，精准搜索访客停在首屏流失",
     face: {
-      data: "近 7 天 420 人从 CNC-6061 铝支架详情进来，只有 92 人看进去，接住率 21.9%，平均停 11 秒，滚动停在 18%。",
-      words: "搜的是 aluminum bracket oem、cnc 6061 quote，来找型号参数和报价。",
-      pageFact: "第一屏是公司介绍和品牌口号，6061 材质公差表在第三屏，首屏没有询价入口。",
-      cause: "搜的是 aluminum bracket oem、cnc 6061 quote，要型号参数和报价。第一屏是公司介绍和品牌口号，公差表在第三屏，没有询价入口。",
+      data: "近 7 天有 420 人打开这页，只有 92 人继续往下看，占 21.9%。这些人平均停留 11 秒，页面大多只滚到 18%。",
+      words: "他们搜索的是 aluminum bracket oem 和 cnc 6061 quote，想看型号、参数和报价。",
+      pageFact: "这页第一屏是公司介绍和品牌口号，公差表在第三屏，第一屏没有询价入口。",
+      cause: "他们搜索的是 aluminum bracket oem 和 cnc 6061 quote，想看型号、参数和报价。这页第一屏是公司介绍和品牌口号，公差表在第三屏，第一屏没有询价入口。",
     },
     briefKeys: ["t-detail"],
   },
@@ -204,16 +204,16 @@ export const RULE_CHECKS = [
     key: "DX-02",
     lossId: "l1",
     state: "hit",
-    title: "询价流量落在品牌页",
-    phenomenon: "询价广告落在讲品牌的页上，人来了马上走",
+    title: "点了询价广告的人打开的是讲品牌的页面",
+    phenomenon: "访客点的是询价广告，打开的却是一张讲品牌的页面，人来了马上离开。",
     layerLabel: "主卡点 · 没看进去",
     page: "Q3 OEM 营销落地页",
     hypothesis: "询价广告流量落在品牌宣传页，页面内容与询价来意错位",
     face: {
-      data: "广告带来 210 人落在这张营销页，179 人马上走了，接住率 14.7%，平均停 8 秒。",
-      words: "词是 cnc machining quote、oem cnc quote，来询价。",
-      pageFact: "第一屏是工厂航拍和产能口号，没有代表型号、打样周期，也没有传图纸的表单。",
-      cause: "词是 cnc machining quote、oem cnc quote，来询价。第一屏是工厂航拍和产能口号，没有型号、打样周期，也没有传图纸的表单。",
+      data: "近 7 天广告带来 210 人，其中 179 人马上离开。留下来继续看的人只占 14.7%，平均停留 8 秒。",
+      words: "他们搜索的是 cnc machining quote 和 oem cnc quote，是来询价的。",
+      pageFact: "页面第一屏是工厂航拍和产能口号，没有代表型号，没有打样周期，也没有上传图纸的表单。",
+      cause: "他们搜索的是 cnc machining quote 和 oem cnc quote，是来询价的。页面第一屏是工厂航拍和产能口号，没有代表型号，没有打样周期，也没有上传图纸的表单。",
     },
     briefKeys: ["t-landing"],
     adviceKeys: ["a-ads"],
@@ -222,17 +222,17 @@ export const RULE_CHECKS = [
     key: "DX-03",
     lossId: "l2",
     state: "hit",
-    title: "站内搜不到图纸和膜厚",
-    phenomenon: "站里搜图纸格式和阳极氧化厚度，一次结果都没有",
+    title: "站内搜索图纸格式和氧化膜厚度，没有结果",
+    phenomenon: "访客在网站里搜索图纸格式和阳极氧化厚度，搜索结果是空的。",
     layerLabel: "次卡点 · 站内搜索无结果",
     unresolved: "pending_approval",
     page: "站内搜索 · 图纸格式与阳极氧化规格",
     hypothesis: "高频技术选型词站内搜索 100% 零结果，现有知识库材料未发成可检索内容",
     face: {
-      data: "近 7 天站内搜了 50 次，16 次是 0 结果，零结果率 32%，搜完当场离开的占 56%。",
-      words: "0 结果集中在 custom bracket drawing dwg（9 次）、anodizing thickness 6061（4 次）。",
-      pageFact: "站里没有图纸格式和表面处理厚度这两页。知识库里的工艺规范是有的，还没发成能搜到的正文。",
-      cause: "搜的是 custom bracket drawing dwg（9 次）、anodizing thickness 6061（4 次）。站里没有这两页，知识库里的工艺规范还没发成能搜到的正文。",
+      data: "近 7 天站内一共搜索了 50 次，其中 16 次没有任何结果，占 32%。搜完就离开的人占 56%。",
+      words: "没有结果的搜索集中在 custom bracket drawing dwg（9 次）和 anodizing thickness 6061（4 次）。",
+      pageFact: "网站上没有这两页。知识库里有工艺规范，但还没有写成访客能搜到的文章。",
+      cause: "没有结果的搜索集中在 custom bracket drawing dwg（9 次）和 anodizing thickness 6061（4 次）。网站上没有这两页。知识库里有工艺规范，但还没有写成访客能搜到的文章。",
     },
     briefKeys: ["t-article"],
   },
@@ -240,17 +240,17 @@ export const RULE_CHECKS = [
     key: "DX-04",
     lossId: "l1",
     state: "hit",
-    title: "快样需求没有承接页",
-    phenomenon: "搜快样交期的人落在产品列表，页上没有 48 小时打样",
+    title: "想看打样交期的人进了产品列表",
+    phenomenon: "访客想看样品多久能做出来，打开的却是产品列表，列表上没有 48 小时打样的说明。",
     layerLabel: "未结案跟进 · 不重复建卡",
     unresolved: "in_flight",
     page: "小批量打样词承接链路（48 hour sample）",
-    hypothesis: "打样周期搜索访客缺少独立承接页，对应任务已在「待确认上线」",
+    hypothesis: "打样周期搜索访客缺少独立承接页，对应任务已在「进行中」",
     face: {
-      data: "近 7 天打样相关词进来 64 人，落在综合产品列表，接住率 25%。",
-      words: "搜的是 48 hour sample、rapid cnc prototyping，看交期和快样怎么走。",
-      pageFact: "列表页只有产品缩略图，没有 48 小时快样说明。新营销页草稿已经生成。",
-      cause: "搜的是 48 hour sample、rapid cnc prototyping，看交期和快样怎么走。列表页只有产品缩略图，没有 48 小时快样说明。",
+      data: "近 7 天有 64 人通过打样相关的词进来，都打开了综合产品列表。留下来继续看的人占 25%。",
+      words: "他们搜索的是 48 hour sample 和 rapid cnc prototyping，想看交期和打样怎么走。",
+      pageFact: "列表页只有产品缩略图。新的营销页草稿已经生成，还等你确认上线。",
+      cause: "他们搜索的是 48 hour sample 和 rapid cnc prototyping，想看交期和打样怎么走。列表页只有产品缩略图，没有 48 小时打样的说明。",
     },
     trackKey: "k-sample",
   },
@@ -265,118 +265,232 @@ export const BRIEFS = [
   {
     key: "t-detail",
     priority: "P0",
-    direction: "修改已有产品详情",
+    direction: "修改产品详情页",
     executor: "内容运营智能体",
-    title: "CNC-6061 铝支架详情 · 改第一屏",
-    summary: "把第一屏从公司介绍改成 CNC-6061、给谁用、核心参数，询价入口留在首屏",
+    title: "修改铝支架详情页的第一屏",
+    summary: "请内容运营智能体把这页第一屏改成型号、用途和参数，并把询价入口放在第一屏。",
     target: "https://www.demo-cnc-oem.com/products/cnc-6061-bracket",
     why: "近 7 天 420 人从这页进来，只有 92 人看进去，接住率 21.9%，停了大约 11 秒。",
     ruleKeys: ["DX-01"],
     planPreview: {
-      badge: "预计 1 周出结论",
+      badge: "预计 1 周能看出结果",
       badgeTone: "processing",
       judgable: true,
-      metric: "这页的落地接住率",
-      formula: "看进去的人 / 从这页进来的人",
-      baseline: "21.9%，92 人看进去，420 人从这页进来",
-      mde: "再多 5 个百分点",
-      threshold: "升到 25.9%",
-      minSample: "385 个从这页进来的人",
-      estWeeks: "按每天约 60 人，大约 1 周",
-      sqlNote: "点通过后这条对比就冻住，监测期间不换指标",
+      metric: "打开这页之后，继续往下看的人占多少。",
+      formula: "用继续往下看的人数，除以打开这页的人数。",
+      baseline: "现在是 21.9%。420 人打开这页，92 人继续往下看。",
+      mde: "至少再多 5 个百分点。",
+      threshold: "这个比例要升到 25.9%。",
+      minSample: "至少还要有 385 人打开这页，才够判断。",
+      estWeeks: "这页每天大约有 60 人，预计 1 周能看出结果。",
+      sqlNote: "你点通过之后，用来比较的数字就固定下来，观察期间不再更换。",
     },
-    sources: [
-      { name: "页面现状", state: "ok", detail: "第一屏是公司介绍和品牌故事，型号和参数排在第三屏，首屏没有询价入口" },
-      { name: "站内行为", state: "ok", detail: "近 7 天 420 人从这页进来，92 人看进去，平均停 11 秒，滚动停在 18%" },
-      { name: "Google Search Console", state: "ok", detail: "进这页的主要搜索词：aluminum bracket oem、cnc 6061 quote" },
-      { name: "知识库 · 公司资料", state: "ok", detail: "材质 6061-T6、公差 ±0.02mm、ISO9001、48 小时打样、批量 15–20 天" },
-      { name: "同类详情页", state: "ok", detail: "首屏能看到型号和参数的同类详情，留资约为它的 2～3 倍" },
-    ],
+    refs: {
+      site: {
+        state: "ok",
+        title: "CNC-6061 Aluminum Bracket",
+        url: "https://www.demo-cnc-oem.com/products/cnc-6061-bracket",
+        excerpt: `CNC-6061 Aluminum Bracket
+
+20 Years of Precision Manufacturing
+Trusted by Global Brands
+ISO9001 Certified Factory · Dongguan
+
+[Hero] factory aerial + company story. No model number. No RFQ.
+
+Specifications (screen 3)
+Material 6061-T6
+Tolerance ±0.02 mm
+Finish Anodizing / Powder coat
+MOQ 50 pcs
+Lead time 15–20 days`,
+      },
+      websearch: {
+        state: "ok",
+        query: "aluminum bracket oem first screen specifications",
+        results: [
+          {
+            title: "CNC 6061 Bracket OEM | Specs & RFQ",
+            url: "https://www.acme-cnc.com/products/6061-bracket",
+            snippet: "Model CNC-6061 · 48-hour sample · Upload drawing. Material 6061-T6, ±0.02 mm.",
+          },
+          {
+            title: "Aluminum Bracket Manufacturing Quote",
+            url: "https://www.precisionparts.co/oem-bracket",
+            snippet: "RFQ form on first screen. Inquiry conversion 2–3× pages that lead with brand story.",
+          },
+        ],
+      },
+      mcp: {
+        state: "ok",
+        tool: "page_metrics.get",
+        fields: [
+          { label: "path", value: "/products/cnc-6061-bracket" },
+          { label: "window", value: "2026-09-14 – 2026-09-20" },
+          { label: "visitors", value: "420" },
+          { label: "continued", value: "92" },
+          { label: "continue_rate", value: "21.9%" },
+          { label: "avg_stay_sec", value: "11" },
+          { label: "scroll_depth_p50", value: "18%" },
+          { label: "top_queries", value: "aluminum bracket oem; cnc 6061 quote" },
+        ],
+      },
+      knowledge: {
+        state: "ok",
+        title: "工艺与交期规范",
+        excerpt: `材质：6061-T6
+公差：±0.02mm
+认证：ISO9001
+打样周期：48 小时
+批量交期：15–20 天`,
+      },
+    },
     requirements: [
-      "标题不改；第一屏改成型号 CNC-6061、给谁用、核心参数（材质、公差、表面处理、起订、打样周期）",
-      "询价入口留在首屏；公司介绍、品牌故事下移",
-      "对着 aluminum bracket oem、cnc 6061 quote 来写，不空喊实力强",
-      "常见问题讲清：开孔能不能改、起订多少、打样多久、表面处理有哪些",
+      "标题保持不变。第一屏写清型号 CNC-6061、适合谁用，以及材质、公差、表面处理、起订量和打样周期。",
+      "询价入口放在第一屏。公司介绍和品牌故事移到后面。",
+      "正文对着搜索词 aluminum bracket oem 和 cnc 6061 quote 来写，不写空泛的实力口号。",
+      "常见问题写清四件事：开孔能不能改、最少订多少、打样要多久、有哪些表面处理。",
     ],
-    constraints: ["局部修改，不整页重写", "原文配图都留下，这次不换封面", "知识库里没有的参数不编"],
-    afterApprove: "改好的首屏会先给你看，确认后才覆盖上线。",
+    constraints: ["只改第一屏附近的内容，不整页重写。", "原有配图都保留，这次不换封面。", "公司资料里没有的参数不要编造。"],
+    afterApprove: "改好的第一屏会先给你看。你确认之后，才会替换线上页面。",
   },
   {
     key: "t-landing",
     priority: "P0",
-    direction: "生成营销落地页",
+    direction: "新建营销页",
     executor: "智能营销页智能体",
-    title: "CNC OEM 询价留资页",
-    summary: "按询价意图新建留资获客页，首屏对齐型号、48 小时打样和询价入口",
-    target: "新建 /campaign/cnc-oem-quote，接管现在的 /campaign/cnc-oem-q3",
+    title: "新建一张询价页，替换现在的品牌页",
+    summary: "请智能营销页智能体新建一张询价页。第一屏写清型号、48 小时打样和询价入口，用来替换现在这张品牌页。",
+    target: "新建页面 /campaign/cnc-oem-quote，用来替换现在的 /campaign/cnc-oem-q3。",
     why: "近 7 天广告带来 210 人，只有 31 人看进去，接住率 14.7%，大约 8 秒就走。",
     ruleKeys: ["DX-02"],
     planPreview: {
-      badge: "预计 2 周出结论",
+      badge: "预计 2 周能看出结果",
       badgeTone: "processing",
       judgable: true,
-      metric: "询价页的落地接住率",
-      formula: "看进去的人 / 落到这页的人，和现在这张品牌页比",
-      baseline: "14.7%，31 人看进去，210 人落地",
-      mde: "再多 8 个百分点",
-      threshold: "升到 20.1%",
-      minSample: "312 个落地的人",
-      estWeeks: "按每天约 30 人，大约 2 周",
-      sqlNote: "点通过后，新页和现在这张品牌页怎么比就冻住",
+      metric: "打开询价页之后，继续往下看的人占多少。",
+      formula: "用继续往下看的人数，除以打开这页的人数，并和现在这张品牌页比较。",
+      baseline: "现在是 14.7%。210 人打开品牌页，31 人继续往下看。",
+      mde: "至少再多 8 个百分点。",
+      threshold: "这个比例要升到 20.1%。",
+      minSample: "至少还要有 312 人打开这页，才够判断。",
+      estWeeks: "这页每天大约有 30 人，预计 2 周能看出结果。",
+      sqlNote: "你点通过之后，新页面和现在这张品牌页的比较方法就固定下来。",
     },
-    sources: [
-      { name: "页面现状", state: "ok", detail: "Q3 OEM 营销页首屏讲品牌和产能，没有型号、打样周期，也没有传图纸的表单" },
-      { name: "Google Search Console", state: "ok", detail: "询价类词：cnc machining quote、oem cnc quote" },
-      { name: "Google Ads", state: "unauthorized", authKey: "ads", detail: "广告实际搜索词列不出来，只能按进站第一页推断" },
-      { name: "知识库 · 公司资料", state: "ok", detail: "ISO9001、3–5 轴同线、48 小时打样；sales@demo-cnc-oem.com" },
-      { name: "买家画像", state: "missing", detail: "知识库里没有，智能体按访客来源写了草稿" },
-    ],
+    refs: {
+      site: {
+        state: "ok",
+        title: "Q3 OEM Capability",
+        url: "https://www.demo-cnc-oem.com/campaign/cnc-oem-q3",
+        excerpt: `Q3 OEM Capability
+
+20,000 m² factory · 3–5 axis CNC
+Trusted by global brands
+
+[Hero] factory aerial. No model number. No 48-hour sample. No drawing upload.`,
+      },
+      websearch: {
+        state: "ok",
+        query: "cnc machining quote landing page inquiry form",
+        results: [
+          {
+            title: "Get a CNC Machining Quote in 24 Hours",
+            url: "https://www.protolabs.com/services/cnc-machining/",
+            snippet: "First screen: part type, material, quantity, upload CAD. Quote form above the fold.",
+          },
+        ],
+      },
+      mcp: {
+        state: "unauthorized",
+        authKey: "ads",
+        tool: "ads.search_terms.get",
+        fields: [
+          { label: "path", value: "/campaign/cnc-oem-q3" },
+          { label: "ad_visitors", value: "210" },
+          { label: "bounce", value: "179" },
+          { label: "continue_rate", value: "14.7%" },
+          { label: "ads_search_terms", value: "unauthorized" },
+        ],
+      },
+      knowledge: {
+        state: "ok",
+        title: "公司资料",
+        excerpt: `认证：ISO9001
+加工：3–5 轴
+打样：48 小时
+邮箱：sales@demo-cnc-oem.com
+买家画像：未收录`,
+      },
+    },
     requirements: [
-      "页面类型：留资获客页；英语；市场美国 / 欧洲",
-      "首屏必须出现型号 CNC-6061、「48 小时打样」和询价入口",
-      "表单收集公司名、邮箱、图纸/规格、数量、期望交期",
-      "对上的词：cnc machining quote、oem cnc quote、aluminum bracket oem",
-      "横幅时机：当次访问里第 2 个停满 15 秒的产品详情页（回访按 7 天累计到第 2 个），在该页页底弹出非遮挡横幅，链到这张询价留资页。文案示例：还在看铝支架？留下图纸，48 小时给打样",
+      "这是一张英文询价页，给美国和欧洲的买家看。",
+      "第一屏必须出现型号 CNC-6061、48 小时打样和询价入口。",
+      "表单要收集公司名、邮箱、图纸或规格、数量和期望交期。",
+      "页面内容要能对上这些搜索词：cnc machining quote、oem cnc quote、aluminum bracket oem。",
+      "访客在同一次访问里，第二次在产品详情页停留满 15 秒时，在那页底部弹出一条不挡住内容的提示，链到这张询价页。回访按 7 天累计。提示可以写成：还在看铝支架？留下图纸，48 小时给打样。",
     ],
-    constraints: ["卖点只从现有页面和知识库里取，没有的不编", "广告没说过的「免模 / 零起订」不写"],
-    afterApprove: "草稿出来后会先给你看，确认后才发布。",
+    constraints: ["卖点只写现有页面和公司资料里有的内容，没有的不要编造。", "广告里没说过的「免模」和「零起订」不要写。"],
+    afterApprove: "草稿会先给你看。你确认之后，才会发布。",
   },
   {
     key: "t-article",
     priority: "P1",
-    carryOver: "仍未解除 · 上周待批",
-    direction: "发布单篇内容",
+    carryOver: "上周已经提出，你还没有决定",
+    direction: "发布一篇文章",
     executor: "内容运营智能体",
-    title: "写一篇：6061 铝支架图纸格式和阳极氧化厚度",
-    summary: "用站里搜不到的两个原词写一篇，讲清能收什么图纸、膜厚多少，文末链回铝支架详情",
+    title: "写一篇图纸格式和氧化膜厚度的文章",
+    summary: "请内容运营智能体用访客搜过、但没有结果的两个词写一篇文章，说明能接收什么图纸、膜厚是多少，并在文末链回铝支架详情。",
     target: "新建 /blog/6061-bracket-dwg-anodizing-guide",
     why: "custom bracket drawing dwg、anodizing thickness 6061 近 7 天搜了 13 次，一次结果都没有。上周这篇已经写好，还没批。",
     ruleKeys: ["DX-03"],
     planPreview: {
-      badge: "预计 2 周出结论",
+      badge: "预计 2 周能看出结果",
       badgeTone: "default",
       judgable: true,
-      metric: "这两个词的站内 0 结果率",
-      formula: "搜出来还是 0 条的次数 / 用这两个词搜的次数",
-      baseline: "13 次全是 0 结果",
+      metric: "用这两个词搜索时，没有结果的次数占多少。",
+      formula: "用搜出来仍然是 0 条的次数，除以用这两个词搜索的次数。",
+      baseline: "现在 13 次全是 0 条结果。",
       mde: "",
-      threshold: "降到 20% 及以下",
-      minSample: "再用这两个词搜满 20 次",
-      estWeeks: "按每周约 13 次，大约 2 周",
-      sqlNote: "点通过后，词和算法冻住，到点用同一条重算",
+      threshold: "没有结果的比例要降到 20% 及以下。",
+      minSample: "这两个词还要再被搜索满 20 次，才够判断。",
+      estWeeks: "这两个词每周大约被搜 13 次，预计 2 周能看出结果。",
+      sqlNote: "你点通过之后，要比的词和算法就固定下来，到时间用同一套方法再算一次。",
     },
-    sources: [
-      { name: "站内搜索", state: "ok", detail: "custom bracket drawing dwg 搜了 9 次都是 0 条；anodizing thickness 6061 搜了 4 次都是 0 条" },
-      { name: "页面现状", state: "ok", detail: "站里现有的公差指南没写 DWG 怎么交、阳极氧化膜厚是多少" },
-      { name: "知识库 · 工艺文件", state: "ok", detail: "能收 STEP / DWG / PDF；本色和黑色阳极氧化，常规膜厚 10–25μm" },
-    ],
+    refs: {
+      site: {
+        state: "ok",
+        title: "CNC Tolerance Guide",
+        url: "https://www.demo-cnc-oem.com/blog/tolerance-guide",
+        excerpt: `CNC Tolerance Guide
+
+General tolerances for milling and turning.
+No DWG submission steps.
+No anodizing thickness for 6061.`,
+      },
+      mcp: {
+        state: "ok",
+        tool: "site_search.queries.get",
+        fields: [
+          { label: "window", value: "2026-09-14 – 2026-09-20" },
+          { label: "custom bracket drawing dwg", value: "9 searches · 0 results" },
+          { label: "anodizing thickness 6061", value: "4 searches · 0 results" },
+        ],
+      },
+      knowledge: {
+        state: "ok",
+        title: "工艺规范 · 图纸与阳极氧化",
+        excerpt: `可接收图纸：STEP / DWG / PDF
+本色阳极氧化：10–25 μm
+黑色阳极氧化：10–25 μm`,
+      },
+    },
     requirements: [
-      "标题和二级标题直接用 custom bracket drawing dwg、anodizing thickness 6061，别换成中文概括",
-      "正文写清能收哪些图纸、6061 阳极氧化膜厚多少、公差怎么配",
-      "文末链到 CNC-6061 铝支架详情，并留一个传图纸询价的入口",
+      "标题和二级标题直接使用 custom bracket drawing dwg 和 anodizing thickness 6061，不要改成中文概括。",
+      "正文写清能接收哪些图纸、6061 的阳极氧化膜厚是多少、公差怎么配合。",
+      "文章结尾链到 CNC-6061 铝支架详情，并留下一个上传图纸询价的入口。",
     ],
-    constraints: ["膜厚只写知识库里的 10–25μm，别的标准不写"],
-    afterApprove: "稿子会先给你看，发出去之后当场用这两个词搜一次，确认已经有结果。",
+    constraints: ["膜厚只写公司资料里的 10 到 25 微米，不要写其他标准。"],
+    afterApprove: "稿子会先给你看。发出去之后，我们会立刻用这两个词搜一次，确认已经能搜到。",
   },
 ];
 
@@ -384,27 +498,67 @@ export const BRIEFS = [
 export const ADVICE = [
   {
     key: "a-ads",
-    owner: "投放侧人工处理",
-    title: "核对并切换询价类广告落地地址",
-    detail:
-      "当前询价广告仍投向品牌向的 /campaign/cnc-oem-q3（接住率 14.7%）。智能体无法直接修改 Google Ads 投放后台；新询价营销页上线后，请人工将询价词广告切至新地址。",
+    owner: "需要你自己做",
+    direction: "你自己修改广告",
+    executor: "你自己",
+    title: "把询价广告的打开地址改到新页面",
+    summary: "请你在广告后台把询价广告的打开地址改到新的询价页。智能体不能登录广告账户。",
+    target: "Google Ads 里询价词的落地网址。现在打开的是 /campaign/cnc-oem-q3。",
+    requirements: [
+      "等新的询价页上线之后再改。",
+      "把搜索词 cnc machining quote 和 oem cnc quote 的广告打开地址改到新页面。",
+    ],
+    constraints: ["智能体不能登录 Google Ads，这一步只能由你来做。"],
+    refs: {
+      site: {
+        state: "ok",
+        title: "Q3 OEM Capability",
+        url: "https://www.demo-cnc-oem.com/campaign/cnc-oem-q3",
+        excerpt: `Final URL in Google Ads (cnc machining quote / oem cnc quote):
+https://www.demo-cnc-oem.com/campaign/cnc-oem-q3`,
+      },
+      mcp: {
+        state: "ok",
+        tool: "page_metrics.get",
+        fields: [
+          { label: "path", value: "/campaign/cnc-oem-q3" },
+          { label: "ad_visitors", value: "210" },
+          { label: "bounce", value: "179" },
+          { label: "continue_rate", value: "14.7%" },
+        ],
+      },
+    },
+    planPreview: {
+      badge: "新页面上线后由你修改",
+      badgeTone: "warning",
+      metric: "不单独计算一个新数字。效果看新询价页里继续往下看的人占多少。",
+      formula: "新页面上线后，用那张页的访问数据来判断。",
+      baseline: "现在广告打开的是品牌页，留下来继续看的人占 14.7%。",
+      threshold: "广告打开的地址改成新询价页。",
+      minSample: "这一步不需要再凑访客数量。",
+      estWeeks: "新页面上线之后，你就可以去改。",
+      sqlNote: "你标记已经改完之后，我们只记录广告地址已经换过。",
+    },
     ruleKeys: ["DX-02"],
   },
 ];
 
-/** 执行跟踪六步。stage 是下标；真实生产上线后当场执行生效确认，再跑满观察期出结论。 */
-export const TRACK_STAGES = ["已批准", "生成中", "待确认上线", "已上线", "监测中", "有结论"];
+/** 上线前不套通用工序。stage 是下标：待你同意 → 你已同意 → 进行中 → 已上线，之后才是看效果、出结论。 */
+export const TRACK_STAGES = ["待你同意", "你已同意", "进行中", "已上线", "正在看效果", "已经有结论"];
+export const APPROVED_STAGE = 1;
+export const PROGRESS_STAGE = 2;
+export const LAUNCH_STAGE = 3;
 export const MONITOR_STAGE = 4;
 export const RESULT_STAGE = 5;
 
 /** 6 类客观结论标签（由程序按统计检验输出，模型不改判）。 */
 export const VERDICTS = {
-  effective: { label: "已证实有效", color: "success" },
-  trend: { label: "有提升迹象", color: "processing" },
-  flat: { label: "未见变化", color: "default" },
+  effective: { label: "已经证明有效", color: "success" },
+  trend: { label: "有变好的迹象", color: "processing" },
+  flat: { label: "看不出变化", color: "default" },
   worse: { label: "变差了", color: "error" },
-  mixed: { label: "与其他改动叠加", color: "purple" },
-  thin: { label: "流量不足", color: "default" },
+  mixed: { label: "同一时期还有别的改动", color: "purple" },
+  thin: { label: "访客太少，还不能下结论", color: "default" },
 };
 
 /**
@@ -420,15 +574,15 @@ export const TRACKING = [
     from: "8月31日–9月6日诊断",
     approvedAt: "09-08",
     stage: 2,
-    note: "草稿已生成，确认发布上线后将即刻核验生效并启动 14 天监测",
-    summary: "针对 48 hour sample 快样询价词新建营销页，首屏对齐 48 小时打样流程与 ISO9001。",
+    note: "草稿已经生成。你确认已经上线之后，我们会马上检查页面能不能打开，并开始看 14 天的效果。",
+    summary: "智能营销页智能体已经按「48 小时打样」新建了一页草稿。第一屏写打样流程和 ISO9001。",
     target: "/campaign/cnc-sample",
     requirements: [
-      "页面类型：英文留资获客页；市场欧美",
-      "首屏包含「48 小时打样」流程与图纸上传入口",
+      "这是一张英文页面，给欧美买家看。",
+      "第一屏写清 48 小时打样怎么走，并留下上传图纸的入口。",
     ],
     readyMonitor: {
-      metric: "快样承接页落地接住率",
+      metric: "打开打样页之后，继续往下看的人占多少",
       formula: "落地接住访客 / 落地访客",
       object: "/campaign/cnc-sample（接管列表页快样流量）",
       unit: "落地访客",
@@ -461,11 +615,11 @@ export const TRACKING = [
     approvedAt: "08-25",
     launchedAt: "09-17",
     stage: 4,
-    summary: "询价落地页第二版已发布上线。",
+    summary: "询价页的第二版已经发布到网站上。",
     target: "/campaign/inquiry-v2",
     requirements: ["首屏对齐询价入口", "09-17 已发布生产环境"],
     monitor: {
-      metric: "询价页落地接住率",
+      metric: "打开询价页之后，继续往下看的人占多少",
       formula: "落地接住访客 / 落地访客（已冻结前后对比 SQL）",
       object: "/campaign/inquiry-v2（替换 v1）",
       unit: "落地访客",
@@ -498,12 +652,12 @@ export const TRACKING = [
     approvedAt: "08-18",
     launchedAt: "08-20",
     stage: 5,
-    summary: "关于我们页补齐 ISO9001 证书与三坐标检测设备实拍图。",
+    summary: "关于我们页面已经补上 ISO9001 证书，以及三坐标检测设备的实拍图。",
     target: "/about",
     requirements: ["证书图置于资质首屏", "补充检测设备说明"],
     result: {
       verdict: "flat",
-      metric: "关于我们合格浏览率",
+      metric: "在关于我们这页看完主要内容的人占多少",
       formula: "合格浏览访客 / 页面访客（冻结 SQL 同口径重跑）",
       unit: "页面访客",
       window: { range: "08-21 – 09-03", days: 14 },
@@ -514,7 +668,7 @@ export const TRACKING = [
       leads: { before: 9, after: 10 },
       gain: "",
       attribution:
-        "上线前后合格浏览率仅 +1.3pp（p = 0.33，未达显著）。细分看访客在关于我们页原本停留已充足，卡点在于页底缺少返回具体型号报价的承接入口，单纯增补证书图未能拉动下一步。",
+        "上线前后，在这页看完主要内容的人只从 56.2% 变成 57.5%，看不出明确提升。访客在这页本来就停留得够久。真正的问题是页面底部没有入口，让人回到具体型号去询价。只补证书图，没有让人走到下一步。",
     },
   },
   {
@@ -528,7 +682,7 @@ export const TRACKING = [
     stage: 5,
     result: {
       verdict: "effective",
-      metric: "首页进入产品详情率",
+      metric: "从首页进入产品详情的人占多少",
       formula: "进入产品详情访客 / 首页访客（冻结 SQL 同口径重跑）",
       unit: "首页访客",
       window: { range: "07-11 – 07-17", days: 7 },
@@ -539,7 +693,7 @@ export const TRACKING = [
       leads: { before: 21, after: 29 },
       gain: "每周约多送 300 名访客进入核心产品详情",
       attribution:
-        "顶栏直接展开铝支架、钛合金支架等主力型号入口后，首页进详情率提升 +3.7pp（p < 0.001），同期首页无其他上线改动；实验档案已后台落库供跨站策略聚合。",
+        "首页顶栏直接列出铝支架、钛合金支架这些主要型号之后，从首页进入产品详情的人从 14.2% 升到 17.9%。这段时间首页没有其他改动。",
     },
   },
 ];
@@ -550,33 +704,33 @@ export const SUGGESTIONS = [
     key: "t-detail",
     kind: "brief",
     week: "",
-    title: "铝支架详情没接住询价",
-    direction: "修改已有产品详情",
-    text: "把第一屏从公司介绍改成 CNC-6061、给谁用、核心参数，询价入口留在首屏",
+    title: "铝支架详情页留不住来询价的人",
+    direction: "修改产品详情页",
+    text: "请内容运营智能体把铝支架详情页的第一屏改成型号、用途和参数，并把询价入口放在第一屏。",
   },
   {
     key: "t-landing",
     kind: "brief",
     week: "",
-    title: "询价流量落在品牌页",
-    direction: "生成营销落地页",
-    text: "按询价意图新建留资获客页，首屏对齐型号、48 小时打样和询价入口",
+    title: "点了询价广告的人打开的是讲品牌的页面",
+    direction: "新建营销页",
+    text: "请智能营销页智能体新建一张询价页，替换现在这张品牌页。",
   },
   {
     key: "a-ads",
     kind: "advice",
     week: "",
-    title: "询价流量落在品牌页",
-    direction: "人工处理",
-    text: "核对并切换询价类广告落地地址",
+    title: "点了询价广告的人打开的是讲品牌的页面",
+    direction: "你自己修改广告",
+    text: "请你在广告后台把询价广告的打开地址改到新的询价页。",
   },
   {
     key: "t-article",
     kind: "brief",
     week: "9月7日 – 9月13日",
-    title: "站内搜不到图纸和膜厚",
-    direction: "发布单篇内容",
-    text: "用站里搜不到的两个原词写一篇，讲清能收什么图纸、膜厚多少，文末链回铝支架详情",
+    title: "站内搜索图纸格式和氧化膜厚度，没有结果",
+    direction: "发布一篇文章",
+    text: "请内容运营智能体用搜不到结果的两个词写一篇文章，并链回铝支架详情。",
   },
   {
     key: "k-sample",
@@ -642,13 +796,13 @@ export const LEADS = {
 export const MONTHLY_REPORT = {
   monthLabel: "2026 年 9 月（截至 9 月 20 日）",
   done: [
-    { tag: "智能营销页智能体", text: "改版并上线「询价」落地页 v2，当场生效核验通过，正在 14 天观察期" },
-    { tag: "智能营销页智能体", text: "生成「CNC 打样」专属营销页草稿，待确认发布上线" },
-    { tag: "内容运营智能体", text: "完成「关于我们 · 补 ISO 认证」14 天结案评估，无效改法已自动记入本站防重" },
+    { tag: "智能营销页智能体", text: "询价页第二版已经上线。上线检查通过了，正在看 14 天的效果。" },
+    { tag: "智能营销页智能体", text: "打样营销页的草稿已经生成，等你确认上线。" },
+    { tag: "内容运营智能体", text: "关于我们页面补证书这件事已经看完 14 天。看不出变化，以后不再建议同样的改法。" },
   ],
   nextMonth: [
-    "跟进「询价」落地页 v2 观察期满结案（预计 10 月初产出显著性结论）",
-    "推进主力 CNC-6061 铝支架详情首屏重排与新建 OEM 询价页审批上线",
-    "围绕站内高频 0 结果词（DWG 图纸规范、6061 阳极氧化厚度）补齐技术承接内容",
+    "询价页第二版看到 10 月初，再判断有没有变好。",
+    "等你决定铝支架详情页的第一屏，以及新的询价页要不要做。",
+    "把访客搜过但没有结果的图纸格式和氧化膜厚度，写成网站上能搜到的文章。",
   ],
 };

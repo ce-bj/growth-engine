@@ -41,7 +41,14 @@ export const DIMENSION_META: Array<{
  */
 export type ViewId =
   | 'board'
+  | 'analysisVisit'
+  | 'analysisBounce'
+  | 'analysisGoogle'
+  | 'analysisBehavior'
+  | 'analysisLeads'
+  | 'analysisOpsReport'
   | 'dashboard'
+  | 'intake'
   | 'visitor'
   | 'marketing'
   | 'settings'

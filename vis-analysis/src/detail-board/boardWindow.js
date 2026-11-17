@@ -1,3 +1,4 @@
+import { WEEKS } from "../diagnosisPeriod.js";
 import { getLeadCount, getStages, regionBoard, trafficBoard } from "../funnel-review/data.js";
 
 /** 近 7 天的日独立访客，合计等于全站访问入口。后两个窗口的末段与它衔接。 */
@@ -168,8 +169,7 @@ function scaleRegions(frame, leadVisitors) {
   };
 }
 
-export function buildBoardModel(range) {
-  const frame = frameOf(range);
+function assembleModel(frame) {
   const stages = scaleStages(frame, scaleTraffic(frame));
   const traffic = applyLead(scaleTraffic(frame), stages);
   const baseLead = getLeadCount("site");
@@ -183,4 +183,29 @@ export function buildBoardModel(range) {
     leadCount,
     regions: scaleRegions(frame, stages.site[3].cur),
   };
+}
+
+export function buildBoardModel(range) {
+  return assembleModel(frameOf(range));
+}
+
+/** 网站承接数据按已结束自然周取数，不是近 N 天滑动窗口。最新一周用原口径，往前各周人数略有起伏。 */
+const WEEK_FACTORS = [1, 0.94, 0.97, 0.88, 0.91, 0.86, 0.9, 0.82, 0.85, 0.79, 0.83, 0.76, 0.8];
+
+export function buildWeekModel(weekId) {
+  const week = WEEKS.find((item) => item.id === weekId) ?? WEEKS[0];
+  const index = Math.max(0, WEEKS.findIndex((item) => item.id === week.id));
+  const factor = WEEK_FACTORS[index] ?? 0.78;
+  const base = frameOf("d7");
+  const siteUv = Math.round(base.siteUv * factor);
+  return assembleModel({
+    ...base,
+    value: week.id,
+    label: week.label,
+    span: week.label,
+    baselineLabel: week.baselineLabel,
+    compare: true,
+    siteUv,
+    factor: siteUv / getStages("site")[0].cur,
+  });
 }

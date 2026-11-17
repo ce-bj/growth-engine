@@ -1,5 +1,5 @@
 import { useRef, useState } from "react";
-import { App as AntApp, Button, Card, ConfigProvider, Dropdown, Empty, Input, Modal, Progress, Steps, Table, Tag, Tooltip } from "antd";
+import { App as AntApp, Button, Card, ConfigProvider, Modal, Progress, Steps, Table, Tag, Tooltip } from "antd";
 import {
   ArrowRightOutlined,
   CheckCircleFilled,
@@ -12,27 +12,27 @@ import {
   LockOutlined,
 } from "@ant-design/icons";
 import {
-  ADVICE,
   BRIEFS,
   LEADS,
   MONITOR_STAGE,
+  PROGRESS_STAGE,
   MONTHLY_REPORT,
   ONBOARD_TIMELINE,
   RESULT_STAGE,
-  RULE_CHECKS,
   SUGGESTIONS,
   TRACK_STAGES,
   TRACKING,
   VERDICTS,
 } from "../diagnosisPeriod.js";
 import { BOARD_THEME } from "../board-theme.js";
-import "./agent-page.css";
+import { DecisionSection } from "./DecisionCards.jsx";
 
 const SKIP_REASONS = [
-  { key: "doing", label: "已经在做了", effect: "下周同一现象不再重复派发" },
-  { key: "disagree", label: "不认同这个判断", effect: "记入本站防重，后续换方向" },
-  { key: "later", label: "以后再说", effect: "下周若未解除继续提示" },
+  { key: "doing", label: "这件事我已经在做了", effect: "下周如果还是这个问题，不再重复发给你。" },
+  { key: "disagree", label: "我不同意这个判断", effect: "我们记下来，以后换一种做法。" },
+  { key: "later", label: "以后再说", effect: "下周如果问题还在，会再提醒你。" },
 ];
+import "./agent-page.css";
 
 const SOURCE_STATE = {
   ok: { icon: <CheckCircleFilled />, label: "已取到" },
@@ -59,13 +59,6 @@ function encodeTask(task) {
 const fmtInt = (value) => value.toLocaleString("en-US");
 const pct = (value) => `${value.toFixed(1)}%`;
 const fmtP = (p) => (p.startsWith("<") ? `p ${p}` : `p = ${p}`);
-const briefOf = (key) => BRIEFS.find((item) => item.key === key);
-
-const FACE_ROWS = [
-  ["data", "数据表现"],
-  ["cause", "根本原因"],
-];
-
 function SectionTitle({ title, extra }) {
   return (
     <div className="ag-section-head">
@@ -75,19 +68,12 @@ function SectionTitle({ title, extra }) {
   );
 }
 
-function sourceView(source, authMap) {
-  if (source.state === "unauthorized" && authMap?.[source.authKey]) {
-    return { ...source, state: "ok", detail: "已授权，下次诊断起读取广告实际搜索词明细" };
-  }
-  return source;
-}
-
 function OnboardScreen({ site }) {
   return (
     <Card className="ag-onboard">
       <div className="ag-onboard-head">
         <Tag color="processing" icon={<ClockCircleOutlined />}>
-          首个 7 天窗口采集中
+          正在收集第一个 7 天的访问
         </Tag>
         <h2>
           {site.connectedAt} 接入 · {site.firstReportAt} 出首期
@@ -101,172 +87,6 @@ function OnboardScreen({ site }) {
           </div>
         ))}
       </div>
-    </Card>
-  );
-}
-
-function BriefCard({
-  brief,
-  open,
-  highlighted,
-  extra,
-  authMap,
-  onToggle,
-  onExtra,
-  onApprove,
-  onSkip,
-  onAuthorize,
-  cardRef,
-}) {
-  const sources = brief.sources.map((item) => sourceView(item, authMap));
-  const locked = sources.filter((item) => item.state === "unauthorized").length;
-  const plan = brief.planPreview;
-
-  return (
-    <Card className={`ag-brief${highlighted ? " is-flash" : ""}`} ref={cardRef}>
-      <div className="ag-brief-head">
-        <div className="ag-brief-title">
-          <Tag color={brief.priority === "P0" ? "error" : "warning"}>{brief.priority}</Tag>
-          {brief.carryOver ? <Tag color="warning">{brief.carryOver}</Tag> : null}
-          <h3>{brief.title}</h3>
-          <Tag variant="filled">{brief.direction}</Tag>
-          {plan ? <Tag color={plan.badgeTone}>{plan.badge}</Tag> : null}
-          {locked ? <Tag color="warning">待授权</Tag> : null}
-        </div>
-        <div className="ag-brief-actions">
-          <Button type="text" onClick={onToggle}>
-            {open ? "收起" : "详情"}
-          </Button>
-          <Dropdown
-            trigger={["click"]}
-            menu={{
-              items: SKIP_REASONS.map((reason) => ({
-                key: reason.key,
-                label: reason.label,
-                extra: reason.effect,
-              })),
-              onClick: ({ key }) => onSkip(key),
-            }}
-          >
-            <Button>
-              暂不处理 <DownOutlined />
-            </Button>
-          </Dropdown>
-          <Button type="primary" onClick={onApprove}>
-            通过，交给{brief.executor}
-          </Button>
-        </div>
-      </div>
-
-      {plan && !open ? (
-        <div className="ag-plan-strip">
-          <span>{plan.metric}</span>
-          <em>
-            {plan.baseline} <ArrowRightOutlined /> {plan.threshold}
-          </em>
-          <small>{plan.minSample}</small>
-        </div>
-      ) : null}
-
-      {open ? (
-        <div className="ag-brief-body">
-          <div className="ag-brief-col">
-            <h4>任务说明</h4>
-            <div className="ag-strategy">
-              <div className="ag-kv">
-                <b>任务目标</b>
-                <span>{brief.summary}</span>
-              </div>
-              <div className="ag-kv">
-                <b>任务对象</b>
-                <span>{brief.target}</span>
-              </div>
-              <div className="ag-kv">
-                <b>内容要求</b>
-                <ol className="ag-brief-reqs">
-                  {brief.requirements.map((line) => (
-                    <li key={line}>{line}</li>
-                  ))}
-                </ol>
-              </div>
-              <div className="ag-kv">
-                <b>约束</b>
-                <span>{brief.constraints.join("；")}</span>
-              </div>
-              <label className="ag-kv ag-kv-input">
-                <b>额外补充</b>
-                <Input.TextArea
-                  className="ag-extra-input"
-                  value={extra}
-                  placeholder="可以写别的要求，没有就留空"
-                  autoSize={{ minRows: 2, maxRows: 5 }}
-                  onChange={(event) => onExtra(event.target.value)}
-                />
-              </label>
-            </div>
-
-            {plan ? (
-              <>
-                <h4>评估计划</h4>
-                <div className="ag-strategy">
-                  <div className="ag-kv">
-                    <b>看什么</b>
-                    <span>
-                      {plan.metric}
-                      {plan.formula ? `，${plan.formula}` : ""}
-                    </span>
-                  </div>
-                  <div className="ag-kv">
-                    <b>现在</b>
-                    <span>{plan.baseline}</span>
-                  </div>
-                  <div className="ag-kv">
-                    <b>做成</b>
-                    <span>
-                      {plan.threshold}
-                      {plan.mde ? `，${plan.mde}` : ""}
-                    </span>
-                  </div>
-                  <div className="ag-kv">
-                    <b>至少</b>
-                    <span>{plan.minSample}</span>
-                  </div>
-                  <div className="ag-kv">
-                    <b>多久</b>
-                    <span>{plan.estWeeks}</span>
-                  </div>
-                  <div className="ag-kv">
-                    <b>通过后</b>
-                    <span>{plan.sqlNote}</span>
-                  </div>
-                </div>
-              </>
-            ) : null}
-          </div>
-
-          <div className="ag-brief-col">
-            <h4>智能体都参考了什么</h4>
-            <ul className="ag-sources">
-              {sources.map((source) => (
-                <li key={source.name} className={`is-${source.state}`}>
-                  <span className="ag-source-icon" aria-label={SOURCE_STATE[source.state].label}>
-                    {SOURCE_STATE[source.state].icon}
-                  </span>
-                  <div>
-                    <b>{source.name}</b>
-                    <span>{source.detail}</span>
-                  </div>
-                  {source.state === "unauthorized" && onAuthorize ? (
-                    <Button size="small" type="link" onClick={() => onAuthorize(source.authKey)}>
-                      去授权
-                    </Button>
-                  ) : null}
-                </li>
-              ))}
-            </ul>
-          </div>
-        </div>
-      ) : null}
     </Card>
   );
 }
@@ -300,18 +120,17 @@ function LeadStrip({ data, counts }) {
   return (
     <section className="ag-leads" aria-label="留资">
       <div className="ag-leads-num">
-        <span>近 7 天留资</span>
+        <span>近 7 天留下联系方式</span>
         <b>{cur}</b>
         <div className="ag-leads-split">
-          <span>表单 {data.form}</span>
-          <span>客服 {data.chat}</span>
+          <span>表单留下 {data.form} 人</span>
+          <span>客服留下 {data.chat} 人</span>
         </div>
         <div className="ag-leads-tags">
           <Tag variant="filled" color={diff < 0 ? "error" : "success"}>
-            较上周 {diff > 0 ? "+" : ""}
-            {diff}
+            比上一周{diff > 0 ? "多" : "少"} {Math.abs(diff)} 人
           </Tag>
-          <Tag variant="filled">使用前周均 {data.beforeAvg}</Tag>
+          <Tag variant="filled">开始使用前，平均每周 {data.beforeAvg} 人</Tag>
         </div>
       </div>
       <LeadBarChart weeks={weeks} marks={data.marks} />
@@ -347,12 +166,12 @@ function TrackReadout({ row, onOpen }) {
     const m = row.monitor;
     return (
       <button type="button" className="ag-readout" onClick={() => onOpen(row)}>
-        <Tag color="success">生效已核验</Tag>
+        <Tag color="success">上线检查已通过</Tag>
         <span className="ag-readout-metric">{m.metric}</span>
         <span className="ag-readout-val">
           {pct(m.before.value)} <ArrowRightOutlined /> <b className={m.current.value >= m.threshold ? "is-up" : ""}>{pct(m.current.value)}</b>
         </span>
-        <span className="ag-readout-line">达标 {pct(m.threshold)}</span>
+        <span className="ag-readout-line">目标 {pct(m.threshold)}</span>
         <Progress className="ag-readout-prog" percent={Math.round((m.day / m.minDays) * 100)} size="small" showInfo={false} />
         <span className="ag-readout-day">
           {m.day}/{m.minDays} 天
@@ -371,7 +190,7 @@ function TrackReadout({ row, onOpen }) {
           {pct(r.before.value)} <ArrowRightOutlined /> <b>{pct(r.after.value)}</b>
         </span>
         <span className="ag-readout-line">
-          关联留资 {r.leads.before} <ArrowRightOutlined /> {r.leads.after}
+          留下联系方式 {r.leads.before} 人 <ArrowRightOutlined /> {r.leads.after} 人
         </span>
       </button>
     );
@@ -392,7 +211,7 @@ function LeadPair({ before, after }) {
   return (
     <section className="ag-mdl-block">
       <h4>
-        关联留资
+        留下联系方式的人数
       </h4>
       <div className="ag-mdl-pair">
         <div>
@@ -454,7 +273,7 @@ function MonitorModal({ row, onClose }) {
         <LeadPair before={m.leads.before} after={m.leads.after} />
         <section className="ag-mdl-block">
           <h4>
-            上线即刻生效确认 {m.verifiedAt ? <small>{m.verifiedAt}</small> : null}
+            上线后当场检查了这些 {m.verifiedAt ? <small>{m.verifiedAt}</small> : null}
           </h4>
           <ul className="ag-mdl-checks">
             {m.checks.map((check) => (
@@ -467,7 +286,7 @@ function MonitorModal({ row, onClose }) {
         </section>
         <section className="ag-mdl-block">
           <h4>
-            冻结直接主指标 <span>{m.metric}</span>
+            用这个数字判断有没有效果 <span>{m.metric}</span>
             <small>{m.formula}</small>
           </h4>
           <MetricScale
@@ -479,22 +298,22 @@ function MonitorModal({ row, onClose }) {
           />
           <dl className="ag-mdl-stats is-3">
             <div>
-              <dt>最小可检出提升</dt>
+              <dt>至少要提升多少</dt>
               <dd>+{m.mde} 个百分点</dd>
             </div>
             <div>
-              <dt>最小样本量</dt>
+              <dt>至少要有多少访客</dt>
               <dd>
                 {fmtInt(m.minSample)} {m.unit}
               </dd>
             </div>
             <div>
-              <dt>最短可判定周期</dt>
+              <dt>最快多久能下结论</dt>
               <dd>{m.minDays} 天</dd>
             </div>
           </dl>
           <div className="ag-mdl-progress">
-            <span>样本进度</span>
+            <span>访客已经来了多少</span>
             <Progress
               percent={Math.min(100, Math.round((m.current.den / m.minSample) * 100))}
               format={() => `${fmtInt(m.current.den)} / ${fmtInt(m.minSample)}`}
@@ -534,12 +353,12 @@ function ResultModal({ row, reworked, onRework, onClose }) {
   if (negative) {
     footer = (
       <div className="ag-mdl-foot">
-        <span>该做法已自动记入本站防重历史，后续诊断不再重复建议</span>
+        <span>这个做法没有带来变化，以后不再建议同样的修改。</span>
         {reworked ? (
           <Button disabled>已提交换方向重做</Button>
         ) : (
           <Button type="primary" onClick={onRework}>
-            换个方向重做
+            换一种做法
           </Button>
         )}
       </div>
@@ -561,7 +380,7 @@ function ResultModal({ row, reworked, onRework, onClose }) {
         />
         <section className="ag-mdl-block">
           <h4>
-            冻结直接主指标 <span>{r.metric}</span>
+            用这个数字判断有没有效果 <span>{r.metric}</span>
             <small>{r.formula}</small>
           </h4>
           <div className="ag-mdl-compare">
@@ -581,11 +400,11 @@ function ResultModal({ row, reworked, onRework, onClose }) {
               <dd>{r.window.days} 天</dd>
             </div>
             <div>
-              <dt>统计显著性</dt>
+              <dt>这个变化像不像碰巧</dt>
               <dd>{fmtP(r.p)}</dd>
             </div>
             <div>
-              <dt>同期干扰</dt>
+              <dt>同一时期还有没有别的改动</dt>
               <dd>{r.overlap || "无"}</dd>
             </div>
           </dl>
@@ -593,7 +412,7 @@ function ResultModal({ row, reworked, onRework, onClose }) {
         </section>
         {r.attribution ? (
           <section className="ag-mdl-block">
-            <h4>归因与原因小结</h4>
+            <h4>为什么是这个结果</h4>
             <p className="ag-mdl-attr">{r.attribution}</p>
           </section>
         ) : null}
@@ -604,15 +423,13 @@ function ResultModal({ row, reworked, onRework, onClose }) {
 
 function suggestionStatus(item, decisions, adviceDone, trackRows) {
   if (item.kind === "advice") {
-    return adviceDone[item.key]
-      ? { label: "已处理", color: "success" }
-      : { label: "待人工处理", color: "warning" };
+    return { label: "人工处理建议", color: adviceDone[item.key] ? "success" : "warning" };
   }
   if (item.kind === "brief") {
     const decision = decisions[item.key];
-    if (decision?.status === "approved") return { label: "已批准", color: "processing" };
-    if (decision?.status === "skipped") return { label: "暂不处理", color: "default" };
-    return { label: "待你审批", color: "warning" };
+    if (decision?.status === "approved") return { label: "你已经同意", color: "processing" };
+    if (decision?.status === "skipped") return { label: "以后再说", color: "default" };
+    return { label: "等你决定", color: "warning" };
   }
   const row = trackRows.find((track) => track.key === item.key);
   if (row?.result?.verdict) {
@@ -620,7 +437,7 @@ function suggestionStatus(item, decisions, adviceDone, trackRows) {
     return { label: verdict.label, color: verdict.color };
   }
   if (row) return { label: TRACK_STAGES[row.stage], color: "processing" };
-  return { label: "执行中", color: "processing" };
+  return { label: "正在做", color: "processing" };
 }
 
 function SuggestionModal({ open, weekLabel, decisions, adviceDone, trackRows, onClose, onOpen }) {
@@ -631,7 +448,7 @@ function SuggestionModal({ open, weekLabel, decisions, adviceDone, trackRows, on
   }));
 
   return (
-    <Modal open={open} width={920} footer={null} onCancel={onClose} title="建议记录">
+    <Modal open={open} width={920} footer={null} onCancel={onClose} title="以前建议过的事">
       <Table
         className="ag-ledger"
         size="middle"
@@ -643,9 +460,9 @@ function SuggestionModal({ open, weekLabel, decisions, adviceDone, trackRows, on
         })}
         columns={[
           { title: "周期", dataIndex: "weekLabel", width: 168 },
-          { title: "现象", dataIndex: "title", width: 168 },
+          { title: "发现的问题", dataIndex: "title", width: 200 },
           {
-            title: "建议",
+            title: "建议你做的事",
             dataIndex: "text",
             render: (_, record) => (
               <span className="ag-ledger-advice">
@@ -668,10 +485,10 @@ function SuggestionModal({ open, weekLabel, decisions, adviceDone, trackRows, on
 
 function MonthlyModal({ open, onClose }) {
   return (
-    <Modal open={open} width={660} footer={null} onCancel={onClose} title={`月度价值报告 · ${MONTHLY_REPORT.monthLabel}`}>
+    <Modal open={open} width={660} footer={null} onCancel={onClose} title={`这个月做了什么 · ${MONTHLY_REPORT.monthLabel}`}>
       <div className="ag-mdl">
         <section className="ag-mdl-block">
-          <h4>本月已推进动作</h4>
+          <h4>这个月已经做完的事</h4>
           <ul className="ag-month-list">
             {MONTHLY_REPORT.done.map((item) => (
               <li key={item.text}>
@@ -683,14 +500,14 @@ function MonthlyModal({ open, onClose }) {
         </section>
         <section className="ag-mdl-block">
           <h4>
-            留资周趋势与动作上线节点 <small>使用前周均 {LEADS.beforeAvg} 条 · 小旗为动作上线周</small>
+            每周留下联系方式的人数。小旗标出修改上线的那一周。
           </h4>
           <div className="ag-month-chart">
             <LeadBarChart weeks={LEADS.weeks} marks={LEADS.marks} />
           </div>
         </section>
         <section className="ag-mdl-block">
-          <h4>下月准备做的事</h4>
+          <h4>下个月准备做的事</h4>
           <ol className="ag-month-next">
             {MONTHLY_REPORT.nextMonth.map((line) => (
               <li key={line}>{line}</li>
@@ -714,6 +531,7 @@ export default function AgentPage({ site, weekLabel, quiet, authMap, onAuthorize
   const [modalRow, setModalRow] = useState(null);
   const cardRefs = useRef({});
   const trackRefs = useRef({});
+  const ruleRefs = useRef({});
 
   if (site && !site.diagnosed) {
     return (
@@ -726,11 +544,8 @@ export default function AgentPage({ site, weekLabel, quiet, authMap, onAuthorize
   }
 
   const briefs = quiet ? [] : BRIEFS;
-  const advice = quiet ? [] : ADVICE;
   const pending = briefs.filter((brief) => !decisions[brief.key]);
-  const skipped = briefs.filter((brief) => decisions[brief.key]?.status === "skipped");
   const approved = briefs.filter((brief) => decisions[brief.key]?.status === "approved");
-  const hits = quiet ? [] : RULE_CHECKS.filter((rule) => rule.state === "hit");
 
   const trackRows = [
     ...approved.map((brief) => ({
@@ -740,7 +555,7 @@ export default function AgentPage({ site, weekLabel, quiet, authMap, onAuthorize
       executor: brief.executor,
       from: `${weekLabel}诊断`,
       approvedAt: "刚刚",
-      stage: 0,
+      stage: PROGRESS_STAGE,
       note: brief.planPreview?.metric || "",
       summary: brief.summary,
       target: brief.target,
@@ -752,10 +567,10 @@ export default function AgentPage({ site, weekLabel, quiet, authMap, onAuthorize
 
   /** 顶部收敛为 4 个核心状态数字（去掉客户侧「本站策略」）。 */
   const counts = [
-    { key: "pending", label: "待你审批", value: pending.length, hot: pending.length > 0 },
-    { key: "running", label: "执行中", value: trackRows.filter((row) => row.stage < MONITOR_STAGE).length },
-    { key: "monitor", label: "监测中", value: trackRows.filter((row) => row.stage === MONITOR_STAGE).length },
-    { key: "proven", label: "已证实有效", value: trackRows.filter((row) => row.result?.verdict === "effective").length },
+    { key: "pending", label: "等你决定", value: pending.length, hot: pending.length > 0 },
+    { key: "running", label: "正在做", value: trackRows.filter((row) => row.stage < MONITOR_STAGE).length },
+    { key: "monitor", label: "正在看效果", value: trackRows.filter((row) => row.stage === MONITOR_STAGE).length },
+    { key: "proven", label: "已经证明有效", value: trackRows.filter((row) => row.result?.verdict === "effective").length },
   ];
 
   function flash(key) {
@@ -785,19 +600,31 @@ export default function AgentPage({ site, weekLabel, quiet, authMap, onAuthorize
   }
 
   function locateAdvice(key) {
-    document.getElementById(`advice-${key}`)?.scrollIntoView({ behavior: "smooth", block: "center" });
+    setOpenKeys((prev) => (prev.includes(key) ? prev : [...prev, key]));
+    const node = cardRefs.current[key] || document.getElementById(`task-${key}`);
+    node?.scrollIntoView({ behavior: "smooth", block: "center" });
     flash(key);
+  }
+
+  function locateRule(key) {
+    ruleRefs.current[key]?.scrollIntoView({ behavior: "smooth", block: "center" });
+    flash(key);
+  }
+
+  function locateMove(item) {
+    if (item.kind === "brief") locateBriefOrTrack(item.key);
+    else locateAdvice(item.key);
   }
 
   function approve(brief) {
     setDecisions((prev) => ({ ...prev, [brief.key]: { status: "approved" } }));
-    message.success(`已分发至${brief.executor}`);
+    message.success(`已经交给${brief.executor}。做好后会先给你看，你确认了才会上线。`);
   }
 
   function skip(brief, reasonKey) {
     const reason = SKIP_REASONS.find((item) => item.key === reasonKey);
     setDecisions((prev) => ({ ...prev, [brief.key]: { status: "skipped", reason } }));
-    message.info(`已暂不处理：${reason.effect}`);
+    message.info(reason.effect);
   }
 
   function confirmLaunch(row) {
@@ -813,12 +640,12 @@ export default function AgentPage({ site, weekLabel, quiet, authMap, onAuthorize
           : item,
       ),
     );
-    message.success("生产上线已确认，当场生效核验通过，已切入监测期");
+    message.success("已记录上线。我们开始看这页的效果。");
   }
 
   function rework(row) {
     setReworkedKeys((prev) => ({ ...prev, [row.key]: true }));
-    message.success("原做法已记入本站防重，下一轮诊断将换方向生成新方案");
+    message.success("已经记下这个做法没有效果。下次会换一种做法。");
     setModalRow(null);
   }
 
@@ -866,166 +693,27 @@ export default function AgentPage({ site, weekLabel, quiet, authMap, onAuthorize
       <div className="ag-page">
         <LeadStrip data={LEADS} counts={counts} />
 
-        <SectionTitle title="待你审批" />
-        {pending.length ? (
-          pending.map((brief) => (
-            <BriefCard
-              key={brief.key}
-              brief={brief}
-              open={openKeys.includes(brief.key)}
-              highlighted={flashKey === brief.key}
-              extra={extraNotes[brief.key] || ""}
-              authMap={authMap}
-              cardRef={(node) => {
-                cardRefs.current[brief.key] = node;
-              }}
-              onToggle={() => toggle(brief.key)}
-              onExtra={(value) => setExtraNotes((prev) => ({ ...prev, [brief.key]: value }))}
-              onApprove={() => approve(brief)}
-              onSkip={(reasonKey) => skip(brief, reasonKey)}
-              onAuthorize={onAuthorize}
-            />
-          ))
-        ) : (
-          <Card className="ag-empty">
-            <Empty
-              image={Empty.PRESENTED_IMAGE_SIMPLE}
-              description={quiet ? "本周全站表现平稳，无新增任务" : "本期所有待审批任务均已处理"}
-            />
-          </Card>
-        )}
+        <DecisionSection
+          quiet={quiet}
+          decisions={decisions}
+          adviceDone={adviceDone}
+          extraNotes={extraNotes}
+          authMap={authMap}
+          openKeys={openKeys}
+          flashKey={flashKey}
+          onToggle={toggle}
+          onApprove={approve}
+          onSkip={skip}
+          onUndo={undo}
+          onExtra={(key, value) => setExtraNotes((prev) => ({ ...prev, [key]: value }))}
+          onAuthorize={onAuthorize}
+          onLocateTrack={locateTrack}
+          cardRef={(key, node) => {
+            cardRefs.current[key] = node;
+          }}
+        />
 
-        {skipped.length ? (
-          <div className="ag-skipped">
-            {skipped.map((brief) => (
-              <div key={brief.key} className="ag-skipped-row">
-                <Tag>暂不处理</Tag>
-                <b>{brief.title}</b>
-                <span>
-                  {decisions[brief.key].reason.label} · {decisions[brief.key].reason.effect}
-                </span>
-                <Button type="link" size="small" onClick={() => undo(brief)}>
-                  撤回
-                </Button>
-              </div>
-            ))}
-          </div>
-        ) : null}
-
-        {advice.map((item) => {
-          const done = Boolean(adviceDone[item.key]);
-          return (
-            <div key={item.key} id={`advice-${item.key}`} className={`ag-advice${flashKey === item.key ? " is-flash" : ""}`}>
-              <Tag color={done ? "success" : "warning"}>{done ? "已处理" : "人工"}</Tag>
-              <div className="ag-advice-main">
-                <b>{item.title}</b>
-              </div>
-              <Button
-                size="small"
-                onClick={() => {
-                  setAdviceDone((prev) => ({ ...prev, [item.key]: !done }));
-                  if (!done) message.success("已记录人工处理状态");
-                }}
-              >
-                {done ? "撤回状态" : "标记已处理"}
-              </Button>
-            </div>
-          );
-        })}
-
-        <SectionTitle title="诊断依据" />
-        {hits.length ? (
-          <div className="ag-rules-list">
-            {hits.map((rule) => {
-              const strategies = [];
-              (rule.briefKeys || []).forEach((key) => {
-                const brief = briefOf(key);
-                if (!brief) return;
-                const isApproved = decisions[key]?.status === "approved";
-                strategies.push({
-                  key,
-                  kind: "brief",
-                  direction: brief.direction,
-                  status: isApproved ? "已批准" : brief.carryOver || "",
-                  statusColor: isApproved ? "success" : "warning",
-                  label: brief.summary,
-                });
-              });
-              if (rule.trackKey) {
-                const tr = trackRows.find((row) => row.key === rule.trackKey);
-                if (tr) {
-                  strategies.push({
-                    key: tr.key,
-                    kind: "track",
-                    direction: tr.direction || tr.executor,
-                    status: TRACK_STAGES[tr.stage],
-                    statusColor: "processing",
-                    label: tr.summary || tr.title,
-                  });
-                }
-              }
-              (rule.adviceKeys || []).forEach((key) => {
-                const item = ADVICE.find((row) => row.key === key);
-                if (item) {
-                  strategies.push({
-                    key,
-                    kind: "advice",
-                    direction: "人工处理",
-                    status: adviceDone[item.key] ? "已处理" : "",
-                    statusColor: "success",
-                    label: item.title,
-                  });
-                }
-              });
-
-              return (
-                <article key={rule.key} className="ag-rule">
-                  <h3 className="ag-rule-title">{rule.title}</h3>
-                  <dl className="ag-dx">
-                    <div>
-                      <dt>网站现象</dt>
-                      <dd>{rule.phenomenon}</dd>
-                    </div>
-                    {FACE_ROWS.map(([field, label]) => (
-                      <div key={field}>
-                        <dt>{label}</dt>
-                        <dd>{rule.face[field]}</dd>
-                      </div>
-                    ))}
-                    <div>
-                      <dt>优化策略</dt>
-                      <dd>
-                        <ul className="ag-strategies">
-                          {strategies.map((item) => (
-                            <li key={item.key}>
-                              <Tag variant="filled">{item.direction}</Tag>
-                              {item.status ? <Tag color={item.statusColor}>{item.status}</Tag> : null}
-                              <Button
-                                type="link"
-                                size="small"
-                                onClick={() => {
-                                  if (item.kind === "brief") locateBriefOrTrack(item.key);
-                                  else if (item.kind === "track") locateTrack(item.key);
-                                  else locateAdvice(item.key);
-                                }}
-                              >
-                                {item.label}
-                              </Button>
-                            </li>
-                          ))}
-                        </ul>
-                      </dd>
-                    </div>
-                  </dl>
-                </article>
-              );
-            })}
-          </div>
-        ) : (
-          <p className="ag-layer-note">本周各转化环节均在正常区间，无可归因卡点。</p>
-        )}
-
-        <SectionTitle title="执行跟踪" />
+        <SectionTitle title="已经在做的事" />
         <Card className="ag-track">
           {trackRows.map((row) => (
             <div
@@ -1040,12 +728,12 @@ export default function AgentPage({ site, weekLabel, quiet, authMap, onAuthorize
                   <b>{row.title}</b>
                   {AGENT_VIEW[row.executor] ? (
                     <Button size="small" onClick={() => openAgentTask(row)}>
-                      查看任务
+                      打开这个任务
                     </Button>
                   ) : null}
-                  {row.stage === 2 && row.readyMonitor ? (
+                  {row.stage === PROGRESS_STAGE && row.readyMonitor ? (
                     <Button size="small" type="primary" ghost onClick={() => confirmLaunch(row)}>
-                      确认已上线
+                      我确认已经上线
                     </Button>
                   ) : null}
                 </div>

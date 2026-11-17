@@ -51,7 +51,6 @@ import ProductListPage from "./components/ProductListPage";
 import SiteManageShell from "./components/SiteManageShell";
 import EmailDomainConfigPage from "./components/EmailDomainConfigPage";
 import EmailMarketingPage from "./components/EmailMarketingPage";
-import DataAnalysisPage from "./components/DataAnalysisPage";
 import DataAnalysisNewPage from "./components/DataAnalysisNewPage";
 import { buildCampaignFromLeadGen, upsertCampaign } from "./automation/emailCampaignStore";
 import ProductEditPage from "./components/ProductEditPage";
@@ -83,9 +82,8 @@ const GROWTH_WORKBENCH_URL =
 const ONE_AI_WORKBENCH_URL =
   import.meta.env.VITE_ONE_AI_WORKBENCH_URL ||
   `http://${window.location.hostname || "127.0.0.1"}:5188/`;
-const PORTAL_TABS = ["概况", "网站管理", "营销管理", "客户管理", "数据分析-旧", "数据分析-新", "管理设置", "增长工作台", "一期AI工作台"];
+const PORTAL_TABS = ["概况", "网站管理", "营销管理", "客户管理", "数据分析-旧", "管理设置", "增长工作台", "一期AI工作台"];
 const HASH_TABS = PORTAL_TABS.filter((t) => t !== "增长工作台" && t !== "一期AI工作台");
-const DATA_ANALYSIS_TABS = ["数据分析-旧", "数据分析-新"];
 const BLANK_PORTAL_TABS = ["概况", "客户管理"];
 
 function isAssistantEmbed() {
@@ -121,7 +119,7 @@ function openOneAiWorkbench() {
 
 function tabFromHash() {
   const hash = decodeURIComponent((window.location.hash || "").replace(/^#/, ""));
-  if (hash === "数据分析") return "数据分析-旧";
+  if (hash === "数据分析" || hash === "数据分析-新") return "数据分析-旧";
   return HASH_TABS.includes(hash) ? hash : "概况";
 }
 
@@ -2964,8 +2962,7 @@ export default function App() {
             onBackToAssistant={openGrowthWorkbench}
           />
         )}
-        {!assistantEmbed && activeTab === "数据分析-旧" && <DataAnalysisPage />}
-        {!assistantEmbed && activeTab === "数据分析-新" && <DataAnalysisNewPage />}
+        {!assistantEmbed && activeTab === "数据分析-旧" && <DataAnalysisNewPage />}
         {BLANK_PORTAL_TABS.includes(activeTab) && !assistantEmbed && (
           <BlankPortalPage title={activeTab} onOpenWorkbench={openGrowthWorkbench} />
         )}
