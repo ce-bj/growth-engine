@@ -9,7 +9,7 @@ const ANTARCTICA = "010";
 /** 台湾按中国统计和着色。 */
 const SAME_AS = { 158: "156" };
 const LAND = feature(world, world.objects.countries).features.filter((item) => item.id !== ANTARCTICA);
-const COLOR_RANGE = ["#d4e9f4", "#155a7d"];
+const COLOR_RANGE = ["#eef2ff", "#4338ca"];
 
 export default function RegionMap({ countries, height }) {
   const byId = new Map(countries.map((item) => [item.isoId, item]));

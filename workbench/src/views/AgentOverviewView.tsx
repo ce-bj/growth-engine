@@ -20,7 +20,7 @@ const STATUS: Record<AgentStatus, { badge: 'processing' | 'warning' | 'default';
 }
 
 const METHOD_TAG: Record<DoneMethod, { color: string; label: string }> = {
-  agreed: { color: 'blue', label: DONE_METHOD_LABEL.agreed },
+  agreed: { color: '#6366f1', label: DONE_METHOD_LABEL.agreed },
   manual: { color: 'gold', label: DONE_METHOD_LABEL.manual },
   strategy: { color: 'default', label: DONE_METHOD_LABEL.strategy },
 }

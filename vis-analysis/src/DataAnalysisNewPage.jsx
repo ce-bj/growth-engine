@@ -13,8 +13,8 @@ import { AUTH_SOURCES, QUIET_WEEK_IDS, SITES, SOURCE_AUTH_PAGES, WEEKS } from ".
 
 const THEME = {
   token: {
-    colorPrimary: "#2f8bb8",
-    colorInfo: "#2f8bb8",
+    colorPrimary: "#6366f1",
+    colorInfo: "#6366f1",
     colorSuccess: "#2f6b3a",
     colorWarning: "#b45309",
     colorError: "#b42318",
@@ -22,7 +22,7 @@ const THEME = {
     colorTextSecondary: "#5c6570",
     colorBorder: "#e6e9ee",
     colorBgContainer: "#ffffff",
-    colorBgLayout: "#f5f7fa",
+    colorBgLayout: "#f5f7fb",
     borderRadius: 8,
     fontFamily: "'Noto Sans SC', 'PingFang SC', 'Microsoft YaHei', sans-serif",
     fontSize: 14,

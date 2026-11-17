@@ -34,7 +34,7 @@ const RANGES = [
 ]
 
 const CHANNELS = [
-  { id: "search", name: "搜索引擎", color: "#2f8bb8" },
+  { id: "search", name: "搜索引擎", color: "#6366f1" },
   { id: "direct", name: "直接访问", color: "#36b3a8" },
   { id: "referral", name: "外部链接", color: "#8e7cc3" },
   { id: "ads", name: "广告", color: "#e0a03b" },
@@ -534,16 +534,16 @@ export default function McpDetailBoard({ getBoard = getMcpBoard }) {
 
         <Row gutter={[16, 16]} className="db-kpis">
           <Col xs={24} sm={12} xl={6}>
-            <KpiCard title="访问人数" cur={entry.cur} prev={entry.prev} compare={compare} note={compare ? `上周 ${fmtInt(entry.prev)} 人` : null} />
+            <KpiCard title="访问人数" cur={entry.cur} prev={entry.prev} compare={false} />
           </Col>
           <Col xs={24} sm={12} xl={6}>
-            <KpiCard title="询盘条数" cur={model.all.leadCnt} prev={model.allPrev?.leadCnt} compare={compare} note={`留资访客 ${fmtInt(lead.cur)} 人`} />
+            <KpiCard title="询盘条数" cur={model.all.leadCnt} prev={model.allPrev?.leadCnt} compare={false} note={`留资访客 ${fmtInt(lead.cur)} 人`} />
           </Col>
           <Col xs={24} sm={12} xl={6}>
-            <KpiCard title="有效浏览率" cur={viewRate} prev={viewPrev} mode="rate" compare={compare} alert={compare && rateBrokeDown(viewRate, viewPrev)} note={compare && viewPrev != null ? `上周 ${pct(viewPrev)}` : null} />
+            <KpiCard title="有效浏览率" cur={viewRate} prev={viewPrev} mode="rate" compare={false} />
           </Col>
           <Col xs={24} sm={12} xl={6}>
-            <KpiCard title="留资转化率" cur={leadRate} prev={leadPrev} mode="rate" compare={compare} alert={compare && rateBrokeDown(leadRate, leadPrev)} note={compare && leadPrev != null ? `上周 ${pct(leadPrev)}` : null} />
+            <KpiCard title="留资转化率" cur={leadRate} prev={leadPrev} mode="rate" compare={false} />
           </Col>
         </Row>
 

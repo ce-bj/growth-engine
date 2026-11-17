@@ -26,7 +26,6 @@ import {
   PAGE_ID_COLS,
   SEARCH_TERM_COLS,
   SEARCH_TERM_SOURCES,
-  STUCK_LABEL,
   bottleneck,
   catalogRows,
   fmtInt,
@@ -47,7 +46,7 @@ const Line = lazy(() => import("@ant-design/plots").then((mod) => ({ default: mo
 const Funnel = lazy(() => import("@ant-design/plots").then((mod) => ({ default: mod.Funnel })));
 const RegionMap = lazy(() => import("./RegionMap.jsx"));
 
-const MIX_COLORS = ["#2f8bb8", "#36b3a8", "#8e7cc3", "#e0a03b", "#6b7fd7"];
+const MIX_COLORS = ["#6366f1", "#14b8a6", "#8b5cf6", "#e0a03b", "#818cf8"];
 
 const PAGE_COUNT_KEYS = ["pv", "uv", "pageLeads", "viewed", "started", "landPv", "landUv", "bounceUv", "landLeads"];
 const TERM_COUNT_KEYS = ["searches", "uv", "clicks", "impressions", "cost"];
@@ -134,6 +133,57 @@ function KpiCard({ title, cur, prev, mode = "count", note, alert, compare }) {
         </div>
       ) : null}
     </Card>
+  );
+}
+
+function HeadKpis({ entry, view, lead, leadCount, compare }) {
+  const viewRate = entry.cur ? view.cur / entry.cur : 0;
+  const viewPrev = entry.prev ? view.prev / entry.prev : null;
+  const leadRate = entry.cur ? lead.cur / entry.cur : 0;
+  const leadPrev = entry.prev ? lead.prev / entry.prev : null;
+  return (
+    <Row gutter={[16, 16]} className="db-kpis">
+      <Col xs={24} sm={12} xl={6}>
+        <KpiCard
+          title="访问人数"
+          cur={entry.cur}
+          prev={entry.prev}
+          compare={compare}
+          note={compare ? `上周 ${fmtInt(entry.prev)} 人` : null}
+        />
+      </Col>
+      <Col xs={24} sm={12} xl={6}>
+        <KpiCard
+          title="询盘条数"
+          cur={leadCount.cur}
+          prev={leadCount.prev}
+          compare={compare}
+          note={`留资访客 ${fmtInt(lead.cur)} 人`}
+        />
+      </Col>
+      <Col xs={24} sm={12} xl={6}>
+        <KpiCard
+          title="有效浏览率"
+          cur={viewRate}
+          prev={viewPrev}
+          mode="rate"
+          compare={compare}
+          note={compare && viewPrev != null ? `上周 ${pct(viewPrev)}` : null}
+          alert={compare && rateBrokeDown(viewRate, viewPrev)}
+        />
+      </Col>
+      <Col xs={24} sm={12} xl={6}>
+        <KpiCard
+          title="留资转化率"
+          cur={leadRate}
+          prev={leadPrev}
+          mode="rate"
+          compare={compare}
+          note={compare && leadPrev != null ? `上周 ${pct(leadPrev)}` : null}
+          alert={compare && rateBrokeDown(leadRate, leadPrev)}
+        />
+      </Col>
+    </Row>
   );
 }
 
@@ -465,8 +515,6 @@ export default function DetailBoard({ authMap, onAuthorize, mode = "full" }) {
 
   const siteStages = stageBook.site;
   const [entry, view, , lead] = siteStages;
-  const siteGates = through(siteStages);
-  const siteStuck = bottleneck(siteGates);
 
   const sourceRows = useMemo(
     () => traffic.sources.map((row) => ({
@@ -874,6 +922,7 @@ export default function DetailBoard({ authMap, onAuthorize, mode = "full" }) {
             {weekId === WEEKS[0].id ? <Tag>最新一期</Tag> : null}
             <span className="db-window-span">对照 {frame.baselineLabel}</span>
           </div>
+          <HeadKpis entry={entry} view={view} lead={lead} leadCount={leadCount} compare={compare} />
           <SliceBar
             cats={traffic.cats}
             cat={catchCat}
@@ -958,45 +1007,7 @@ export default function DetailBoard({ authMap, onAuthorize, mode = "full" }) {
           <span className="db-window-span">{frame.span}</span>
         </div>
 
-        {compare && siteStuck ? (
-          <Alert
-            className="db-focus"
-            type="warning"
-            showIcon
-            title={`本期卡在「${STUCK_LABEL[siteStuck.lossId]}」：${siteStuck.from.name} → ${siteStuck.to.name} 通过率 ${pct(siteStuck.passPrev)} → ${pct(siteStuck.pass)}。访问人数${entry.cur === entry.prev ? "持平" : `较上周 ${entry.cur > entry.prev ? "多" : "少"} ${fmtInt(Math.abs(entry.cur - entry.prev))} 人`}，留资访客${lead.cur === lead.prev ? "持平" : `较上周 ${lead.cur > lead.prev ? "多" : "少"} ${fmtInt(Math.abs(lead.cur - lead.prev))} 人`}。`}
-          />
-        ) : null}
-
-        <Row gutter={[16, 16]} className="db-kpis">
-          <Col xs={24} sm={12} xl={6}>
-            <KpiCard title="访问人数" cur={entry.cur} prev={entry.prev} compare={compare} note={compare ? `上周 ${fmtInt(entry.prev)} 人` : null} />
-          </Col>
-          <Col xs={24} sm={12} xl={6}>
-            <KpiCard title="询盘条数" cur={leadCount.cur} prev={leadCount.prev} compare={compare} note={`留资访客 ${fmtInt(lead.cur)} 人`} />
-          </Col>
-          <Col xs={24} sm={12} xl={6}>
-            <KpiCard
-              title="有效浏览率"
-              cur={view.cur / entry.cur}
-              prev={view.prev / entry.prev}
-              mode="rate"
-              compare={compare}
-              note={compare ? `上周 ${pct(view.prev / entry.prev)}` : null}
-              alert={compare && rateBrokeDown(view.cur / entry.cur, view.prev / entry.prev)}
-            />
-          </Col>
-          <Col xs={24} sm={12} xl={6}>
-            <KpiCard
-              title="留资转化率"
-              cur={lead.cur / entry.cur}
-              prev={lead.prev / entry.prev}
-              mode="rate"
-              compare={compare}
-              note={compare ? `上周 ${pct(lead.prev / entry.prev)}` : null}
-              alert={compare && rateBrokeDown(lead.cur / entry.cur, lead.prev / entry.prev)}
-            />
-          </Col>
-        </Row>
+        <HeadKpis entry={entry} view={view} lead={lead} leadCount={leadCount} compare={false} />
 
         <SectionTitle title="流量" hint="从哪来、来了多少" />
         <Row gutter={[16, 16]}>

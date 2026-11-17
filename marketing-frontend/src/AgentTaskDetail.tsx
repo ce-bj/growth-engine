@@ -144,7 +144,7 @@ const kicker: CSSProperties = {
   margin: 0,
   fontSize: 13,
   letterSpacing: '0.04em',
-  color: '#2f8bb8',
+  color: '#6366f1',
 }
 
 const title: CSSProperties = {
@@ -190,7 +190,7 @@ const button: CSSProperties = {
   border: 0,
   borderRadius: 8,
   padding: '8px 16px',
-  background: '#2f8bb8',
+  background: '#6366f1',
   color: '#fff',
   fontSize: 14,
   cursor: 'pointer',

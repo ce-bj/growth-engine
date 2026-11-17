@@ -1,5 +1,5 @@
-/** 数据看板与智能体分析页共用的 antd 主题，对齐增长工作台门户蓝。 */
-export const ACCENT = "#2f8bb8";
+/** 数据看板与智能体分析页共用的 antd 主题，对齐内容发布智能体 indigo。 */
+export const ACCENT = "#6366f1";
 export const DANGER = "#cf1322";
 
 export const BOARD_THEME = {

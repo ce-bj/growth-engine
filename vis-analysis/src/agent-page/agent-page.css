@@ -1,5 +1,5 @@
 .ag-page {
-  --ag-accent: #2f8bb8;
+  --ag-accent: #6366f1;
   --ag-danger: #cf1322;
   --ag-warn: #d46b08;
   --ag-ok: #389e0d;
@@ -14,10 +14,10 @@
 
 @keyframes agFlash {
   0% {
-    box-shadow: 0 0 0 3px rgba(47, 139, 184, 0.36);
+    box-shadow: 0 0 0 3px rgba(99, 102, 241), 0.36);
   }
   100% {
-    box-shadow: 0 0 0 0 rgba(47, 139, 184, 0);
+    box-shadow: 0 0 0 0 rgba(99, 102, 241), 0);
   }
 }
 
@@ -1290,7 +1290,7 @@
 
 /* 监测 / 结论 / 月报弹窗 */
 .ag-mdl {
-  --ag-accent: #2f8bb8;
+  --ag-accent: #6366f1;
   --ag-warn: #d46b08;
   --ag-ok: #389e0d;
   --ag-text-2: #64748b;

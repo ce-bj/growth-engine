@@ -1,7 +1,7 @@
 /* 弹窗渲染在 body 下，不在 .dan-board 里，弹窗内用到的类要同时挂在 .db-modal 下 */
 .dan-board,
 .db-modal {
-  --db-accent: #2f8bb8;
+  --db-accent: #6366f1;
   --db-danger: #cf1322;
   --db-text-2: #64748b;
   --db-line: #e8edf2;
@@ -407,7 +407,7 @@
 .db-modal .db-fd-loss:focus-visible,
 .db-modal .db-fd-loss.is-on {
   border-color: var(--db-accent);
-  box-shadow: 0 0 0 2px rgba(47, 139, 184, 0.15);
+  box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.15);
   outline: none;
 }
 
@@ -582,8 +582,28 @@
 }
 
 .dan-board .db-loss-row dd,
+.db-modal .db-loss-row dd {
+  margin: 0;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.dan-board .db-filterbar {
+  margin-top: 0;
+}
+
+.dan-board .db-filter-row {
+  display: flex;
+  flex-wrap: wrap;
   align-items: center;
-  gap: 10px;
+  gap: 16px 40px;
+}
+
+.dan-board .db-filter {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
 }
 
 .dan-board .db-filter-label {

@@ -1,12 +1,12 @@
 import type { ThemeConfig } from 'antd'
 
-/** 与数字门户 demo-project/src/theme.js 对齐 */
+/** 内容区对齐内容发布智能体 indigo；顶栏仍用数字门户青绿 */
 export const PORTAL = {
-  brand: '#3B9FD0',
-  brandHover: '#2F8BB8',
-  brandActive: '#2779A3',
-  brandSoft: 'rgba(59, 159, 208, 0.12)',
-  canvas: '#F5F7FA',
+  brand: '#6366F1',
+  brandHover: '#4F46E5',
+  brandActive: '#4338CA',
+  brandSoft: 'rgba(99, 102, 241, 0.12)',
+  canvas: '#F5F7FB',
   surface: '#FFFFFF',
   border: '#E2E8F0',
   text: '#1E293B',
@@ -27,7 +27,7 @@ export const portalTheme: ThemeConfig = {
     borderRadiusLG: 8,
     fontFamily:
       '"PingFang SC", "Microsoft YaHei", "Noto Sans SC", "Segoe UI", sans-serif',
-    controlOutline: 'rgba(59, 159, 208, 0.28)',
+    controlOutline: 'rgba(99, 102, 241, 0.28)',
   },
   components: {
     Layout: {
