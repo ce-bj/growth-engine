@@ -1,10 +1,13 @@
 /** 访客行为分析智能体（Growth/vis-analysis）。与数字门户「数据分析-新」已拆开。 */
 import { useMemo, useState } from "react";
-import { App as AntApp, Button, ConfigProvider, Select } from "antd";
+import { App as AntApp, Button, ConfigProvider, Segmented, Select } from "antd";
 import zhCN from "antd/locale/zh_CN";
 import { ArrowLeftOutlined, DownOutlined, FileTextOutlined, HistoryOutlined } from "@ant-design/icons";
 import AgentPage from "./agent-page/AgentPage.jsx";
 import DetailBoard from "./detail-board/DetailBoard.jsx";
+import McpDetailBoard from "./detail-board/McpDetailBoard.jsx";
+import { MCP_SITE } from "./detail-board/mcpBoardData.js";
+import { getGoodyBoard, GOODY_SITE } from "./detail-board/goodyBoardData.js";
 import "./data-analysis-new.css";
 import { AUTH_SOURCES, QUIET_WEEK_IDS, SITES, SOURCE_AUTH_PAGES, WEEKS } from "./diagnosisPeriod.js";
 
@@ -83,6 +86,7 @@ function Workbench({ boardOnly }) {
   const [weekId, setWeekId] = useState(WEEKS[0].id);
   const [monthlyOpen, setMonthlyOpen] = useState(false);
   const [ledgerOpen, setLedgerOpen] = useState(false);
+  const [boardKind, setBoardKind] = useState("demo");
 
   const site = SITES.find((item) => item.id === siteId) ?? SITES[0];
   const week = WEEKS.find((item) => item.id === weekId) ?? WEEKS[0];
@@ -133,8 +137,37 @@ function Workbench({ boardOnly }) {
         {auth}
         <div className="dan-page" style={pageStyle}>
           <div className="dan-inner is-agent">
-            <header className="dan-toolbar">{siteSelect}</header>
-            <DetailBoard authMap={authMap} onAuthorize={setAuthKey} />
+            <div className="dan-board-switch">
+              <span>看板</span>
+              <Segmented
+                value={boardKind}
+                onChange={setBoardKind}
+                options={[
+                  { value: "demo", label: "演示数据" },
+                  { value: "live", label: "实际数据" },
+                  { value: "live2", label: "实际数据2" },
+                ]}
+              />
+              <span className="dan-board-switch-note">
+                {boardKind === "demo"
+                  ? "样例站点，模块和数字都是演示数据。"
+                  : boardKind === "live2"
+                    ? `${GOODY_SITE.name} · ${GOODY_SITE.host} · 截至 ${GOODY_SITE.asOf}`
+                    : `${MCP_SITE.name} · ${MCP_SITE.host} · 截至 ${MCP_SITE.asOf}`}
+              </span>
+            </div>
+            <header className="dan-toolbar">
+              {boardKind === "demo" ? siteSelect : (
+                <span className="dan-live-site">{boardKind === "live2" ? GOODY_SITE.name : MCP_SITE.name}</span>
+              )}
+            </header>
+            {boardKind === "demo" ? (
+              <DetailBoard authMap={authMap} onAuthorize={setAuthKey} />
+            ) : boardKind === "live2" ? (
+              <McpDetailBoard getBoard={getGoodyBoard} />
+            ) : (
+              <McpDetailBoard />
+            )}
           </div>
         </div>
       </>
