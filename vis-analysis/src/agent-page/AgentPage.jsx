@@ -80,14 +80,18 @@ const RUN_STATES = [
   { id: "armed", label: "已全部处理，等下周一" },
   { id: "paused", label: "下周已经过去了但是上周的没跑" },
   { id: "catchup", label: "刚把积压的那一周任务处理完" },
+  { id: "catchupRun", label: "积压处理完后正在分析" },
 ];
+
+const WORKBENCH_STATES = new Set(["pending", "paused", "armed", "catchup"]);
+const HANDLED_STATES = new Set(["armed", "catchup"]);
 
 export function MockStateSwitch({ value, onChange }) {
   return (
     <Dropdown
       trigger={["click"]}
       classNames={{ root: "ag-mock-menu", item: "ag-mock-item" }}
-      styles={{ root: { minWidth: 320 } }}
+      styles={{ root: { minWidth: 340 } }}
       menu={{
         selectable: true,
         selectedKeys: [value],
@@ -140,7 +144,7 @@ function GateScreen({ mode, onStart }) {
     );
   }
 
-  const catchingUp = mode === "catchup";
+  const catchingUp = mode === "catchupRun";
   const period = catchingUp ? "11月10日 – 11月16日" : "9月14日 – 9月20日";
 
   return (
@@ -163,6 +167,16 @@ function GateScreen({ mode, onStart }) {
 }
 
 function RunNote({ mode, pending }) {
+  if (mode === "catchup") {
+    return (
+      <Alert
+        type="info"
+        showIcon
+        title="将在今晚 02:00 开始分析"
+        description="11月10日 – 11月16日的数据 · 中间空过的周不补"
+      />
+    );
+  }
   if (mode === "armed") {
     return (
       <Alert type="success" showIcon title="已全部处理" description="下周一分析 9月21日 – 9月27日" />
@@ -641,7 +655,7 @@ export default function AgentPage({ site, weekLabel, quiet, authMap, onAuthorize
   const ruleRefs = useRef({});
 
   const briefs = quiet ? [] : BRIEFS;
-  const viewDecisions = runState === "armed" ? { ...ARMED_DECISIONS, ...decisions } : decisions;
+  const viewDecisions = HANDLED_STATES.has(runState) ? { ...ARMED_DECISIONS, ...decisions } : decisions;
   const pending = briefs.filter((brief) => !viewDecisions[brief.key]);
   const approved = briefs.filter((brief) => viewDecisions[brief.key]?.status === "approved");
 
@@ -770,15 +784,16 @@ export default function AgentPage({ site, weekLabel, quiet, authMap, onAuthorize
 
   const activeModalRow = modalRow ? trackRows.find((item) => item.key === modalRow.key) || modalRow : null;
 
-  const gate = runState === "off" || runState === "running" || runState === "catchup";
+  const gate = runState === "off" || runState === "running" || runState === "catchupRun";
+  const showWorkbench = WORKBENCH_STATES.has(runState);
 
   return (
     <ConfigProvider theme={BOARD_THEME}>
       <div className="ag-page">
         {gate ? <GateScreen mode={runState} onStart={() => onRunState("running")} /> : null}
         {!gate ? <RunNote mode={runState} pending={pending.length} /> : null}
-        {runState === "pending" || runState === "paused" || runState === "armed" ? <LeadStrip data={LEADS} counts={counts} /> : null}
-        {runState === "pending" || runState === "paused" || runState === "armed" ? (
+        {showWorkbench ? <LeadStrip data={LEADS} counts={counts} /> : null}
+        {showWorkbench ? (
           <DecisionSection
             quiet={quiet}
             decisions={viewDecisions}
@@ -800,7 +815,7 @@ export default function AgentPage({ site, weekLabel, quiet, authMap, onAuthorize
           />
         ) : null}
 
-        {runState === "pending" || runState === "paused" || runState === "armed" ? (
+        {showWorkbench ? (
           <>
         <SectionTitle title="已经在做的事" />
         <Card className="ag-track">
