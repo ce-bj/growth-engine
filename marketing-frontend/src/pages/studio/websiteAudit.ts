@@ -42,7 +42,7 @@ export function inspectBrandConsistency(d:Draft):WebsiteAudit {
 }
 export function brandSolution(report:WebsiteAudit,finding:BrandFinding) {
  if(!finding.solution)return ''
- return `来源：AI 友好度 / ${report.featureTitle}\n报告：${report.reportId}\n页面：${report.pageId} · 修订 ${report.contentRevision}\n问题：${finding.title}\n解决方案：${finding.solution}\n仅修改当前营销页，不修改全站，不发布。`
+ return `来源：AI Ready / ${report.featureTitle}\n报告：${report.reportId}\n页面：${report.pageId} · 修订 ${report.contentRevision}\n问题：${finding.title}\n解决方案：${finding.solution}\n仅修改当前营销页，不修改全站，不发布。`
 }
 export function applyBrandSolution(d:Draft,report:WebsiteAudit|undefined,text:string):Partial<Draft>|null {
  if(!report||report.pageId!==d.id||report.contentRevision!==d.revision||report.snapshotKey!==brandSnapshotKey(d))return null

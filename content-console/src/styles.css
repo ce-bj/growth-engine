@@ -1062,6 +1062,9 @@ button {
 .list-table tbody tr:hover {
   background: #f8fafd;
 }
+.list-table tbody tr.is-handoff {
+  background: var(--brand-50);
+}
 .td-title {
   font-weight: 600;
   max-width: 340px;

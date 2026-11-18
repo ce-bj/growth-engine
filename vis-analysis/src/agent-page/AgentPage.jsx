@@ -148,14 +148,22 @@ function LeadStrip({ data, counts }) {
   );
 }
 
-function StageTitle({ title, index, row, onOpen }) {
-  const clickable = row.stage === index && (index === MONITOR_STAGE || index === RESULT_STAGE);
-  if (!clickable) return title;
-  return (
-    <button type="button" className="ag-stage-link" onClick={() => onOpen(row)}>
-      {title}
-    </button>
-  );
+function StageTitle({ title, index, row, onOpen, onOpenAgent }) {
+  if (row.stage === index && index === PROGRESS_STAGE && AGENT_VIEW[row.executor]) {
+    return (
+      <button type="button" className="ag-stage-link" onClick={() => onOpenAgent(row)}>
+        {title}
+      </button>
+    );
+  }
+  if (row.stage === index && (index === MONITOR_STAGE || index === RESULT_STAGE)) {
+    return (
+      <button type="button" className="ag-stage-link" onClick={() => onOpen(row)}>
+        {title}
+      </button>
+    );
+  }
+  return title;
 }
 
 function TrackReadout({ row, onOpen }) {
@@ -749,7 +757,15 @@ export default function AgentPage({ site, weekLabel, quiet, authMap, onAuthorize
                   current={row.stage}
                   status={row.stage === RESULT_STAGE ? "finish" : "process"}
                   items={TRACK_STAGES.map((title, index) => ({
-                    title: <StageTitle title={title} index={index} row={row} onOpen={setModalRow} />,
+                    title: (
+                      <StageTitle
+                        title={title}
+                        index={index}
+                        row={row}
+                        onOpen={setModalRow}
+                        onOpenAgent={openAgentTask}
+                      />
+                    ),
                   }))}
                 />
                 <TrackReadout row={row} onOpen={setModalRow} />

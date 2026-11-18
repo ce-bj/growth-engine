@@ -537,10 +537,10 @@ export default function McpDetailBoard({ getBoard = getMcpBoard }) {
             <KpiCard title="访问人数" cur={entry.cur} prev={entry.prev} compare={false} />
           </Col>
           <Col xs={24} sm={12} xl={6}>
-            <KpiCard title="询盘条数" cur={model.all.leadCnt} prev={model.allPrev?.leadCnt} compare={false} note={`留资访客 ${fmtInt(lead.cur)} 人`} />
+            <KpiCard title="有效浏览率" cur={viewRate} prev={viewPrev} mode="rate" compare={false} />
           </Col>
           <Col xs={24} sm={12} xl={6}>
-            <KpiCard title="有效浏览率" cur={viewRate} prev={viewPrev} mode="rate" compare={false} />
+            <KpiCard title="留资数" cur={lead.cur} prev={lead.prev} compare={false} note={`共 ${fmtInt(model.all.leadCnt)} 条询盘`} />
           </Col>
           <Col xs={24} sm={12} xl={6}>
             <KpiCard title="留资转化率" cur={leadRate} prev={leadPrev} mode="rate" compare={false} />

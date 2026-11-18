@@ -26,7 +26,7 @@ export function dataBoardUrl() {
   return url.toString()
 }
 
-/** 网站承接数据：漏斗明细 + 用户意图（?view=intake） */
+/** 访客洞察：漏斗明细 + 用户意图（?view=intake） */
 export function intakeDataUrl() {
   const url = new URL(visitorAnalysisUrl(), window.location.origin)
   url.searchParams.set('view', 'intake')

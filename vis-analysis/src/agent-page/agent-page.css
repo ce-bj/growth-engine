@@ -1083,6 +1083,8 @@
 }
 
 .ag-stage-link {
+  position: relative;
+  z-index: 1;
   padding: 0;
   border: 0;
   background: none;
@@ -1091,6 +1093,7 @@
   text-decoration: underline dotted;
   text-underline-offset: 3px;
   cursor: pointer;
+  pointer-events: auto;
 }
 
 .ag-readout {

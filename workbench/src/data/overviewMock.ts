@@ -15,6 +15,9 @@ export type AgentStatus = 'waiting' | 'running' | 'idle'
 export type OverviewAgent = {
   key: string
   name: string
+  role: string
+  purpose: string
+  ability: string
   view?: ViewId
   status: AgentStatus
   cadence: string
@@ -26,8 +29,25 @@ export type OverviewAgent = {
 
 export const overviewAgents: OverviewAgent[] = [
   {
+    key: 'ready',
+    name: 'AI Ready',
+    role: '站点底座体检',
+    purpose: '帮网站打好被 AI 看见、被 AI 理解的基础',
+    ability: '检查站点是否容易被 AI 发现和读懂，发现问题后给出方案，由你确认后再改。',
+    view: 'ready',
+    status: 'idle',
+    cadence: '发现影响 AI 看见、理解站点的问题时出方案，等你确认',
+    lastRun: '09-15 02:30',
+    lastResult: 'sitemap 与 2 处死链已按你确认修好',
+    nextRun: '有问题时',
+    monthRuns: 1,
+  },
+  {
     key: 'visitor',
-    name: '网站策略',
+    name: '优化策略',
+    role: '每周转化诊断',
+    purpose: '帮网站更好地承接访客，让潜在的客户更容易留存转化',
+    ability: '每周看「访客洞察」，判断访客卡在哪、哪些页面没接住，并开出可落地的改版任务说明。',
     view: 'visitor',
     status: 'waiting',
     cadence: '每周一 02:00 诊断上一自然周',
@@ -39,35 +59,30 @@ export const overviewAgents: OverviewAgent[] = [
   {
     key: 'marketing',
     name: '智能营销页智能体',
+    role: '高转化页面生成',
+    purpose: '帮网站用对的页面接住对应来意的访客',
+    ability: '可按优化策略的任务说明来做，也可由你手动创建或修改营销页，草稿出来后交给你确认。',
     view: 'marketing',
     status: 'waiting',
-    cadence: '收到任务说明后出落地页草稿',
+    cadence: '有任务说明或你手动创建时出营销页草稿',
     lastRun: '09-18 09:20',
     lastResult: '「CNC 打样」落地页草稿已出',
-    nextRun: '有新任务说明时',
+    nextRun: '有任务或你创建时',
     monthRuns: 2,
   },
   {
     key: 'content',
     name: '内容发布智能体',
+    role: '日常内容扩充',
+    purpose: '持续补充专业内容，让潜在客户更容易读懂你们',
+    ability: '可按排期自动写，也可由你随时创建产品介绍、选型指南和行业问答，自检通过后交给你确认发布。',
     view: 'content',
     status: 'waiting',
-    cadence: '每周二、五 10:00 发布',
+    cadence: '按排期生产，也可随时手动创建',
     lastRun: '09-19 10:05',
     lastResult: '2 篇内容过质检，等待发布',
     nextRun: '09-22 10:00',
     monthRuns: 6,
-  },
-  {
-    key: 'ready',
-    name: 'AI 友好度',
-    view: 'ready',
-    status: 'idle',
-    cadence: '发现 sitemap、死链问题时出修复，等你确认',
-    lastRun: '09-15 02:30',
-    lastResult: 'sitemap 与 2 处死链已按你确认修好',
-    nextRun: '有问题时',
-    monthRuns: 1,
   },
 ]
 
@@ -103,7 +118,7 @@ export const overviewPending: PendingTask[] = [
   },
   {
     id: 'p-visitor-6061',
-    agent: '网站策略',
+    agent: '优化策略',
     view: 'visitor',
     title: 'CNC-6061 铝支架详情 · 改第一屏',
     desc: '落地接住率 53.8% → 21.9%。确认后任务说明交给智能营销页智能体。',
@@ -112,7 +127,7 @@ export const overviewPending: PendingTask[] = [
   },
   {
     id: 'p-visitor-oem',
-    agent: '网站策略',
+    agent: '优化策略',
     view: 'visitor',
     title: 'CNC OEM 询价留资页',
     desc: '询价来意没有专属承接页。确认后任务说明交给智能营销页智能体。',
@@ -121,7 +136,7 @@ export const overviewPending: PendingTask[] = [
   },
 ]
 
-/** 已完成任务的收口方式：网站策略只出一轮策略；其余是各智能体的具体任务。 */
+/** 已完成任务的收口方式：优化策略只出一轮策略；其余是各智能体的具体任务。 */
 export type DoneMethod = 'agreed' | 'manual' | 'strategy'
 
 export const DONE_METHOD_LABEL: Record<DoneMethod, string> = {
@@ -138,12 +153,12 @@ export type DoneTask = {
   method: DoneMethod
 }
 
-/** 本月已完成：网站策略只留一条出策略，其余是营销页 / 内容 / AI 友好度的具体任务 */
+/** 本月已完成：优化策略只留一条出策略，其余是营销页 / 内容 / AI Ready 的具体任务 */
 export const overviewDone: DoneTask[] = [
-  { id: 'd9', time: '09-21 02:14', agent: '网站策略', title: '9月14日–20日策略', method: 'strategy' },
+  { id: 'd9', time: '09-21 02:14', agent: '优化策略', title: '9月14日–20日策略', method: 'strategy' },
   { id: 'd8', time: '09-17 16:40', agent: '智能营销页智能体', title: '「询价」落地页 v2 上线', method: 'agreed' },
   { id: 'd7', time: '09-16 10:00', agent: '内容发布智能体', title: '发布 3 篇产品选型内容', method: 'agreed' },
-  { id: 'd6', time: '09-15 02:30', agent: 'AI 友好度', title: '修复 sitemap 与 2 处死链', method: 'agreed' },
+  { id: 'd6', time: '09-15 02:30', agent: 'AI Ready', title: '修复 sitemap 与 2 处死链', method: 'agreed' },
   { id: 'd3', time: '09-12 10:00', agent: '内容发布智能体', title: '「六角螺栓 M8×30」产品页发布', method: 'agreed' },
   { id: 'd2', time: '09-09 10:00', agent: '内容发布智能体', title: '发布 2 篇行业问答', method: 'agreed' },
 ]

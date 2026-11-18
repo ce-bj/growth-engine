@@ -14,7 +14,7 @@ function topicCount(t: PublishTask): number {
 }
 
 export function TaskListView() {
-  const { tasks, store, cancelTask, togglePauseTask, navigate } = useStore()
+  const { tasks, store, cancelTask, togglePauseTask, navigate, handoffTitle } = useStore()
   const [page, setPage] = useState(1)
   const [moreOpen, setMoreOpen] = useState<string | null>(null)
 
@@ -85,7 +85,7 @@ export function TaskListView() {
               {pageTasks.map((t) => {
                 const st = taskStatus(t)
                 return (
-                  <tr key={t.id}>
+                  <tr key={t.id} className={handoffTitle === t.title ? 'is-handoff' : undefined}>
                     <td className="td-mono">{t.taskNo}</td>
                     <td className="td-title">{t.title}</td>
                     <td className="col-num">{topicCount(t)}</td>

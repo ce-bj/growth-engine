@@ -1,6 +1,7 @@
 import { useEffect, useState, type CSSProperties } from 'react'
 
-type Task = {
+export type HandoffTask = {
+  id?: string
   title: string
   executor?: string
   from?: string
@@ -20,11 +21,11 @@ const STAY: Record<string, string> = {
   content: '留在内容发布',
 }
 
-function decodeTask(value: string): Task | null {
+function decodeTask(value: string): HandoffTask | null {
   try {
     const binary = atob(value)
     const bytes = Uint8Array.from(binary, (char) => char.charCodeAt(0))
-    const task = JSON.parse(new TextDecoder().decode(bytes)) as Task
+    const task = JSON.parse(new TextDecoder().decode(bytes)) as HandoffTask
     if (!task || typeof task.title !== 'string' || !task.title) return null
     return task
   } catch {
@@ -32,12 +33,16 @@ function decodeTask(value: string): Task | null {
   }
 }
 
-function readTask() {
+export function readHandoffTask() {
   return decodeTask(new URLSearchParams(window.location.search).get('task') || '')
 }
 
+function readTask() {
+  return readHandoffTask()
+}
+
 export default function AgentTaskDetail() {
-  const [task, setTask] = useState<Task | null>(() => readTask())
+  const [task, setTask] = useState<HandoffTask | null>(() => readTask())
 
   useEffect(() => {
     const onPop = () => setTask(readTask())

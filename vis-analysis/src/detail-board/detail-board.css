@@ -38,6 +38,50 @@
   align-self: center;
 }
 
+.dan-board .db-intake-narrative {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px 24px;
+  padding: 16px 20px;
+  border: 1px solid #dbe4f0;
+  border-radius: 10px;
+  background: linear-gradient(180deg, #f8faff 0%, #ffffff 100%);
+}
+
+.dan-board .db-intake-narrative__main {
+  flex: 1 1 520px;
+  min-width: 0;
+}
+
+.dan-board .db-intake-narrative__tag {
+  display: inline-flex;
+  align-items: center;
+  margin-bottom: 6px;
+  padding: 2px 8px;
+  border-radius: 4px;
+  background: #eef2ff;
+  color: #4f46e5;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.dan-board .db-intake-narrative p {
+  margin: 0;
+  font-size: 13.5px;
+  line-height: 1.65;
+  color: #475569;
+}
+
+.dan-board .db-intake-narrative__actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
 .dan-board .db-kpi {
   height: 100%;
 }
