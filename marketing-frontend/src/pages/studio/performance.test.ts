@@ -35,9 +35,9 @@ test('推广效果按列表页分配的位置统计，附推广时间；未分�
  assert.equal(none.strategyDemo,true); assert.equal(none.events.length,0)
  assert.ok(!none.records.some(r=>r.source==='站内推广'))
 })
-test('Banner 事件记录网站页面与所选设备，并包含“不再提醒”',()=>{
- const data=versionPerformance('p',history,1,'最近 7 天',{placements:['Banner:products_detail'],cfg:{...defaultPromotion('页面'),devices:['手机']}},now)
+test('Banner 事件记录网站页面与设备，并包含“不再提醒”',()=>{
+ const data=versionPerformance('p',history,1,'最近 7 天',{placements:['Banner:products_detail'],cfg:defaultPromotion('页面')},now)
  assert.ok(data.placements[0].dismisses>0)
  assert.ok(data.events.some(e=>e.event==='不再提醒'))
- assert.ok(data.events.every(e=>e.page==='产品详情'&&e.device==='手机'))
+ assert.ok(data.events.every(e=>e.page==='产品详情'&&['电脑','平板','手机'].includes(e.device)))
 })

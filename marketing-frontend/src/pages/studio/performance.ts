@@ -105,14 +105,13 @@ export function versionPerformance(pageId: string, history: PublishedVersion[], 
   const events: PlacementEvent[] = []
   for (const name of placements) {
     const page = sitePageName(slotParts(name).page)
-    const devices = promo.cfg.devices.length ? promo.cfg.devices : ['电脑']
     for (let i = 0; i < 40; i++) {
       const visitor = `访客 ${Math.floor(rand() * 0xffff).toString(16).padStart(4, '0').toUpperCase()}`
       const r = rand()
       const event: PlacementEventType = r < 0.7 ? '展示' : r < 0.86 ? '点击' : '不再提醒'
       events.push({
         id: `${v.version}-${name}-${i}`, time: new Date(end - rand() * Math.min(span, 5) * DAY).toISOString(), visitor, placement: name,
-        page, device: devices[Math.floor(rand() * devices.length)],
+        page, device: rand() < 0.55 ? '电脑' : rand() < 0.85 ? '手机' : '平板',
         event, note: event === '展示' ? '推广时段内展示' : event === '点击' ? '进入落地页' : '此后该营销页在此位置不再向该访客出现',
       })
     }

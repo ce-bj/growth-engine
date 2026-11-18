@@ -25,7 +25,7 @@ export default function PublishSettings({ draft, store, publishState, version, l
 }) {
   const page = { id: draft.id, draft }
   const [placements, setPlacements] = useState(() => placementsOf(store, draft.id))
-  const [cfg, setCfg] = useState<PagePromotion>(() => { const { batchAt: _b, ...c } = promotionOf(store, page); return c })
+  const [cfg, setCfg] = useState<PagePromotion>(() => ({ ...promotionOf(store, page) }))
   const [rules, setRules] = useState(false)
   const promo = { placements, cfg }
   const issues = placements.length ? promotionIssues(cfg) : []
@@ -38,7 +38,7 @@ export default function PublishSettings({ draft, store, publishState, version, l
   return <section className="publish-page">
     <header className="publish-page-head">
       <Button variant="ghost" size="sm" onClick={onBack}><ArrowLeft size={14} />返回编辑</Button>
-      <div><p className="eyebrow">PUBLISH</p><h1>发布设置 · {draft.title}</h1><p className="subtle">页面链接与推广设置一起发布。推广设置与页面列表“推广设置”是同一份配置，发布后也可以在列表单独或批量修改。</p></div>
+      <div><p className="eyebrow">PUBLISH</p><h1>发布设置 · {draft.title}</h1><p className="subtle">页面链接与推广设置一起发布。推广设置与页面列表每行的“推广设置”是同一份配置，发布后也可以在列表中修改。</p></div>
       <div className="row"><Button variant="outline" size="sm" onClick={onPreview}><ExternalLink size={14} />预览页面</Button>{everPublished && <Button variant="outline" size="sm" onClick={onHistory}><History size={14} />发布历史</Button>}</div>
     </header>
 

@@ -21,7 +21,7 @@ export default function PromoPreview({ store, pages, company, initialPage, hrefO
   const slot = slotKey('Banner', sitePage)
 
   const frame = (device: Device) => {
-    const page = pickForPlacement(store, pages, slot, device)
+    const page = pickForPlacement(store, pages, slot)
     const cfg = page && promotionOf(store, page)
     const outline = (name: string) => planned && <div className={`planned-slot planned-${PLACEMENT_TYPES.findIndex(t => t.name === name)}`}>{name} · 规划中</div>
     return <figure key={device} className={`promo-frame device-${device}`}>

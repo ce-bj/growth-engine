@@ -1,6 +1,6 @@
 // Promotion model (产品设计 7.2). A promotion slot is a placement type on one website page, e.g. “Banner · 首页”.
-// Slots and marketing pages are many-to-many and are managed on the page list; each marketing page keeps its own
-// caption, period, daily hours and devices. Within the period a page always shows in its slots, until the visitor
+// Slots and marketing pages are many-to-many: the 推广位置 dialog shows each slot's pages; each marketing page keeps its
+// own caption (required), period and daily hours. A Banner shows on every device. Within the period a page always shows in its slots, until the visitor
 // clicks “不再提醒” for that page in that slot. This phase only enables Banner; the other types are planned.
 
 export interface PlacementType { name: string; ready: boolean; help: string }
@@ -32,12 +32,11 @@ export const slotLabel = (slot: string) => { const { type, page } = slotParts(sl
 /** Slots that can be used now: every website page for each ready placement type. */
 export const SLOTS = PLACEMENT_TYPES.filter(t => t.ready).flatMap(t => flatSitePages().map(p => slotKey(t.name, p.key)))
 
+/** Devices of the preview page only; promotion itself is not limited by device. */
 export const DEVICES = ['电脑', '平板', '手机'] as const
 export type Device = typeof DEVICES[number]
 export interface PagePromotion {
-  caption: string; startDate: string; endDate: string; startTime: string; endTime: string; devices: Device[]
-  /** Set when the values came from a batch edit; cleared when the page is edited on its own. */
-  batchAt?: string
+  caption: string; startDate: string; endDate: string; startTime: string; endTime: string
   /** Set by “结束推广”: the promotion ends now whatever the end date; editing the period clears it. */
   endedAt?: string
 }
@@ -60,7 +59,7 @@ const STORE_KEY = 'marketing-studio-promotion-v1'
 const DISMISS_PREFIX = 'marketing-promo-dismissed:'
 
 export const emptyStore = (): PromotionStore => ({ assignments: {}, pages: {} })
-/** Reads the store; the earlier “首屏 Banner” placement maps to Banner on the home page and single devices become lists. */
+/** Reads the store; the earlier “首屏 Banner” placement maps to Banner on the home page; retired fields (devices, batch marks) are dropped. */
 export function loadStore(): PromotionStore {
   try {
     const v = JSON.parse(localStorage.getItem(STORE_KEY) || 'null')
@@ -71,9 +70,9 @@ export function loadStore(): PromotionStore {
         if (SLOTS.includes(key) && ids.length) assignments[key] = [...new Set([...(assignments[key] || []), ...ids])]
       }
       const pages: Record<string, PagePromotion> = {}
-      for (const [id, cfg] of Object.entries(v.pages as Record<string, PagePromotion & { device?: string }>)) {
-        const { device, ...rest } = cfg
-        pages[id] = { ...rest, devices: cfg.devices || (device && device !== '全部设备' ? [device as Device] : [...DEVICES]) }
+      for (const [id, cfg] of Object.entries(v.pages as Record<string, PagePromotion & Record<string, unknown>>)) {
+        const { device: _d, devices: _ds, batchAt: _b, ...rest } = cfg
+        pages[id] = rest
       }
       return { assignments, pages }
     }
@@ -82,7 +81,7 @@ export function loadStore(): PromotionStore {
 }
 export function saveStore(store: PromotionStore) { try { localStorage.setItem(STORE_KEY, JSON.stringify(store)) } catch { /* storage full or blocked */ } }
 
-export const defaultPromotion = (title: string): PagePromotion => ({ caption: title ? `了解${title}` : '了解专业方案', startDate: '', endDate: '', startTime: '00:00', endTime: '23:59', devices: [...DEVICES] })
+export const defaultPromotion = (title: string): PagePromotion => ({ caption: title ? `了解${title}` : '了解专业方案', startDate: '', endDate: '', startTime: '00:00', endTime: '23:59' })
 export const promotionOf = (store: PromotionStore, page: PromotedPage) => store.pages[page.id] || defaultPromotion(page.draft.title)
 export const placementsOf = (store: PromotionStore, pageId: string) => SLOTS.filter(s => store.assignments[s]?.includes(pageId))
 /** Saves one page's slots and settings: kept slots keep their order, new slots append the page at the end. */
@@ -92,8 +91,7 @@ export function withPagePromotion(store: PromotionStore, pageId: string, slots: 
     const list = assignments[s] || []
     assignments[s] = slots.includes(s) ? (list.includes(pageId) ? list : [...list, pageId]) : list.filter(id => id !== pageId)
   }
-  const { batchAt: _b, ...rest } = cfg
-  return { assignments, pages: { ...store.pages, [pageId]: rest } }
+  return { assignments, pages: { ...store.pages, [pageId]: { ...cfg } } }
 }
 
 // Dates and hours both use the local clock (the site's UTC+8), so a period ends at local midnight.
@@ -126,8 +124,7 @@ export const linkState = (page: PromotedPage) => page.draft.published ? { valid:
 
 export const periodText = (cfg: PagePromotion) => cfg.endedAt ? `${cfg.startDate || '发布后'} 起 · ${cfg.endedAt.slice(0, 10)} 手动结束` : `${cfg.startDate || '发布后'} 至 ${cfg.endDate || '长期'}`
 export const hoursText = (cfg: PagePromotion) => cfg.startTime === '00:00' && cfg.endTime === '23:59' ? '全天' : `每天 ${cfg.startTime}–${cfg.endTime}`
-export const devicesText = (cfg: PagePromotion) => cfg.devices.length === DEVICES.length ? '全部设备' : cfg.devices.join('、')
-export const promotionSummary = (cfg: PagePromotion) => [periodText(cfg), hoursText(cfg), devicesText(cfg)]
+export const promotionSummary = (cfg: PagePromotion) => [periodText(cfg), hoursText(cfg)]
 
 /**
  * Row actions on the page list for each combination of publishing and promotion state (产品设计 5.1.1). This is the
@@ -158,22 +155,11 @@ export const STATE_COMBOS: { pub: PublishState; promo: PromotionState | null }[]
   { pub: 'offline', promo: 'none' }, { pub: 'offline', promo: 'unpublished' },
 ]
 
-/** Batch time edits apply only the chosen parts; changing the period re-opens an ended promotion. */
-export interface PromotionParts { period: boolean; hours: boolean; devices: boolean }
-export function applyPromotionParts(cfg: PagePromotion, patch: PagePromotion, parts: PromotionParts): PagePromotion {
-  const next = { ...cfg }
-  if (parts.period) { next.startDate = patch.startDate; next.endDate = patch.endDate; delete next.endedAt }
-  if (parts.hours) { next.startTime = patch.startTime; next.endTime = patch.endTime }
-  if (parts.devices) next.devices = [...patch.devices]
-  return next
-}
-
 export function promotionIssues(cfg: PagePromotion): string[] {
   const issues: string[] = []
   if (cfg.startDate && cfg.endDate && cfg.endDate < cfg.startDate) issues.push('结束日期早于开始日期。')
   if (cfg.startTime === cfg.endTime) issues.push('每日开始与结束时间相同，将不会展示。')
-  if (!cfg.devices.length) issues.push('至少选择一种设备。')
-  if (!cfg.caption.trim()) issues.push('请填写推广文案。')
+  if (!cfg.caption.trim()) issues.push('推广文案为必填项。')
   return issues
 }
 
@@ -185,13 +171,13 @@ export function resetDismissed() { try { Object.keys(localStorage).filter(k => k
 
 /**
  * Which marketing page a slot shows for a visitor right now: the first page in the slot's order that is
- * promoting, matches the device, and the visitor has not dismissed.
+ * promoting and the visitor has not dismissed. The result is the same on every device.
  */
-export function pickForPlacement(store: PromotionStore, pages: PromotedPage[], slot: string, device: Device, now = new Date(), dismissed = isDismissed) {
+export function pickForPlacement(store: PromotionStore, pages: PromotedPage[], slot: string, now = new Date(), dismissed = isDismissed) {
   for (const id of store.assignments[slot] || []) {
     const page = pages.find(p => p.id === id)
     if (!page || promotionState(store, page, now) !== 'active') continue
-    if (!promotionOf(store, page).devices.includes(device) || dismissed(slot, id)) continue
+    if (dismissed(slot, id)) continue
     return page
   }
   return undefined
