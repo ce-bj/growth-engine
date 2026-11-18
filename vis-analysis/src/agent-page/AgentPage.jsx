@@ -1,14 +1,14 @@
 import { useRef, useState } from "react";
-import { App as AntApp, Button, Card, ConfigProvider, Modal, Progress, Steps, Table, Tag, Tooltip } from "antd";
+import { App as AntApp, Alert, Button, Card, ConfigProvider, Dropdown, Flex, Modal, Progress, Skeleton, Spin, Statistic, Steps, Table, Tag, Tooltip, Typography } from "antd";
 import {
   ArrowRightOutlined,
   CheckCircleFilled,
   CheckOutlined,
-  ClockCircleOutlined,
   CloseOutlined,
   DownOutlined,
   ExclamationCircleFilled,
   FlagFilled,
+  LoadingOutlined,
   LockOutlined,
 } from "@ant-design/icons";
 import {
@@ -17,7 +17,6 @@ import {
   MONITOR_STAGE,
   PROGRESS_STAGE,
   MONTHLY_REPORT,
-  ONBOARD_TIMELINE,
   RESULT_STAGE,
   SUGGESTIONS,
   TRACK_STAGES,
@@ -32,6 +31,12 @@ const SKIP_REASONS = [
   { key: "disagree", label: "我不同意这个判断", effect: "我们记下来，以后换一种做法。" },
   { key: "later", label: "以后再说", effect: "下周如果问题还在，会再提醒你。" },
 ];
+
+const ARMED_DECISIONS = {
+  "t-detail": { status: "approved" },
+  "t-landing": { status: "approved" },
+  "t-article": { status: "skipped", reason: SKIP_REASONS[2] },
+};
 import "./agent-page.css";
 
 const SOURCE_STATE = {
@@ -68,26 +73,120 @@ function SectionTitle({ title, extra }) {
   );
 }
 
-function OnboardScreen({ site }) {
+const RUN_STATES = [
+  { id: "off", label: "未开启" },
+  { id: "running", label: "分析中" },
+  { id: "pending", label: "本期还有未处理" },
+  { id: "armed", label: "已全部处理，等下周一" },
+  { id: "paused", label: "下周已经过去了但是上周的没跑" },
+  { id: "catchup", label: "刚把积压的那一周任务处理完" },
+];
+
+export function MockStateSwitch({ value, onChange }) {
   return (
-    <Card className="ag-onboard">
-      <div className="ag-onboard-head">
-        <Tag color="processing" icon={<ClockCircleOutlined />}>
-          正在收集第一个 7 天的访问
-        </Tag>
-        <h2>
-          {site.connectedAt} 接入 · {site.firstReportAt} 出首期
-        </h2>
-      </div>
-      <div className="ag-onboard-steps">
-        {ONBOARD_TIMELINE.map((item) => (
-          <div key={item.step} className="ag-onboard-item">
-            <span>{item.step}</span>
-            <b>{item.title}</b>
+    <Dropdown
+      trigger={["click"]}
+      classNames={{ root: "ag-mock-menu", item: "ag-mock-item" }}
+      styles={{ root: { minWidth: 320 } }}
+      menu={{
+        selectable: true,
+        selectedKeys: [value],
+        items: RUN_STATES.map((item) => ({ key: item.id, label: item.label })),
+        onClick: ({ key }) => onChange(key),
+      }}
+    >
+      <Button size="small" type="dashed" aria-label="演示状态">
+        Mock
+        <DownOutlined />
+      </Button>
+    </Dropdown>
+  );
+}
+
+function PendingCount({ value }) {
+  return (
+    <Typography.Text strong style={{ fontSize: 28, lineHeight: 1, fontVariantNumeric: "tabular-nums" }}>
+      {value}
+    </Typography.Text>
+  );
+}
+
+function GateScreen({ mode, onStart }) {
+  if (mode === "off") {
+    return (
+      <div className="ag-gate">
+        <div className="ag-gate-inner">
+          <div className="ag-gate-kicker">
+            <span className="ag-gate-pill">优化策略</span>
+            <span>洞察与诊断 · 每周转化诊断</span>
           </div>
-        ))}
+          <h1>让访客看得进、留得下</h1>
+          <p>
+            每周看访客洞察，找出没接住的页面。
+            <br />
+            开出改版任务，<em>改哪些由你点</em>。
+            <br />
+            同意之后，营销页和内容智能体接着做。
+          </p>
+          <button type="button" className="ag-gate-start" onClick={onStart}>
+            <svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true">
+              <path fill="currentColor" d="M5.2 3.2v9.6L13 8 5.2 3.2z" />
+            </svg>
+            开始分析
+          </button>
+          <small>先看 9月14日 – 9月20日</small>
+        </div>
       </div>
-    </Card>
+    );
+  }
+
+  const catchingUp = mode === "catchup";
+  const period = catchingUp ? "11月10日 – 11月16日" : "9月14日 – 9月20日";
+
+  return (
+    <>
+      <Card>
+        <Flex align="center" gap={16} style={{ marginBottom: 24 }}>
+          <Spin indicator={<LoadingOutlined spin style={{ fontSize: 28 }} />} />
+          <Flex vertical gap={4}>
+            <Statistic title="正在分析" value={period} />
+            {catchingUp ? <Typography.Text type="secondary">中间空过的周不补</Typography.Text> : null}
+          </Flex>
+        </Flex>
+        <Skeleton active paragraph={{ rows: 4 }} />
+      </Card>
+      <Card>
+        <Skeleton active paragraph={{ rows: 6 }} />
+      </Card>
+    </>
+  );
+}
+
+function RunNote({ mode, pending }) {
+  if (mode === "armed") {
+    return (
+      <Alert type="success" showIcon title="已全部处理" description="下周一分析 9月21日 – 9月27日" />
+    );
+  }
+  if (mode === "paused") {
+    return (
+      <Alert
+        type="warning"
+        showIcon
+        title="已暂停"
+        description="处理完后分析 11月10日 – 11月16日"
+        action={<PendingCount value={pending} />}
+      />
+    );
+  }
+  return (
+    <Alert
+      type="info"
+      showIcon
+      title="本期还有未处理"
+      description="9月14日 – 9月20日 · 下周一不分析"
+      action={<PendingCount value={pending} />}
+    />
   );
 }
 
@@ -527,7 +626,7 @@ function MonthlyModal({ open, onClose }) {
   );
 }
 
-export default function AgentPage({ site, weekLabel, quiet, authMap, onAuthorize, monthlyOpen, onCloseMonthly, ledgerOpen, onCloseLedger }) {
+export default function AgentPage({ site, weekLabel, quiet, authMap, onAuthorize, monthlyOpen, onCloseMonthly, ledgerOpen, onCloseLedger, runState = "pending", onRunState }) {
   const { message } = AntApp.useApp();
   const [decisions, setDecisions] = useState({});
   const [adviceDone, setAdviceDone] = useState({});
@@ -541,19 +640,10 @@ export default function AgentPage({ site, weekLabel, quiet, authMap, onAuthorize
   const trackRefs = useRef({});
   const ruleRefs = useRef({});
 
-  if (site && !site.diagnosed) {
-    return (
-      <ConfigProvider theme={BOARD_THEME}>
-        <div className="ag-page">
-          <OnboardScreen site={site} />
-        </div>
-      </ConfigProvider>
-    );
-  }
-
   const briefs = quiet ? [] : BRIEFS;
-  const pending = briefs.filter((brief) => !decisions[brief.key]);
-  const approved = briefs.filter((brief) => decisions[brief.key]?.status === "approved");
+  const viewDecisions = runState === "armed" ? { ...ARMED_DECISIONS, ...decisions } : decisions;
+  const pending = briefs.filter((brief) => !viewDecisions[brief.key]);
+  const approved = briefs.filter((brief) => viewDecisions[brief.key]?.status === "approved");
 
   const trackRows = [
     ...approved.map((brief) => ({
@@ -593,7 +683,7 @@ export default function AgentPage({ site, weekLabel, quiet, authMap, onAuthorize
   }
 
   function locateBriefOrTrack(key) {
-    if (decisions[key]?.status === "approved") {
+    if (viewDecisions[key]?.status === "approved") {
       locateTrack(key);
       return;
     }
@@ -680,31 +770,38 @@ export default function AgentPage({ site, weekLabel, quiet, authMap, onAuthorize
 
   const activeModalRow = modalRow ? trackRows.find((item) => item.key === modalRow.key) || modalRow : null;
 
+  const gate = runState === "off" || runState === "running" || runState === "catchup";
+
   return (
     <ConfigProvider theme={BOARD_THEME}>
       <div className="ag-page">
-        <LeadStrip data={LEADS} counts={counts} />
+        {gate ? <GateScreen mode={runState} onStart={() => onRunState("running")} /> : null}
+        {!gate ? <RunNote mode={runState} pending={pending.length} /> : null}
+        {runState === "pending" || runState === "paused" || runState === "armed" ? <LeadStrip data={LEADS} counts={counts} /> : null}
+        {runState === "pending" || runState === "paused" || runState === "armed" ? (
+          <DecisionSection
+            quiet={quiet}
+            decisions={viewDecisions}
+            adviceDone={adviceDone}
+            extraNotes={extraNotes}
+            authMap={authMap}
+            openKeys={openKeys}
+            flashKey={flashKey}
+            onToggle={toggle}
+            onApprove={approve}
+            onSkip={skip}
+            onUndo={undo}
+            onExtra={(key, value) => setExtraNotes((prev) => ({ ...prev, [key]: value }))}
+            onAuthorize={onAuthorize}
+            onLocateTrack={locateTrack}
+            cardRef={(key, node) => {
+              cardRefs.current[key] = node;
+            }}
+          />
+        ) : null}
 
-        <DecisionSection
-          quiet={quiet}
-          decisions={decisions}
-          adviceDone={adviceDone}
-          extraNotes={extraNotes}
-          authMap={authMap}
-          openKeys={openKeys}
-          flashKey={flashKey}
-          onToggle={toggle}
-          onApprove={approve}
-          onSkip={skip}
-          onUndo={undo}
-          onExtra={(key, value) => setExtraNotes((prev) => ({ ...prev, [key]: value }))}
-          onAuthorize={onAuthorize}
-          onLocateTrack={locateTrack}
-          cardRef={(key, node) => {
-            cardRefs.current[key] = node;
-          }}
-        />
-
+        {runState === "pending" || runState === "paused" || runState === "armed" ? (
+          <>
         <SectionTitle title="已经在做的事" />
         <Card className="ag-track">
           {trackRows.map((row) => (
@@ -752,6 +849,8 @@ export default function AgentPage({ site, weekLabel, quiet, authMap, onAuthorize
             </div>
           ))}
         </Card>
+          </>
+        ) : null}
       </div>
 
       {activeModalRow?.stage === MONITOR_STAGE ? (
@@ -769,7 +868,7 @@ export default function AgentPage({ site, weekLabel, quiet, authMap, onAuthorize
       <SuggestionModal
         open={Boolean(ledgerOpen)}
         weekLabel={weekLabel}
-        decisions={decisions}
+        decisions={viewDecisions}
         adviceDone={adviceDone}
         trackRows={trackRows}
         onClose={onCloseLedger}

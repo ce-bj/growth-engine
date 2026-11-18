@@ -82,6 +82,16 @@ html[data-visitor-embed] #root {
   width: 168px;
 }
 
+.dan-toolbar .dan-mock {
+  margin-left: auto;
+}
+
+.dan-toolbar .dan-mock .ant-btn {
+  height: 28px;
+  padding-inline: 10px;
+  font-size: 12px;
+}
+
 .dan-hero {
   display: flex;
   justify-content: space-between;

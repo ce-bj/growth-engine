@@ -211,6 +211,9 @@ function TaskCard({
   if (item.kind === "advice") {
     status = "人工处理建议";
     statusColor = "warning";
+  } else if (skipped) {
+    status = "这次先不做";
+    statusColor = "default";
   } else if (approved || item.kind === "track") {
     status = "你已经同意";
     statusColor = "success";
