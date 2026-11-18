@@ -7,7 +7,7 @@ export interface PublishTask {
   id: string
   taskNo: string
   title: string
-  from: 'manual' | 'agent'
+  from: 'manual' | 'agent' | 'strategy'
   status: TaskStatus // 基础值，最终状态由 taskStatus 按时间判定
   app: string
   col: string

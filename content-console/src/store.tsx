@@ -40,9 +40,15 @@ export const TASK_STATUS_LABEL: Record<TaskStatus, string> = {
 
 // —— 待办来源标签 ——
 export const TODO_SOURCE_LABEL: Record<TodoSource, string> = {
-  'behavior-fix': '行为分析 · 修改',
-  'behavior-new': '行为分析 · 新增',
+  'behavior-fix': '优化策略推荐',
+  'behavior-new': '优化策略推荐',
   'self-new': '自建任务 · 新增',
+}
+
+export function taskSourceLabel(from: PublishTask['from']): string {
+  if (from === 'manual') return '手动创建'
+  if (from === 'strategy') return '优化策略推荐'
+  return '智能体推荐'
 }
 
 // —— 内容条目状态 ——
@@ -126,7 +132,7 @@ function withHandoffTask(list: PublishTask[]): PublishTask[] {
       id: HANDOFF_TASK.id || 'tk-handoff',
       taskNo: genTaskNo(),
       title: HANDOFF_TASK.title,
-      from: 'agent',
+      from: 'strategy',
       status: 'active',
       app: '产品管理',
       col: '页面优化',
@@ -137,9 +143,9 @@ function withHandoffTask(list: PublishTask[]): PublishTask[] {
       next: '',
       topic: HANDOFF_TASK.summary || HANDOFF_TASK.title,
       kw: [],
-      note: HANDOFF_TASK.summary || '来自网站策略的进行中任务',
+      note: HANDOFF_TASK.summary || '来自优化策略，内容已自动生成并发布',
       imgOn: false,
-      mode: 'review',
+      mode: 'publish',
       map: [],
       strat: ['eeat', 'geo'],
     },
