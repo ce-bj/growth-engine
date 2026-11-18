@@ -1,4 +1,5 @@
 import type { PublishedVersion } from './releaseVersions'
+import { appearText, strategyOf, strategySummary, OVERLAY_PLACEMENTS } from './placementStrategy'
 
 // Mock analytics for the results page (产品设计 7.4): every published version owns its own data, generated
 // deterministically from the page id and version so the numbers stay stable across reloads.
@@ -8,11 +9,17 @@ export interface VisitRecord {
   durationSec: number; depth: number; converted: boolean; action?: string
 }
 export interface DailyPoint { date: string; visits: number; conversions: number }
-export interface PlacementStat { name: string; views: number; clicks: number; arrivals: number; conversions: number }
+/** views = 展示次数; reach = 触达访客; capped = 符合时机但因频次、关闭、转化或优先级规则未展示的次数. */
+export interface PlacementStat {
+  name: string; views: number; reach: number; clicks: number; closes: number; capped: number; leaveAfter: number
+  arrivals: number; conversions: number; strategy: string[]
+}
+export type PlacementEventType = '展示' | '点击' | '关闭' | '未展示'
+export interface PlacementEvent { id: string; time: string; visitor: string; placement: string; page: string; device: string; event: PlacementEventType; note: string }
 export interface SourceStat { name: string; visits: number; conversions: number }
 export interface VersionPerformance {
   version: string; period: { start: string; end: string }; current: boolean; summary?: string
-  daily: DailyPoint[]; records: VisitRecord[]; placements: PlacementStat[]; sources: SourceStat[]; strategyDemo: boolean
+  daily: DailyPoint[]; records: VisitRecord[]; placements: PlacementStat[]; events: PlacementEvent[]; sources: SourceStat[]; strategyDemo: boolean
   visits: number; conversions: number; leads: number; avgDurationSec: number; bounceRate: number
 }
 
@@ -74,22 +81,57 @@ export function versionPerformance(pageId: string, history: PublishedVersion[], 
   }
   const visits = daily.reduce((a, p) => a + p.visits, 0)
   const conversions = daily.reduce((a, p) => a + p.conversions, 0)
+  // Exposure-side numbers derive from clicks and the placement's own strategy (closable or not, frequency caps).
+  const exposure = (name: string, arrivals: number, conv: number): PlacementStat => {
+    const field = v.draft.placements.find(p => p.name === name) || { name, enabled: true, device: '全部设备', caption: '' }
+    const st = strategyOf(field)
+    const clicks = Math.round(arrivals / (0.9 + rand() * 0.08))
+    const views = Math.round(clicks / (0.03 + rand() * 0.05))
+    return {
+      name, arrivals, clicks, views, conversions: conv, strategy: strategySummary(field),
+      reach: Math.round(views / Math.min(st.dailyLimit + 0.2, 1.2 + rand() * 0.8)),
+      closes: st.closable ? Math.round(views * (0.08 + rand() * 0.16)) : 0,
+      capped: Math.round(views * (0.1 + rand() * 0.2)),
+      leaveAfter: Math.round(views * (0.02 + rand() * 0.06)),
+    }
+  }
+  const convertedAll = Math.max(1, records.filter(r => r.converted).length)
   const placementStats = placements.length ? placements.map(name => {
     const own = records.filter(r => r.placement === name)
-    const share = own.length / Math.max(1, records.length)
-    const arrivals = Math.round(visits * share)
-    const clicks = Math.round(arrivals / (0.9 + rand() * 0.08))
-    return { name, arrivals, clicks, views: Math.round(clicks / (0.03 + rand() * 0.05)), conversions: Math.round(conversions * (own.filter(r => r.converted).length / Math.max(1, records.filter(r => r.converted).length))) }
+    return exposure(name, Math.round(visits * own.length / Math.max(1, records.length)), Math.round(conversions * own.filter(r => r.converted).length / convertedAll))
   })
     // No promotion in this version: the strategy table shows clearly labelled demo rows, unrelated to the visits.
-    : DEMO_PLACEMENTS.map(name => { const arrivals = Math.round(60 + rand() * 120); const clicks = Math.round(arrivals / 0.94); return { name, arrivals, clicks, views: Math.round(clicks / (0.03 + rand() * 0.05)), conversions: Math.round(arrivals * (0.02 + rand() * 0.05)) } })
+    : DEMO_PLACEMENTS.map(name => { const arrivals = Math.round(60 + rand() * 120); return exposure(name, arrivals, Math.round(arrivals * (0.02 + rand() * 0.05))) })
+  // Event log for enabled placements: each impression, click, close and suppressed impression is recorded.
+  const events: PlacementEvent[] = []
+  for (const name of placements) {
+    const field = v.draft.placements.find(p => p.name === name)!
+    const st = strategyOf(field)
+    const pages = name === '智能客服推送' ? ['客服对话'] : name === '首屏 Banner' ? ['首页'] : field.scopes?.length ? field.scopes : ['产品中心']
+    const reasons = [`已达每天 ${st.dailyLimit} 次上限`, ...(st.closable ? ['访客关闭过，处于不再出现期'] : []), ...(st.hideAfterConversion ? ['访客已转化'] : []),
+      ...(st.oncePerVisit ? ['本次访问已出现过'] : []), ...(OVERLAY_PLACEMENTS.includes(name) ? ['同页优先级更高的位置已出现'] : [])]
+    for (let i = 0; i < 40; i++) {
+      const visitor = `访客 ${Math.floor(rand() * 0xffff).toString(16).padStart(4, '0').toUpperCase()}`
+      const r = rand()
+      const event: PlacementEventType = r < 0.55 ? '展示' : r < 0.68 ? '点击' : r < 0.85 && st.closable ? '关闭' : '未展示'
+      const nth = 1 + Math.floor(rand() * Math.min(st.dailyLimit, 3))
+      events.push({
+        id: `${v.version}-${name}-${i}`, time: new Date(end - rand() * Math.min(span, 5) * DAY).toISOString(), visitor, placement: name,
+        page: pages[Math.floor(rand() * pages.length)], device: field.device === '全部设备' ? (rand() < 0.6 ? '电脑' : '手机') : field.device,
+        event, note: event === '展示' ? `今日第 ${nth} 次 · ${appearText(field, st)}` : event === '点击' ? '进入落地页'
+          : event === '关闭' ? (st.afterClose === 'visit' ? '本次访问不再出现' : st.afterClose === 'days' ? `${st.closeDays} 天内不再出现` : '之后不再出现')
+          : reasons[Math.floor(rand() * reasons.length)],
+      })
+    }
+  }
+  events.sort((a, b) => b.time.localeCompare(a.time))
   // Non-promotion sources use the same scaling as placements, so placements and sources add up to the totals.
   const convertedSample = Math.max(1, records.filter(r => r.converted).length)
   const sourceStats = OTHER_SOURCES.map(name => { const own = records.filter(r => r.source === name); return { name, visits: Math.round(visits * own.length / Math.max(1, records.length)), conversions: Math.round(conversions * own.filter(r => r.converted).length / convertedSample) } })
   records.sort((a, b) => b.time.localeCompare(a.time))
   return {
     version: v.version!, period: { start: fmtDate(start), end: newest ? '至今' : fmtDate(end) }, current: newest, summary: v.summary,
-    daily, records, placements: placementStats, sources: sourceStats, strategyDemo: !enabled.length,
+    daily, records, placements: placementStats, events, sources: sourceStats, strategyDemo: !enabled.length,
     visits, conversions, leads: Math.round(conversions * 0.85), avgDurationSec: Math.round(records.reduce((a, r) => a + r.durationSec, 0) / Math.max(1, records.length)),
     bounceRate: Math.round(25 + rand() * 20),
   }

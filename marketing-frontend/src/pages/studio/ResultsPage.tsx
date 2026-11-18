@@ -23,12 +23,16 @@ export default function ResultsPage({ draft, history, paused, onTogglePause, onE
   const [source, setSource] = useState('全部来源')
   const [onlyConverted, setOnlyConverted] = useState(false)
   const [shown, setShown] = useState(20)
+  const [evPlacement, setEvPlacement] = useState('全部位置')
+  const [evType, setEvType] = useState('全部事件')
+  const [evShown, setEvShown] = useState(20)
   const all = useMemo(() => history.map((_, i) => versionPerformance(draft.id, history, i, i === history.length - 1 ? range : '上线以来')), [draft.id, history, range])
   if (!history.length) return <section className="results-page"><div className="empty-result"><BarChart3 size={32} /><h2>发布后开始记录效果</h2><p>页面发布后，这里会记录访问次数、访问详情、转化与各推广位置的效果。</p><Button onClick={onPublishSettings}>去发布</Button></div></section>
   const safeIndex = Math.min(index, history.length - 1)
   const data = all[safeIndex]
   const previous = safeIndex > 0 ? all[safeIndex - 1] : undefined
   const delta = previous ? (data.conversions / data.visits - previous.conversions / previous.visits) * 100 : null
+  const events = data.events.filter(e => (evPlacement === '全部位置' || e.placement === evPlacement) && (evType === '全部事件' || e.event === evType))
   const records = data.records.filter(r => (source === '全部来源' || r.source === source) && (!onlyConverted || r.converted))
   const versionLabel = (p: VersionPerformance) => `v${p.version}${p.current ? ' · 当前线上' : ''}`
   // Only real strategies support a recommendation; demo placements are never used as evidence.
@@ -80,15 +84,34 @@ export default function ResultsPage({ draft, history, paused, onTogglePause, onE
     </section>}
 
     {tab === '推广策略' && <section className="white-card">
-      {data.strategyDemo && <p className="results-note">v{data.version} 发布时未启用推广位置，访问全部来自下方的非推广来源。上表仅为演示推广报表样式的示例数据，不计入访问次数。</p>}
-      <Table><TableHeader><TableRow>{['推广位置', '曝光', '点击', '点击率', '到达访问', '转化', '转化率', '状态'].map(x => <TableHead key={x}>{x}</TableHead>)}</TableRow></TableHeader>
+      {data.strategyDemo && <p className="results-note">v{data.version} 发布时未启用推广位置，访问全部来自下方的非推广来源。下表仅为演示推广报表样式的示例数据，不计入访问次数，也没有推广事件记录。</p>}
+      <h3 className="results-subhead">展示与关闭</h3>
+      <Table><TableHeader><TableRow>{['推广位置与策略', '展示次数', '触达访客', '人均展示', '关闭', '关闭率', '未展示', '展示后离站'].map(x => <TableHead key={x}>{x}</TableHead>)}</TableRow></TableHeader>
+        <TableBody>{data.placements.map(p => <TableRow key={p.name}>
+          <TableCell><strong>{p.name}</strong><ul className="strategy-summary">{p.strategy.slice(0, 4).map(t => <li key={t}>{t}</li>)}</ul></TableCell>
+          <TableCell>{p.views.toLocaleString()}</TableCell><TableCell>{p.reach.toLocaleString()}</TableCell><TableCell>{p.reach ? (p.views / p.reach).toFixed(1) : '—'}</TableCell>
+          <TableCell>{p.closes ? p.closes.toLocaleString() : '—'}</TableCell><TableCell>{p.closes ? rate(p.closes, p.views) : '不可关闭'}</TableCell>
+          <TableCell title="符合出现时机，但因次数上限、关闭后不再出现、已转化或优先级规则没有展示">{p.capped.toLocaleString()}</TableCell><TableCell>{rate(p.leaveAfter, p.views)}</TableCell>
+        </TableRow>)}</TableBody></Table>
+      <h3 className="results-subhead">点击与转化</h3>
+      <Table><TableHeader><TableRow>{['推广位置', '点击', '点击率', '到达访问', '转化', '转化率', '状态'].map(x => <TableHead key={x}>{x}</TableHead>)}</TableRow></TableHeader>
         <TableBody>{data.placements.map(p => <TableRow key={p.name} className={p === best ? 'results-best' : undefined}>
-          <TableCell>{p.name}{p === best && <span className="results-best-tag">转化率最高</span>}</TableCell><TableCell>{p.views.toLocaleString()}</TableCell><TableCell>{p.clicks}</TableCell><TableCell>{rate(p.clicks, p.views)}</TableCell>
+          <TableCell>{p.name}{p === best && <span className="results-best-tag">转化率最高</span>}</TableCell><TableCell>{p.clicks}</TableCell><TableCell>{rate(p.clicks, p.views)}</TableCell>
           <TableCell>{p.arrivals}</TableCell><TableCell>{p.conversions}</TableCell><TableCell>{rate(p.conversions, p.arrivals)}</TableCell>
           <TableCell><span className={paused && data.current ? 'status muted' : 'status'}>{!data.current ? '已结束' : paused ? '已暂停' : '投放中'}</span></TableCell>
         </TableRow>)}</TableBody></Table>
       <h3 className="results-subhead">非推广来源</h3><div className="results-sources">{data.sources.map(src => <div key={src.name}><span>{src.name}</span><strong>{src.visits}</strong><small>转化 {src.conversions} · {rate(src.conversions, src.visits)}</small></div>)}</div>
-      <div className="card-foot"><span>点击率 = 点击 / 曝光；转化率 = 转化 / 到达访问。推广位置与非推广来源的访问合计约等于访问次数。</span><Button variant="ghost" onClick={onPublishSettings}>调整推广策略<ArrowUpRight size={14} /></Button></div>
+      {!data.strategyDemo && <>
+        <h3 className="results-subhead">推广事件明细</h3>
+        <div className="results-filters"><StudioSelect label="推广位置" value={evPlacement} options={['全部位置', ...data.placements.map(p => p.name)]} onChange={v => { setEvPlacement(v); setEvShown(20) }} /><StudioSelect label="事件类型" value={evType} options={['全部事件', '展示', '点击', '关闭', '未展示']} onChange={v => { setEvType(v); setEvShown(20) }} /><span className="subtle">共 {events.length} 条（示例抽样）</span></div>
+        <Table><TableHeader><TableRow>{['时间', '访客', '推广位置', '所在页面', '设备', '事件', '说明'].map(x => <TableHead key={x}>{x}</TableHead>)}</TableRow></TableHeader>
+          <TableBody>{events.slice(0, evShown).map(e => <TableRow key={e.id}>
+            <TableCell>{e.time.slice(5, 16).replace('T', ' ')}</TableCell><TableCell>{e.visitor}</TableCell><TableCell>{e.placement}</TableCell><TableCell>{e.page}</TableCell><TableCell>{e.device}</TableCell>
+            <TableCell><span className={`event-tag event-${{ 展示: 'show', 点击: 'click', 关闭: 'close', 未展示: 'capped' }[e.event]}`}>{e.event}</span></TableCell><TableCell>{e.note}</TableCell>
+          </TableRow>)}</TableBody></Table>
+        {events.length > evShown && <div className="card-foot"><span>已显示 {evShown} / {events.length} 条</span><Button variant="ghost" onClick={() => setEvShown(evShown + 20)}>查看更多</Button></div>}
+      </>}
+      <div className="card-foot"><span>点击率 = 点击 ÷ 展示次数；关闭率 = 关闭 ÷ 展示次数；转化率 = 转化 ÷ 到达访问；展示后离站 = 展示后 10 秒内离开网站的比例。</span><Button variant="ghost" onClick={onPublishSettings}>调整推广策略<ArrowUpRight size={14} /></Button></div>
     </section>}
 
     {tab === '版本对比' && <section className="white-card">
