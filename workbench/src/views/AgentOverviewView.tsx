@@ -3,24 +3,29 @@ import { Badge, Button, Card, Statistic, Table, Tag } from 'antd'
 import type { TableColumnsType } from 'antd'
 import { useWorkbench } from '../context/WorkbenchContext'
 import {
+  DONE_METHOD_LABEL,
   overviewAgents,
   overviewDone,
   overviewMonth,
   overviewPending,
   type AgentStatus,
+  type DoneMethod,
   type DoneTask,
 } from '../data/overviewMock'
-import { initialBalance } from './oneai/creditsData.js'
 
 const STATUS: Record<AgentStatus, { badge: 'processing' | 'warning' | 'default'; label: string }> = {
-  running: { badge: 'processing', label: '运行中' },
   waiting: { badge: 'warning', label: '有待审批' },
-  soon: { badge: 'default', label: '即将上线' },
+  running: { badge: 'processing', label: '运行中' },
+  idle: { badge: 'default', label: '待命' },
 }
 
-const autoRuns = overviewAgents.reduce((sum, agent) => sum + agent.monthRuns, 0)
-const doneByHand = overviewDone.filter((task) => task.byHand).length
-const onlineCount = overviewAgents.filter((agent) => agent.status !== 'soon').length
+const METHOD_TAG: Record<DoneMethod, { color: string; label: string }> = {
+  agreed: { color: '#6366f1', label: DONE_METHOD_LABEL.agreed },
+  manual: { color: 'gold', label: DONE_METHOD_LABEL.manual },
+  strategy: { color: 'default', label: DONE_METHOD_LABEL.strategy },
+}
+
+const onlineCount = overviewAgents.length
 
 const DONE_COLUMNS: TableColumnsType<DoneTask> = [
   {
@@ -41,13 +46,19 @@ const DONE_COLUMNS: TableColumnsType<DoneTask> = [
     render: (value: string) => <Tag variant="filled">{value}</Tag>,
   },
   { title: '任务', dataIndex: 'title' },
-  { title: '结果', dataIndex: 'result' },
   {
     title: '方式',
-    dataIndex: 'byHand',
-    width: 110,
-    render: (byHand: boolean) =>
-      byHand ? <Tag color="blue">经你确认</Tag> : <Tag color="green">自动完成</Tag>,
+    dataIndex: 'method',
+    width: 120,
+    filters: (Object.keys(DONE_METHOD_LABEL) as DoneMethod[]).map((method) => ({
+      text: DONE_METHOD_LABEL[method],
+      value: method,
+    })),
+    onFilter: (value, record) => record.method === value,
+    render: (method: DoneMethod) => {
+      const item = METHOD_TAG[method]
+      return <Tag color={item.color}>{item.label}</Tag>
+    },
   },
 ]
 
@@ -70,31 +81,19 @@ export function AgentOverviewView() {
       </header>
 
       <section className="ov-stats">
-        <Card size="small" classNames={{ root: 'ov-panel' }}>
-          <Statistic title="本月自动执行" value={autoRuns} suffix="次" />
-          <p className="ov-stat__hint">诊断、修复、出草稿、发布各算一次</p>
-        </Card>
-        <Card size="small" classNames={{ root: 'ov-panel' }}>
-          <Statistic title="已完成任务" value={overviewDone.length} suffix="项" />
-          <p className="ov-stat__hint">其中 {doneByHand} 项经你确认后执行</p>
-        </Card>
         <Card size="small" classNames={{ root: 'ov-panel is-attention' }}>
-          <Statistic title="待审批任务" value={overviewPending.length} suffix="项" />
+          <Statistic title="本月待审批任务" value={overviewPending.length} suffix="项" />
           <p className="ov-stat__hint">最早一条{overviewPending[0]?.waiting}</p>
         </Card>
         <Card size="small" classNames={{ root: 'ov-panel' }}>
-          <Statistic title="积分余额" value={initialBalance} />
-          <p className="ov-stat__hint">
-            智能体执行按次扣积分
-            <Button
-              type="link"
-              size="small"
-              classNames={{ root: 'ov-stat__link' }}
-              onClick={() => navigate('credits')}
-            >
-              看明细
-            </Button>
-          </p>
+          <Statistic title="已完成任务" value={overviewDone.length} suffix="项" />
+          <p className="ov-stat__hint">你已同意、人工处理或出策略</p>
+        </Card>
+        <Card size="small" classNames={{ root: 'ov-panel' }}>
+          <div className="ov-free">
+            <span>积分余额</span>
+            <strong>限时免费，不限额度！</strong>
+          </div>
         </Card>
       </section>
 
@@ -138,23 +137,21 @@ export function AgentOverviewView() {
                   <span className={`ov-agent__state is-${agent.status}`}>{status.label}</span>
                 </div>
                 <p className="ov-agent__cadence">{agent.cadence}</p>
-                {agent.status === 'soon' ? null : (
-                  <dl className="ov-agent__meta">
-                    <div>
-                      <dt>上次</dt>
-                      <dd>
-                        <span className="ov-mono">{agent.lastRun}</span> · {agent.lastResult}
-                      </dd>
-                    </div>
-                    <div>
-                      <dt>下次</dt>
-                      <dd>
-                        <span className="ov-mono">{agent.nextRun}</span>
-                        <span className="ov-agent__runs">本月 {agent.monthRuns} 次</span>
-                      </dd>
-                    </div>
-                  </dl>
-                )}
+                <dl className="ov-agent__meta">
+                  <div>
+                    <dt>上次</dt>
+                    <dd>
+                      <span className="ov-mono">{agent.lastRun}</span> · {agent.lastResult}
+                    </dd>
+                  </div>
+                  <div>
+                    <dt>下次</dt>
+                    <dd>
+                      <span className="ov-mono">{agent.nextRun}</span>
+                      <span className="ov-agent__runs">本月 {agent.monthRuns} 次</span>
+                    </dd>
+                  </div>
+                </dl>
               </>
             )
             return agent.view ? (
@@ -168,7 +165,7 @@ export function AgentOverviewView() {
                 <ArrowRight className="ov-agent__go" size={14} />
               </button>
             ) : (
-              <div key={agent.key} className="ov-agent is-soon">
+              <div key={agent.key} className="ov-agent is-idle">
                 {body}
               </div>
             )

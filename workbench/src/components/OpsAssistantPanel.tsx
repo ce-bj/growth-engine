@@ -6,7 +6,8 @@ import { opsAssistantFloatUrl } from './EmbedFrame'
 const PAGE: Record<string, { name: string; hint: string }> = {
   board: { name: '数据看板', hint: '看访问、询盘、有效浏览和渠道' },
   dashboard: { name: '智能体概览', hint: '看各智能体是否在跑、有没有待处理的事' },
-  visitor: { name: '访客行为分析', hint: '看访客从哪来、看了什么、有没有留下询盘' },
+  intake: { name: '网站承接数据', hint: '看漏斗和用户意图' },
+  visitor: { name: '网站策略', hint: '看访客从哪来、看了什么、有没有留下询盘' },
   marketing: { name: '智能营销页', hint: '看在投的落地页和留资' },
   content: { name: '内容发布', hint: '看在线产品和文章，准备发布或修改' },
   knowledge: { name: '知识库', hint: '看已发布的企业资料' },

@@ -6,6 +6,7 @@ import {
   EmbedFrame,
   contentAgentUrl,
   dataBoardUrl,
+  intakeDataUrl,
   marketingAgentUrl,
   opsAssistantUrl,
   visitorAnalysisUrl,
@@ -15,7 +16,9 @@ import { ToastStack } from './components/ToastStack'
 import { WorkbenchProvider, useWorkbench } from './context/WorkbenchContext'
 import { portalTheme } from './theme'
 import type { ViewId } from './types'
+import { isLegacyAnalysisView } from './data/analysisNav'
 import { AgentOverviewView } from './views/AgentOverviewView'
+import { LegacyAnalysisView } from './views/data-analysis/LegacyAnalysisView'
 import { GeoMonitorView } from './views/GeoMonitorView'
 import { KnowledgeBaseView } from './views/KnowledgeBaseView'
 import { ScanProgressView } from './views/ScanProgressView'
@@ -75,11 +78,13 @@ function Pages() {
 
   return (
     <AdminShell>
-      {view === 'board' && <EmbedFrame src={dataBoardUrl()} title="数据看板" />}
+      {view === 'board' && <EmbedFrame src={dataBoardUrl()} title="数据分析总览" />}
+      {isLegacyAnalysisView(view) && <LegacyAnalysisView view={view} />}
+      {view === 'intake' && <EmbedFrame src={intakeDataUrl()} title="网站承接数据" />}
       {view === 'dashboard' && <AgentOverviewView />}
       {view === 'scanning' && <ScanProgressView />}
       {view === 'visitor' && (
-        <EmbedFrame src={visitorAnalysisUrl()} title="访客行为分析智能体" />
+        <EmbedFrame src={visitorAnalysisUrl()} title="网站策略" />
       )}
       {view === 'marketing' && (
         <EmbedFrame src={withTask(marketingAgentUrl(), handoff, 'marketing')} title="智能营销页智能体" />

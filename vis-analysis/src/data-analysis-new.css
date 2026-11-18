@@ -10,14 +10,14 @@ html[data-visitor-embed] #root {
 }
 
 .dan-page {
-  --dan-bg: #f5f7fa;
+  --dan-bg: #f5f7fb;
   --dan-card: #ffffff;
   --dan-ink: #1e293b;
   --dan-muted: #475569;
   --dan-line: #e2e8f0;
-  --dan-accent: #3b9fd0;
-  --dan-accent-2: #2f8bb8;
-  --dan-accent-deep: #2779a3;
+  --dan-accent: #6366f1;
+  --dan-accent-2: #4f46e5;
+  --dan-accent-deep: #4338ca;
   --dan-ok: #2f6b3a;
   --dan-warn: #b45309;
   --dan-danger: #b42318;
@@ -40,6 +40,26 @@ html[data-visitor-embed] #root {
 
 .dan-inner.is-agent {
   padding: 12px 16px 40px;
+}
+
+.dan-board-switch {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 12px;
+  margin-bottom: 12px;
+}
+
+.dan-board-switch > span:first-child,
+.dan-board-switch-note {
+  font-size: 13px;
+  color: #64748b;
+}
+
+.dan-live-site {
+  font-size: 14px;
+  font-weight: 600;
+  color: #1e293b;
 }
 
 .dan-toolbar {

@@ -18,7 +18,7 @@ import {
   Tooltip,
 } from "antd";
 import { ArrowDownOutlined, ArrowUpOutlined } from "@ant-design/icons";
-import { DEPTH_INTENTS, CHURN_MARK } from "../diagnosisPeriod.js";
+import { DEPTH_INTENTS, CHURN_MARK, WEEKS } from "../diagnosisPeriod.js";
 import {
   INTENTS,
   LOSSES,
@@ -26,7 +26,6 @@ import {
   PAGE_ID_COLS,
   SEARCH_TERM_COLS,
   SEARCH_TERM_SOURCES,
-  STUCK_LABEL,
   bottleneck,
   catalogRows,
   fmtInt,
@@ -39,7 +38,7 @@ import {
   searchTermRows,
   walksListed,
 } from "../funnel-review/data.js";
-import { allocate, BOARD_RANGES, buildBoardModel } from "./boardWindow.js";
+import { allocate, BOARD_RANGES, buildBoardModel, buildWeekModel } from "./boardWindow.js";
 import { ACCENT, BOARD_THEME, DANGER } from "../board-theme.js";
 import "./detail-board.css";
 
@@ -47,7 +46,7 @@ const Line = lazy(() => import("@ant-design/plots").then((mod) => ({ default: mo
 const Funnel = lazy(() => import("@ant-design/plots").then((mod) => ({ default: mod.Funnel })));
 const RegionMap = lazy(() => import("./RegionMap.jsx"));
 
-const MIX_COLORS = ["#2f8bb8", "#36b3a8", "#8e7cc3", "#e0a03b", "#6b7fd7"];
+const MIX_COLORS = ["#6366f1", "#14b8a6", "#8b5cf6", "#e0a03b", "#818cf8"];
 
 const PAGE_COUNT_KEYS = ["pv", "uv", "pageLeads", "viewed", "started", "landPv", "landUv", "bounceUv", "landLeads"];
 const TERM_COUNT_KEYS = ["searches", "uv", "clicks", "impressions", "cost"];
@@ -134,6 +133,57 @@ function KpiCard({ title, cur, prev, mode = "count", note, alert, compare }) {
         </div>
       ) : null}
     </Card>
+  );
+}
+
+function HeadKpis({ entry, view, lead, leadCount, compare }) {
+  const viewRate = entry.cur ? view.cur / entry.cur : 0;
+  const viewPrev = entry.prev ? view.prev / entry.prev : null;
+  const leadRate = entry.cur ? lead.cur / entry.cur : 0;
+  const leadPrev = entry.prev ? lead.prev / entry.prev : null;
+  return (
+    <Row gutter={[16, 16]} className="db-kpis">
+      <Col xs={24} sm={12} xl={6}>
+        <KpiCard
+          title="访问人数"
+          cur={entry.cur}
+          prev={entry.prev}
+          compare={compare}
+          note={compare ? `上周 ${fmtInt(entry.prev)} 人` : null}
+        />
+      </Col>
+      <Col xs={24} sm={12} xl={6}>
+        <KpiCard
+          title="询盘条数"
+          cur={leadCount.cur}
+          prev={leadCount.prev}
+          compare={compare}
+          note={`留资访客 ${fmtInt(lead.cur)} 人`}
+        />
+      </Col>
+      <Col xs={24} sm={12} xl={6}>
+        <KpiCard
+          title="有效浏览率"
+          cur={viewRate}
+          prev={viewPrev}
+          mode="rate"
+          compare={compare}
+          note={compare && viewPrev != null ? `上周 ${pct(viewPrev)}` : null}
+          alert={compare && rateBrokeDown(viewRate, viewPrev)}
+        />
+      </Col>
+      <Col xs={24} sm={12} xl={6}>
+        <KpiCard
+          title="留资转化率"
+          cur={leadRate}
+          prev={leadPrev}
+          mode="rate"
+          compare={compare}
+          note={compare && leadPrev != null ? `上周 ${pct(leadPrev)}` : null}
+          alert={compare && rateBrokeDown(leadRate, leadPrev)}
+        />
+      </Col>
+    </Row>
   );
 }
 
@@ -437,9 +487,22 @@ const numCol = (title, dataIndex, render) => ({
   render: render || ((value) => (value == null ? "—" : fmtInt(value))),
 });
 
-export default function DetailBoard({ authMap, onAuthorize }) {
+function openDataAnalysis() {
+  if (window.parent && window.parent !== window) {
+    window.parent.postMessage({ type: "growth-navigate", view: "board" }, "*");
+  }
+  const url = new URL(window.location.href);
+  url.searchParams.set("view", "board");
+  window.location.assign(url.toString());
+}
+
+export default function DetailBoard({ authMap, onAuthorize, mode = "full" }) {
   const [range, setRange] = useState("d7");
-  const model = useMemo(() => buildBoardModel(range), [range]);
+  const [weekId, setWeekId] = useState(WEEKS[0].id);
+  const model = useMemo(
+    () => (mode === "intake" ? buildWeekModel(weekId) : buildBoardModel(range)),
+    [mode, weekId, range],
+  );
   const { traffic, regions, stages: stageBook, leadCount, frame } = model;
   const compare = frame.compare;
   const [catchCat, setCatchCat] = useState("all");
@@ -452,8 +515,6 @@ export default function DetailBoard({ authMap, onAuthorize }) {
 
   const siteStages = stageBook.site;
   const [entry, view, , lead] = siteStages;
-  const siteGates = through(siteStages);
-  const siteStuck = bottleneck(siteGates);
 
   const sourceRows = useMemo(
     () => traffic.sources.map((row) => ({
@@ -479,6 +540,7 @@ export default function DetailBoard({ authMap, onAuthorize }) {
   const userPickedCat = traffic.cats.find((cat) => cat.id === userCat);
   const userPickedSource = userSrc ? traffic.sources.find((item) => item.id === userSrc) : null;
   const userSlice = channelSlice(userCat, userPickedCat);
+  const intentSlice = mode === "intake" ? slice : userSlice;
 
   const stages = slice.empty ? [] : stageBook[slice.channelId];
   const gates = stages.length ? through(stages) : [];
@@ -487,7 +549,7 @@ export default function DetailBoard({ authMap, onAuthorize }) {
   const pageMax = pageRows[0]?.uv || 1;
   const landMax = landRows[0]?.landUv || 1;
 
-  const walks = userSlice.empty ? [] : walksListed(userSlice.channelId, intentId);
+  const walks = intentSlice.empty ? [] : walksListed(intentSlice.channelId, intentId);
   const namedPaths = walks
     .flatMap((walk) => walk.urls.map((row, index) => ({
       id: `${walk.id}-${index}`,
@@ -499,15 +561,15 @@ export default function DetailBoard({ authMap, onAuthorize }) {
   const pathSum = namedPaths.reduce((sum, row) => sum + row.count, 0);
   const pathMax = namedPaths[0]?.count || 1;
   const intentName = intentId ? INTENTS.find((item) => item.id === intentId)?.name : "全部意图";
-  const intentRows = userSlice.empty
+  const intentRows = intentSlice.empty
     ? []
     : (() => {
       const base = DEPTH_INTENTS.map((item) => {
-        const intentStages = getStages(userSlice.channelId, item.id);
+        const intentStages = getStages(intentSlice.channelId, item.id);
         return { ...item, count: intentStages[0].cur, leads: intentStages[3].cur };
       });
       if (frame.factor === 1) return base;
-      const channelStages = stageBook[userSlice.channelId];
+      const channelStages = stageBook[intentSlice.channelId];
       const counts = allocate(base.map((item) => item.count), channelStages[0].cur);
       const leads = allocate(base.map((item) => item.leads), channelStages[3].cur);
       return base.map((item, index) => ({ ...item, count: counts[index], leads: leads[index] }));
@@ -813,6 +875,125 @@ export default function DetailBoard({ authMap, onAuthorize }) {
     <StageFunnel stages={stages} height={300} />
   );
 
+  if (mode === "intake") {
+    const intentColumns = [
+      { title: "意图", dataIndex: "name", key: "name" },
+      { title: "含义", dataIndex: "meaning", key: "meaning" },
+      numCol("人数", "count"),
+      {
+        title: "占比",
+        key: "share",
+        align: "right",
+        render: (_, row) => pct(intentTotal ? row.count / intentTotal : 0),
+      },
+      numCol("留资访客", "leads"),
+    ];
+    return (
+      <ConfigProvider theme={BOARD_THEME}>
+        <div className="dan-board">
+          <Alert
+            className="db-focus"
+            type="info"
+            showIcon
+            title="这里只看来了之后有没有看进去、留下联系方式。"
+            description="流量从哪来、搜索词、地域分布，到数据分析里看完整看板。"
+            action={
+              <Button type="primary" onClick={openDataAnalysis}>
+                去数据分析
+              </Button>
+            }
+          />
+          <div className="db-window">
+            <span>统计周</span>
+            <Select
+              className="db-week-select"
+              value={weekId}
+              showSearch={false}
+              allowClear={false}
+              options={WEEKS.map((item) => ({
+                value: item.id,
+                label: item.label,
+              }))}
+              onChange={(id) => {
+                setWeekId(id);
+                setIntentId(null);
+              }}
+            />
+            {weekId === WEEKS[0].id ? <Tag>最新一期</Tag> : null}
+            <span className="db-window-span">对照 {frame.baselineLabel}</span>
+          </div>
+          <HeadKpis entry={entry} view={view} lead={lead} leadCount={leadCount} compare={compare} />
+          <SliceBar
+            cats={traffic.cats}
+            cat={catchCat}
+            source={catchSrc}
+            sourceOptions={sourceOptions}
+            onCat={(id) => {
+              pickCatchCat(id);
+              setIntentId(null);
+            }}
+            onSource={(id) => {
+              pickSource(id);
+              setIntentId(null);
+            }}
+          />
+          {pickedSource ? (
+            <Alert
+              className="db-slice-note"
+              type="info"
+              showIcon
+              title={`${pickedSource.name} 暂无单独的漏斗和意图数据，下面展示 ${pickedSource.catName} 整个渠道。`}
+            />
+          ) : null}
+          <Card title={<>漏斗明细 <Tag className="db-tag-mini">{slice.name}</Tag></>} className="db-fill">
+            {slice.empty ? (
+              <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description={`${slice.name} 还没有漏斗数据`} />
+            ) : (
+              <FunnelDetail stages={stages} gates={gates} channelId={slice.channelId} sliceName={slice.name} compare={compare} />
+            )}
+          </Card>
+          <Card title={<>用户意图 <Tag className="db-tag-mini">{slice.name}</Tag></>} className="db-fill">
+            {slice.empty ? (
+              <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description={`${slice.name} 还没有意图数据`} />
+            ) : (
+              <Row gutter={[24, 16]}>
+                <Col xs={24} xl={10}>
+                  <p className="db-card-hint">
+                    点一档，看这一类访客占多少。
+                    {slice.channelId === "site" ? `其中 ${CHURN_MARK.percent}% ${CHURN_MARK.label}。` : null}
+                  </p>
+                  <RankList
+                    onPick={(id) => setIntentId((prev) => (prev === id ? null : id))}
+                    pickedKey={intentId}
+                    items={intentRows.map((item) => ({
+                      key: item.id,
+                      color: item.color,
+                      name: item.name,
+                      tag: <span className="db-rank-hint">{item.meaning}</span>,
+                      valueText: `${fmtInt(item.count)} 人 · ${pct(intentTotal ? item.count / intentTotal : 0)}`,
+                      percent: intentTotal ? (item.count / intentTotal) * 100 : 0,
+                      sub: `留资访客 ${fmtInt(item.leads)} 人`,
+                    }))}
+                  />
+                </Col>
+                <Col xs={24} xl={14}>
+                  <p className="db-card-hint">{intentId ? `当前看「${intentName}」。再点一次取消筛选。` : "明细按人数从高到低排。"}</p>
+                  <Table
+                    size="small"
+                    rowKey="id"
+                    pagination={false}
+                    dataSource={intentId ? intentRows.filter((row) => row.id === intentId) : intentRows}
+                    columns={intentColumns}
+                  />
+                </Col>
+              </Row>
+            )}
+          </Card>
+        </div>
+      </ConfigProvider>
+    );
+  }
+
   return (
     <ConfigProvider theme={BOARD_THEME}>
       <div className="dan-board">
@@ -826,45 +1007,7 @@ export default function DetailBoard({ authMap, onAuthorize }) {
           <span className="db-window-span">{frame.span}</span>
         </div>
 
-        {compare && siteStuck ? (
-          <Alert
-            className="db-focus"
-            type="warning"
-            showIcon
-            title={`本期卡在「${STUCK_LABEL[siteStuck.lossId]}」：${siteStuck.from.name} → ${siteStuck.to.name} 通过率 ${pct(siteStuck.passPrev)} → ${pct(siteStuck.pass)}。访问人数${entry.cur === entry.prev ? "持平" : `较上周 ${entry.cur > entry.prev ? "多" : "少"} ${fmtInt(Math.abs(entry.cur - entry.prev))} 人`}，留资访客${lead.cur === lead.prev ? "持平" : `较上周 ${lead.cur > lead.prev ? "多" : "少"} ${fmtInt(Math.abs(lead.cur - lead.prev))} 人`}。`}
-          />
-        ) : null}
-
-        <Row gutter={[16, 16]} className="db-kpis">
-          <Col xs={24} sm={12} xl={6}>
-            <KpiCard title="访问人数" cur={entry.cur} prev={entry.prev} compare={compare} note={compare ? `上周 ${fmtInt(entry.prev)} 人` : null} />
-          </Col>
-          <Col xs={24} sm={12} xl={6}>
-            <KpiCard title="询盘条数" cur={leadCount.cur} prev={leadCount.prev} compare={compare} note={`留资访客 ${fmtInt(lead.cur)} 人`} />
-          </Col>
-          <Col xs={24} sm={12} xl={6}>
-            <KpiCard
-              title="有效浏览率"
-              cur={view.cur / entry.cur}
-              prev={view.prev / entry.prev}
-              mode="rate"
-              compare={compare}
-              note={compare ? `上周 ${pct(view.prev / entry.prev)}` : null}
-              alert={compare && rateBrokeDown(view.cur / entry.cur, view.prev / entry.prev)}
-            />
-          </Col>
-          <Col xs={24} sm={12} xl={6}>
-            <KpiCard
-              title="留资转化率"
-              cur={lead.cur / entry.cur}
-              prev={lead.prev / entry.prev}
-              mode="rate"
-              compare={compare}
-              note={compare ? `上周 ${pct(lead.prev / entry.prev)}` : null}
-              alert={compare && rateBrokeDown(lead.cur / entry.cur, lead.prev / entry.prev)}
-            />
-          </Col>
-        </Row>
+        <HeadKpis entry={entry} view={view} lead={lead} leadCount={leadCount} compare={false} />
 
         <SectionTitle title="流量" hint="从哪来、来了多少" />
         <Row gutter={[16, 16]}>

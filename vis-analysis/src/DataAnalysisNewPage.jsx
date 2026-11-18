@@ -1,17 +1,20 @@
-/** 访客行为分析智能体（Growth/vis-analysis）。与数字门户「数据分析-新」已拆开。 */
+/** 网站策略页（Growth/vis-analysis）。与数字门户「数据分析-旧」已拆开。 */
 import { useMemo, useState } from "react";
-import { App as AntApp, Button, ConfigProvider, Select } from "antd";
+import { App as AntApp, Button, ConfigProvider, Segmented, Select } from "antd";
 import zhCN from "antd/locale/zh_CN";
 import { ArrowLeftOutlined, DownOutlined, FileTextOutlined, HistoryOutlined } from "@ant-design/icons";
 import AgentPage from "./agent-page/AgentPage.jsx";
 import DetailBoard from "./detail-board/DetailBoard.jsx";
+import McpDetailBoard from "./detail-board/McpDetailBoard.jsx";
+import { MCP_SITE } from "./detail-board/mcpBoardData.js";
+import { getGoodyBoard, GOODY_SITE } from "./detail-board/goodyBoardData.js";
 import "./data-analysis-new.css";
 import { AUTH_SOURCES, QUIET_WEEK_IDS, SITES, SOURCE_AUTH_PAGES, WEEKS } from "./diagnosisPeriod.js";
 
 const THEME = {
   token: {
-    colorPrimary: "#2f8bb8",
-    colorInfo: "#2f8bb8",
+    colorPrimary: "#6366f1",
+    colorInfo: "#6366f1",
     colorSuccess: "#2f6b3a",
     colorWarning: "#b45309",
     colorError: "#b42318",
@@ -19,7 +22,7 @@ const THEME = {
     colorTextSecondary: "#5c6570",
     colorBorder: "#e6e9ee",
     colorBgContainer: "#ffffff",
-    colorBgLayout: "#f5f7fa",
+    colorBgLayout: "#f5f7fb",
     borderRadius: 8,
     fontFamily: "'Noto Sans SC', 'PingFang SC', 'Microsoft YaHei', sans-serif",
     fontSize: 14,
@@ -76,13 +79,14 @@ function AuthConnect({ sourceKey, backLabel, onBack, onDone }) {
   );
 }
 
-function Workbench({ boardOnly }) {
+function Workbench({ boardOnly, intakeOnly }) {
   const [authKey, setAuthKey] = useState(null);
   const [granted, setGranted] = useState({});
   const [siteId, setSiteId] = useState(SITES[0].id);
   const [weekId, setWeekId] = useState(WEEKS[0].id);
   const [monthlyOpen, setMonthlyOpen] = useState(false);
   const [ledgerOpen, setLedgerOpen] = useState(false);
+  const [boardKind, setBoardKind] = useState("demo");
 
   const site = SITES.find((item) => item.id === siteId) ?? SITES[0];
   const week = WEEKS.find((item) => item.id === weekId) ?? WEEKS[0];
@@ -103,7 +107,7 @@ function Workbench({ boardOnly }) {
   const auth = authKey ? (
     <AuthConnect
       sourceKey={authKey}
-      backLabel={boardOnly ? "返回数据看板" : "返回智能体分析"}
+      backLabel={boardOnly ? "返回数据看板" : intakeOnly ? "返回网站承接数据" : "返回网站策略"}
       onBack={() => setAuthKey(null)}
       onDone={finishAuth}
     />
@@ -133,8 +137,50 @@ function Workbench({ boardOnly }) {
         {auth}
         <div className="dan-page" style={pageStyle}>
           <div className="dan-inner is-agent">
-            <header className="dan-toolbar">{siteSelect}</header>
-            <DetailBoard authMap={authMap} onAuthorize={setAuthKey} />
+            <div className="dan-board-switch">
+              <span>看板</span>
+              <Segmented
+                value={boardKind}
+                onChange={setBoardKind}
+                options={[
+                  { value: "demo", label: "演示数据" },
+                  { value: "live", label: "实际数据" },
+                  { value: "live2", label: "实际数据2" },
+                ]}
+              />
+              <span className="dan-board-switch-note">
+                {boardKind === "demo"
+                  ? "样例站点，模块和数字都是演示数据。"
+                  : boardKind === "live2"
+                    ? `${GOODY_SITE.name} · ${GOODY_SITE.host} · 截至 ${GOODY_SITE.asOf}`
+                    : `${MCP_SITE.name} · ${MCP_SITE.host} · 截至 ${MCP_SITE.asOf}`}
+              </span>
+            </div>
+            {boardKind !== "demo" ? (
+              <header className="dan-toolbar">
+                <span className="dan-live-site">{boardKind === "live2" ? GOODY_SITE.name : MCP_SITE.name}</span>
+              </header>
+            ) : null}
+            {boardKind === "demo" ? (
+              <DetailBoard authMap={authMap} onAuthorize={setAuthKey} />
+            ) : boardKind === "live2" ? (
+              <McpDetailBoard getBoard={getGoodyBoard} />
+            ) : (
+              <McpDetailBoard />
+            )}
+          </div>
+        </div>
+      </>
+    );
+  }
+
+  if (intakeOnly) {
+    return (
+      <>
+        {auth}
+        <div className="dan-page" style={pageStyle}>
+          <div className="dan-inner is-agent">
+            <DetailBoard authMap={authMap} onAuthorize={setAuthKey} mode="intake" />
           </div>
         </div>
       </>
@@ -149,7 +195,7 @@ function Workbench({ boardOnly }) {
           <header className="dan-toolbar">
             {site.diagnosed ? (
               <Button icon={<HistoryOutlined />} onClick={() => setLedgerOpen(true)}>
-                建议记录
+                以前建议过的事
               </Button>
             ) : null}
             {siteSelect}
@@ -170,7 +216,7 @@ function Workbench({ boardOnly }) {
                   onChange={(id) => setWeekId(id)}
                 />
                 <Button icon={<FileTextOutlined />} onClick={() => setMonthlyOpen(true)}>
-                  月度价值报告
+                  这个月做了什么
                 </Button>
               </>
             ) : null}
@@ -197,7 +243,7 @@ export default function DataAnalysisNewPage({ view = "agent" }) {
   return (
     <ConfigProvider locale={zhCN} theme={THEME} button={{ autoInsertSpace: false }}>
       <AntApp style={{ flex: 1, minWidth: 0, minHeight: 0, height: "100%", display: "flex" }}>
-        <Workbench boardOnly={view === "board"} />
+        <Workbench boardOnly={view === "board"} intakeOnly={view === "intake"} />
       </AntApp>
     </ConfigProvider>
   );

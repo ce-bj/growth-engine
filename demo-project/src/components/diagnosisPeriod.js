@@ -1,4 +1,4 @@
-/** 数据分析-新：自然月诊断外壳。漏斗人数与路径仍读 funnel-review/data。 */
+/** 数据分析-旧：自然月诊断外壳。漏斗人数与路径仍读 funnel-review/data。 */
 
 export const PERIOD = {
   siteName: "Demo · CNC 精密加工件外贸站",
