@@ -1,11 +1,11 @@
 .ag-page {
-  --ag-accent: #6366f1;
-  --ag-danger: #cf1322;
-  --ag-warn: #d46b08;
-  --ag-ok: #389e0d;
-  --ag-text-2: #64748b;
+  --ag-accent: #3989ff;
+  --ag-danger: #ef4444;
+  --ag-warn: #f59e0b;
+  --ag-ok: #10b981;
+  --ag-text-2: #475569;
   --ag-text-3: #94a3b8;
-  --ag-line: #e8edf2;
+  --ag-line: #e7ebf3;
   --ag-soft: #f7f9fb;
   display: flex;
   flex-direction: column;
@@ -14,10 +14,10 @@
 
 @keyframes agFlash {
   0% {
-    box-shadow: 0 0 0 3px rgba(99, 102, 241), 0.36);
+    box-shadow: 0 0 0 3px rgba(57, 137, 255, 0.36);
   }
   100% {
-    box-shadow: 0 0 0 0 rgba(99, 102, 241), 0);
+    box-shadow: 0 0 0 0 rgba(57, 137, 255, 0);
   }
 }
 
@@ -125,10 +125,11 @@
   display: flex;
   align-items: center;
   gap: 24px;
-  padding: 18px 22px;
-  border: 1px solid #cfe5f1;
+  padding: 24px;
+  border: 1px solid #e7ebf3;
   border-radius: 8px;
-  background: #f2f8fc;
+  background: #fff;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
 }
 
 .ag-summary p {
@@ -1293,12 +1294,12 @@
 
 /* 监测 / 结论 / 月报弹窗 */
 .ag-mdl {
-  --ag-accent: #6366f1;
-  --ag-warn: #d46b08;
-  --ag-ok: #389e0d;
-  --ag-text-2: #64748b;
+  --ag-accent: #3989ff;
+  --ag-warn: #f59e0b;
+  --ag-ok: #10b981;
+  --ag-text-2: #475569;
   --ag-text-3: #94a3b8;
-  --ag-line: #e8edf2;
+  --ag-line: #e7ebf3;
   --ag-soft: #f7f9fb;
   display: flex;
   flex-direction: column;

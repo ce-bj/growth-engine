@@ -271,7 +271,7 @@ export default function MarketingStudio() {
  if(new URLSearchParams(location.search).has('lead-management'))return <div className="empty-result"><h1>线索管理</h1><p>平台线索管理入口（Mock），真实地址待平台接入。</p><a href={location.pathname}>返回营销工作台</a></div>
  if(localPreview&&requestedId&&!previewRecord)return <div className="empty-result"><h1>页面不可用</h1><p>该演示页面不在当前浏览器的本地记录中。</p><a href={location.pathname}>返回工作台</a></div>
  if(localPreview)return <div className="studio-public"><div className="demo-ribbon">本地页面预览 · 前端演示，不代表真实发布 <a href={location.pathname}>返回工作台</a></div><LandingCanvas draft={previewDraft} template={mockTemplatesData.find(t=>t.id===previewDraft.templateId)||template} onAction={openForm}/>{formModal}</div>
- return <div className="studio-app" style={{'--accent':draft.color||'#314ed8'} as CSSProperties}>
+ return <div className="studio-app" style={{'--accent':draft.color||'#3989ff'} as CSSProperties}>
   <div className="studio-main">
    <StudioHeader
     stage={draft.stage}

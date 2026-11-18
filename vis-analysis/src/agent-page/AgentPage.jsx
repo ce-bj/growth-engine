@@ -533,7 +533,7 @@ export default function AgentPage({ site, weekLabel, quiet, authMap, onAuthorize
   const [adviceDone, setAdviceDone] = useState({});
   const [extraNotes, setExtraNotes] = useState({});
   const [openKeys, setOpenKeys] = useState([]);
-  const [baseTracking, setBaseTracking] = useState(TRACKING);
+  const [baseTracking] = useState(TRACKING);
   const [reworkedKeys, setReworkedKeys] = useState({});
   const [flashKey, setFlashKey] = useState("");
   const [modalRow, setModalRow] = useState(null);
@@ -635,22 +635,6 @@ export default function AgentPage({ site, weekLabel, quiet, authMap, onAuthorize
     message.info(reason.effect);
   }
 
-  function confirmLaunch(row) {
-    setBaseTracking((prev) =>
-      prev.map((item) =>
-        item.key === row.key
-          ? {
-              ...item,
-              stage: MONITOR_STAGE,
-              launchedAt: "刚刚",
-              monitor: item.readyMonitor,
-            }
-          : item,
-      ),
-    );
-    message.success("已记录上线。我们开始看这页的效果。");
-  }
-
   function rework(row) {
     setReworkedKeys((prev) => ({ ...prev, [row.key]: true }));
     message.success("已经记下这个做法没有效果。下次会换一种做法。");
@@ -737,11 +721,6 @@ export default function AgentPage({ site, weekLabel, quiet, authMap, onAuthorize
                   {AGENT_VIEW[row.executor] ? (
                     <Button size="small" onClick={() => openAgentTask(row)}>
                       打开这个任务
-                    </Button>
-                  ) : null}
-                  {row.stage === PROGRESS_STAGE && row.readyMonitor ? (
-                    <Button size="small" type="primary" ghost onClick={() => confirmLaunch(row)}>
-                      我确认已经上线
                     </Button>
                   ) : null}
                 </div>

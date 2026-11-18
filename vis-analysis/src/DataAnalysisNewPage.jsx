@@ -13,25 +13,41 @@ import { AUTH_SOURCES, QUIET_WEEK_IDS, SITES, SOURCE_AUTH_PAGES, WEEKS } from ".
 
 const THEME = {
   token: {
-    colorPrimary: "#6366f1",
-    colorInfo: "#6366f1",
-    colorSuccess: "#2f6b3a",
-    colorWarning: "#b45309",
-    colorError: "#b42318",
-    colorText: "#1a1d21",
-    colorTextSecondary: "#5c6570",
-    colorBorder: "#e6e9ee",
+    colorPrimary: "#3989FF",
+    colorInfo: "#3989FF",
+    colorSuccess: "#10b981",
+    colorWarning: "#f59e0b",
+    colorError: "#ef4444",
+    colorText: "#0f172a",
+    colorTextSecondary: "#475569",
+    colorBorder: "#e7ebf3",
+    colorBorderSecondary: "#e7ebf3",
     colorBgContainer: "#ffffff",
     colorBgLayout: "#f5f7fb",
-    borderRadius: 8,
-    fontFamily: "'Noto Sans SC', 'PingFang SC', 'Microsoft YaHei', sans-serif",
+    borderRadius: 6,
+    fontFamily: "'PingFang SC', 'Microsoft YaHei', 'Noto Sans SC', 'Segoe UI', sans-serif",
     fontSize: 14,
-    controlHeight: 32,
+    controlHeight: 40,
   },
   components: {
     Select: {
-      optionSelectedBg: "#e8f4fb",
+      optionSelectedBg: "#eef6ff",
     },
+    Card: { borderRadiusLG: 8 },
+  },
+};
+
+const BOARD_PAGE_THEME = {
+  ...THEME,
+  token: {
+    ...THEME.token,
+    colorPrimary: "#2f8bb8",
+    colorInfo: "#2f8bb8",
+    controlHeight: 32,
+  },
+  components: {
+    ...THEME.components,
+    Select: { optionSelectedBg: "#e8f4fb" },
   },
 };
 
@@ -135,7 +151,7 @@ function Workbench({ boardOnly, intakeOnly }) {
     return (
       <>
         {auth}
-        <div className="dan-page" style={pageStyle}>
+        <div className="dan-page is-board" style={pageStyle}>
           <div className="dan-inner is-agent">
             <div className="dan-board-switch">
               <span>看板</span>
@@ -241,7 +257,7 @@ function Workbench({ boardOnly, intakeOnly }) {
 
 export default function DataAnalysisNewPage({ view = "agent" }) {
   return (
-    <ConfigProvider locale={zhCN} theme={THEME} button={{ autoInsertSpace: false }}>
+    <ConfigProvider locale={zhCN} theme={view === "board" ? BOARD_PAGE_THEME : THEME} button={{ autoInsertSpace: false }}>
       <AntApp style={{ flex: 1, minWidth: 0, minHeight: 0, height: "100%", display: "flex" }}>
         <Workbench boardOnly={view === "board"} intakeOnly={view === "intake"} />
       </AntApp>

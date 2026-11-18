@@ -20,7 +20,7 @@ import {
 } from "antd"
 import { ArrowDownOutlined, ArrowUpOutlined } from "@ant-design/icons"
 import { fmtInt, pct, rateBrokeDown } from "../funnel-review/data.js"
-import { ACCENT, BOARD_THEME, DANGER } from "../board-theme.js"
+import { BOARD_BLUE_THEME as BOARD_THEME, DANGER, PORTAL_BLUE as ACCENT } from "../board-theme.js"
 import { getMcpBoard } from "./mcpBoardData.js"
 import "./detail-board.css"
 
@@ -34,7 +34,7 @@ const RANGES = [
 ]
 
 const CHANNELS = [
-  { id: "search", name: "搜索引擎", color: "#6366f1" },
+  { id: "search", name: "搜索引擎", color: "#2f8bb8" },
   { id: "direct", name: "直接访问", color: "#36b3a8" },
   { id: "referral", name: "外部链接", color: "#8e7cc3" },
   { id: "ads", name: "广告", color: "#e0a03b" },

@@ -12,12 +12,12 @@ html[data-visitor-embed] #root {
 .dan-page {
   --dan-bg: #f5f7fb;
   --dan-card: #ffffff;
-  --dan-ink: #1e293b;
+  --dan-ink: #0f172a;
   --dan-muted: #475569;
-  --dan-line: #e2e8f0;
-  --dan-accent: #6366f1;
-  --dan-accent-2: #4f46e5;
-  --dan-accent-deep: #4338ca;
+  --dan-line: #e7ebf3;
+  --dan-accent: #3989ff;
+  --dan-accent-2: #1f6fdb;
+  --dan-accent-deep: #1a5bb8;
   --dan-ok: #2f6b3a;
   --dan-warn: #b45309;
   --dan-danger: #b42318;
@@ -32,14 +32,17 @@ html[data-visitor-embed] #root {
   background: var(--dan-bg);
 }
 
-.dan-inner {
-  max-width: 1520px;
-  margin: 0 auto;
-  padding: 28px 32px 72px;
+.dan-page.is-board {
+  --dan-accent: #3b9fd0;
+  --dan-accent-2: #2f8bb8;
+  --dan-accent-deep: #2779a3;
 }
 
+.dan-inner,
 .dan-inner.is-agent {
-  padding: 12px 16px 40px;
+  max-width: none;
+  margin: 0;
+  padding: 24px 24px 32px;
 }
 
 .dan-board-switch {
@@ -189,6 +192,29 @@ html[data-visitor-embed] #root {
   color: var(--dan-muted);
   font-size: 15px;
   line-height: 1.8;
+}
+
+.dan-page .ant-card > .ant-card-head {
+  min-height: 56px;
+  padding: 0 24px;
+}
+
+.dan-page .ant-card > .ant-card-body {
+  padding: 24px;
+}
+
+.dan-page:not(.is-board) .ant-btn-primary:not(:disabled) {
+  background: linear-gradient(135deg, #3989ff, #5fa6ff) !important;
+  border-color: transparent !important;
+  box-shadow: none;
+}
+
+.dan-page:not(.is-board) .ant-btn-primary:not(:disabled):hover {
+  background: #1f6fdb !important;
+}
+
+.dan-page:not(.is-board) .ant-btn-primary:not(:disabled):active {
+  background: #1a5bb8 !important;
 }
 
 @media (max-width: 860px) {

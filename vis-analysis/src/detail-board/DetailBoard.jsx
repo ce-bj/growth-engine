@@ -39,14 +39,15 @@ import {
   walksListed,
 } from "../funnel-review/data.js";
 import { allocate, BOARD_RANGES, buildBoardModel, buildWeekModel } from "./boardWindow.js";
-import { ACCENT, BOARD_THEME, DANGER } from "../board-theme.js";
+import { BOARD_BLUE_THEME, BOARD_THEME, DANGER, PORTAL_BLUE } from "../board-theme.js";
 import "./detail-board.css";
 
 const Line = lazy(() => import("@ant-design/plots").then((mod) => ({ default: mod.Line })));
 const Funnel = lazy(() => import("@ant-design/plots").then((mod) => ({ default: mod.Funnel })));
 const RegionMap = lazy(() => import("./RegionMap.jsx"));
 
-const MIX_COLORS = ["#6366f1", "#14b8a6", "#8b5cf6", "#e0a03b", "#818cf8"];
+const MIX_COLORS = ["#3989ff", "#14b8a6", "#8b5cf6", "#e0a03b", "#5fa6ff"];
+const PORTAL_MIX_COLORS = ["#2f8bb8", "#36b3a8", "#8e7cc3", "#e0a03b", "#6b7fd7"];
 
 const PAGE_COUNT_KEYS = ["pv", "uv", "pageLeads", "viewed", "started", "landPv", "landUv", "bounceUv", "landLeads"];
 const TERM_COUNT_KEYS = ["searches", "uv", "clicks", "impressions", "cost"];
@@ -211,7 +212,7 @@ function RankList({ items, empty = "暂无数据", onPick, pickedKey }) {
                 percent={item.percent}
                 showInfo={false}
                 size="small"
-                strokeColor={item.alert ? DANGER : ACCENT}
+                strokeColor={item.alert ? DANGER : PORTAL_BLUE}
               />
               {item.sub ? <span className="db-rank-sub">{item.sub}</span> : null}
             </span>
@@ -534,9 +535,10 @@ export default function DetailBoard({ authMap, onAuthorize, mode = "full" }) {
     .slice(0, 10);
   const topMax = topSources[0]?.uv || 1;
 
+  const mixPalette = mode === "intake" ? MIX_COLORS : PORTAL_MIX_COLORS;
   const mixCats = traffic.cats
     .filter((cat) => cat.uv != null)
-    .map((cat, index) => ({ ...cat, color: MIX_COLORS[index % MIX_COLORS.length] }));
+    .map((cat, index) => ({ ...cat, color: mixPalette[index % mixPalette.length] }));
 
   const pickedCat = traffic.cats.find((cat) => cat.id === catchCat);
   const pickedSource = catchSrc ? traffic.sources.find((item) => item.id === catchSrc) : null;
@@ -630,8 +632,8 @@ export default function DetailBoard({ authMap, onAuthorize, mode = "full" }) {
     yField: "value",
     height: 280,
     autoFit: true,
-    style: { stroke: ACCENT, lineWidth: 2 },
-    point: { shapeField: "circle", sizeField: 3, style: { fill: "#fff", stroke: ACCENT, lineWidth: 1.5 } },
+    style: { stroke: PORTAL_BLUE, lineWidth: 2 },
+    point: { shapeField: "circle", sizeField: 3, style: { fill: "#fff", stroke: PORTAL_BLUE, lineWidth: 1.5 } },
     axis: {
       x: { title: false, labelAutoHide: true, tick: false },
       y: { title: false, labelFormatter: (value) => fmtInt(value), gridLineDash: [3, 3] },
@@ -665,7 +667,7 @@ export default function DetailBoard({ authMap, onAuthorize, mode = "full" }) {
         <Progress
           percent={Math.round((row.uv / traffic.siteUv) * 1000) / 10}
           size="small"
-          strokeColor={ACCENT}
+          strokeColor={PORTAL_BLUE}
           format={(value) => `${value.toFixed(1)}%`}
         />
       )),
@@ -973,7 +975,7 @@ export default function DetailBoard({ authMap, onAuthorize, mode = "full" }) {
   }
 
   return (
-    <ConfigProvider theme={BOARD_THEME}>
+    <ConfigProvider theme={BOARD_BLUE_THEME}>
       <div className="dan-board">
         <div className="db-window">
           <span>时间窗口</span>

@@ -13,7 +13,7 @@ import {
 } from '../data/overviewMock'
 
 const METHOD_TAG: Record<DoneMethod, { color: string; label: string }> = {
-  agreed: { color: '#6366f1', label: DONE_METHOD_LABEL.agreed },
+  agreed: { color: '#3989FF', label: DONE_METHOD_LABEL.agreed },
   manual: { color: 'gold', label: DONE_METHOD_LABEL.manual },
   strategy: { color: 'default', label: DONE_METHOD_LABEL.strategy },
 }
@@ -133,7 +133,6 @@ export function AgentOverviewView() {
               </div>
               <dl className="ov-guide-card__body">
                 <div>
-                  <dt>价值</dt>
                   <dd>{agent.purpose}</dd>
                 </div>
                 <div>

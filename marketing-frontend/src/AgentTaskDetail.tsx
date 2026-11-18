@@ -138,7 +138,7 @@ const overlay: CSSProperties = {
 const card: CSSProperties = {
   width: 'min(640px, 100%)',
   padding: '28px 32px',
-  borderRadius: 16,
+  borderRadius: 8,
   background: '#fff',
   boxShadow: '0 18px 50px rgba(15, 23, 42, 0.16)',
   color: '#1e293b',
@@ -149,7 +149,7 @@ const kicker: CSSProperties = {
   margin: 0,
   fontSize: 13,
   letterSpacing: '0.04em',
-  color: '#6366f1',
+  color: '#3989ff',
 }
 
 const title: CSSProperties = {
@@ -193,9 +193,10 @@ const list: CSSProperties = {
 const button: CSSProperties = {
   marginTop: 22,
   border: 0,
-  borderRadius: 8,
-  padding: '8px 16px',
-  background: '#6366f1',
+  borderRadius: 6,
+  minHeight: 40,
+  padding: '0 16px',
+  background: 'linear-gradient(135deg, #3989ff, #5fa6ff)',
   color: '#fff',
   fontSize: 14,
   cursor: 'pointer',
