@@ -3,7 +3,7 @@ import { useMemo, useState } from "react";
 import { App as AntApp, Button, ConfigProvider, Segmented, Select } from "antd";
 import zhCN from "antd/locale/zh_CN";
 import { ArrowLeftOutlined, DownOutlined, FileTextOutlined, HistoryOutlined } from "@ant-design/icons";
-import AgentPage from "./agent-page/AgentPage.jsx";
+import AgentPage, { MockStateSwitch } from "./agent-page/AgentPage.jsx";
 import DetailBoard from "./detail-board/DetailBoard.jsx";
 import McpDetailBoard from "./detail-board/McpDetailBoard.jsx";
 import { MCP_SITE } from "./detail-board/mcpBoardData.js";
@@ -103,6 +103,7 @@ function Workbench({ boardOnly, intakeOnly }) {
   const [monthlyOpen, setMonthlyOpen] = useState(false);
   const [ledgerOpen, setLedgerOpen] = useState(false);
   const [boardKind, setBoardKind] = useState("demo");
+  const [runState, setRunState] = useState("pending");
 
   const site = SITES.find((item) => item.id === siteId) ?? SITES[0];
   const week = WEEKS.find((item) => item.id === weekId) ?? WEEKS[0];
@@ -236,6 +237,9 @@ function Workbench({ boardOnly, intakeOnly }) {
                 </Button>
               </>
             ) : null}
+            <span className="dan-mock">
+              <MockStateSwitch value={runState} onChange={setRunState} />
+            </span>
           </header>
           <AgentPage
             key={`${site.id}-${week.id}`}
@@ -248,6 +252,8 @@ function Workbench({ boardOnly, intakeOnly }) {
             onCloseMonthly={() => setMonthlyOpen(false)}
             ledgerOpen={ledgerOpen}
             onCloseLedger={() => setLedgerOpen(false)}
+            runState={runState}
+            onRunState={setRunState}
           />
         </div>
       </div>
