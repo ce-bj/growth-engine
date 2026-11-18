@@ -31,6 +31,6 @@ export function publishVersion(page:VersionedPage,draft:Draft,type:ReleaseBump,s
  const history=releaseHistory(page)
  const version=incrementVersion(currentVersion(page)||'0.0.0',type)
  const number=Math.max(page.draft.publishedRevision||0,...history.map(v=>v.number))+1
- const snapshot:Draft=JSON.parse(JSON.stringify({...draft,published:true,paused:false,linkReady:true,publishedVersion:version,publishedRevision:number,updatedAt:publishedAt,pendingSupplement:undefined}))
+ const snapshot:Draft=JSON.parse(JSON.stringify({...draft,published:true,paused:!!draft.paused,linkReady:true,publishedVersion:version,publishedRevision:number,updatedAt:publishedAt,pendingSupplement:undefined}))
  return {...page,draft:snapshot,publishedDraft:snapshot,versions:[...history,{number,version,publishedAt,draft:snapshot,changeType:type,summary:summary.trim()}]}
 }
