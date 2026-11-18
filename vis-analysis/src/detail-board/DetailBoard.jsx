@@ -39,14 +39,15 @@ import {
   walksListed,
 } from "../funnel-review/data.js";
 import { allocate, BOARD_RANGES, buildBoardModel, buildWeekModel } from "./boardWindow.js";
-import { ACCENT, BOARD_THEME, DANGER } from "../board-theme.js";
+import { BOARD_BLUE_THEME, BOARD_THEME, DANGER, PORTAL_BLUE } from "../board-theme.js";
 import "./detail-board.css";
 
 const Line = lazy(() => import("@ant-design/plots").then((mod) => ({ default: mod.Line })));
 const Funnel = lazy(() => import("@ant-design/plots").then((mod) => ({ default: mod.Funnel })));
 const RegionMap = lazy(() => import("./RegionMap.jsx"));
 
-const MIX_COLORS = ["#6366f1", "#14b8a6", "#8b5cf6", "#e0a03b", "#818cf8"];
+const MIX_COLORS = ["#3989ff", "#14b8a6", "#8b5cf6", "#e0a03b", "#5fa6ff"];
+const PORTAL_MIX_COLORS = ["#2f8bb8", "#36b3a8", "#8e7cc3", "#e0a03b", "#6b7fd7"];
 
 const PAGE_COUNT_KEYS = ["pv", "uv", "pageLeads", "viewed", "started", "landPv", "landUv", "bounceUv", "landLeads"];
 const TERM_COUNT_KEYS = ["searches", "uv", "clicks", "impressions", "cost"];
@@ -154,15 +155,6 @@ function HeadKpis({ entry, view, lead, leadCount, compare }) {
       </Col>
       <Col xs={24} sm={12} xl={6}>
         <KpiCard
-          title="询盘条数"
-          cur={leadCount.cur}
-          prev={leadCount.prev}
-          compare={compare}
-          note={`留资访客 ${fmtInt(lead.cur)} 人`}
-        />
-      </Col>
-      <Col xs={24} sm={12} xl={6}>
-        <KpiCard
           title="有效浏览率"
           cur={viewRate}
           prev={viewPrev}
@@ -170,6 +162,15 @@ function HeadKpis({ entry, view, lead, leadCount, compare }) {
           compare={compare}
           note={compare && viewPrev != null ? `上周 ${pct(viewPrev)}` : null}
           alert={compare && rateBrokeDown(viewRate, viewPrev)}
+        />
+      </Col>
+      <Col xs={24} sm={12} xl={6}>
+        <KpiCard
+          title="留资数"
+          cur={lead.cur}
+          prev={lead.prev}
+          compare={compare}
+          note={`共 ${fmtInt(leadCount.cur)} 条询盘`}
         />
       </Col>
       <Col xs={24} sm={12} xl={6}>
@@ -211,7 +212,7 @@ function RankList({ items, empty = "暂无数据", onPick, pickedKey }) {
                 percent={item.percent}
                 showInfo={false}
                 size="small"
-                strokeColor={item.alert ? DANGER : ACCENT}
+                strokeColor={item.alert ? DANGER : PORTAL_BLUE}
               />
               {item.sub ? <span className="db-rank-sub">{item.sub}</span> : null}
             </span>
@@ -487,12 +488,17 @@ const numCol = (title, dataIndex, render) => ({
   render: render || ((value) => (value == null ? "—" : fmtInt(value))),
 });
 
-function openDataAnalysis() {
+function navigateParentView(targetView) {
   if (window.parent && window.parent !== window) {
-    window.parent.postMessage({ type: "growth-navigate", view: "board" }, "*");
+    window.parent.postMessage({ type: "growth-navigate", view: targetView }, "*");
+    return;
   }
   const url = new URL(window.location.href);
-  url.searchParams.set("view", "board");
+  if (targetView === "visitor") {
+    url.searchParams.delete("view");
+  } else {
+    url.searchParams.set("view", targetView);
+  }
   window.location.assign(url.toString());
 }
 
@@ -529,9 +535,10 @@ export default function DetailBoard({ authMap, onAuthorize, mode = "full" }) {
     .slice(0, 10);
   const topMax = topSources[0]?.uv || 1;
 
+  const mixPalette = mode === "intake" ? MIX_COLORS : PORTAL_MIX_COLORS;
   const mixCats = traffic.cats
     .filter((cat) => cat.uv != null)
-    .map((cat, index) => ({ ...cat, color: MIX_COLORS[index % MIX_COLORS.length] }));
+    .map((cat, index) => ({ ...cat, color: mixPalette[index % mixPalette.length] }));
 
   const pickedCat = traffic.cats.find((cat) => cat.id === catchCat);
   const pickedSource = catchSrc ? traffic.sources.find((item) => item.id === catchSrc) : null;
@@ -625,8 +632,8 @@ export default function DetailBoard({ authMap, onAuthorize, mode = "full" }) {
     yField: "value",
     height: 280,
     autoFit: true,
-    style: { stroke: ACCENT, lineWidth: 2 },
-    point: { shapeField: "circle", sizeField: 3, style: { fill: "#fff", stroke: ACCENT, lineWidth: 1.5 } },
+    style: { stroke: PORTAL_BLUE, lineWidth: 2 },
+    point: { shapeField: "circle", sizeField: 3, style: { fill: "#fff", stroke: PORTAL_BLUE, lineWidth: 1.5 } },
     axis: {
       x: { title: false, labelAutoHide: true, tick: false },
       y: { title: false, labelFormatter: (value) => fmtInt(value), gridLineDash: [3, 3] },
@@ -660,7 +667,7 @@ export default function DetailBoard({ authMap, onAuthorize, mode = "full" }) {
         <Progress
           percent={Math.round((row.uv / traffic.siteUv) * 1000) / 10}
           size="small"
-          strokeColor={ACCENT}
+          strokeColor={PORTAL_BLUE}
           format={(value) => `${value.toFixed(1)}%`}
         />
       )),
@@ -891,18 +898,22 @@ export default function DetailBoard({ authMap, onAuthorize, mode = "full" }) {
     return (
       <ConfigProvider theme={BOARD_THEME}>
         <div className="dan-board">
-          <Alert
-            className="db-focus"
-            type="info"
-            showIcon
-            title="这里只看来了之后有没有看进去、留下联系方式。"
-            description="流量从哪来、搜索词、地域分布，到数据分析里看完整看板。"
-            action={
-              <Button type="primary" onClick={openDataAnalysis}>
-                去数据分析
+          <section className="db-intake-narrative" aria-label="网站承接数据说明">
+            <div className="db-intake-narrative__main">
+              <span className="db-intake-narrative__tag">数据用途</span>
+              <p>
+                我们每周基于这里的整站承接数据做分析，找出把访客卡住的环节和具体页面，并在「网站策略」中自动生成优化策略，目的就是帮网站提升留资转化率。想看流量具体来源、页面访问情况等详情，可以去「数据分析」看完整总览；想直接处理本周诊断出的问题，可以直接去看「网站策略」。
+              </p>
+            </div>
+            <div className="db-intake-narrative__actions">
+              <Button type="primary" onClick={() => navigateParentView("visitor")}>
+                去看网站策略
               </Button>
-            }
-          />
+              <Button onClick={() => navigateParentView("board")}>
+                去数据分析看总览
+              </Button>
+            </div>
+          </section>
           <div className="db-window">
             <span>统计周</span>
             <Select
@@ -923,71 +934,40 @@ export default function DetailBoard({ authMap, onAuthorize, mode = "full" }) {
             <span className="db-window-span">对照 {frame.baselineLabel}</span>
           </div>
           <HeadKpis entry={entry} view={view} lead={lead} leadCount={leadCount} compare={compare} />
-          <SliceBar
-            cats={traffic.cats}
-            cat={catchCat}
-            source={catchSrc}
-            sourceOptions={sourceOptions}
-            onCat={(id) => {
-              pickCatchCat(id);
-              setIntentId(null);
-            }}
-            onSource={(id) => {
-              pickSource(id);
-              setIntentId(null);
-            }}
-          />
-          {pickedSource ? (
-            <Alert
-              className="db-slice-note"
-              type="info"
-              showIcon
-              title={`${pickedSource.name} 暂无单独的漏斗和意图数据，下面展示 ${pickedSource.catName} 整个渠道。`}
-            />
-          ) : null}
-          <Card title={<>漏斗明细 <Tag className="db-tag-mini">{slice.name}</Tag></>} className="db-fill">
-            {slice.empty ? (
-              <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description={`${slice.name} 还没有漏斗数据`} />
-            ) : (
-              <FunnelDetail stages={stages} gates={gates} channelId={slice.channelId} sliceName={slice.name} compare={compare} />
-            )}
+          <Card title={<>漏斗明细 <Tag className="db-tag-mini">全站</Tag></>} className="db-fill">
+            <FunnelDetail stages={siteStages} gates={through(siteStages)} channelId="site" sliceName="全站" compare={compare} />
           </Card>
-          <Card title={<>用户意图 <Tag className="db-tag-mini">{slice.name}</Tag></>} className="db-fill">
-            {slice.empty ? (
-              <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description={`${slice.name} 还没有意图数据`} />
-            ) : (
-              <Row gutter={[24, 16]}>
-                <Col xs={24} xl={10}>
-                  <p className="db-card-hint">
-                    点一档，看这一类访客占多少。
-                    {slice.channelId === "site" ? `其中 ${CHURN_MARK.percent}% ${CHURN_MARK.label}。` : null}
-                  </p>
-                  <RankList
-                    onPick={(id) => setIntentId((prev) => (prev === id ? null : id))}
-                    pickedKey={intentId}
-                    items={intentRows.map((item) => ({
-                      key: item.id,
-                      color: item.color,
-                      name: item.name,
-                      tag: <span className="db-rank-hint">{item.meaning}</span>,
-                      valueText: `${fmtInt(item.count)} 人 · ${pct(intentTotal ? item.count / intentTotal : 0)}`,
-                      percent: intentTotal ? (item.count / intentTotal) * 100 : 0,
-                      sub: `留资访客 ${fmtInt(item.leads)} 人`,
-                    }))}
-                  />
-                </Col>
-                <Col xs={24} xl={14}>
-                  <p className="db-card-hint">{intentId ? `当前看「${intentName}」。再点一次取消筛选。` : "明细按人数从高到低排。"}</p>
-                  <Table
-                    size="small"
-                    rowKey="id"
-                    pagination={false}
-                    dataSource={intentId ? intentRows.filter((row) => row.id === intentId) : intentRows}
-                    columns={intentColumns}
-                  />
-                </Col>
-              </Row>
-            )}
+          <Card title={<>用户意图 <Tag className="db-tag-mini">全站</Tag></>} className="db-fill">
+            <Row gutter={[24, 16]}>
+              <Col xs={24} xl={10}>
+                <p className="db-card-hint">
+                  点一档，看这一类访客占多少。其中 {CHURN_MARK.percent}% {CHURN_MARK.label}。
+                </p>
+                <RankList
+                  onPick={(id) => setIntentId((prev) => (prev === id ? null : id))}
+                  pickedKey={intentId}
+                  items={intentRows.map((item) => ({
+                    key: item.id,
+                    color: item.color,
+                    name: item.name,
+                    tag: <span className="db-rank-hint">{item.meaning}</span>,
+                    valueText: `${fmtInt(item.count)} 人 · ${pct(intentTotal ? item.count / intentTotal : 0)}`,
+                    percent: intentTotal ? (item.count / intentTotal) * 100 : 0,
+                    sub: `留资访客 ${fmtInt(item.leads)} 人`,
+                  }))}
+                />
+              </Col>
+              <Col xs={24} xl={14}>
+                <p className="db-card-hint">{intentId ? `当前看「${intentName}」。再点一次取消筛选。` : "明细按人数从高到低排。"}</p>
+                <Table
+                  size="small"
+                  rowKey="id"
+                  pagination={false}
+                  dataSource={intentId ? intentRows.filter((row) => row.id === intentId) : intentRows}
+                  columns={intentColumns}
+                />
+              </Col>
+            </Row>
           </Card>
         </div>
       </ConfigProvider>
@@ -995,7 +975,7 @@ export default function DetailBoard({ authMap, onAuthorize, mode = "full" }) {
   }
 
   return (
-    <ConfigProvider theme={BOARD_THEME}>
+    <ConfigProvider theme={BOARD_BLUE_THEME}>
       <div className="dan-board">
         <div className="db-window">
           <span>时间窗口</span>

@@ -80,11 +80,11 @@ function Pages() {
     <AdminShell>
       {view === 'board' && <EmbedFrame src={dataBoardUrl()} title="数据分析总览" />}
       {isLegacyAnalysisView(view) && <LegacyAnalysisView view={view} />}
-      {view === 'intake' && <EmbedFrame src={intakeDataUrl()} title="网站承接数据" />}
+      {view === 'intake' && <EmbedFrame src={intakeDataUrl()} title="访客洞察" />}
       {view === 'dashboard' && <AgentOverviewView />}
       {view === 'scanning' && <ScanProgressView />}
       {view === 'visitor' && (
-        <EmbedFrame src={visitorAnalysisUrl()} title="网站策略" />
+        <EmbedFrame src={visitorAnalysisUrl()} title="优化策略" />
       )}
       {view === 'marketing' && (
         <EmbedFrame src={withTask(marketingAgentUrl(), handoff, 'marketing')} title="智能营销页智能体" />

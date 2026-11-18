@@ -7,6 +7,7 @@ document.documentElement.dataset.visitorEmbed = '1'
 
 const rawView = new URLSearchParams(window.location.search).get('view')
 const view = rawView === 'board' || rawView === 'intake' ? rawView : 'agent'
+if (view === 'board') document.documentElement.dataset.boardTone = 'portal'
 document.title = view === 'board' ? '数据看板' : view === 'intake' ? '网站承接数据' : '网站策略'
 
 ReactDOM.createRoot(document.getElementById('root')).render(

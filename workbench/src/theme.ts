@@ -1,15 +1,18 @@
 import type { ThemeConfig } from 'antd'
 
-/** 内容区对齐内容发布智能体 indigo；顶栏仍用数字门户青绿 */
+/** 内容区按增长工作台设计规范；顶栏仍用数字门户青绿 */
 export const PORTAL = {
-  brand: '#6366F1',
-  brandHover: '#4F46E5',
-  brandActive: '#4338CA',
-  brandSoft: 'rgba(99, 102, 241, 0.12)',
+  brand: '#3989FF',
+  brandHover: '#1F6FDB',
+  brandActive: '#1A5BB8',
+  brandSoft: '#EEF6FF',
+  brandHoverBg: '#DBEBFF',
+  brandBorder: '#B9D9FF',
+  brandBar: '#3F89F6',
   canvas: '#F5F7FB',
   surface: '#FFFFFF',
-  border: '#E2E8F0',
-  text: '#1E293B',
+  border: '#E7EBF3',
+  text: '#0F172A',
   textSecondary: '#475569',
   textDim: '#94A3B8',
 } as const
@@ -17,17 +20,29 @@ export const PORTAL = {
 export const portalTheme: ThemeConfig = {
   token: {
     colorPrimary: PORTAL.brand,
+    colorPrimaryHover: PORTAL.brandHover,
+    colorPrimaryActive: PORTAL.brandActive,
+    colorPrimaryBg: PORTAL.brandSoft,
+    colorPrimaryBgHover: PORTAL.brandHoverBg,
+    colorPrimaryBorder: PORTAL.brandBorder,
     colorInfo: PORTAL.brand,
     colorBgLayout: PORTAL.canvas,
     colorBgContainer: PORTAL.surface,
     colorBorder: PORTAL.border,
+    colorBorderSecondary: PORTAL.border,
+    colorSplit: PORTAL.border,
     colorText: PORTAL.text,
     colorTextSecondary: PORTAL.textSecondary,
+    colorTextTertiary: PORTAL.textDim,
     borderRadius: 6,
     borderRadiusLG: 8,
+    fontSize: 14,
     fontFamily:
       '"PingFang SC", "Microsoft YaHei", "Noto Sans SC", "Segoe UI", sans-serif',
-    controlOutline: 'rgba(99, 102, 241, 0.28)',
+    fontFamilyCode: '"IBM Plex Mono", "SF Mono", Consolas, monospace',
+    controlHeight: 40,
+    controlHeightSM: 32,
+    controlOutline: 'rgba(57, 137, 255, 0.28)',
   },
   components: {
     Layout: {
@@ -46,7 +61,7 @@ export const portalTheme: ThemeConfig = {
     Menu: {
       itemBg: 'transparent',
       itemColor: PORTAL.textSecondary,
-      itemHoverBg: PORTAL.brandSoft,
+      itemHoverBg: PORTAL.brandHoverBg,
       itemHoverColor: PORTAL.brand,
       itemSelectedBg: PORTAL.brandSoft,
       itemSelectedColor: PORTAL.brand,

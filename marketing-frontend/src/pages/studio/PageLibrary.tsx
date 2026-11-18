@@ -30,11 +30,13 @@ type DialogState = { kind: 'page'; id: string } | { kind: 'time' | 'placements' 
 /** A published page whose draft differs from the published version (有未发布修改). */
 export const pageChanged = (p: VersionedPage) => !!p.publishedDraft && brandSnapshotKey(p.draft) !== brandSnapshotKey(p.publishedDraft)
 
-export default function PageLibrary({ pages, store, onStore, versionOf, typeOf, intentOf, onNew, onOpen, onPublishPage, onPreview, onHistory, onResults, onSetPaused, onSetOnline, onCopy }: {
+export default function PageLibrary({ pages, store, onStore, versionOf, typeOf, intentOf, onNew, onOpen, onPublishPage, onPreview, onHistory, onResults, onSetPaused, onSetOnline, onCopy, highlightTitle }: {
   pages: VersionedPage[]; store: PromotionStore; onStore: (s: PromotionStore) => void; versionOf: (p: VersionedPage) => string | null
   typeOf: (p: VersionedPage) => string; intentOf: (p: VersionedPage) => string; onNew: () => void; onOpen: (p: VersionedPage) => void
   onPublishPage: (p: VersionedPage) => void; onPreview: (id: string) => void; onHistory: (id: string) => void; onResults: (p: VersionedPage) => void
   onSetPaused: (ids: string[], paused: boolean) => void; onSetOnline: (ids: string[], online: boolean) => void; onCopy: (text: string) => void
+  /** Title of a page handed off from an agent task; its row is highlighted. */
+  highlightTitle?: string
 }) {
   const [query, setQuery] = useState('')
   const [publishFilter, setPublishFilter] = useState(PUBLISH_FILTERS[0])
@@ -162,7 +164,7 @@ export default function PageLibrary({ pages, store, onStore, versionOf, typeOf, 
       {['页面', '发布状态', '链接', '推广位置', '推广时间', '推广状态', '最近更新', '操作'].map(x => <TableHead key={x}>{x}</TableHead>)}</TableRow></TableHeader>
       <TableBody>{rows.map(p => { const st = stateOf(p); const ps = pubOf(p); const cfg = promotionOf(store, p); const link = linkState(p)
         const names = canPromote(p) ? placementsOf(store, p.id) : []; const live = st === 'active' || st === 'off_hours'; const version = versionOf(p); const actions = rowActions(ps, st)
-        return <TableRow key={p.id} className={selected.includes(p.id) ? 'row-selected' : undefined}>
+        return <TableRow key={p.id} className={[selected.includes(p.id) && 'row-selected', highlightTitle && p.draft.title === highlightTitle && 'is-handoff'].filter(Boolean).join(' ') || undefined}>
           <TableCell><input type="checkbox" aria-label={`选择${p.draft.title}`} title={canPromote(p) ? undefined : '发布后才能设置推广'} disabled={!canPromote(p)} checked={selected.includes(p.id)} onChange={e => setSelected(e.target.checked ? [...selected, p.id] : selected.filter(x => x !== p.id))} /></TableCell>
           <TableCell><strong>{p.draft.title}</strong><div className="subtle">{typeOf(p)} · {intentOf(p)}</div></TableCell>
           <TableCell><div className="state-cell"><span className={`promo-state tone-${PUBLISH_TONE[ps]}`}>{PUBLISH_LABELS[ps]}</span>{version && <small className="release-version-badge">v{version}</small>}</div></TableCell>

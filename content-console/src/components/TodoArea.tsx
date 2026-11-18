@@ -10,19 +10,20 @@ const SRC_CLASS: Record<TodoSource, string> = {
 
 export function TodoArea() {
   const { todos, publishTodo, rejectTodo, gotoKb, continueAfterKb } = useStore()
+  const visibleTodos = todos.filter((t) => t.source === 'self-new')
 
   return (
     <section className="todo-area">
       <div className="section-head">
         <h2>待办</h2>
-        <p>行为分析智能体与自建任务产出的内容，等待你决定发布或取消</p>
+        <p>自建任务产出的内容，等待你决定发布或取消</p>
       </div>
 
-      {todos.length === 0 ? (
+      {visibleTodos.length === 0 ? (
         <div className="todo-empty">没有待办事项，一切就绪</div>
       ) : (
         <div className="todo-list">
-          {todos.map((t) => (
+          {visibleTodos.map((t) => (
             <div className="todo-item" key={t.id}>
               <span className={'todo-bar ' + SRC_CLASS[t.source]} />
               <div className="todo-body">

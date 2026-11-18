@@ -20,7 +20,7 @@ import {
 } from "antd"
 import { ArrowDownOutlined, ArrowUpOutlined } from "@ant-design/icons"
 import { fmtInt, pct, rateBrokeDown } from "../funnel-review/data.js"
-import { ACCENT, BOARD_THEME, DANGER } from "../board-theme.js"
+import { BOARD_BLUE_THEME as BOARD_THEME, DANGER, PORTAL_BLUE as ACCENT } from "../board-theme.js"
 import { getMcpBoard } from "./mcpBoardData.js"
 import "./detail-board.css"
 
@@ -34,7 +34,7 @@ const RANGES = [
 ]
 
 const CHANNELS = [
-  { id: "search", name: "搜索引擎", color: "#6366f1" },
+  { id: "search", name: "搜索引擎", color: "#2f8bb8" },
   { id: "direct", name: "直接访问", color: "#36b3a8" },
   { id: "referral", name: "外部链接", color: "#8e7cc3" },
   { id: "ads", name: "广告", color: "#e0a03b" },
@@ -537,10 +537,10 @@ export default function McpDetailBoard({ getBoard = getMcpBoard }) {
             <KpiCard title="访问人数" cur={entry.cur} prev={entry.prev} compare={false} />
           </Col>
           <Col xs={24} sm={12} xl={6}>
-            <KpiCard title="询盘条数" cur={model.all.leadCnt} prev={model.allPrev?.leadCnt} compare={false} note={`留资访客 ${fmtInt(lead.cur)} 人`} />
+            <KpiCard title="有效浏览率" cur={viewRate} prev={viewPrev} mode="rate" compare={false} />
           </Col>
           <Col xs={24} sm={12} xl={6}>
-            <KpiCard title="有效浏览率" cur={viewRate} prev={viewPrev} mode="rate" compare={false} />
+            <KpiCard title="留资数" cur={lead.cur} prev={lead.prev} compare={false} note={`共 ${fmtInt(model.all.leadCnt)} 条询盘`} />
           </Col>
           <Col xs={24} sm={12} xl={6}>
             <KpiCard title="留资转化率" cur={leadRate} prev={leadPrev} mode="rate" compare={false} />

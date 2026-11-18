@@ -258,8 +258,8 @@ function TaskCard({
         </div>
       </header>
 
-      <p className="ag-sentence">{item.summary}</p>
-      {!open && rule?.phenomenon ? <p className="ag-why">为什么：{rule.phenomenon}</p> : null}
+      {open ? <p className="ag-sentence">{item.summary}</p> : null}
+      {!open && rule?.face?.cause ? <p className="ag-why">原因：{rule.face.cause}</p> : null}
       {approved && item.afterApprove ? <p className="ag-task-note">{item.afterApprove}</p> : null}
 
       {open ? (

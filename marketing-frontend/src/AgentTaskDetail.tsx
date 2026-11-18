@@ -1,6 +1,7 @@
 import { useEffect, useState, type CSSProperties } from 'react'
 
-type Task = {
+export type HandoffTask = {
+  id?: string
   title: string
   executor?: string
   from?: string
@@ -20,11 +21,11 @@ const STAY: Record<string, string> = {
   content: '留在内容发布',
 }
 
-function decodeTask(value: string): Task | null {
+function decodeTask(value: string): HandoffTask | null {
   try {
     const binary = atob(value)
     const bytes = Uint8Array.from(binary, (char) => char.charCodeAt(0))
-    const task = JSON.parse(new TextDecoder().decode(bytes)) as Task
+    const task = JSON.parse(new TextDecoder().decode(bytes)) as HandoffTask
     if (!task || typeof task.title !== 'string' || !task.title) return null
     return task
   } catch {
@@ -32,12 +33,16 @@ function decodeTask(value: string): Task | null {
   }
 }
 
-function readTask() {
+export function readHandoffTask() {
   return decodeTask(new URLSearchParams(window.location.search).get('task') || '')
 }
 
+function readTask() {
+  return readHandoffTask()
+}
+
 export default function AgentTaskDetail() {
-  const [task, setTask] = useState<Task | null>(() => readTask())
+  const [task, setTask] = useState<HandoffTask | null>(() => readTask())
 
   useEffect(() => {
     const onPop = () => setTask(readTask())
@@ -133,7 +138,7 @@ const overlay: CSSProperties = {
 const card: CSSProperties = {
   width: 'min(640px, 100%)',
   padding: '28px 32px',
-  borderRadius: 16,
+  borderRadius: 8,
   background: '#fff',
   boxShadow: '0 18px 50px rgba(15, 23, 42, 0.16)',
   color: '#1e293b',
@@ -144,7 +149,7 @@ const kicker: CSSProperties = {
   margin: 0,
   fontSize: 13,
   letterSpacing: '0.04em',
-  color: '#6366f1',
+  color: '#3989ff',
 }
 
 const title: CSSProperties = {
@@ -188,9 +193,10 @@ const list: CSSProperties = {
 const button: CSSProperties = {
   marginTop: 22,
   border: 0,
-  borderRadius: 8,
-  padding: '8px 16px',
-  background: '#6366f1',
+  borderRadius: 6,
+  minHeight: 40,
+  padding: '0 16px',
+  background: 'linear-gradient(135deg, #3989ff, #5fa6ff)',
   color: '#fff',
   fontSize: 14,
   cursor: 'pointer',

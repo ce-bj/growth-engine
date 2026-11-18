@@ -40,9 +40,15 @@ export const TASK_STATUS_LABEL: Record<TaskStatus, string> = {
 
 // —— 待办来源标签 ——
 export const TODO_SOURCE_LABEL: Record<TodoSource, string> = {
-  'behavior-fix': '行为分析 · 修改',
-  'behavior-new': '行为分析 · 新增',
+  'behavior-fix': '优化策略推荐',
+  'behavior-new': '优化策略推荐',
   'self-new': '自建任务 · 新增',
+}
+
+export function taskSourceLabel(from: PublishTask['from']): string {
+  if (from === 'manual') return '手动创建'
+  if (from === 'strategy') return '优化策略推荐'
+  return '智能体推荐'
 }
 
 // —— 内容条目状态 ——
@@ -102,6 +108,51 @@ function buildStore(items: CalendarItem[], tasks: PublishTask[]): ContentRow[] {
   return rows
 }
 
+function readHandoffTask(): { id?: string; title?: string; summary?: string } | null {
+  try {
+    const raw = new URLSearchParams(window.location.search).get('task')
+    if (!raw) return null
+    const binary = atob(raw)
+    const bytes = Uint8Array.from(binary, (char) => char.charCodeAt(0))
+    const task = JSON.parse(new TextDecoder().decode(bytes)) as { id?: string; title?: string; summary?: string }
+    if (!task?.title) return null
+    return task
+  } catch {
+    return null
+  }
+}
+
+const HANDOFF_TASK = typeof window === 'undefined' ? null : readHandoffTask()
+
+function withHandoffTask(list: PublishTask[]): PublishTask[] {
+  if (!HANDOFF_TASK?.title) return list
+  if (list.some((item) => item.title === HANDOFF_TASK.title)) return list
+  return [
+    {
+      id: HANDOFF_TASK.id || 'tk-handoff',
+      taskNo: genTaskNo(),
+      title: HANDOFF_TASK.title,
+      from: 'strategy',
+      status: 'active',
+      app: '产品管理',
+      col: '页面优化',
+      freqText: '仅一次',
+      countText: '1 篇',
+      start: TODAY,
+      createdAt: TODAY,
+      next: '',
+      topic: HANDOFF_TASK.summary || HANDOFF_TASK.title,
+      kw: [],
+      note: HANDOFF_TASK.summary || '来自优化策略，内容已自动生成并发布',
+      imgOn: false,
+      mode: 'publish',
+      map: [],
+      strat: ['eeat', 'geo'],
+    },
+    ...list,
+  ]
+}
+
 interface StoreState {
   tasks: PublishTask[]
   items: CalendarItem[]
@@ -113,6 +164,7 @@ interface StoreState {
   today: string
   store: ContentRow[]
   view: View
+  handoffTitle: string
   navigate: (v: View) => void
   // actions
   confirmDirection: (id: string) => void
@@ -138,11 +190,12 @@ export type View =
   | { name: 'task-log'; id: string }
 
 export function StoreProvider({ children }: { children: ReactNode }) {
-  const [tasks, setTasks] = useState<PublishTask[]>(INITIAL_TASKS)
+  const [tasks, setTasks] = useState<PublishTask[]>(() => withHandoffTask(INITIAL_TASKS))
   const [items, setItems] = useState<CalendarItem[]>(INITIAL_ITEMS)
   const [todos, setTodos] = useState<TodoRow[]>(INITIAL_TODOS)
   const [directions, setDirections] = useState<Direction[]>(DIRECTIONS)
-  const [view, setView] = useState<View>({ name: 'home' })
+  const [view, setView] = useState<View>(() => (HANDOFF_TASK?.title ? { name: 'task-list' } : { name: 'home' }))
+  const handoffTitle = HANDOFF_TASK?.title || ''
 
   const navigate = (v: View) => setView(v)
 
@@ -274,6 +327,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     today: TODAY,
     store,
     view,
+    handoffTitle,
     navigate,
     confirmDirection,
     createTask,

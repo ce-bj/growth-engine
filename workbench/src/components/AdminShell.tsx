@@ -49,7 +49,8 @@ function openPortalTab(tab: string) {
 
 type NavItem = { id: ViewId; label: string; icon: typeof LayoutDashboard; beta?: boolean }
 
-/** 侧栏：看结果 → 干活 → 支撑与配置。GEO 信源监测先从菜单拿掉，页面代码仍留着。 */
+/** 侧栏叙事：这是哪 → 底座打好了 → 看留存、出诊断 → 智能体干活 → 助手与资料。
+ *  GEO 信源监测、站点设置先从菜单拿掉，页面代码仍留着。 */
 const NAV_GROUPS: Array<{ title: string; items: NavItem[] }> = [
   {
     title: '概览',
@@ -58,19 +59,29 @@ const NAV_GROUPS: Array<{ title: string; items: NavItem[] }> = [
     ],
   },
   {
-    title: '执行生产',
+    title: 'AI 友好度',
     items: [
-      { id: 'ready', label: 'AI 友好度', icon: ShieldCheck },
-      { id: 'intake', label: '网站承接数据', icon: Filter },
-      { id: 'visitor', label: '网站策略', icon: ScanSearch, beta: true },
-      { id: 'marketing', label: '智能营销页智能体', icon: PanelsTopLeft, beta: true },
-      { id: 'content', label: '内容发布智能体', icon: FileText, beta: true },
-      { id: 'assistant', label: 'AI运营助手', icon: MessageSquare },
+      { id: 'ready', label: 'AI Ready', icon: ShieldCheck },
     ],
   },
   {
-    title: '支撑与配置',
+    title: '洞察与诊断',
     items: [
+      { id: 'intake', label: '访客洞察', icon: Filter },
+      { id: 'visitor', label: '优化策略', icon: ScanSearch, beta: true },
+    ],
+  },
+  {
+    title: '智能体执行',
+    items: [
+      { id: 'marketing', label: '智能营销页智能体', icon: PanelsTopLeft, beta: true },
+      { id: 'content', label: '内容发布智能体', icon: FileText, beta: true },
+    ],
+  },
+  {
+    title: '助手与知识库',
+    items: [
+      { id: 'assistant', label: 'AI运营助手', icon: MessageSquare },
       { id: 'knowledge', label: '知识库', icon: BookOpen },
       // 站点设置先隐藏，页面仍可通过 navigate('settings') 打开
     ],
@@ -105,11 +116,14 @@ const PAGE_META: Record<string, { title: string; crumb: string }> = {
   analysisLeads: { title: '线索转化分析', crumb: '数据分析' },
   analysisOpsReport: { title: '运营报告推送', crumb: '数据分析' },
   dashboard: { title: '智能体概览', crumb: '概览' },
-  intake: { title: '网站承接数据', crumb: '执行生产' },
-  visitor: { title: '网站策略', crumb: '执行生产' },
-  marketing: { title: '智能营销页智能体', crumb: '智能体' },
-  content: { title: '内容发布智能体', crumb: '智能体' },
-  geoMonitor: { title: 'GEO 信源监测', crumb: '执行生产' },
+  ready: { title: 'AI Ready', crumb: 'AI 友好度' },
+  intake: { title: '访客洞察', crumb: '洞察与诊断' },
+  visitor: { title: '优化策略', crumb: '洞察与诊断' },
+  marketing: { title: '智能营销页智能体', crumb: '智能体执行' },
+  content: { title: '内容发布智能体', crumb: '智能体执行' },
+  assistant: { title: 'AI运营助手', crumb: '助手与知识库' },
+  knowledge: { title: '知识库', crumb: '助手与知识库' },
+  geoMonitor: { title: 'GEO 信源监测', crumb: '智能体执行' },
   settings: { title: '站点设置', crumb: '配置' },
   scanning: { title: '正在检测', crumb: '站点' },
 }

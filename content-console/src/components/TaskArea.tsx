@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { TASK_STATUS_LABEL, taskStatus, useStore } from '../store'
+import { TASK_STATUS_LABEL, taskSourceLabel, taskStatus, useStore } from '../store'
 import { moreItems } from '../taskActions'
 import type { PublishTask } from '../types'
 
@@ -78,7 +78,7 @@ export function TaskArea() {
                     <span className={'status-badge ' + statusBadgeClass(st)}>
                       {TASK_STATUS_LABEL[st]}
                     </span>
-                    <span className="task-src">{t.from === 'manual' ? '手动创建' : '智能体推荐'}</span>
+                    <span className="task-src">{taskSourceLabel(t.from)}</span>
                   </div>
                   <div className="task-meta">
                     <span className="type-tag">{t.app} · {t.col}</span>

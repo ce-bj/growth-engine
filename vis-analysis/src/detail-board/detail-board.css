@@ -1,10 +1,17 @@
 /* 弹窗渲染在 body 下，不在 .dan-board 里，弹窗内用到的类要同时挂在 .db-modal 下 */
 .dan-board,
 .db-modal {
-  --db-accent: #6366f1;
-  --db-danger: #cf1322;
-  --db-text-2: #64748b;
-  --db-line: #e8edf2;
+  --db-accent: #3989ff;
+  --db-accent-ring: rgba(57, 137, 255, 0.15);
+  --db-danger: #ef4444;
+  --db-text-2: #475569;
+  --db-line: #e7ebf3;
+}
+
+.dan-page.is-board .dan-board,
+html[data-board-tone="portal"] .db-modal {
+  --db-accent: #2f8bb8;
+  --db-accent-ring: rgba(47, 139, 184, 0.15);
 }
 
 .dan-board {
@@ -36,6 +43,51 @@
 
 .dan-board .db-focus .ant-alert-action {
   align-self: center;
+}
+
+.dan-board .db-intake-narrative {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px 24px;
+  padding: 24px;
+  border: 1px solid #e7ebf3;
+  border-radius: 8px;
+  background: #ffffff;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+}
+
+.dan-board .db-intake-narrative__main {
+  flex: 1 1 520px;
+  min-width: 0;
+}
+
+.dan-board .db-intake-narrative__tag {
+  display: inline-flex;
+  align-items: center;
+  margin-bottom: 6px;
+  padding: 2px 8px;
+  border-radius: 4px;
+  background: #eef6ff;
+  color: #3989ff;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.dan-board .db-intake-narrative p {
+  margin: 0;
+  font-size: 13.5px;
+  line-height: 1.65;
+  color: #475569;
+}
+
+.dan-board .db-intake-narrative__actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
 }
 
 .dan-board .db-kpi {
@@ -407,7 +459,7 @@
 .db-modal .db-fd-loss:focus-visible,
 .db-modal .db-fd-loss.is-on {
   border-color: var(--db-accent);
-  box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.15);
+  box-shadow: 0 0 0 2px var(--db-accent-ring);
   outline: none;
 }
 
@@ -456,9 +508,9 @@
 .dan-board .db-loss,
 .db-modal .db-loss {
   height: 100%;
-  padding: 18px 20px;
+  padding: 24px;
   border: 1px solid var(--db-line);
-  border-radius: 10px;
+  border-radius: 8px;
 }
 
 .dan-board .db-loss-top,
