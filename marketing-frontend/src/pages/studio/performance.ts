@@ -1,5 +1,5 @@
 import type { PublishedVersion } from './releaseVersions'
-import { appearText, strategyOf, strategySummary, OVERLAY_PLACEMENTS } from './placementStrategy'
+import { promotionSummary, defaultPromotion, sitePageName, slotKey, slotParts, type PagePromotion } from './promotion'
 
 // Mock analytics for the results page (产品设计 7.4): every published version owns its own data, generated
 // deterministically from the page id and version so the numbers stay stable across reloads.
@@ -9,12 +9,14 @@ export interface VisitRecord {
   durationSec: number; depth: number; converted: boolean; action?: string
 }
 export interface DailyPoint { date: string; visits: number; conversions: number }
-/** views = 展示次数; reach = 触达访客; capped = 符合时机但因频次、关闭、转化或优先级规则未展示的次数. */
+/** views = 展示次数; reach = 触达访客; dismisses = 访客点击“不再提醒”的次数. */
 export interface PlacementStat {
-  name: string; views: number; reach: number; clicks: number; closes: number; capped: number; leaveAfter: number
+  name: string; views: number; reach: number; clicks: number; dismisses: number; leaveAfter: number
   arrivals: number; conversions: number; strategy: string[]
 }
-export type PlacementEventType = '展示' | '点击' | '关闭' | '未展示'
+export type PlacementEventType = '展示' | '点击' | '不再提醒'
+/** Promotion of the page: the placements it is assigned to on the page list and its promotion settings. */
+export interface PagePromotionInput { placements: string[]; cfg: PagePromotion }
 export interface PlacementEvent { id: string; time: string; visitor: string; placement: string; page: string; device: string; event: PlacementEventType; note: string }
 export interface SourceStat { name: string; visits: number; conversions: number }
 export interface VersionPerformance {
@@ -26,7 +28,7 @@ export interface VersionPerformance {
 export const RANGES = ['最近 7 天', '最近 30 天', '上线以来'] as const
 export type Range = typeof RANGES[number]
 const DAY = 86400000
-const DEMO_PLACEMENTS = ['页中横幅', '智能客服推送', '首屏 Banner']
+const DEMO_PLACEMENTS = [slotKey('Banner', 'Home'), slotKey('Banner', 'products_list'), slotKey('Banner', 'news_list')]
 const REGIONS = ['广东', '江苏', '浙江', '上海', '北京', '山东', '河北', '四川']
 const OTHER_SOURCES = ['直接访问', '搜索引擎', '社媒与外链']
 
@@ -42,7 +44,7 @@ const fmtDate = (t: number) => new Date(t).toISOString().slice(0, 10)
  * even though prototype releases happen minutes apart. Newer versions convert slightly better to make the
  * version comparison meaningful.
  */
-export function versionPerformance(pageId: string, history: PublishedVersion[], index: number, range: Range, now = Date.now()): VersionPerformance {
+export function versionPerformance(pageId: string, history: PublishedVersion[], index: number, range: Range, promo: PagePromotionInput = { placements: [], cfg: defaultPromotion('') }, now = Date.now()): VersionPerformance {
   const v = history[index]
   const newest = index === history.length - 1
   const age = history.length - 1 - index
@@ -51,7 +53,7 @@ export function versionPerformance(pageId: string, history: PublishedVersion[], 
   const rand = seeded(`${pageId}:${v.version}`)
   const span = newest ? (range === '最近 7 天' ? 7 : range === '最近 30 天' ? 30 : 14) : 14
   const convRate = 0.03 + index * 0.008 + rand() * 0.01
-  const enabled = (v.draft.promote ? v.draft.placements.filter(p => p.enabled).map(p => p.name) : [])
+  const enabled = promo.placements
   // Visits only come from placements that this version actually enabled.
   const placements = enabled
   const weights = [...placements.map(() => 0.18 + rand() * 0.2), ...OTHER_SOURCES.map(() => 0.08 + rand() * 0.12)]
@@ -81,17 +83,14 @@ export function versionPerformance(pageId: string, history: PublishedVersion[], 
   }
   const visits = daily.reduce((a, p) => a + p.visits, 0)
   const conversions = daily.reduce((a, p) => a + p.conversions, 0)
-  // Exposure-side numbers derive from clicks and the placement's own strategy (closable or not, frequency caps).
+  // Exposure-side numbers derive from clicks; every Banner carries a “不再提醒” button.
   const exposure = (name: string, arrivals: number, conv: number): PlacementStat => {
-    const field = v.draft.placements.find(p => p.name === name) || { name, enabled: true, device: '全部设备', caption: '' }
-    const st = strategyOf(field)
     const clicks = Math.round(arrivals / (0.9 + rand() * 0.08))
     const views = Math.round(clicks / (0.03 + rand() * 0.05))
     return {
-      name, arrivals, clicks, views, conversions: conv, strategy: strategySummary(field),
-      reach: Math.round(views / Math.min(st.dailyLimit + 0.2, 1.2 + rand() * 0.8)),
-      closes: st.closable ? Math.round(views * (0.08 + rand() * 0.16)) : 0,
-      capped: Math.round(views * (0.1 + rand() * 0.2)),
+      name, arrivals, clicks, views, conversions: conv, strategy: promotionSummary(promo.cfg),
+      reach: Math.round(views / (1.3 + rand() * 0.9)),
+      dismisses: Math.round(views * (0.05 + rand() * 0.12)),
       leaveAfter: Math.round(views * (0.02 + rand() * 0.06)),
     }
   }
@@ -100,27 +99,21 @@ export function versionPerformance(pageId: string, history: PublishedVersion[], 
     const own = records.filter(r => r.placement === name)
     return exposure(name, Math.round(visits * own.length / Math.max(1, records.length)), Math.round(conversions * own.filter(r => r.converted).length / convertedAll))
   })
-    // No promotion in this version: the strategy table shows clearly labelled demo rows, unrelated to the visits.
+    // No promotion: the strategy table shows clearly labelled demo rows, unrelated to the visits.
     : DEMO_PLACEMENTS.map(name => { const arrivals = Math.round(60 + rand() * 120); return exposure(name, arrivals, Math.round(arrivals * (0.02 + rand() * 0.05))) })
-  // Event log for enabled placements: each impression, click, close and suppressed impression is recorded.
+  // Event log: every impression, click and “不再提醒” in the placements this page is assigned to.
   const events: PlacementEvent[] = []
   for (const name of placements) {
-    const field = v.draft.placements.find(p => p.name === name)!
-    const st = strategyOf(field)
-    const pages = name === '智能客服推送' ? ['客服对话'] : name === '首屏 Banner' ? ['首页'] : field.scopes?.length ? field.scopes : ['产品中心']
-    const reasons = [`已达每天 ${st.dailyLimit} 次上限`, ...(st.closable ? ['访客关闭过，处于不再出现期'] : []), ...(st.hideAfterConversion ? ['访客已转化'] : []),
-      ...(st.oncePerVisit ? ['本次访问已出现过'] : []), ...(OVERLAY_PLACEMENTS.includes(name) ? ['同页优先级更高的位置已出现'] : [])]
+    const page = sitePageName(slotParts(name).page)
+    const devices = promo.cfg.devices.length ? promo.cfg.devices : ['电脑']
     for (let i = 0; i < 40; i++) {
       const visitor = `访客 ${Math.floor(rand() * 0xffff).toString(16).padStart(4, '0').toUpperCase()}`
       const r = rand()
-      const event: PlacementEventType = r < 0.55 ? '展示' : r < 0.68 ? '点击' : r < 0.85 && st.closable ? '关闭' : '未展示'
-      const nth = 1 + Math.floor(rand() * Math.min(st.dailyLimit, 3))
+      const event: PlacementEventType = r < 0.7 ? '展示' : r < 0.86 ? '点击' : '不再提醒'
       events.push({
         id: `${v.version}-${name}-${i}`, time: new Date(end - rand() * Math.min(span, 5) * DAY).toISOString(), visitor, placement: name,
-        page: pages[Math.floor(rand() * pages.length)], device: field.device === '全部设备' ? (rand() < 0.6 ? '电脑' : '手机') : field.device,
-        event, note: event === '展示' ? `今日第 ${nth} 次 · ${appearText(field, st)}` : event === '点击' ? '进入落地页'
-          : event === '关闭' ? (st.afterClose === 'visit' ? '本次访问不再出现' : st.afterClose === 'days' ? `${st.closeDays} 天内不再出现` : '之后不再出现')
-          : reasons[Math.floor(rand() * reasons.length)],
+        page, device: devices[Math.floor(rand() * devices.length)],
+        event, note: event === '展示' ? '推广时段内展示' : event === '点击' ? '进入落地页' : '此后该营销页在此位置不再向该访客出现',
       })
     }
   }
