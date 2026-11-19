@@ -1,15 +1,45 @@
 /** 网站策略页（Growth/vis-analysis）。与数字门户「数据分析-旧」已拆开。 */
 import { useMemo, useState } from "react";
-import { App as AntApp, Button, ConfigProvider, Segmented, Select } from "antd";
+import { App as AntApp, Button, ConfigProvider, DatePicker, Segmented } from "antd";
 import zhCN from "antd/locale/zh_CN";
-import { ArrowLeftOutlined, DownOutlined, FileTextOutlined, HistoryOutlined } from "@ant-design/icons";
+import { ArrowLeftOutlined, FileTextOutlined, HistoryOutlined } from "@ant-design/icons";
+import dayjs from "dayjs";
+import isoWeek from "dayjs/plugin/isoWeek";
+import "dayjs/locale/zh-cn";
 import AgentPage, { MockStateSwitch } from "./agent-page/AgentPage.jsx";
 import DetailBoard from "./detail-board/DetailBoard.jsx";
 import McpDetailBoard from "./detail-board/McpDetailBoard.jsx";
 import { MCP_SITE } from "./detail-board/mcpBoardData.js";
 import { getGoodyBoard, GOODY_SITE } from "./detail-board/goodyBoardData.js";
 import "./data-analysis-new.css";
-import { AUTH_SOURCES, QUIET_WEEK_IDS, SITES, SOURCE_AUTH_PAGES, WEEKS } from "./diagnosisPeriod.js";
+import { AUTH_SOURCES, LATEST_CLOSED_WEEK_END, QUIET_WEEK_IDS, SITES, SOURCE_AUTH_PAGES, WEEKS, weekFromId } from "./diagnosisPeriod.js";
+
+dayjs.extend(isoWeek);
+dayjs.locale("zh-cn");
+
+const LATEST_CLOSED = dayjs(LATEST_CLOSED_WEEK_END);
+
+function weekIdFromDayjs(value) {
+  const start = value.startOf("isoWeek");
+  return `${start.year()}-${start.month() + 1}-${start.date()}`;
+}
+
+function dayjsFromWeekId(id) {
+  const week = weekFromId(id);
+  const [year, month, day] = week.id.split("-").map(Number);
+  return dayjs(new Date(year, month - 1, day));
+}
+
+function formatClosedWeek(value) {
+  if (!value) return "";
+  const start = value.startOf("isoWeek");
+  const end = value.endOf("isoWeek");
+  const startText = `${start.year()}年 ${start.month() + 1}月${start.date()}日`;
+  const endText = start.year() === end.year()
+    ? `${end.month() + 1}月${end.date()}日`
+    : `${end.year()}年 ${end.month() + 1}月${end.date()}日`;
+  return `${startText} – ${endText}`;
+}
 
 const THEME = {
   token: {
@@ -98,15 +128,14 @@ function AuthConnect({ sourceKey, backLabel, onBack, onDone }) {
 function Workbench({ boardOnly, intakeOnly }) {
   const [authKey, setAuthKey] = useState(null);
   const [granted, setGranted] = useState({});
-  const [siteId, setSiteId] = useState(SITES[0].id);
   const [weekId, setWeekId] = useState(WEEKS[0].id);
   const [monthlyOpen, setMonthlyOpen] = useState(false);
   const [ledgerOpen, setLedgerOpen] = useState(false);
   const [boardKind, setBoardKind] = useState("demo");
   const [runState, setRunState] = useState("pending");
 
-  const site = SITES.find((item) => item.id === siteId) ?? SITES[0];
-  const week = WEEKS.find((item) => item.id === weekId) ?? WEEKS[0];
+  const site = SITES[0];
+  const week = weekFromId(weekId);
   const quiet = QUIET_WEEK_IDS.has(week.id);
   const authMap = useMemo(() => {
     const map = {};
@@ -130,23 +159,6 @@ function Workbench({ boardOnly, intakeOnly }) {
     />
   ) : null;
   const pageStyle = authKey ? { display: "none" } : undefined;
-
-  const siteSelect = (
-    <Select
-      className="dan-site-select"
-      size="middle"
-      value={siteId}
-      showSearch={false}
-      allowClear={false}
-      suffixIcon={<DownOutlined />}
-      aria-label="已绑定网站"
-      options={SITES.map((item) => ({
-        value: item.id,
-        label: `${item.name.replace("Demo · ", "")}`,
-      }))}
-      onChange={(id) => setSiteId(id)}
-    />
-  );
 
   if (boardOnly) {
     return (
@@ -215,22 +227,24 @@ function Workbench({ boardOnly, intakeOnly }) {
                 以前建议过的事
               </Button>
             ) : null}
-            {siteSelect}
             {site.diagnosed ? (
               <>
-                <Select
-                  className="dan-site-select dan-week-select"
+                <DatePicker
+                  picker="week"
+                  className="dan-week-select"
                   size="middle"
-                  value={week.id}
-                  showSearch={false}
                   allowClear={false}
-                  suffixIcon={<DownOutlined />}
-                  aria-label="已结束 7 天窗口"
-                  options={WEEKS.map((item) => ({
-                    value: item.id,
-                    label: item.label,
-                  }))}
-                  onChange={(id) => setWeekId(id)}
+                  inputReadOnly
+                  placeholder="选择自然周"
+                  value={dayjsFromWeekId(week.id)}
+                  format={formatClosedWeek}
+                  maxDate={LATEST_CLOSED}
+                  disabledDate={(date) => date.endOf("isoWeek").isAfter(LATEST_CLOSED, "day")}
+                  classNames={{ popup: { root: "dan-week-popup" } }}
+                  aria-label="选择已结束的自然周（周一至周日）"
+                  onChange={(value) => {
+                    if (value) setWeekId(weekIdFromDayjs(value));
+                  }}
                 />
                 <Button icon={<FileTextOutlined />} onClick={() => setMonthlyOpen(true)}>
                   这个月做了什么

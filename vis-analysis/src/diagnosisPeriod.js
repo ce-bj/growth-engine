@@ -10,21 +10,43 @@ function shiftDays(date, days) {
   return next;
 }
 
+function weekIdOf(date) {
+  return `${date.getFullYear()}-${date.getMonth() + 1}-${date.getDate()}`;
+}
+
+function parseWeekStart(id) {
+  const parts = String(id || "").split("-").map(Number);
+  if (parts.length !== 3 || parts.some((n) => !Number.isFinite(n) || n <= 0)) return null;
+  const start = new Date(parts[0], parts[1] - 1, parts[2]);
+  return Number.isNaN(start.getTime()) ? null : start;
+}
+
+function weekRecord(start, current = false) {
+  const end = shiftDays(start, 6);
+  const baselineEnd = shiftDays(start, -1);
+  const baselineStart = shiftDays(baselineEnd, -6);
+  return {
+    id: weekIdOf(start),
+    label: `${weekLabel(start)} – ${weekLabel(end)}`,
+    baselineLabel: `${weekLabel(baselineStart)} – ${weekLabel(baselineEnd)}`,
+    current,
+  };
+}
+
 /** 最近 13 个已结束 7 天窗口 (IS_CLOSED = 1)，最新一期在前。 */
 export const WEEKS = Array.from({ length: 13 }, (_, index) => {
   const end = shiftDays(new Date(2026, 8, 20), -7 * index);
-  const start = shiftDays(end, -6);
-  const baselineEnd = shiftDays(start, -1);
-  const baselineStart = shiftDays(baselineEnd, -6);
-  const label = `${weekLabel(start)} – ${weekLabel(end)}`;
-  const baselineLabel = `${weekLabel(baselineStart)} – ${weekLabel(baselineEnd)}`;
-  return {
-    id: `${start.getFullYear()}-${start.getMonth() + 1}-${start.getDate()}`,
-    label,
-    baselineLabel,
-    current: index === 0,
-  };
+  return weekRecord(shiftDays(end, -6), index === 0);
 });
+
+export const LATEST_CLOSED_WEEK_END = shiftDays(new Date(2026, 8, 20), 0);
+
+export function weekFromId(id) {
+  const hit = WEEKS.find((item) => item.id === id);
+  if (hit) return hit;
+  const start = parseWeekStart(id);
+  return start ? weekRecord(start) : WEEKS[0];
+}
 
 /** 这些周全站无明显可归因转化问题，仅展示本周诊断小结，不建任务。 */
 export const QUIET_WEEK_IDS = new Set(["2026-6-22"]);
@@ -543,8 +565,8 @@ https://www.demo-cnc-oem.com/campaign/cnc-oem-q3`,
   },
 ];
 
-/** 上线前不套通用工序。stage 是下标：待你同意 → 你已同意 → 进行中 → 已完成，之后才是看效果、出结论。 */
-export const TRACK_STAGES = ["待你同意", "你已同意", "进行中", "已完成", "正在看效果", "已经有结论"];
+/** 上线前不套通用工序。stage 是下标：待你同意 → 你已同意 → 进行中 → 已完成。 */
+export const TRACK_STAGES = ["待你同意", "你已同意", "进行中", "已完成"];
 export const APPROVED_STAGE = 1;
 export const PROGRESS_STAGE = 2;
 export const LAUNCH_STAGE = 3;

@@ -137,7 +137,7 @@ function KpiCard({ title, cur, prev, mode = "count", note, alert, compare }) {
   );
 }
 
-function HeadKpis({ entry, view, lead, leadCount, compare }) {
+function HeadKpis({ entry, view, lead, compare }) {
   const viewRate = entry.cur ? view.cur / entry.cur : 0;
   const viewPrev = entry.prev ? view.prev / entry.prev : null;
   const leadRate = entry.cur ? lead.cur / entry.cur : 0;
@@ -170,7 +170,7 @@ function HeadKpis({ entry, view, lead, leadCount, compare }) {
           cur={lead.cur}
           prev={lead.prev}
           compare={compare}
-          note={`共 ${fmtInt(leadCount.cur)} 条询盘`}
+          note={compare && lead.prev != null ? `上周 ${fmtInt(lead.prev)} 条` : null}
         />
       </Col>
       <Col xs={24} sm={12} xl={6}>
@@ -509,7 +509,7 @@ export default function DetailBoard({ authMap, onAuthorize, mode = "full" }) {
     () => (mode === "intake" ? buildWeekModel(weekId) : buildBoardModel(range)),
     [mode, weekId, range],
   );
-  const { traffic, regions, stages: stageBook, leadCount, frame } = model;
+  const { traffic, regions, stages: stageBook, frame } = model;
   const compare = frame.compare;
   const [catchCat, setCatchCat] = useState("all");
   const [catchSrc, setCatchSrc] = useState(null);
@@ -933,7 +933,7 @@ export default function DetailBoard({ authMap, onAuthorize, mode = "full" }) {
             {weekId === WEEKS[0].id ? <Tag>最新一期</Tag> : null}
             <span className="db-window-span">对照 {frame.baselineLabel}</span>
           </div>
-          <HeadKpis entry={entry} view={view} lead={lead} leadCount={leadCount} compare={compare} />
+          <HeadKpis entry={entry} view={view} lead={lead} compare={compare} />
           <Card title={<>漏斗明细 <Tag className="db-tag-mini">全站</Tag></>} className="db-fill">
             <FunnelDetail stages={siteStages} gates={through(siteStages)} channelId="site" sliceName="全站" compare={compare} />
           </Card>
@@ -987,7 +987,7 @@ export default function DetailBoard({ authMap, onAuthorize, mode = "full" }) {
           <span className="db-window-span">{frame.span}</span>
         </div>
 
-        <HeadKpis entry={entry} view={view} lead={lead} leadCount={leadCount} compare={false} />
+        <HeadKpis entry={entry} view={view} lead={lead} compare={false} />
 
         <SectionTitle title="流量" hint="从哪来、来了多少" />
         <Row gutter={[16, 16]}>

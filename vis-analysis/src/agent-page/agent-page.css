@@ -1171,12 +1171,6 @@
   width: 100%;
 }
 
-.ag-track-note {
-  font-size: 12px;
-  line-height: 1.5;
-  color: var(--ag-text-2);
-}
-
 .ag-stage-link {
   position: relative;
   z-index: 1;
@@ -1191,150 +1185,47 @@
   pointer-events: auto;
 }
 
-.ag-readout {
-  display: inline-flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 6px 12px;
-  padding: 6px 12px;
-  border: 1px solid var(--ag-line);
-  border-radius: 6px;
-  background: var(--ag-soft);
-  font: inherit;
-  font-size: 13px;
-  color: #1e293b;
-  text-align: left;
-  cursor: pointer;
-  transition: border-color 0.15s;
-}
-
-.ag-readout:hover {
-  border-color: var(--ag-accent);
-}
-
-.ag-readout .ant-tag {
-  margin: 0;
-}
-
 .ag-page .ant-tag.ant-tag-success.ant-tag-filled,
 .ag-mdl-title .ant-tag.ant-tag-success.ant-tag-filled {
   background: #edf7e8;
   color: #389e0d;
 }
 
-.ag-readout-metric {
-  color: var(--ag-text-2);
-}
-
-.ag-readout-val {
-  font-weight: 600;
-  font-variant-numeric: tabular-nums;
-}
-
-.ag-readout-val .anticon,
-.ag-readout-line .anticon {
-  font-size: 10px;
-  color: var(--ag-text-3);
-}
-
-.ag-readout-val b.is-up {
-  color: var(--ag-ok);
-}
-
-.ag-readout-line {
-  color: var(--ag-text-2);
-  font-variant-numeric: tabular-nums;
-}
-
-.ag-readout-prog.ant-progress {
-  width: 88px;
-  margin: 0;
-}
-
-.ag-readout-day {
-  color: var(--ag-text-3);
-  font-variant-numeric: tabular-nums;
-}
-
-/* 留资头条 */
+/* 任务状态：两张等宽 Statistic 卡，间距与工作台卡片一致 */
 .ag-leads {
-  display: grid;
-  grid-template-columns: 168px minmax(0, 1fr) auto;
-  align-items: center;
-  gap: 20px;
-  padding: 12px 16px;
-  border: 1px solid var(--ag-line);
+  align-items: stretch;
+}
+
+.ag-stat-card.ant-card {
+  flex: 1 1 240px;
+  min-width: 0;
+  border-color: var(--ag-line);
   border-radius: 8px;
-  background: #fff;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
 }
 
-.ag-counts {
-  display: flex;
-  gap: 8px;
-  margin: 0;
+.ag-stat-card.is-hot {
+  box-shadow: inset 3px 0 0 var(--ag-warn), 0 1px 2px rgba(15, 23, 42, 0.04);
 }
 
-.ag-counts div {
-  min-width: 96px;
-  padding: 6px 12px;
-  border-radius: 6px;
-  background: var(--ag-soft);
-  text-align: center;
-}
-
-.ag-counts dt {
-  font-size: 12px;
+.ag-stat-card .ant-statistic-title {
+  margin-bottom: 8px;
   color: var(--ag-text-2);
-  white-space: nowrap;
+  font-size: 14px;
 }
 
-.ag-counts dd {
-  margin: 0;
-  font-size: 22px;
-  font-weight: 650;
-  line-height: 1.2;
+.ag-stat-card .ant-statistic-content {
+  font-size: 28px;
+  font-weight: 600;
+  line-height: 1.3;
   font-variant-numeric: tabular-nums;
 }
 
-.ag-counts .is-hot dd {
-  color: var(--ag-warn);
-}
-
-.ag-leads-num {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.ag-leads-num > span {
-  font-size: 13px;
+.ag-stat-card .ant-statistic-content-suffix {
+  margin-inline-start: 4px;
   color: var(--ag-text-2);
-}
-
-.ag-leads-num > b {
-  font-size: 32px;
-  font-weight: 700;
-  line-height: 1.1;
-  color: #1e293b;
-  font-variant-numeric: tabular-nums;
-}
-
-.ag-leads-split {
-  display: flex;
-  gap: 12px;
-  font-size: 13px;
-  color: var(--ag-text-2);
-}
-
-.ag-leads-tags {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-  margin-top: 6px;
-}
-
-.ag-leads-tags .ant-tag {
-  margin: 0;
+  font-size: 14px;
+  font-weight: 500;
 }
 
 .ag-leads-chart {
@@ -1761,7 +1652,6 @@
 @media (max-width: 1100px) {
   .ag-summary,
   .ag-track-row,
-  .ag-leads,
   .ag-onboard-steps {
     grid-template-columns: 1fr;
   }

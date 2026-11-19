@@ -79,7 +79,13 @@ html[data-visitor-embed] #root {
 }
 
 .dan-toolbar .dan-week-select {
-  width: 168px;
+  width: 268px;
+}
+
+/* 自然周按周一至周日整行点选，不展示 ISO 周序号 */
+.dan-week-popup .ant-picker-content th:first-child,
+.dan-week-popup .ant-picker-cell-week {
+  display: none;
 }
 
 .dan-toolbar .dan-mock {

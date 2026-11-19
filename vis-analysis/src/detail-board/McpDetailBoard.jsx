@@ -540,7 +540,7 @@ export default function McpDetailBoard({ getBoard = getMcpBoard }) {
             <KpiCard title="有效浏览率" cur={viewRate} prev={viewPrev} mode="rate" compare={false} />
           </Col>
           <Col xs={24} sm={12} xl={6}>
-            <KpiCard title="留资数" cur={lead.cur} prev={lead.prev} compare={false} note={`共 ${fmtInt(model.all.leadCnt)} 条询盘`} />
+            <KpiCard title="留资数" cur={lead.cur} prev={lead.prev} compare={false} />
           </Col>
           <Col xs={24} sm={12} xl={6}>
             <KpiCard title="留资转化率" cur={leadRate} prev={leadPrev} mode="rate" compare={false} />
