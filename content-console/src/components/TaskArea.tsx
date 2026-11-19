@@ -17,7 +17,6 @@ export function TaskArea() {
 
   const PREVIEW = 3
   const previewTasks = tasks.slice(0, PREVIEW)
-  const hasMore = tasks.length > PREVIEW
 
   const handleMore = (key: string, id: string) => {
     setMoreOpen(null)
@@ -47,7 +46,6 @@ export function TaskArea() {
       <div className="section-head">
         <div className="head-title">
           <h2>发布任务</h2>
-          <span className="cnt">{tasks.length}</span>
         </div>
         <div className="head-acts">
           <button className="btn btn-ghost" onClick={() => navigate({ name: 'task-list' })}>
@@ -120,14 +118,6 @@ export function TaskArea() {
           })
         )}
       </div>
-
-      {hasMore && (
-        <div className="task-more">
-          <button className="btn btn-ghost" onClick={() => navigate({ name: 'task-list' })}>
-            查看全部任务（共 {tasks.length} 条）
-          </button>
-        </div>
-      )}
     </section>
   )
 }

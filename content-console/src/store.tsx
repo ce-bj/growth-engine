@@ -40,9 +40,9 @@ export const TASK_STATUS_LABEL: Record<TaskStatus, string> = {
 
 // —— 待办来源标签 ——
 export const TODO_SOURCE_LABEL: Record<TodoSource, string> = {
-  'behavior-fix': '优化策略推荐',
-  'behavior-new': '优化策略推荐',
-  'self-new': '自建任务 · 新增',
+  'behavior-fix': '行为分析 · 修改',
+  'behavior-new': '行为分析 · 新增',
+  'self-new': '自建发布任务 · 新增',
 }
 
 export function taskSourceLabel(from: PublishTask['from']): string {
