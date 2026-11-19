@@ -543,8 +543,8 @@ https://www.demo-cnc-oem.com/campaign/cnc-oem-q3`,
   },
 ];
 
-/** 上线前不套通用工序。stage 是下标：待你同意 → 你已同意 → 进行中 → 已上线，之后才是看效果、出结论。 */
-export const TRACK_STAGES = ["待你同意", "你已同意", "进行中", "已上线", "正在看效果", "已经有结论"];
+/** 上线前不套通用工序。stage 是下标：待你同意 → 你已同意 → 进行中 → 已完成，之后才是看效果、出结论。 */
+export const TRACK_STAGES = ["待你同意", "你已同意", "进行中", "已完成", "正在看效果", "已经有结论"];
 export const APPROVED_STAGE = 1;
 export const PROGRESS_STAGE = 2;
 export const LAUNCH_STAGE = 3;

@@ -14,6 +14,7 @@ import {
 import {
   BRIEFS,
   LEADS,
+  LAUNCH_STAGE,
   MONITOR_STAGE,
   PROGRESS_STAGE,
   MONTHLY_REPORT,
@@ -262,7 +263,7 @@ function LeadStrip({ data, counts }) {
 }
 
 function StageTitle({ title, index, row, onOpen, onOpenAgent }) {
-  if (row.stage === index && index === PROGRESS_STAGE && AGENT_VIEW[row.executor]) {
+  if (index === LAUNCH_STAGE && row.stage >= LAUNCH_STAGE && AGENT_VIEW[row.executor]) {
     return (
       <button type="button" className="ag-stage-link" onClick={() => onOpenAgent(row)}>
         {title}
@@ -830,11 +831,6 @@ export default function AgentPage({ site, weekLabel, quiet, authMap, onAuthorize
               <div className="ag-track-info">
                 <div className="ag-track-name">
                   <b>{row.title}</b>
-                  {AGENT_VIEW[row.executor] ? (
-                    <Button size="small" onClick={() => openAgentTask(row)}>
-                      打开这个任务
-                    </Button>
-                  ) : null}
                 </div>
                 <span>
                   {row.executor} · {row.approvedAt} 批准{row.launchedAt ? ` · ${row.launchedAt} 上线` : ""}
