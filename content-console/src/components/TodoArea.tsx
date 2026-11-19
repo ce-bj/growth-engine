@@ -1,4 +1,4 @@
-import { TODO_SOURCE_LABEL, stratName, useStore } from '../store'
+import { TODO_SOURCE_LABEL, useStore } from '../store'
 import type { TodoSource } from '../types'
 
 // 来源胶囊配色
@@ -9,17 +9,17 @@ const SRC_CLASS: Record<TodoSource, string> = {
 }
 
 export function TodoArea() {
-  const { todos, publishTodo, rejectTodo, gotoKb, continueAfterKb } = useStore()
+  const { todos, publishTodo, rejectTodo, gotoKb, continueAfterKb, navigate } = useStore()
 
   return (
     <section className="todo-area">
       <div className="section-head">
-        <h2>待办</h2>
-        <p>行为分析智能体与自建任务产出的内容，等待你决定发布或取消</p>
+        <h2>内容进展</h2>
+        <p>行为分析智能体与自建发布任务产出的内容，查看各类内容的处理与推送进度</p>
       </div>
 
       {todos.length === 0 ? (
-        <div className="todo-empty">没有待办事项，一切就绪</div>
+        <div className="todo-empty">暂无内容进展</div>
       ) : (
         <div className="todo-list">
           {todos.map((t) => (
@@ -35,12 +35,6 @@ export function TodoArea() {
                 </div>
                 <div className="todo-sub">
                   <span className="type-tag">{t.type}</span>
-                  {t.strat.map((s) => (
-                    <span className="strat-tag" key={s}>
-                      {stratName(s)}
-                    </span>
-                  ))}
-                  <span className="todo-date">今天该发 · 到期自动发布</span>
                 </div>
                 {t.note && <div className="todo-note">{t.note}</div>}
                 {t.needKb && (
@@ -59,6 +53,18 @@ export function TodoArea() {
                       补完继续生成
                     </button>
                   </>
+                ) : t.source === 'self-new' ? (
+                  <span className={'status-badge ' + (t.pushStatus === '已推送' ? 'ok' : 'warn')}>
+                    {t.pushStatus || '待推送'}
+                  </span>
+                ) : t.source === 'behavior-fix' ? (
+                  <span className={'status-badge ' + (t.fixStatus === '已完成' ? 'ok' : 'warn')}>
+                    {t.fixStatus || '修改中'}
+                  </span>
+                ) : t.source === 'behavior-new' ? (
+                  <span className={'status-badge ' + (t.newPushStatus === '已推送' ? 'ok' : 'warn')}>
+                    {t.newPushStatus || '待推送'}
+                  </span>
                 ) : (
                   <>
                     <button className="btn btn-primary" onClick={() => publishTodo(t.id)}>
@@ -74,6 +80,12 @@ export function TodoArea() {
           ))}
         </div>
       )}
+
+      <div className="task-more">
+        <button className="btn btn-ghost" onClick={() => navigate({ name: 'data-list', scope: 'total' })}>
+          查看历史
+        </button>
+      </div>
     </section>
   )
 }

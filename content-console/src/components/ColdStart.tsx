@@ -34,7 +34,7 @@ export function ColdStart() {
               查看
             </button>
             <button className="btn btn-primary" onClick={() => confirmDirection(d.id)}>
-              确认发布
+              确认
             </button>
           </div>
         </div>

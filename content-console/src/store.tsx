@@ -42,7 +42,7 @@ export const TASK_STATUS_LABEL: Record<TaskStatus, string> = {
 export const TODO_SOURCE_LABEL: Record<TodoSource, string> = {
   'behavior-fix': '行为分析 · 修改',
   'behavior-new': '行为分析 · 新增',
-  'self-new': '自建任务 · 新增',
+  'self-new': '自建发布任务 · 新增',
 }
 
 // —— 内容条目状态 ——

@@ -1,8 +1,16 @@
 import { useState } from 'react'
-import { itemState, stratName, typeLabel, useStore } from '../store'
+import { INITIAL_TODOS } from '../data'
+import { itemState, TODO_SOURCE_LABEL, typeLabel, useStore } from '../store'
 import type { ContentRow } from '../types'
 
 const PAGE_SIZE = 10
+
+// 历史内容来源：按标题对应首页内容进展的来源标签（行为分析 · 修改 / 行为分析 · 新增）
+function historySource(title: string): string {
+  const hit = INITIAL_TODOS.find((t) => t.title.replace(/（.*?）/g, '').trim() === title.replace(/（.*?）/g, '').trim())
+  if (hit) return TODO_SOURCE_LABEL[hit.source]
+  return TODO_SOURCE_LABEL['behavior-new']
+}
 
 type Tab = 'total' | 'week' | 'month' | 'fix'
 
@@ -93,7 +101,6 @@ export function DataListView({ initialTab }: { initialTab: 'total' | 'week' | 'm
                 <th>类型</th>
                 <th>日期</th>
                 <th>来源</th>
-                <th>策略</th>
               </tr>
             </thead>
             <tbody>
@@ -102,14 +109,7 @@ export function DataListView({ initialTab }: { initialTab: 'total' | 'week' | 'm
                   <td className="td-title">{r.title}</td>
                   <td>{typeLabel(r.type)}</td>
                   <td>{r.date}</td>
-                  <td>{r.taskTitle ? `《${r.taskTitle}》` : r.source}</td>
-                  <td>
-                    <div className="td-tags">
-                      {r.strat.map((s) => (
-                        <span className="strat-tag" key={s}>{stratName(s)}</span>
-                      ))}
-                    </div>
-                  </td>
+                  <td>{r.taskTitle ? `《${r.taskTitle}》` : historySource(r.title)}</td>
                 </tr>
               ))}
             </tbody>

@@ -76,6 +76,9 @@ export interface TodoRow {
   note: string
   needKb: boolean // 是否依赖知识库
   kbName: string // 依赖的知识库名称
+  pushStatus?: '待推送' | '已推送' // 自建任务产出内容的推送状态（默认待推送）
+  fixStatus?: '修改中' | '已完成' // 行为分析·修改内容的修改状态（默认修改中）
+  newPushStatus?: '待推送' | '已推送' // 行为分析·新增内容的推送状态（默认待推送）
 }
 
 // 统一内容条目（内容库归一化后的结构）
