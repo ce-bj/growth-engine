@@ -33,6 +33,16 @@ const ARMED_DECISIONS = {
   "t-landing": { status: "approved" },
   "t-article": { status: "skipped", reason: SKIP_REASONS[2] },
 };
+
+function requirementLines(item) {
+  if (item?.requirementSections?.length) {
+    return item.requirementSections.flatMap((section) => {
+      const head = section.mode ? `${section.label}（${section.mode}）` : section.label;
+      return [head, ...(section.lines || [])];
+    });
+  }
+  return item?.requirements || [];
+}
 import "./agent-page.css";
 
 const SOURCE_STATE = {
@@ -353,7 +363,9 @@ export default function AgentPage({ site, weekLabel, quiet, authMap, onAuthorize
       note: brief.planPreview?.metric || "",
       summary: brief.summary,
       target: brief.target,
-      requirements: brief.requirements,
+      requirements: requirementLines(brief),
+      requirementSections: brief.requirementSections || [],
+      constraints: brief.constraints || [],
       extra: extraNotes[brief.key]?.trim() || "",
     })),
     ...baseTracking,
@@ -432,7 +444,9 @@ export default function AgentPage({ site, weekLabel, quiet, authMap, onAuthorize
       note: row.note || "",
       summary: row.summary || "",
       target: row.target || "",
-      requirements: row.requirements || [],
+      requirements: requirementLines(row),
+      requirementSections: row.requirementSections || [],
+      constraints: row.constraints || [],
       extra: row.extra || "",
     };
     if (window.parent && window.parent !== window) {

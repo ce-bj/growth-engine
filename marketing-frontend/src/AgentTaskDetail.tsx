@@ -11,6 +11,8 @@ export type HandoffTask = {
   summary?: string
   target?: string
   requirements?: string[]
+  requirementSections?: { label: string; mode?: string; lines?: string[] }[]
+  constraints?: string[]
   extra?: string
   view?: string
 }
@@ -60,8 +62,12 @@ export default function AgentTaskDetail() {
     setTask(null)
   }
 
+  const sections = Array.isArray(task.requirementSections) ? task.requirementSections : []
   const requirements = Array.isArray(task.requirements)
     ? task.requirements.filter((item) => typeof item === 'string' && item)
+    : []
+  const constraints = Array.isArray(task.constraints)
+    ? task.constraints.filter((item) => typeof item === 'string' && item)
     : []
 
   return (
@@ -104,14 +110,51 @@ export default function AgentTaskDetail() {
           </p>
         ) : null}
         {task.note ? <p style={note}>{task.note}</p> : null}
-        {requirements.length ? (
+        {sections.length ? (
           <>
-            <h2 style={sub}>要做的事</h2>
-            <ol style={list}>
-              {requirements.map((line) => (
-                <li key={line}>{line}</li>
-              ))}
-            </ol>
+            <h2 style={sub}>任务要求</h2>
+            {sections.map((section) => (
+              <div key={`${section.label}-${section.mode || ''}`}>
+                <h3 style={sub}>{section.label}</h3>
+                {section.mode ? <p style={note}>{section.mode}</p> : null}
+                <ol style={list}>
+                  {(section.lines || []).map((line) => (
+                    <li key={line}>{line}</li>
+                  ))}
+                </ol>
+              </div>
+            ))}
+            {constraints.length ? (
+              <>
+                <h3 style={sub}>约束</h3>
+                <ol style={list}>
+                  {constraints.map((line) => (
+                    <li key={line}>{line}</li>
+                  ))}
+                </ol>
+              </>
+            ) : null}
+          </>
+        ) : requirements.length || constraints.length ? (
+          <>
+            <h2 style={sub}>任务要求</h2>
+            {requirements.length ? (
+              <ol style={list}>
+                {requirements.map((line) => (
+                  <li key={line}>{line}</li>
+                ))}
+              </ol>
+            ) : null}
+            {constraints.length ? (
+              <>
+                <h3 style={sub}>约束</h3>
+                <ol style={list}>
+                  {constraints.map((line) => (
+                    <li key={line}>{line}</li>
+                  ))}
+                </ol>
+              </>
+            ) : null}
           </>
         ) : null}
         {task.extra ? <p style={note}><b>额外补充 </b>{task.extra}</p> : null}

@@ -276,6 +276,24 @@ export const RULE_CHECKS = [
     },
     trackKey: "k-sample",
   },
+  {
+    key: "DX-05",
+    lossId: "l2",
+    state: "hit",
+    title: "零结果词需要按周持续供稿",
+    phenomenon: "站内搜索零结果不止一篇文章能补上，需要一份按周发布的内容计划。",
+    layerLabel: "次卡点 · 内容供给",
+    unresolved: "pending_approval",
+    page: "站内搜索 · 图纸格式与阳极氧化规格",
+    hypothesis: "两个有依据的零结果词要按周写成可检索内容，而不是只发一篇",
+    face: {
+      data: "近 7 天站内一共搜索了 50 次，其中 16 次没有任何结果，占 32%。",
+      words: "有原词的是 custom bracket drawing dwg（9 次）和 anodizing thickness 6061（4 次）。",
+      pageFact: "知识库里有可接收图纸和膜厚，网站上还没有按这两个词持续发布的栏目内容。",
+      cause: "有原词的是 custom bracket drawing dwg（9 次）和 anodizing thickness 6061（4 次）。知识库里有可接收图纸和膜厚，网站上还没有按这两个词持续发布的栏目内容。",
+    },
+    briefKeys: ["t-plan"],
+  },
 ];
 
 /**
@@ -289,8 +307,8 @@ export const BRIEFS = [
     priority: "P0",
     direction: "修改产品详情页",
     executor: "内容运营智能体",
-    title: "修改铝支架详情页的第一屏",
-    summary: "请内容运营智能体把这页第一屏改成型号、用途和参数，并把询价入口放在第一屏。",
+    title: "改铝支架详情的正文",
+    summary: "请内容运营智能体按大纲重写这页正文：开头写型号和规格，公司介绍放在后面。不改按钮。",
     target: "https://www.demo-cnc-oem.com/products/cnc-6061-bracket",
     why: "近 7 天 420 人从这页进来，只有 92 人看进去，接住率 21.9%，停了大约 11 秒。",
     ruleKeys: ["DX-01"],
@@ -367,22 +385,28 @@ Lead time 15–20 days`,
 批量交期：15–20 天`,
       },
     },
-    requirements: [
-      "标题保持不变。第一屏写清型号 CNC-6061、适合谁用，以及材质、公差、表面处理、起订量和打样周期。",
-      "询价入口放在第一屏。公司介绍和品牌故事移到后面。",
-      "正文对着搜索词 aluminum bracket oem 和 cnc 6061 quote 来写，不写空泛的实力口号。",
-      "常见问题写清四件事：开孔能不能改、最少订多少、打样要多久、有哪些表面处理。",
+    requirementSections: [
+      {
+        label: "正文",
+        mode: "全文按大纲重写该字段",
+        lines: [
+          "开头先写型号 CNC-6061。",
+          "紧接着保留这些原句：Material 6061-T6；Tolerance ±0.02 mm；Finish Anodizing / Powder coat；MOQ 50 pcs；Lead time 15–20 days。",
+          "打样周期写知识库原句：打样周期：48 小时。",
+          "公司介绍和「20 Years of Precision Manufacturing」放到规格后面。",
+        ],
+      },
     ],
-    constraints: ["只改第一屏附近的内容，不整页重写。", "原有配图都保留，这次不换封面。", "公司资料里没有的参数不要编造。"],
-    afterApprove: "改好的第一屏会先给你看。你确认之后，才会替换线上页面。",
+    constraints: ["不改标题，不改概述，不改按钮、页头、页脚。", "资料里没有的参数不编造。", "原有配图保留，这次不换封面。"],
+    afterApprove: "改好的正文会先给你看。你确认之后，才会替换线上页面。",
   },
   {
     key: "t-landing",
     priority: "P0",
     direction: "新建营销页",
     executor: "智能营销页智能体",
-    title: "新建一张询价页，替换现在的品牌页",
-    summary: "请智能营销页智能体新建一张询价页。第一屏写清型号、48 小时打样和询价入口，用来替换现在这张品牌页。",
+    title: "新建一张产品营销页，替换现在的品牌页",
+    summary: "请智能营销页智能体按入参新建一页。页面类型是产品营销，公司名称用当前站点名。只填资料里有的卖点、认证、打样周期和邮箱。",
     target: "新建页面 /campaign/cnc-oem-quote，用来替换现在的 /campaign/cnc-oem-q3。",
     why: "近 7 天广告带来 210 人，只有 31 人看进去，接住率 14.7%，大约 8 秒就走。",
     ruleKeys: ["DX-02"],
@@ -444,14 +468,22 @@ Trusted by global brands
 买家画像：未收录`,
       },
     },
-    requirements: [
-      "这是一张英文询价页，给美国和欧洲的买家看。",
-      "第一屏必须出现型号 CNC-6061、48 小时打样和询价入口。",
-      "表单要收集公司名、邮箱、图纸或规格、数量和期望交期。",
-      "页面内容要能对上这些搜索词：cnc machining quote、oem cnc quote、aluminum bracket oem。",
-      "访客在同一次访问里，第二次在产品详情页停留满 15 秒时，在那页底部弹出一条不挡住内容的提示，链到这张询价页。回访按 7 天累计。提示可以写成：还在看铝支架？留下图纸，48 小时给打样。",
+    requirementSections: [
+      { label: "页面类型", lines: ["产品营销"] },
+      { label: "公司名称", lines: ["Demo · CNC 精密加工件外贸站"] },
+      { label: "官网地址", lines: ["https://www.demo-cnc-oem.com"] },
+      { label: "主营产品/服务", lines: ["3–5 轴 CNC"] },
+      { label: "核心卖点", lines: ["认证：ISO9001。加工：3–5 轴。打样：48 小时。"] },
+      { label: "联系方式", lines: ["sales@demo-cnc-oem.com"] },
+      { label: "产品认证", lines: ["ISO9001"] },
+      { label: "生产交货周期", lines: ["打样：48 小时"] },
+      { label: "语言", lines: ["English"] },
     ],
-    constraints: ["卖点只写现有页面和公司资料里有的内容，没有的不要编造。", "广告里没说过的「免模」和「零起订」不要写。"],
+    constraints: [
+      "所属行业、目标买家画像、产品规格/型号、最小起订量、竞品名称或网址、表单收集字段、目标国家/地区：这次没有原句，不填。",
+      "Logo、旗主图、产品、主色调、字体不由任务说明指定。",
+      "不写按钮文案，不写页面分块，不写成稿。",
+    ],
     afterApprove: "草稿会先给你看。你确认之后，才会发布。",
   },
   {
@@ -461,7 +493,7 @@ Trusted by global brands
     direction: "发布一篇文章",
     executor: "内容运营智能体",
     title: "写一篇图纸格式和氧化膜厚度的文章",
-    summary: "请内容运营智能体用访客搜过、但没有结果的两个词写一篇文章，说明能接收什么图纸、膜厚是多少，并在文末链回铝支架详情。",
+    summary: "请内容运营智能体新建一篇文章。标题用访客搜过的原词，概述和正文写清能收什么图纸、膜厚多少，文末链回铝支架详情。",
     target: "新建 /blog/6061-bracket-dwg-anodizing-guide",
     why: "custom bracket drawing dwg、anodizing thickness 6061 近 7 天搜了 13 次，一次结果都没有。上周这篇已经写好，还没批。",
     ruleKeys: ["DX-03"],
@@ -506,13 +538,92 @@ No anodizing thickness for 6061.`,
 黑色阳极氧化：10–25 μm`,
       },
     },
-    requirements: [
-      "标题和二级标题直接使用 custom bracket drawing dwg 和 anodizing thickness 6061，不要改成中文概括。",
-      "正文写清能接收哪些图纸、6061 的阳极氧化膜厚是多少、公差怎么配合。",
-      "文章结尾链到 CNC-6061 铝支架详情，并留下一个上传图纸询价的入口。",
+    requirementSections: [
+      {
+        label: "标题",
+        lines: ["custom bracket drawing dwg 与 anodizing thickness 6061：6061 支架收什么图纸、氧化膜多厚"],
+      },
+      {
+        label: "概述",
+        lines: ["一段。必须出现原句：可接收图纸：STEP / DWG / PDF。本色阳极氧化：10–25 μm。黑色阳极氧化：10–25 μm。不写小节。"],
+      },
+      {
+        label: "正文",
+        lines: [
+          "第 1 节回答能收什么图纸。必须出现：可接收图纸：STEP / DWG / PDF。",
+          "第 2 节回答 6061 氧化膜多厚。必须出现：本色阳极氧化：10–25 μm；黑色阳极氧化：10–25 μm。",
+          "最后一节写一句，链到 https://www.demo-cnc-oem.com/products/cnc-6061-bracket，锚文本用该页标题 CNC-6061 Aluminum Bracket。",
+        ],
+      },
     ],
-    constraints: ["膜厚只写公司资料里的 10 到 25 微米，不要写其他标准。"],
+    constraints: ["膜厚只写公司资料里的 10 到 25 微米，不要写其他标准。", "没打开内容列表，不指定栏目名。", "不写按钮，不改模板。"],
     afterApprove: "稿子会先给你看。发出去之后，我们会立刻用这两个词搜一次，确认已经能搜到。",
+  },
+  {
+    key: "t-plan",
+    priority: "P1",
+    direction: "建立持续内容发布计划",
+    executor: "内容运营智能体",
+    title: "图纸格式与氧化膜厚度内容计划",
+    summary: "请内容运营智能体按新建发布任务的入参建一份周计划。关键词用这两个搜索原词，生成后先给你确认再发布。",
+    target: "新建发布任务。关键词：custom bracket drawing dwg、anodizing thickness 6061。",
+    why: "近 7 天这两个词一共 13 次搜索，一次结果都没有。",
+    ruleKeys: ["DX-05"],
+    planPreview: {
+      badge: "只给方向",
+      badgeTone: "default",
+      judgable: false,
+      metric: "这两个词搜索时没有结果的次数占多少。",
+      formula: "用没有结果的次数，除以用这两个词搜索的次数。",
+      baseline: "custom bracket drawing dwg 9 次全无结果，anodizing thickness 6061 4 次全无结果。",
+      mde: "",
+      threshold: "只给方向",
+      minSample: "只给方向",
+      estWeeks: "只给方向",
+      sqlNote: "你点通过之后，要比的词就固定下来。",
+    },
+    refs: {
+      mcp: {
+        state: "ok",
+        tool: "site_search.queries.get",
+        fields: [
+          { label: "window", value: "2026-09-14 – 2026-09-20" },
+          { label: "custom bracket drawing dwg", value: "9 searches · 0 results" },
+          { label: "anodizing thickness 6061", value: "4 searches · 0 results" },
+        ],
+      },
+      knowledge: {
+        state: "ok",
+        title: "工艺规范 · 图纸与阳极氧化",
+        excerpt: `可接收图纸：STEP / DWG / PDF
+本色阳极氧化：10–25 μm
+黑色阳极氧化：10–25 μm`,
+      },
+    },
+    requirementSections: [
+      { label: "任务标题", lines: ["图纸格式与氧化膜厚度内容计划"] },
+      { label: "任务主题", lines: ["常见问题", "知识百科"] },
+      { label: "关键词", lines: ["custom bracket drawing dwg", "anodizing thickness 6061"] },
+      { label: "开启配图", lines: ["关"] },
+      { label: "推送频率", lines: ["每周"] },
+      { label: "推送数量", lines: ["2 篇"] },
+      { label: "推送开始时间", lines: ["客户批准当天"] },
+      { label: "推送内容状态", lines: ["待审核（生成后先由你确认再发布）"] },
+      {
+        label: "任务说明（可选）",
+        lines: [
+          "每篇只回答一个关键词。",
+          "图纸篇必须出现原句：可接收图纸：STEP / DWG / PDF。",
+          "膜厚篇必须出现原句：本色阳极氧化：10–25 μm；黑色阳极氧化：10–25 μm。",
+          "文末链到 https://www.demo-cnc-oem.com/products/cnc-6061-bracket，锚文本用该页标题 CNC-6061 Aluminum Bracket。",
+        ],
+      },
+    ],
+    constraints: [
+      "推送应用、推送栏目、数据映射：没打开内容后台，不填，沿用新建任务的当前选项。",
+      "不把每一篇正文写成可直接粘贴的成稿。",
+    ],
+    afterApprove: "内容计划建好后，每一篇仍会先给你看，确认之后才发布。",
   },
 ];
 
@@ -526,9 +637,16 @@ export const ADVICE = [
     title: "把询价广告的打开地址改到新页面",
     summary: "请你在广告后台把询价广告的打开地址改到新的询价页。智能体不能登录广告账户。",
     target: "Google Ads 里询价词的落地网址。现在打开的是 /campaign/cnc-oem-q3。",
-    requirements: [
-      "等新的询价页上线之后再改。",
-      "把搜索词 cnc machining quote 和 oem cnc quote 的广告打开地址改到新页面。",
+    requirementSections: [
+      { label: "交给谁", lines: ["你自己。智能体不能登录广告账户。"] },
+      {
+        label: "改哪一个地址",
+        lines: ["Google Ads 里 cnc machining quote 和 oem cnc quote 的落地网址。现在打开的是 /campaign/cnc-oem-q3。"],
+      },
+      {
+        label: "改完后看到什么",
+        lines: ["这两个词的广告打开新的询价页。等新页上线后再改。"],
+      },
     ],
     constraints: ["智能体不能登录 Google Ads，这一步只能由你来做。"],
     refs: {
@@ -728,7 +846,7 @@ export const SUGGESTIONS = [
     week: "",
     title: "铝支架详情页留不住来询价的人",
     direction: "修改产品详情页",
-    text: "请内容运营智能体把铝支架详情页的第一屏改成型号、用途和参数，并把询价入口放在第一屏。",
+    text: "请内容运营智能体按大纲重写铝支架详情的正文，开头写型号和规格。不改按钮。",
   },
   {
     key: "t-landing",
@@ -824,7 +942,7 @@ export const MONTHLY_REPORT = {
   ],
   nextMonth: [
     "询价页第二版看到 10 月初，再判断有没有变好。",
-    "等你决定铝支架详情页的第一屏，以及新的询价页要不要做。",
+    "等你决定铝支架详情的正文要不要改，以及新的询价页要不要做。",
     "把访客搜过但没有结果的图纸格式和氧化膜厚度，写成网站上能搜到的文章。",
   ],
 };

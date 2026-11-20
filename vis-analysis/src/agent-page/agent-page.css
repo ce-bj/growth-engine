@@ -817,6 +817,33 @@
   padding-left: 1.2em;
 }
 
+.ag-req {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.ag-req h4 {
+  margin: 0 0 4px;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 20px;
+}
+
+.ag-req-mode {
+  margin: 0 0 4px;
+  font-size: 12px;
+  line-height: 18px;
+  color: var(--ag-text-2);
+}
+
+.ag-req-target {
+  margin-top: 4px;
+  font-size: 12px;
+  line-height: 18px;
+  word-break: break-all;
+}
+
 .ag-lines li + li {
   margin-top: 4px;
 }

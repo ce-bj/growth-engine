@@ -112,6 +112,30 @@ function TargetValue({ value }) {
   return value;
 }
 
+function RequirementBody({ sections, fallback, constraints }) {
+  const limits = (Array.isArray(constraints) ? constraints : constraints ? [constraints] : []).filter(Boolean);
+  if (sections?.length || limits.length) {
+    return (
+      <div className="ag-req">
+        {(sections || []).map((section) => (
+          <section key={`${section.label}-${section.mode || ""}`}>
+            <h4>{section.label}</h4>
+            {section.mode ? <p className="ag-req-mode">{section.mode}</p> : null}
+            <Lines value={section.lines} />
+          </section>
+        ))}
+        {limits.length ? (
+          <section>
+            <h4>约束</h4>
+            <Lines value={limits} />
+          </section>
+        ) : null}
+      </div>
+    );
+  }
+  return <Lines value={fallback} />;
+}
+
 function FieldDesc({ items, column = 1 }) {
   const visible = items
     .filter((item) => {
@@ -270,9 +294,31 @@ function TaskCard({
           <Card className="ag-pane ag-pane-spec" size="small" type="inner" title="任务说明" styles={PANE_STYLES}>
             <FieldDesc
               items={[
-                { key: "target", label: "改哪一页", children: <TargetValue value={item.target} /> },
-                { key: "req", label: "页面上要写清", children: item.requirements },
-                { key: "no", label: "不要写", children: item.constraints },
+                {
+                  key: "name",
+                  label: "任务名称",
+                  children: (
+                    <div>
+                      <div>{item.title}</div>
+                      {item.target ? (
+                        <div className="ag-req-target">
+                          <TargetValue value={item.target} />
+                        </div>
+                      ) : null}
+                    </div>
+                  ),
+                },
+                {
+                  key: "req",
+                  label: "任务要求",
+                  children: (
+                    <RequirementBody
+                      sections={item.requirementSections}
+                      fallback={item.requirements}
+                      constraints={item.constraints}
+                    />
+                  ),
+                },
                 item.extra && !waiting ? { key: "extra", label: "你补充的要求", children: item.extra } : null,
               ].filter(Boolean)}
             />
