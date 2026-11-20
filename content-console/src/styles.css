@@ -442,13 +442,10 @@ button {
 .task-src {
   font-size: 11px;
   font-weight: 600;
-  color: #1f6fdb;
-  background: #eef6ff;
+  color: #6d28d9;
+  background: #f3e8ff;
   border-radius: 6px;
   padding: 2px 7px;
-}
-.td-title .task-src {
-  margin-left: 8px;
 }
 .status-badge {
   font-size: 10.5px;
