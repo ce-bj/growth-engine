@@ -7,36 +7,38 @@ export const TODAY = '2026-09-22'
 export const DIRECTIONS: Direction[] = [
   {
     id: 'd1',
-    title: '伺服驱动器散热设计专题',
-    type: '常见问题',
+    title: '持续发布内容，提升站点活跃度，助力搜索引擎识别收录',
+    type: '新闻资讯',
     strat: ['GEO 4 项', '权威信源'],
     date: '2026-09-30',
     status: 'pending',
     app: '常见问题',
     col: '技术解读',
     freqText: '每周',
-    countText: '2 篇',
+    countText: '1 篇',
     topic: '伺服散热 / 选型',
     kw: ['伺服驱动器', '散热设计'],
   },
 ]
 
-// 待办数据（三类来源：行为分析智能体·修改/新增、自建任务·新增）
+// 待办数据（三类来源：优化策略智能体·修改/新增、自建任务·新增）
 export const INITIAL_TODOS: TodoRow[] = [
-  // ① 行为分析智能体 · 修改内容
+  // ① 优化策略智能体 · 修改内容
   {
     id: 'td1', title: 'SDPH 系列全国产大电流型 — 产品介绍（修正：参数错误）',
     type: '产品管理', date: '2026-09-22', source: 'behavior-fix',
-    strat: ['EEAT 强化', 'GEO 4 项'], note: '访客行为分析发现参数表述有误，需修正电流规格',
+    strat: ['EEAT 强化', 'GEO 4 项'], note: '优化策略发现参数表述有误，需修正电流规格',
     needKb: false, kbName: '',
+    body: `<h3>产品定位</h3><p>SDPH 系列为全国产大电流伺服驱动器，面向高功率密度驱动场景，自主可控。</p><h3>核心参数（已修正）</h3><ul><li>供电电压：24 ~ 72 VDC</li><li>额定连续电流：65 A</li><li>峰值电流：130 A（原表述 125 A，已按实测修正）</li><li>防护等级：IP65</li></ul><h3>典型应用</h3><p>适用于半导体设备、精密运动控制等需要国产替代的高可靠性场景。</p>`,
   },
   {
     id: 'td2', title: 'PT100 温度传感器选型指南（英文站）（修正：精度等级）',
     type: '常见问题', date: '2026-09-22', source: 'behavior-fix',
     strat: ['EEAT 强化', '权威信源'], note: '精度等级 A/B 级数据需核对权威来源',
     needKb: true, kbName: '英文站品牌词库',
+    body: `<h3>选型核心指标</h3><p>PT100 铂电阻是工业测温常用元件，选型时优先核对精度等级与品牌词表述。</p><h3>精度等级（已核对）</h3><ul><li>A 级：±(0.15 + 0.002|t|) ℃</li><li>B 级：±(0.30 + 0.005|t|) ℃</li></ul><p>数据依据 IEC 60751 标准核对，品牌名称按英文站词库统一表述。</p>`,
   },
-  // ② 行为分析智能体 · 新增内容
+  // ② 优化策略智能体 · 新增内容
   {
     id: 'td3', title: '伺服驱动器散热设计专题',
     type: '常见问题', date: '2026-09-22', source: 'behavior-new',

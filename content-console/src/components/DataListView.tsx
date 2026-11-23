@@ -5,7 +5,7 @@ import type { ContentRow } from '../types'
 
 const PAGE_SIZE = 10
 
-// 历史内容来源：按标题对应首页内容进展的来源标签（行为分析 · 修改 / 行为分析 · 新增）
+// 历史内容来源：按标题对应首页内容进展的来源标签（优化策略 · 修改 / 优化策略 · 新增）
 function historySource(title: string): string {
   const hit = INITIAL_TODOS.find((t) => t.title.replace(/（.*?）/g, '').trim() === title.replace(/（.*?）/g, '').trim())
   if (hit) return TODO_SOURCE_LABEL[hit.source]

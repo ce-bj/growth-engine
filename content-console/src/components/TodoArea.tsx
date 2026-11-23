@@ -1,5 +1,6 @@
+import { useState } from 'react'
 import { TODO_SOURCE_LABEL, useStore } from '../store'
-import type { TodoSource } from '../types'
+import type { TodoRow, TodoSource } from '../types'
 
 // 来源胶囊配色
 const SRC_CLASS: Record<TodoSource, string> = {
@@ -9,13 +10,15 @@ const SRC_CLASS: Record<TodoSource, string> = {
 }
 
 export function TodoArea() {
-  const { todos, publishTodo, rejectTodo, gotoKb, continueAfterKb, navigate } = useStore()
+  const { todos, publishTodo, cancelFix, reopenFix, gotoKb, continueAfterKb, navigate } = useStore()
+  const [viewId, setViewId] = useState<string | null>(null)
+  const viewed = todos.find((t) => t.id === viewId) || null
 
   return (
     <section className="todo-area">
       <div className="section-head">
         <h2>内容进展</h2>
-        <p>行为分析智能体与自建发布任务产出的内容，查看各类内容的处理与推送进度</p>
+        <p>优化策略与自建发布任务产出的内容，查看各类内容的处理与推送进度</p>
       </div>
 
       {todos.length === 0 ? (
@@ -53,27 +56,42 @@ export function TodoArea() {
                       补完继续生成
                     </button>
                   </>
+                ) : t.source === 'behavior-fix' ? (
+                  t.fixStatus === '已取消' ? (
+                    <>
+                      <span className="status-badge gray">已取消</span>
+                      <button className="btn btn-ghost" onClick={() => setViewId(t.id)}>
+                        查看详情
+                      </button>
+                    </>
+                  ) : t.fixStatus === '重新生成中' ? (
+                    <>
+                      <span className="status-badge blue">重新生成中</span>
+                      <button className="btn btn-ghost" onClick={() => setViewId(t.id)}>
+                        查看
+                      </button>
+                    </>
+                  ) : (
+                    <>
+                      <button className="btn btn-ghost" onClick={() => setViewId(t.id)}>
+                        查看
+                      </button>
+                      <button className="btn btn-primary" onClick={() => publishTodo(t.id)}>
+                        立即发布
+                      </button>
+                      <button className="btn btn-ghost" onClick={() => cancelFix(t.id)}>
+                        取消
+                      </button>
+                    </>
+                  )
                 ) : t.source === 'self-new' ? (
                   <span className={'status-badge ' + (t.pushStatus === '已推送' ? 'ok' : 'warn')}>
                     {t.pushStatus || '待推送'}
                   </span>
-                ) : t.source === 'behavior-fix' ? (
-                  <span className={'status-badge ' + (t.fixStatus === '已完成' ? 'ok' : 'warn')}>
-                    {t.fixStatus || '修改中'}
-                  </span>
-                ) : t.source === 'behavior-new' ? (
+                ) : (
                   <span className={'status-badge ' + (t.newPushStatus === '已推送' ? 'ok' : 'warn')}>
                     {t.newPushStatus || '待推送'}
                   </span>
-                ) : (
-                  <>
-                    <button className="btn btn-primary" onClick={() => publishTodo(t.id)}>
-                      立即发布
-                    </button>
-                    <button className="btn btn-ghost" onClick={() => rejectTodo(t.id)}>
-                      取消发布
-                    </button>
-                  </>
                 )}
               </div>
             </div>
@@ -86,6 +104,79 @@ export function TodoArea() {
           查看历史
         </button>
       </div>
+
+      {viewed && (
+        <FixPreviewDrawer
+          todo={viewed}
+          onClose={() => setViewId(null)}
+          onRelist={() => reopenFix(viewed.id)}
+          onPublish={() => {
+            publishTodo(viewed.id)
+            setViewId(null)
+          }}
+        />
+      )}
     </section>
+  )
+}
+
+function FixPreviewDrawer({
+  todo,
+  onClose,
+  onRelist,
+  onPublish,
+}: {
+  todo: TodoRow
+  onClose: () => void
+  onRelist: () => void
+  onPublish: () => void
+}) {
+  const generating = todo.fixStatus === '重新生成中'
+  const canceled = todo.fixStatus === '已取消'
+
+  return (
+    <>
+      <div className="drawer-mask" onClick={onClose} />
+      <aside className="drawer">
+        <div className="drawer-head">
+          <span className="drawer-title">修改内容预览</span>
+          <span className="drawer-x" onClick={onClose}>×</span>
+        </div>
+        <div className="drawer-body">
+          <h3 className="fix-preview-title">{todo.title}</h3>
+          <div className="fix-preview-meta">
+            <span className={'src-badge ' + SRC_CLASS[todo.source]}>{TODO_SOURCE_LABEL[todo.source]}</span>
+            <span className="type-tag">{todo.type}</span>
+            <span className="fix-preview-date">{todo.date}</span>
+          </div>
+          {generating && (
+            <div className="fix-state-banner generating">
+              <span className="fix-spin" /> 正在按原修改任务的策略与说明重新生成内容…
+            </div>
+          )}
+          {canceled && (
+            <div className="fix-state-banner canceled">该任务已取消，可重新修改或再次发布。</div>
+          )}
+          {todo.note && (
+            <div className="fix-preview-note">
+              <b>修改说明</b>：{todo.note}
+            </div>
+          )}
+          <div className="fix-preview-label">修改后内容</div>
+          {todo.body ? (
+            <div className="fix-preview-content" dangerouslySetInnerHTML={{ __html: todo.body }} />
+          ) : (
+            <div className="fix-preview-empty">暂无正文</div>
+          )}
+        </div>
+        <div className="drawer-foot">
+          <button className="btn btn-ghost" onClick={onClose}>关闭</button>
+          <button className="btn btn-ghost" onClick={onRelist} disabled={generating}>
+            {generating ? '重新生成中…' : '重新修改'}
+          </button>
+          <button className="btn btn-primary" onClick={onPublish}>立即发布</button>
+        </div>
+      </aside>
+    </>
   )
 }
