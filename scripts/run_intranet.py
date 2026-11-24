@@ -2,7 +2,7 @@
 """Growth 一体启动：前端 + 对话后端。
 
 本地源码（有 workbench/）：
-  前端  默认入口 一期AI工作台 5188 / 工作台 5176 / 数字门户 5174 / 访客分析 5177 / 智能营销页 5186
+  前端  默认入口 增长工作台 5176 / 数字门户 5174 / 访客分析 5177 / 智能营销页 5186 / 一期AI工作台 5188
   后端  chat-server 8787 / agent-bridge 8790
 
 内网打包目录（根目录有 index.html 和 visitor/）：
@@ -456,8 +456,7 @@ def wait_ports(items: list[tuple[str, int]], timeout: float = 30) -> None:
     print("", flush=True)
     print("[growth] -------- 已启动 --------", flush=True)
     print("[growth] 前端", flush=True)
-    print("[growth]   默认入口     http://127.0.0.1:5188/  （一期AI工作台）", flush=True)
-    print("[growth]   工作台       http://127.0.0.1:5176/", flush=True)
+    print("[growth]   默认入口     http://127.0.0.1:5176/  （增长工作台）", flush=True)
     print("[growth]   数字门户     http://127.0.0.1:5174/", flush=True)
     print("[growth]   访客分析     http://127.0.0.1:5177/", flush=True)
     print("[growth]   智能营销页   http://127.0.0.1:5186/", flush=True)
