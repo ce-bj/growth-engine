@@ -88,10 +88,63 @@ export function TodoArea() {
                   <span className={'status-badge ' + (t.pushStatus === '已推送' ? 'ok' : 'warn')}>
                     {t.pushStatus || '待推送'}
                   </span>
+                ) : t.source === 'behavior-fix' ? (
+                  t.fixStatus === '已完成' ? (
+                    <span className="status-badge ok">已上线</span>
+                  ) : (
+                    <button
+                      className="btn btn-primary"
+                      onClick={() => {
+                        publishTodo(t.id)
+                        if (window.parent && window.parent !== window) {
+                          window.parent.postMessage(
+                            {
+                              type: 'growth-flow-update',
+                              action: 'publish',
+                              focusKey: t.id,
+                              title: t.title,
+                            },
+                            '*',
+                          )
+                        }
+                      }}
+                    >
+                      确认发布上线
+                    </button>
+                  )
+                ) : t.source === 'behavior-new' ? (
+                  t.newPushStatus === '已推送' ? (
+                    <span className="status-badge ok">已上线</span>
+                  ) : (
+                    <button
+                      className="btn btn-primary"
+                      onClick={() => {
+                        publishTodo(t.id)
+                        if (window.parent && window.parent !== window) {
+                          window.parent.postMessage(
+                            {
+                              type: 'growth-flow-update',
+                              action: 'publish',
+                              focusKey: t.id,
+                              title: t.title,
+                            },
+                            '*',
+                          )
+                        }
+                      }}
+                    >
+                      确认发布上线
+                    </button>
+                  )
                 ) : (
-                  <span className={'status-badge ' + (t.newPushStatus === '已推送' ? 'ok' : 'warn')}>
-                    {t.newPushStatus || '待推送'}
-                  </span>
+                  <>
+                    <button className="btn btn-primary" onClick={() => publishTodo(t.id)}>
+                      立即发布
+                    </button>
+                    <button className="btn btn-ghost" onClick={() => rejectTodo(t.id)}>
+                      取消发布
+                    </button>
+                  </>
                 )}
               </div>
             </div>

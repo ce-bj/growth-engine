@@ -28,15 +28,38 @@ import Credits from './views/oneai/Credits.jsx'
 import 'antd/dist/reset.css'
 import './styles.css'
 
-type AgentTaskPayload = {
+export type AgentTaskPayload = {
+  id?: string
+  focusKey?: string
   title?: string
   view?: string
+  executor?: string
+  from?: string
+  approvedAt?: string
+  stage?: string
+  note?: string
+  summary?: string
+  target?: string
+  requirements?: string[]
+  requirementSections?: { label: string; mode?: string; lines?: string[] }[]
+  constraints?: string[]
+  extra?: string
+  draftPreview?: {
+    pageType: string
+    targetUrl: string
+    heroHeadline: string
+    heroSubhead: string
+    highlights: Array<{ tag: string; label: string; before: string; after: string }>
+    sections: Array<{ title: string; content: string }>
+  }
 }
 
 type AgentHandoff = {
   view: string
   stamp: number
-  task: AgentTaskPayload
+  task?: AgentTaskPayload
+  focusKey?: string
+  focusKeys?: string[]
 }
 
 function encodeTask(task: AgentTaskPayload) {
@@ -52,7 +75,15 @@ function withTask(url: string, handoff: AgentHandoff | null, view: string) {
   if (!handoff || handoff.view !== view) return url
   const next = new URL(url, window.location.origin)
   next.searchParams.set('handoff', String(handoff.stamp))
-  next.searchParams.set('task', encodeTask(handoff.task))
+  if (handoff.focusKey) {
+    next.searchParams.set('focus', handoff.focusKey)
+  }
+  if (handoff.focusKeys?.length) {
+    next.searchParams.set('keys', handoff.focusKeys.join(','))
+  }
+  if (handoff.task) {
+    next.searchParams.set('task', encodeTask(handoff.task))
+  }
   return next.toString()
 }
 
@@ -61,15 +92,57 @@ function Pages() {
   const [handoff, setHandoff] = useState<AgentHandoff | null>(null)
 
   useEffect(() => {
-    const allowed = new Set(['marketing', 'assistant', 'content'])
+    const allowed = new Set(['marketing', 'assistant', 'content', 'visitor'])
     const onMessage = (event: MessageEvent) => {
-      const data = event.data as { type?: string; view?: string; task?: AgentTaskPayload } | null
-      if (data?.type !== 'growth-open-task' || !data.view || !allowed.has(data.view) || !data.task?.title) return
-      setHandoff({ view: data.view, stamp: Date.now(), task: data.task })
-      navigate(data.view as ViewId)
+      const data = event.data as {
+        type?: string
+        view?: string
+        focusKey?: string
+        focusKeys?: string[]
+        task?: AgentTaskPayload
+      } | null
+      if (!data) return
+      if (data.type === 'growth-open-task' && data.view && allowed.has(data.view) && data.task?.title) {
+        setHandoff({
+          view: data.view,
+          stamp: Date.now(),
+          task: data.task,
+          focusKey: data.focusKey || data.task.focusKey || data.task.id,
+        })
+        navigate(data.view as ViewId)
+        return
+      }
+      if (data.type === 'growth-navigate' && data.view === 'visitor') {
+        setHandoff({
+          view: 'visitor',
+          stamp: Date.now(),
+          focusKey: data.focusKey,
+          focusKeys: data.focusKeys,
+        })
+        navigate('visitor')
+      }
     }
+
+    const onFocusStrategy = (event: Event) => {
+      const detail = (event as CustomEvent<{ view?: string; focusKey?: string; focusKeys?: string[]; task?: AgentTaskPayload }>).detail
+      if (!detail) return
+      const targetView = detail.view || 'visitor'
+      setHandoff({
+        view: targetView,
+        stamp: Date.now(),
+        focusKey: detail.focusKey,
+        focusKeys: detail.focusKeys,
+        task: detail.task,
+      })
+      navigate(targetView as ViewId)
+    }
+
     window.addEventListener('message', onMessage)
-    return () => window.removeEventListener('message', onMessage)
+    window.addEventListener('growth-focus-strategy', onFocusStrategy)
+    return () => {
+      window.removeEventListener('message', onMessage)
+      window.removeEventListener('growth-focus-strategy', onFocusStrategy)
+    }
   }, [navigate])
 
   useEffect(() => {
@@ -80,20 +153,25 @@ function Pages() {
     <AdminShell>
       {view === 'board' && <EmbedFrame src={dataBoardUrl()} title="数据分析总览" />}
       {isLegacyAnalysisView(view) && <LegacyAnalysisView view={view} />}
-      {view === 'intake' && <EmbedFrame src={intakeDataUrl()} title="访客洞察" />}
+      {view === 'intake' && <EmbedFrame src={intakeDataUrl()} title="访客与漏斗洞察" />}
       {view === 'dashboard' && <AgentOverviewView />}
       {view === 'scanning' && <ScanProgressView />}
       {view === 'visitor' && (
-        <EmbedFrame src={visitorAnalysisUrl()} title="优化策略" />
+        <EmbedFrame src={withTask(visitorAnalysisUrl(), handoff, 'visitor')} title="优化策略" />
       )}
       {view === 'marketing' && (
-        <EmbedFrame src={withTask(marketingAgentUrl(), handoff, 'marketing')} title="智能营销页智能体" />
+        <EmbedFrame src={withTask(marketingAgentUrl(), handoff, 'marketing')} title="智能营销页" />
       )}
       {view === 'content' && (
-        <EmbedFrame src={withTask(contentAgentUrl(), handoff, 'content')} title="内容发布智能体" />
+        <EmbedFrame src={withTask(contentAgentUrl(), handoff, 'content')} title="官网内容发布" />
       )}
       {view === 'settings' && <SettingsView />}
-      {view === 'ready' && <AIReady />}
+      {view === 'ready' && (
+        <AIReady
+          focusKey={handoff?.view === 'ready' ? handoff.focusKey : undefined}
+          focusStamp={handoff?.view === 'ready' ? handoff.stamp : undefined}
+        />
+      )}
       {view === 'credits' && <Credits />}
       {view === 'assistant' && (
         <EmbedFrame src={withTask(opsAssistantUrl(), handoff, 'assistant')} title="AI 运营助手" />

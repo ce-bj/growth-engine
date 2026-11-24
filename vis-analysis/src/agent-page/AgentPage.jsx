@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { App as AntApp, Alert, Button, Card, ConfigProvider, Dropdown, Flex, Modal, Skeleton, Spin, Statistic, Steps, Table, Tag, Tooltip } from "antd";
 import {
   CheckCircleFilled,
@@ -12,6 +12,7 @@ import {
   BRIEFS,
   LEADS,
   LAUNCH_STAGE,
+  PREVIEW_STAGE,
   PROGRESS_STAGE,
   MONTHLY_REPORT,
   SUGGESTIONS,
@@ -226,7 +227,22 @@ function LeadStrip({ counts }) {
 }
 
 function StageTitle({ title, index, row, onOpenAgent }) {
-  if (index === LAUNCH_STAGE && trackStage(row) >= LAUNCH_STAGE && AGENT_VIEW[row.executor]) {
+  const curStage = trackStage(row);
+  if (index === PREVIEW_STAGE && curStage === PREVIEW_STAGE && AGENT_VIEW[row.executor]) {
+    return (
+      <span className="ag-stage-preview-wrap">
+        <span className="ag-stage-preview-label">{title}</span>
+        <button
+          type="button"
+          className="ag-stage-preview-btn"
+          onClick={() => onOpenAgent(row)}
+        >
+          去预览发布 &gt;
+        </button>
+      </span>
+    );
+  }
+  if (index === LAUNCH_STAGE && curStage >= LAUNCH_STAGE && AGENT_VIEW[row.executor]) {
     return (
       <button type="button" className="ag-stage-link" onClick={() => onOpenAgent(row)}>
         {title}
@@ -334,22 +350,75 @@ function MonthlyModal({ open, onClose }) {
   );
 }
 
+const FLOW_STORAGE_KEY = "growth-workbench-flow-v1";
+
+function readSharedFlow() {
+  try {
+    const raw = window.localStorage.getItem(FLOW_STORAGE_KEY);
+    if (!raw) return { approvedStrategies: {}, skippedStrategies: {}, publishedTasks: {} };
+    const parsed = JSON.parse(raw);
+    return {
+      approvedStrategies: parsed.approvedStrategies || {},
+      skippedStrategies: parsed.skippedStrategies || {},
+      publishedTasks: parsed.publishedTasks || {},
+    };
+  } catch {
+    return { approvedStrategies: {}, skippedStrategies: {}, publishedTasks: {} };
+  }
+}
+
 export default function AgentPage({ site, weekLabel, quiet, authMap, onAuthorize, monthlyOpen, onCloseMonthly, ledgerOpen, onCloseLedger, runState = "pending", onRunState }) {
   const { message } = AntApp.useApp();
-  const [decisions, setDecisions] = useState({});
+  const [sharedFlow, setSharedFlow] = useState(() => readSharedFlow());
+  const [decisions, setDecisions] = useState(() => {
+    const init = readSharedFlow();
+    const map = {};
+    Object.keys(init.approvedStrategies || {}).forEach((k) => {
+      map[k] = { status: "approved" };
+    });
+    Object.entries(init.skippedStrategies || {}).forEach(([k, reasonLabel]) => {
+      const reason = SKIP_REASONS.find((r) => r.label === reasonLabel) || SKIP_REASONS[2];
+      map[k] = { status: "skipped", reason };
+    });
+    return map;
+  });
   const [adviceDone, setAdviceDone] = useState({});
   const [extraNotes, setExtraNotes] = useState({});
   const [openKeys, setOpenKeys] = useState([]);
   const [baseTracking] = useState(TRACKING);
   const [flashKey, setFlashKey] = useState("");
+  const [onlyKeys, setOnlyKeys] = useState(() => {
+    const raw = new URLSearchParams(window.location.search).get("keys");
+    return raw ? raw.split(",").filter(Boolean) : [];
+  });
   const cardRefs = useRef({});
   const trackRefs = useRef({});
   const ruleRefs = useRef({});
+
+  useEffect(() => {
+    const onStorage = (e) => {
+      if (!e.key || e.key === FLOW_STORAGE_KEY) {
+        const nextFlow = readSharedFlow();
+        setSharedFlow(nextFlow);
+        setDecisions((prev) => {
+          const next = { ...prev };
+          Object.keys(nextFlow.approvedStrategies || {}).forEach((k) => {
+            next[k] = { status: "approved" };
+          });
+          return next;
+        });
+      }
+    };
+    window.addEventListener("storage", onStorage);
+    return () => window.removeEventListener("storage", onStorage);
+  }, []);
 
   const briefs = quiet ? [] : BRIEFS;
   const viewDecisions = HANDLED_STATES.has(runState) ? { ...ARMED_DECISIONS, ...decisions } : decisions;
   const pending = briefs.filter((brief) => !viewDecisions[brief.key]);
   const approved = briefs.filter((brief) => viewDecisions[brief.key]?.status === "approved");
+
+  const publishedMap = sharedFlow.publishedTasks || {};
 
   const trackRows = [
     ...approved.map((brief) => ({
@@ -358,9 +427,10 @@ export default function AgentPage({ site, weekLabel, quiet, authMap, onAuthorize
       direction: brief.direction,
       executor: brief.executor,
       from: `${weekLabel}诊断`,
-      approvedAt: "刚刚",
-      stage: PROGRESS_STAGE,
-      note: brief.planPreview?.metric || "",
+      approvedAt: sharedFlow.approvedStrategies?.[brief.key] || "刚刚",
+      launchedAt: publishedMap[brief.key] ? "刚刚" : undefined,
+      stage: publishedMap[brief.key] ? LAUNCH_STAGE : PREVIEW_STAGE,
+      note: brief.summary,
       summary: brief.summary,
       target: brief.target,
       requirements: requirementLines(brief),
@@ -368,7 +438,15 @@ export default function AgentPage({ site, weekLabel, quiet, authMap, onAuthorize
       constraints: brief.constraints || [],
       extra: extraNotes[brief.key]?.trim() || "",
     })),
-    ...baseTracking,
+    ...baseTracking.map((row) =>
+      publishedMap[row.key]
+        ? {
+            ...row,
+            stage: LAUNCH_STAGE,
+            launchedAt: row.launchedAt || "刚刚",
+          }
+        : row,
+    ),
   ];
 
   const counts = [
@@ -380,8 +458,27 @@ export default function AgentPage({ site, weekLabel, quiet, authMap, onAuthorize
     setFlashKey(key);
     window.setTimeout(() => {
       setFlashKey((cur) => (cur === key ? "" : cur));
-    }, 1800);
+    }, 2000);
   }
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const focusKey = params.get("focus");
+    if (!focusKey) return;
+    const timer = window.setTimeout(() => {
+      const isTrackOnly = baseTracking.some((t) => t.key === focusKey) && !briefs.some((b) => b.key === focusKey);
+      if (isTrackOnly || viewDecisions[focusKey]?.status === "approved") {
+        trackRefs.current[focusKey]?.scrollIntoView({ behavior: "smooth", block: "center" });
+        flash(focusKey);
+      } else {
+        setOpenKeys((prev) => (prev.includes(focusKey) ? prev : [...prev, focusKey]));
+        const node = cardRefs.current[focusKey] || document.getElementById(`task-${focusKey}`);
+        node?.scrollIntoView({ behavior: "smooth", block: "center" });
+        flash(focusKey);
+      }
+    }, 180);
+    return () => window.clearTimeout(timer);
+  }, []);
 
   function toggle(key) {
     setOpenKeys((prev) => (prev.includes(key) ? prev.filter((item) => item !== key) : [...prev, key]));
@@ -419,14 +516,39 @@ export default function AgentPage({ site, weekLabel, quiet, authMap, onAuthorize
     else locateAdvice(item.key);
   }
 
+  function syncToParent(action, focusKey, extra = {}) {
+    try {
+      const cur = readSharedFlow();
+      if (action === "approve") {
+        cur.approvedStrategies = { ...(cur.approvedStrategies || {}), [focusKey]: "刚刚" };
+        if (cur.skippedStrategies) delete cur.skippedStrategies[focusKey];
+      } else if (action === "skip") {
+        cur.skippedStrategies = { ...(cur.skippedStrategies || {}), [focusKey]: extra.reason || "以后再说" };
+        if (cur.approvedStrategies) delete cur.approvedStrategies[focusKey];
+      } else if (action === "undo") {
+        if (cur.approvedStrategies) delete cur.approvedStrategies[focusKey];
+        if (cur.skippedStrategies) delete cur.skippedStrategies[focusKey];
+      }
+      window.localStorage.setItem(FLOW_STORAGE_KEY, JSON.stringify(cur));
+      setSharedFlow(cur);
+    } catch {
+      /* ignore */
+    }
+    if (window.parent && window.parent !== window) {
+      window.parent.postMessage({ type: "growth-flow-update", action, focusKey, ...extra }, "*");
+    }
+  }
+
   function approve(brief) {
     setDecisions((prev) => ({ ...prev, [brief.key]: { status: "approved" } }));
+    syncToParent("approve", brief.key, { title: brief.title });
     message.success(`已经交给${brief.executor}。做好后会先给你看，你确认了才会上线。`);
   }
 
   function skip(brief, reasonKey) {
     const reason = SKIP_REASONS.find((item) => item.key === reasonKey);
     setDecisions((prev) => ({ ...prev, [brief.key]: { status: "skipped", reason } }));
+    syncToParent("skip", brief.key, { reason: reason?.label });
     message.info(reason.effect);
   }
 
@@ -435,6 +557,7 @@ export default function AgentPage({ site, weekLabel, quiet, authMap, onAuthorize
     if (!view) return;
     const task = {
       id: row.key,
+      focusKey: row.key,
       view,
       title: row.title,
       executor: row.executor,
@@ -450,7 +573,7 @@ export default function AgentPage({ site, weekLabel, quiet, authMap, onAuthorize
       extra: row.extra || "",
     };
     if (window.parent && window.parent !== window) {
-      window.parent.postMessage({ type: "growth-open-task", view, task }, "*");
+      window.parent.postMessage({ type: "growth-open-task", view, focusKey: row.key, task }, "*");
       return;
     }
     const host = window.location.hostname || "127.0.0.1";
@@ -467,6 +590,7 @@ export default function AgentPage({ site, weekLabel, quiet, authMap, onAuthorize
       delete next[brief.key];
       return next;
     });
+    syncToParent("undo", brief.key);
   }
 
   const showWorkbench = WORKBENCH_STATES.has(runState);
@@ -494,6 +618,8 @@ export default function AgentPage({ site, weekLabel, quiet, authMap, onAuthorize
             onExtra={(key, value) => setExtraNotes((prev) => ({ ...prev, [key]: value }))}
             onAuthorize={onAuthorize}
             onLocateTrack={locateTrack}
+            onlyKeys={onlyKeys}
+            onShowAll={() => setOnlyKeys([])}
             cardRef={(key, node) => {
               cardRefs.current[key] = node;
             }}

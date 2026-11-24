@@ -406,7 +406,7 @@ Lead time 15–20 days`,
     direction: "新建营销页",
     executor: "智能营销页智能体",
     title: "新建一张产品营销页，替换现在的品牌页",
-    summary: "请智能营销页智能体按入参新建一页。页面类型是产品营销，公司名称用当前站点名。只填资料里有的卖点、认证、打样周期和邮箱。",
+    summary: "请智能营销页智能体按创建页入参新建一页。页面类型是产品营销，转化目标是获取报价，语言用 English。没有依据的项写不填。",
     target: "新建页面 /campaign/cnc-oem-quote，用来替换现在的 /campaign/cnc-oem-q3。",
     why: "近 7 天广告带来 210 人，只有 31 人看进去，接住率 14.7%，大约 8 秒就走。",
     ruleKeys: ["DX-02"],
@@ -469,19 +469,30 @@ Trusted by global brands
       },
     },
     requirementSections: [
+      { label: "页面需求", lines: ["面向用 cnc machining quote、oem cnc quote 进来的买家，说明 3–5 轴 CNC、ISO9001 和 48 小时打样，引导获取报价。"] },
+      { label: "转化目标", lines: ["获取报价"] },
+      { label: "目标市场", lines: ["全球市场"] },
+      { label: "页面语言", lines: ["English"] },
       { label: "页面类型", lines: ["产品营销"] },
-      { label: "公司名称", lines: ["Demo · CNC 精密加工件外贸站"] },
-      { label: "官网地址", lines: ["https://www.demo-cnc-oem.com"] },
-      { label: "主营产品/服务", lines: ["3–5 轴 CNC"] },
+      { label: "产品选择", lines: ["不填"] },
+      { label: "留资表单", lines: ["Agent 推荐，不指定字段"] },
+      { label: "知识选择", lines: ["不填"] },
+      { label: "上传资料", lines: ["不填"] },
+      { label: "图片素材", lines: ["不填"] },
       { label: "核心卖点", lines: ["认证：ISO9001。加工：3–5 轴。打样：48 小时。"] },
+      { label: "目标买家画像", lines: ["不填"] },
       { label: "联系方式", lines: ["sales@demo-cnc-oem.com"] },
+      { label: "竞品名称或网址", lines: ["不填"] },
+      { label: "产品规格/型号", lines: ["不填"] },
       { label: "产品认证", lines: ["ISO9001"] },
+      { label: "最小起订量（MOQ）", lines: ["不填"] },
       { label: "生产交货周期", lines: ["打样：48 小时"] },
-      { label: "语言", lines: ["English"] },
+      { label: "主色调", lines: ["不填，沿用官网主色"] },
+      { label: "字体风格", lines: ["不填，沿用新建页当前项"] },
     ],
     constraints: [
-      "所属行业、目标买家画像、产品规格/型号、最小起订量、竞品名称或网址、表单收集字段、目标国家/地区：这次没有原句，不填。",
-      "Logo、旗主图、产品、主色调、字体不由任务说明指定。",
+      "不指定具体模板。",
+      "企业名称和 Logo 用创建页已带入的企业信息，不另填。",
       "不写按钮文案，不写页面分块，不写成稿。",
     ],
     afterApprove: "草稿会先给你看。你确认之后，才会发布。",
@@ -683,11 +694,15 @@ https://www.demo-cnc-oem.com/campaign/cnc-oem-q3`,
   },
 ];
 
-/** 上线前不套通用工序。stage 是下标：待你同意 → 你已同意 → 进行中 → 已完成。 */
-export const TRACK_STAGES = ["待你同意", "你已同意", "进行中", "已完成"];
+/**
+ * 适配两步确认闸门（Gate 1 策略拍板 → Gate 2 预览发布 → 已完成）：
+ * 第 4 步统一更名为「待预览发布」，仅当老板在第四幕点击确认发布上线后，任务才进入第五步状态「已完成」。
+ */
+export const TRACK_STAGES = ["待你同意", "你已同意", "进行中", "待预览发布", "已完成"];
 export const APPROVED_STAGE = 1;
 export const PROGRESS_STAGE = 2;
-export const LAUNCH_STAGE = 3;
+export const PREVIEW_STAGE = 3;
+export const LAUNCH_STAGE = 4;
 export const MONITOR_STAGE = 4;
 export const RESULT_STAGE = 5;
 
@@ -713,14 +728,33 @@ export const TRACKING = [
     executor: "智能营销页智能体",
     from: "8月31日–9月6日诊断",
     approvedAt: "09-08",
-    stage: 2,
-    note: "草稿已经生成。你确认已经上线之后，我们会马上检查页面能不能打开，并开始看 14 天的效果。",
-    summary: "智能营销页智能体已经按「48 小时打样」新建了一页草稿。第一屏写打样流程和 ISO9001。",
+    stage: 3,
+    note: "草稿已经生成完毕（待预览发布）。你预览确认发布上线之后，我们会马上检查页面能不能打开，并开始看 14 天的效果。",
+    summary: "智能营销页智能体已经按创建页入参新建了一页草稿。页面类型是产品营销，转化目标是获取报价，写明 48 小时打样和 ISO9001。",
     target: "/campaign/cnc-sample",
-    requirements: [
-      "这是一张英文页面，给欧美买家看。",
-      "第一屏写清 48 小时打样怎么走，并留下上传图纸的入口。",
+    requirementSections: [
+      { label: "页面需求", lines: ["面向搜 48 hour sample、rapid cnc prototyping 的买家，说明 48 小时打样和 ISO9001，引导获取报价。"] },
+      { label: "转化目标", lines: ["获取报价"] },
+      { label: "目标市场", lines: ["全球市场"] },
+      { label: "页面语言", lines: ["English"] },
+      { label: "页面类型", lines: ["产品营销"] },
+      { label: "产品选择", lines: ["不填"] },
+      { label: "留资表单", lines: ["Agent 推荐，不指定字段"] },
+      { label: "知识选择", lines: ["不填"] },
+      { label: "上传资料", lines: ["不填"] },
+      { label: "图片素材", lines: ["不填"] },
+      { label: "核心卖点", lines: ["打样：48 小时。认证：ISO9001。"] },
+      { label: "目标买家画像", lines: ["不填"] },
+      { label: "联系方式", lines: ["不填"] },
+      { label: "竞品名称或网址", lines: ["不填"] },
+      { label: "产品规格/型号", lines: ["不填"] },
+      { label: "产品认证", lines: ["ISO9001"] },
+      { label: "最小起订量（MOQ）", lines: ["不填"] },
+      { label: "生产交货周期", lines: ["打样：48 小时"] },
+      { label: "主色调", lines: ["不填，沿用官网主色"] },
+      { label: "字体风格", lines: ["不填，沿用新建页当前项"] },
     ],
+    constraints: ["不指定具体模板。", "不写按钮文案，不写页面分块，不写成稿。"],
     readyMonitor: {
       metric: "打开打样页之后，继续往下看的人占多少",
       formula: "落地接住访客 / 落地访客",

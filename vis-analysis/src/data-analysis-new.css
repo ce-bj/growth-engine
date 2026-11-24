@@ -42,7 +42,7 @@ html[data-visitor-embed] #root {
 .dan-inner.is-agent {
   max-width: none;
   margin: 0;
-  padding: 24px 24px 32px;
+  padding: 24px 24px 96px;
 }
 
 .dan-board-switch {

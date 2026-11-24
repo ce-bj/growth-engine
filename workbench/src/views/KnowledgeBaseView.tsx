@@ -33,7 +33,7 @@ export function KnowledgeBaseView() {
   return (
     <div className="kb-view">
       <div className="kb-view__head">
-        <h1 className="page-title">知识库</h1>
+        <h1 className="page-title">企业知识库</h1>
         <p className="kb-view__desc">
           企业知识资产统一入口。各智能体生成内容时按知识域只读检索，命中结果带来源与授权状态，未命中的缺口会回流到物料清单。
         </p>

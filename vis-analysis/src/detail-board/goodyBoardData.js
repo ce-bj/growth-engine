@@ -1,12 +1,15 @@
 /** 访问统计快照：租户 366622，www.goody.com.cn，截至 2026-11-16。
  *  渠道人数来自站点日表，按日访客相加。AI 在会话里单列，已从「搜索引擎」中拆出。
  *  具体来源、落地页按人去重。页面清单来自会话里的访问路径，追踪参数已并进原页面。
+ *  合格浏览、滚动、有效浏览、转化交互和表单提交来自页面日表，按路径把带参地址加总。
  *  英文站 en.goody.com.cn 是另一个租户，没有并进来。
  */
 import pageCatalogText from "./catalog/goody/pages.tsv?raw"
+import pageDayText from "./catalog/goody/page-day.tsv?raw"
 import landCatalogText from "./catalog/goody/lands.tsv?raw"
 import pathCatalogText from "./catalog/goody/paths.tsv?raw"
 import termCatalogText from "./catalog/goody/terms.tsv?raw"
+import { pageDayFields, readPageDay } from "./pageDayMetrics.js"
 
 const TREND = [
   ["2026-10-15", 562], ["2026-10-16", 497], ["2026-10-17", 428], ["2026-10-18", 376],
@@ -211,6 +214,8 @@ function pageType(path) {
   return "其他"
 }
 
+const PAGE_DAY = readPageDay(pageDayText)
+
 const PAGE_CATALOG = {}
 pageCatalogText.split("\n").forEach((line) => {
   if (!line.trim()) return
@@ -321,7 +326,7 @@ function stripOf(current, previous, qual, qualPrev) {
   }
 }
 
-function pageFromVisit(row) {
+function pageFromVisit(row, win, channel) {
   return {
     url: row.url,
     name: pageTitle(row.url),
@@ -329,16 +334,7 @@ function pageFromVisit(row) {
     pv: row.pv,
     uv: row.uv,
     pageStay: stay(row.sec, row.pv),
-    qualifyRate: null,
-    qualifyRatePrev: null,
-    scroll: null,
-    viewed: null,
-    interactRate: null,
-    started: null,
-    formDone: null,
-    chatLead: null,
-    pageLeads: null,
-    leadUv: null,
+    ...pageDayFields(PAGE_DAY, win, channel, row.path),
   }
 }
 
@@ -379,7 +375,7 @@ export function getGoodyBoard(range) {
   const lands = {}
   ;["all", ...channelIds].forEach((id) => {
     pages[id] = (catalog[id] || [])
-      .map(pageFromVisit)
+      .map((row) => pageFromVisit(row, range, id))
       .sort((a, b) => b.uv - a.uv || b.pv - a.pv)
     lands[id] = (landCatalog[id] || [])
       .map(landFromCatalog)

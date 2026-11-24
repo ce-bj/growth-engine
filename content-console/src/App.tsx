@@ -8,10 +8,12 @@ import { TaskListView } from './components/TaskListView'
 import { TaskDetailView } from './components/TaskDetailView'
 import { TaskCreateView } from './components/TaskCreateView'
 import { TaskLogView } from './components/TaskLogView'
+import { GatePreviewModal } from './components/GatePreviewModal'
 
 export function App() {
   return (
     <StoreProvider>
+      <GatePreviewModal />
       <Shell />
     </StoreProvider>
   )

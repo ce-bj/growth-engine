@@ -2,7 +2,6 @@ import {
   BarChart3,
   BookOpen,
   ChevronDown,
-  Coins,
   FileText,
   Filter,
   GitBranch,
@@ -16,10 +15,21 @@ import {
   ShieldCheck,
   UserCheck,
 } from 'lucide-react'
-import { ConfigProvider, Dropdown, Layout, Menu, Select, Tag, Tooltip } from 'antd'
+import { Dropdown, Layout, Menu, Select, Tooltip } from 'antd'
 import { Fragment, useEffect, useMemo, useState, type ReactNode } from 'react'
 import { ANALYSIS_NAV, isAnalysisView, type AnalysisViewId } from '../data/analysisNav'
 import { COMPANY_NAME, OPERATOR_NAME, OPERATOR_ROLE, PLATFORM_NAME } from '../data/mock'
+import {
+  GROWTH_FLOW_EVENT,
+  GROWTH_FLOW_STORAGE_KEY,
+  approveStrategyInFlow,
+  computeGrowthBoard,
+  publishTaskInFlow,
+  readGrowthFlowState,
+  skipStrategyInFlow,
+  undoStrategyInFlow,
+  type GrowthFlowState,
+} from '../data/overviewMock'
 import { useWorkbench } from '../context/WorkbenchContext'
 import type { ViewId } from '../types'
 import { OpsAssistantPanel } from './OpsAssistantPanel'
@@ -38,7 +48,7 @@ function portalHref() {
 }
 
 // 顶栏横向菜单（参考数字门户）：概况/网站管理/营销管理/客户管理/业务中心/服务中心/安全中心/数据分析/管理设置
-const PORTAL_TABS: string[] = ["概况", "网站管理", "营销管理", "客户管理", "业务中心", "服务中心", "安全中心", "数据分析", "管理设置"];
+const PORTAL_TABS: string[] = ['概况', '网站管理', '营销管理', '客户管理', '业务中心', '服务中心', '安全中心', '数据分析', '管理设置']
 
 // 点击顶栏菜单项 → 跳转数字门户对应页签（数字门户默认端口 5174）
 function openPortalTab(tab: string) {
@@ -47,51 +57,30 @@ function openPortalTab(tab: string) {
   window.location.assign(`${base}#${encodeURIComponent(tab)}`)
 }
 
-type NavItem = { id: ViewId; label: string; icon: typeof LayoutDashboard; beta?: boolean }
+type BadgeTone = 'orange' | 'blue'
+type NavItem = {
+  id: ViewId
+  label: string
+  icon: typeof LayoutDashboard
+  badgeCount?: number
+  badgeTone?: BadgeTone
+  badgeTitle?: string
+}
 
-/** 侧栏叙事：这是哪 → 底座打好了 → 看留存、出诊断 → 智能体干活 → 助手与资料。
- *  GEO 信源监测、站点设置先从菜单拿掉，页面代码仍留着。 */
-const NAV_GROUPS: Array<{ title: string; items: NavItem[] }> = [
-  {
-    title: '概览',
-    items: [
-      { id: 'dashboard', label: '智能体概览', icon: LayoutDashboard },
-    ],
-  },
-  {
-    title: 'AI 友好度',
-    items: [
-      { id: 'ready', label: 'AI Ready', icon: ShieldCheck },
-    ],
-  },
-  {
-    title: '洞察与诊断',
-    items: [
-      { id: 'intake', label: '访客洞察', icon: Filter },
-      { id: 'visitor', label: '优化策略', icon: ScanSearch, beta: true },
-    ],
-  },
-  {
-    title: '智能体执行',
-    items: [
-      { id: 'marketing', label: '智能营销页智能体', icon: PanelsTopLeft, beta: true },
-      { id: 'content', label: '内容发布智能体', icon: FileText, beta: true },
-    ],
-  },
-  {
-    title: '助手与知识库',
-    items: [
-      { id: 'assistant', label: 'AI运营助手', icon: MessageSquare },
-      { id: 'knowledge', label: '知识库', icon: BookOpen },
-      // 站点设置先隐藏，页面仍可通过 navigate('settings') 打开
-    ],
-  },
-]
+/**
+ * 贴合老板四幕式决策动线的菜单架构：
+ * 第一幕（置顶独立项，无分组标题）：增长首页
+ * 第二幕：诊断与洞察 -> 访客与漏斗洞察 / AI 友好度体检
+ * 第三幕（Gate 1 控算力）：增长决策 -> 优化策略（橙/红待定策略角标）
+ * 第四幕（Gate 2 保安全）：内容与页面 -> 智能营销页 / 官网内容发布（蓝色待预览发布草稿角标）
+ * 底座支撑：企业大脑与助手 -> 企业知识库 / AI 运营助手
+ */
+const TOP_HOME_ITEM: NavItem = {
+  id: 'dashboard',
+  label: '增长首页',
+  icon: LayoutDashboard,
+}
 
-/** 侧栏底部独立一块：账户类，不归入任何分组 */
-const FOOT_NAV: NavItem[] = [
-  { id: 'credits', label: '积分余额', icon: Coins },
-]
 /** 内容区自带内边距的原一期页面，需要抵消宿主内边距 */
 const ONEAIVIEWS: ViewId[] = ['ready', 'credits']
 /** 以 iframe 整页嵌入的外部智能体页 */
@@ -115,35 +104,39 @@ const PAGE_META: Record<string, { title: string; crumb: string }> = {
   analysisBehavior: { title: '访问行为分析', crumb: '数据分析' },
   analysisLeads: { title: '线索转化分析', crumb: '数据分析' },
   analysisOpsReport: { title: '运营报告推送', crumb: '数据分析' },
-  dashboard: { title: '智能体概览', crumb: '概览' },
-  ready: { title: 'AI Ready', crumb: 'AI 友好度' },
-  intake: { title: '访客洞察', crumb: '洞察与诊断' },
-  visitor: { title: '优化策略', crumb: '洞察与诊断' },
-  marketing: { title: '智能营销页智能体', crumb: '智能体执行' },
-  content: { title: '内容发布智能体', crumb: '智能体执行' },
-  assistant: { title: 'AI运营助手', crumb: '助手与知识库' },
-  knowledge: { title: '知识库', crumb: '助手与知识库' },
-  geoMonitor: { title: 'GEO 信源监测', crumb: '智能体执行' },
+  dashboard: { title: '增长首页', crumb: '总览' },
+  ready: { title: 'AI 友好度体检', crumb: '诊断与洞察' },
+  intake: { title: '访客与漏斗洞察', crumb: '诊断与洞察' },
+  visitor: { title: '优化策略', crumb: '增长决策' },
+  marketing: { title: '智能营销页', crumb: '内容与页面' },
+  content: { title: '官网内容发布', crumb: '内容与页面' },
+  assistant: { title: 'AI 运营助手', crumb: '企业大脑与助手' },
+  knowledge: { title: '企业知识库', crumb: '企业大脑与助手' },
+  geoMonitor: { title: 'GEO 信源监测', crumb: '内容与页面' },
   settings: { title: '站点设置', crumb: '配置' },
   scanning: { title: '正在检测', crumb: '站点' },
 }
 
-function navItem(item: NavItem) {
+function renderNavItem(item: NavItem) {
   const Icon = item.icon
+  const showBadge = typeof item.badgeCount === 'number' && item.badgeCount > 0
   return {
     key: item.id,
     icon: <Icon size={16} />,
-    label: item.beta ? (
-      <span className="admin-nav-with-beta">
+    label: showBadge ? (
+      <span className="admin-nav-with-beta" title={item.badgeTitle || item.label}>
         <span>{item.label}</span>
-        <Tag className="admin-nav-beta" color="processing">
-          Beta
-        </Tag>
+        <span
+          className={`admin-nav-count-badge ${item.badgeTone === 'blue' ? 'is-blue' : 'is-orange'}`}
+          aria-label={item.badgeTitle || `${item.badgeCount} 项待处理`}
+        >
+          {item.badgeCount}
+        </span>
       </span>
     ) : (
       item.label
     ),
-    title: item.label,
+    title: item.badgeTitle ? `${item.label}（${item.badgeTitle}：${item.badgeCount ?? 0}）` : item.label,
   }
 }
 
@@ -155,10 +148,81 @@ export function AdminShell({ children }: { children: ReactNode }) {
     sites,
     siteId,
     setSiteId,
-    scanning,
+    pushToast,
   } = useWorkbench()
   const [assistantOpen, setAssistantOpen] = useState(false)
   const [collapsed, setCollapsed] = useState(false)
+  const [flowState, setFlowState] = useState<GrowthFlowState>(() => readGrowthFlowState())
+
+  const board = useMemo(() => computeGrowthBoard(flowState), [flowState])
+
+  useEffect(() => {
+    const syncFlow = () => setFlowState(readGrowthFlowState())
+    const onStorage = (e: StorageEvent) => {
+      if (!e.key || e.key === GROWTH_FLOW_STORAGE_KEY) syncFlow()
+    }
+    window.addEventListener(GROWTH_FLOW_EVENT, syncFlow)
+    window.addEventListener('storage', onStorage)
+    return () => {
+      window.removeEventListener(GROWTH_FLOW_EVENT, syncFlow)
+      window.removeEventListener('storage', onStorage)
+    }
+  }, [])
+
+  const navGroups = useMemo(
+    () => [
+      {
+        title: '诊断与洞察',
+        items: [
+          { id: 'ready' as ViewId, label: 'AI 友好度体检', icon: ShieldCheck },
+          { id: 'intake' as ViewId, label: '访客与漏斗洞察', icon: Filter },
+        ],
+      },
+      {
+        title: '增长决策',
+        items: [
+          {
+            id: 'visitor' as ViewId,
+            label: '优化策略',
+            icon: ScanSearch,
+            badgeCount: board.pendingStrategyCount,
+            badgeTone: 'orange' as BadgeTone,
+            badgeTitle: '待定策略数',
+          },
+        ],
+      },
+      {
+        title: '内容与页面',
+        items: [
+          {
+            id: 'marketing' as ViewId,
+            label: '智能营销页',
+            icon: PanelsTopLeft,
+            badgeCount: board.marketingPublishCount,
+            badgeTone: 'blue' as BadgeTone,
+            badgeTitle: '待预览发布草稿数',
+          },
+          {
+            id: 'content' as ViewId,
+            label: '官网内容发布',
+            icon: FileText,
+            badgeCount: board.contentPublishCount,
+            badgeTone: 'blue' as BadgeTone,
+            badgeTitle: '待预览发布草稿数',
+          },
+        ],
+      },
+      {
+        title: '企业大脑与助手',
+        items: [
+          { id: 'knowledge' as ViewId, label: '企业知识库', icon: BookOpen },
+          { id: 'assistant' as ViewId, label: 'AI 运营助手', icon: MessageSquare },
+        ],
+      },
+    ],
+    [board.pendingStrategyCount, board.marketingPublishCount, board.contentPublishCount],
+  )
+
   const embedView = EMBED_VIEWS.includes(view)
   const analysisView = isAnalysisView(view)
   const selectedKey = view === 'scanning' ? 'dashboard' : view
@@ -172,19 +236,51 @@ export function AdminShell({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     const known = new Set<string>([
-      ...NAV_GROUPS.flatMap((g) => g.items).map((item) => item.id),
-      ...FOOT_NAV.map((item) => item.id),
+      TOP_HOME_ITEM.id,
+      ...navGroups.flatMap((g) => g.items).map((item) => item.id),
       ...ANALYSIS_NAV.map((item) => item.id),
     ])
     const onMessage = (event: MessageEvent) => {
-      const data = event.data as { type?: string; view?: string } | null
-      if (data?.type === 'growth-navigate' && data.view && known.has(data.view)) {
+      const data = event.data as {
+        type?: string
+        view?: string
+        focusKey?: string
+        focusKeys?: string[]
+        action?: 'approve' | 'skip' | 'undo' | 'publish'
+        reason?: string
+        title?: string
+      } | null
+      if (!data?.type) return
+
+      if (data.type === 'growth-navigate' && data.view && known.has(data.view)) {
+        if (data.view === 'visitor' || data.focusKey || data.focusKeys?.length) {
+          window.dispatchEvent(
+            new CustomEvent('growth-focus-strategy', {
+              detail: { view: data.view, focusKey: data.focusKey, focusKeys: data.focusKeys },
+            }),
+          )
+        }
         navigate(data.view as ViewId)
+        return
+      }
+
+      if (data.type === 'growth-flow-update' && data.focusKey) {
+        if (data.action === 'approve') {
+          approveStrategyInFlow(data.focusKey)
+          pushToast('success', `已同意策略「${data.title || data.focusKey}」，AI 已生成草稿并进入待预览发布`)
+        } else if (data.action === 'skip') {
+          skipStrategyInFlow(data.focusKey, data.reason || '暂不处理')
+        } else if (data.action === 'undo') {
+          undoStrategyInFlow(data.focusKey)
+        } else if (data.action === 'publish') {
+          publishTaskInFlow(data.focusKey)
+          pushToast('success', `「${data.title || '草稿'}」已确认发布上线，并计入增长首页本周已完成`)
+        }
       }
     }
     window.addEventListener('message', onMessage)
     return () => window.removeEventListener('message', onMessage)
-  }, [navigate])
+  }, [navigate, navGroups, pushToast])
 
   useEffect(() => {
     if (!assistantOpen) return
@@ -198,11 +294,11 @@ export function AdminShell({ children }: { children: ReactNode }) {
   /** 是否进入了原「一期工作台」的页面（内容区自带内边距，需要抵消宿主内边距） */
   const isOneAiPage = ONEAIVIEWS.includes(view)
 
-  const navGroups = useMemo(
-    () => NAV_GROUPS.map((group) => ({ ...group, menuItems: group.items.map(navItem) })),
-    [],
+  const topHomeMenu = useMemo(() => [renderNavItem(TOP_HOME_ITEM)], [])
+  const renderedGroups = useMemo(
+    () => navGroups.map((group) => ({ ...group, menuItems: group.items.map(renderNavItem) })),
+    [navGroups],
   )
-  const footItems = useMemo(() => FOOT_NAV.map(navItem), [])
 
   return (
     <Layout
@@ -256,11 +352,11 @@ export function AdminShell({ children }: { children: ReactNode }) {
               </button>
             ))}
             {/* 本项目入口：紧邻「管理设置」放置，在工作台页保持选中态 */}
-            <Tooltip title="AI 工作台 · 返回本项目">
+            <Tooltip title="营销增长工作台 · 返回增长首页">
               <button
                 type="button"
                 className={`admin-portalnav__item admin-portalnav__ai${dataAnalysisCurrent ? '' : ' is-current'}`}
-                aria-label="AI 工作台 · 返回本项目"
+                aria-label="营销增长工作台 · 返回增长首页"
                 aria-current={dataAnalysisCurrent ? undefined : 'page'}
                 onClick={() => navigate('dashboard')}
               >
@@ -277,7 +373,6 @@ export function AdminShell({ children }: { children: ReactNode }) {
                 <Search size={17} />
               </span>
             </Tooltip>
-            {/* 站点设置入口先隐藏 */}
           </div>
 
           <Dropdown
@@ -367,7 +462,20 @@ export function AdminShell({ children }: { children: ReactNode }) {
                 </div>
               )}
 
-              {navGroups.map((group) => (
+              {/* 第一幕：置顶独立项（无分组标题）—— 增长首页 */}
+              <div className="admin-top-home-wrap">
+                <Menu
+                  mode="inline"
+                  theme="light"
+                  selectedKeys={selectedKey === TOP_HOME_ITEM.id ? [TOP_HOME_ITEM.id] : []}
+                  items={topHomeMenu}
+                  classNames={{ root: 'admin-menu admin-menu--plain admin-menu--top-home', item: 'admin-menu__item' }}
+                  onClick={({ key }) => navigate(key as ViewId)}
+                />
+              </div>
+
+              {/* 第二幕 ~ 底座支撑 */}
+              {renderedGroups.map((group) => (
                 <Fragment key={group.title}>
                   {collapsed ? null : <div className="admin-nav-label-text">{group.title}</div>}
                   <Menu
@@ -377,50 +485,33 @@ export function AdminShell({ children }: { children: ReactNode }) {
                       group.items.some((item) => item.id === selectedKey) ? [selectedKey] : []
                     }
                     items={group.menuItems}
-                    tooltip={{ placement: 'right' }}
                     classNames={{ root: 'admin-menu admin-menu--plain', item: 'admin-menu__item' }}
                     onClick={({ key }) => navigate(key as ViewId)}
                   />
                 </Fragment>
               ))}
-
-              <div className="admin-sidebar__foot">
-                <Menu
-                  mode="inline"
-                  theme="light"
-                  selectedKeys={FOOT_NAV.some((item) => item.id === view) ? [view] : []}
-                  items={footItems}
-                  tooltip={{ placement: 'right' }}
-                  classNames={{ root: 'admin-menu admin-menu--foot', item: 'admin-menu__item' }}
-                  onClick={({ key }) => navigate(key as ViewId)}
-                />
-              </div>
             </>
           )}
         </Sider>
 
         <Layout className="admin-main">
-          {scanning && view !== 'scanning' ? (
-            <div className="admin-scan-banner">
-              <strong>后台检测进行中</strong>
-              <span className="muted">可继续使用智能体，完成后将返回概览</span>
-            </div>
-          ) : null}
-
           <Content className="admin-body">
             <div
-              className={`admin-content${embedView ? ' is-embed' : ''}${view === 'dashboard' ? ' is-overview' : ''}${isOneAiPage ? ' is-oneai' : ''}${analysisView && view !== 'board' ? ' is-analysis-legacy' : ''}`}
+              className={`admin-content${embedView ? ' is-embed' : ''}${view === 'dashboard' ? ' is-overview' : ''}${
+                isOneAiPage ? ' is-oneai' : ''
+              }${analysisView && view !== 'board' ? ' is-analysis-legacy' : ''}`}
             >
               {children}
             </div>
           </Content>
         </Layout>
       </Layout>
+
       <OpsAssistantPanel
         open={assistantOpen}
         view={view}
-        onClose={() => setAssistantOpen(false)}
         onOpen={() => setAssistantOpen(true)}
+        onClose={() => setAssistantOpen(false)}
       />
     </Layout>
   )

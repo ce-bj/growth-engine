@@ -236,7 +236,7 @@ function evidenceText(item) {
   return [item.text, item.fileName ? `附件 ${item.fileName}` : ''].filter(Boolean).join(' · ')
 }
 
-export default function ProductDetailGap({ detecting, onResolved }) {
+export default function ProductDetailGap({ detecting, onResolved, anchorId }) {
   const [supplied, setSupplied] = useState({})
   const [optimized, setOptimized] = useState({})
   const [aiPassed, setAiPassed] = useState({})
@@ -558,7 +558,7 @@ export default function ProductDetailGap({ detecting, onResolved }) {
   }
 
   return (
-    <section className="pd-panel">
+    <section className="pd-panel" id={anchorId || undefined}>
       <div className="pd-head">
         <div className="pd-head-main">
           <span className="pd-mark" aria-hidden="true">

@@ -1,11 +1,14 @@
 /** 访问统计快照：租户 304868，www.shlanbao.cn，截至 2026-11-15。
  *  渠道人数来自站点日表，按日访客相加。AI 在会话里单列，已从「搜索引擎」中拆出。
  *  具体来源、落地页按人去重。页面清单来自会话里的访问路径，追踪参数已并进原页面。
+ *  合格浏览、滚动、有效浏览、转化交互和表单提交来自页面日表，按路径把带参地址加总。
  */
 import pageCatalogText from "./catalog/pages.tsv?raw"
+import pageDayText from "./catalog/page-day.tsv?raw"
 import landCatalogText from "./catalog/lands.tsv?raw"
 import pathCatalogText from "./catalog/paths.tsv?raw"
 import termCatalogText from "./catalog/terms.tsv?raw"
+import { pageDayFields, readPageDay } from "./pageDayMetrics.js"
 
 const TREND = [
   ["2026-10-15", 304], ["2026-10-16", 329], ["2026-10-17", 185], ["2026-10-18", 128],
@@ -20,7 +23,7 @@ const TREND = [
 
 function metric(uv, pv, view, convert, leadUv, leadCnt, bounce, held, landSec, scrollSum = null, scrollN = null, pageSec = null) {
   return {
-    uv, pv, view, convert, edit: convert, chat: 0, leadUv, leadCnt, detail: 0,
+    uv, pv, view, convert, edit: convert, chat: 0, chatWired: false, leadUv, leadCnt, detail: 0,
     bounce, landUv: uv, held, landSec, scrollSum, scrollN, pageSec,
   }
 }
@@ -379,6 +382,8 @@ function pageType(path) {
   return "其他"
 }
 
+const PAGE_DAY = readPageDay(pageDayText)
+
 const PAGE_CATALOG = {}
 pageCatalogText.split("\n").forEach((line) => {
   if (!line.trim()) return
@@ -464,8 +469,8 @@ function stripOf(current, previous, qual, qualPrev) {
       to: current.convert,
       items: [
         { name: "产品详情页到达率", value: current.detail ? rate(current.detail, current.view) : null, fmt: "pct", empty: "汇总里详情到达为 0，且没有归到产品详情页的类型" },
-        { name: "表单开始率", value: rate(current.edit, current.view), fmt: "pct" },
-        { name: "开聊率", value: rate(current.chat, current.view), fmt: "pct" },
+        { name: "表单开始率", value: rate(current.edit, current.view), count: current.edit, fmt: "pct" },
+        { name: "开聊率", value: rate(current.chat, current.view), wired: current.chatWired === true, fmt: "pct" },
       ],
     },
     l3: {
@@ -481,7 +486,7 @@ function stripOf(current, previous, qual, qualPrev) {
   }
 }
 
-function pageFromVisit(row) {
+function pageFromVisit(row, win, channel) {
   return {
     url: row.url,
     name: pageTitle(row.url),
@@ -489,16 +494,7 @@ function pageFromVisit(row) {
     pv: row.pv,
     uv: row.uv,
     pageStay: stay(row.sec, row.pv),
-    qualifyRate: null,
-    qualifyRatePrev: null,
-    scroll: null,
-    viewed: null,
-    interactRate: null,
-    started: null,
-    formDone: null,
-    chatLead: null,
-    pageLeads: null,
-    leadUv: null,
+    ...pageDayFields(PAGE_DAY, win, channel, row.path),
   }
 }
 
@@ -558,7 +554,7 @@ export function getMcpBoard(range) {
   const lands = {}
   ;["all", ...channelIds].forEach((id) => {
     pages[id] = (catalog[id] || [])
-      .map(pageFromVisit)
+      .map((row) => pageFromVisit(row, range, id))
       .sort((a, b) => b.uv - a.uv || b.pv - a.pv)
     const fullLands = landCatalog[id]
     lands[id] = fullLands?.length

@@ -289,6 +289,7 @@ function Summary({ checks, brandPending, readablePending, trustPending, detected
       ? '品牌一致性 / AI 可读性 / AI 可信性 · 待检测'
       : `品牌一致性 / AI 可读性 / AI 可信性 · ${contentPending ? `${contentPending} 项待确认` : '全部已处理'}`
   const contentPill = scanning ? '检测中' : !detected ? '待检测' : contentTone === 'good' ? 'Good' : '待关注'
+
   return (
     <div {...marks(S.report, S.summary)} className="summary">
       <div {...marks(S.summary)} className="summary-head">
@@ -930,7 +931,7 @@ function OptimizeCard({ item, state, skipped, onSkip, onHandle, onAct, onToast }
   }
 
   return (
-    <div {...marks(S.card)} className={`opt-card${done ? ' is-done' : ''}${ignored ? ' is-ignored' : ''}`}>
+    <div id={`opt-item-${item.id}`} {...marks(S.card)} className={`opt-card${done ? ' is-done' : ''}${ignored ? ' is-ignored' : ''}`}>
       <span {...marks(S.card)} className="icon">
         <AiIcon scopes={[S.card]} name={done ? 'check-circle' : 'sparkle'} size={16} />
       </span>
@@ -1369,7 +1370,7 @@ function OptimizeSection({ section, handled, skipped, detecting, detected, phase
           <div {...marks(S.opt)} className="opt-list">
             {section.items.map((item) =>
               item.id === 'readable-product' ? (
-                <ProductDetailGap key={item.id} detecting={detecting} onResolved={() => onHandle(item, 'agree')} />
+                <ProductDetailGap key={item.id} anchorId={`opt-item-${item.id}`} detecting={detecting} onResolved={() => onHandle(item, 'agree')} />
               ) : (
                 <OptimizeCard key={item.id} item={item} state={handled[item.id]} skipped={skipped} onSkip={onSkip} onHandle={onHandle} onAct={onAct} onToast={onToast} />
               ),
@@ -1536,16 +1537,25 @@ function ReadyGate({ onStart }) {
   )
 }
 
-export default function AIReady() {
+function sectionOf(focusKey) {
+  if (!focusKey) return null
+  if (focusKey.startsWith('readable')) return 'readable'
+  if (focusKey.startsWith('trust')) return 'trust'
+  if (focusKey.startsWith('brand')) return 'brand'
+  return null
+}
+
+export default function AIReady({ focusKey, focusStamp }) {
   const diagnosed = hasDiagnosed()
-  const [entered, setEntered] = useState(diagnosed)
+  const jumped = Boolean(focusKey)
+  const [entered, setEntered] = useState(diagnosed || jumped)
   const [checks] = useState(readyData.checks)
   const [openMap, setOpenMap] = useState({})
-  const [openGroup, setOpenGroup] = useState(null)
+  const [openGroup, setOpenGroup] = useState(() => sectionOf(focusKey))
   const [handled, setHandled] = useState({})
   const [skipped, setSkipped] = useState({})
   const [acted, setActed] = useState({})
-  const [detected, setDetected] = useState(diagnosed)
+  const [detected, setDetected] = useState(diagnosed || jumped)
   const [detecting, setDetecting] = useState({})
   const [scan, setScan] = useState(null)
   const [now, setNow] = useState(0)
@@ -1656,6 +1666,22 @@ export default function AIReady() {
   }, [entered])
 
   useEffect(() => {
+    if (!focusKey) return undefined
+    const section = sectionOf(focusKey)
+    setEntered(true)
+    setDetected(true)
+    if (section) setOpenGroup(section)
+    const timer = window.setTimeout(() => {
+      const node = document.getElementById(`opt-item-${focusKey}`)
+      if (!node) return
+      node.scrollIntoView({ behavior: 'smooth', block: 'center' })
+      node.classList.add('is-flash')
+      window.setTimeout(() => node.classList.remove('is-flash'), 2000)
+    }, 160)
+    return () => window.clearTimeout(timer)
+  }, [focusKey, focusStamp])
+
+  useEffect(() => {
     if (!scan) return undefined
     const timer = window.setInterval(() => setNow(Date.now()), 120)
     return () => window.clearInterval(timer)
@@ -1666,7 +1692,15 @@ export default function AIReady() {
   return (
     <div {...marks(S.ready)} className="ai-ready">
       <div {...marks(S.ready, S.report)} className="report no-tabs">
-        <Summary checks={checks} brandPending={pendingOf('brand')} readablePending={pendingOf('readable')} trustPending={pendingOf('trust')} detected={detected} scanning={Boolean(scan)} onJump={(code) => (code === 'check' ? checkRef : brandRef).current?.scrollIntoView({ behavior: 'smooth', block: 'start' })} />
+        <Summary
+          checks={checks}
+          brandPending={pendingOf('brand')}
+          readablePending={pendingOf('readable')}
+          trustPending={pendingOf('trust')}
+          detected={detected}
+          scanning={Boolean(scan)}
+          onJump={(code) => (code === 'check' ? checkRef : brandRef).current?.scrollIntoView({ behavior: 'smooth', block: 'start' })}
+        />
         <SectionTitle sectionRef={checkRef} title="被 AI 看见 · 关键项检查" icon="shield" tip="技术层 · 网站交付时关键项自动就绪" />
         <CheckList items={checks} openMap={openMap} onToggle={(code) => setOpenMap((current) => ({ ...current, [code]: !current[code] }))} onDialog={setDialog} regenerating={regenerating} onRegenerate={handleRegenerate} />
         <SectionTitle

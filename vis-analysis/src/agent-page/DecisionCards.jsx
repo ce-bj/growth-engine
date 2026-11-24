@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Button, Card, Descriptions, Drawer, Dropdown, Empty, Input, Tag, Typography } from "antd";
 import { ApiOutlined, BookOutlined, DownOutlined, GlobalOutlined, SearchOutlined } from "@ant-design/icons";
 import { ADVICE, BRIEFS, RULE_CHECKS, TRACKING } from "../diagnosisPeriod.js";
@@ -18,6 +18,17 @@ const REF_CHANNELS = [
 
 const PANE_STYLES = { body: { padding: 12 } };
 const DESC_STYLES = { label: { width: 112, whiteSpace: "nowrap" } };
+
+/** 与访客与漏斗洞察的三层动作一致，用作策略左侧标签和筛选。 */
+const ACTION_GROUPS = [
+  { id: "l1", title: "提升有效浏览" },
+  { id: "l2", title: "提升转化交互" },
+  { id: "l3", title: "提升留资完成" },
+];
+
+function actionOf(lossId) {
+  return ACTION_GROUPS.find((item) => item.id === lossId) || ACTION_GROUPS[0];
+}
 
 function resolveRefs(refs, authMap) {
   return REF_CHANNELS.map((channel) => {
@@ -243,8 +254,12 @@ function TaskCard({
     statusColor = "success";
   }
 
+  const action = actionOf(rule?.lossId);
+
   return (
-    <article ref={cardRef} id={`task-${item.key}`} className={`ag-task${open ? " is-open" : ""}${highlighted ? " is-flash" : ""}`}>
+    <article ref={cardRef} id={`task-${item.key}`} className={`ag-task is-${action.id}${open ? " is-open" : ""}${highlighted ? " is-flash" : ""}`}>
+      <span className={`ag-task-mark is-${action.id}`}>{action.title}</span>
+      <div className="ag-task-body">
       <header className="ag-task-head">
         <div className="ag-task-lead">
           <h3>{item.title}</h3>
@@ -339,8 +354,8 @@ function TaskCard({
             <FieldDesc
               items={[
                 { key: "phenomenon", label: "网站现象", children: rule?.phenomenon },
-                { key: "data", label: "数据表现", children: rule?.face?.data },
-                { key: "cause", label: "根本原因", children: rule?.face?.cause },
+                { key: "data", label: "数据事实", children: rule?.face?.data },
+                { key: "cause", label: "原因洞察", children: rule?.face?.cause },
                 { key: "strategy", label: "优化策略", children: strategySentence(item) },
               ]}
             />
@@ -377,6 +392,7 @@ function TaskCard({
           )}
         </div>
       ) : null}
+      </div>
     </article>
   );
 }
@@ -405,7 +421,8 @@ function tasksForRule(rule, decisions, adviceDone) {
         summary: row.summary,
         target: row.target,
         requirements: row.requirements,
-        constraints: [],
+        requirementSections: row.requirementSections,
+        constraints: row.constraints || [],
         direction: row.direction,
         executor: row.executor,
         refs: {
@@ -462,19 +479,56 @@ export function DecisionSection({
   onAuthorize,
   onLocateTrack,
   cardRef,
+  onlyKeys = [],
+  onShowAll,
 }) {
   const rules = quiet ? [] : RULE_CHECKS.filter((rule) => rule.state === "hit");
+  const keySet = onlyKeys.length ? new Set(onlyKeys) : null;
+  const [actionFilter, setActionFilter] = useState("all");
   const cards = rules
     .flatMap((rule) => tasksForRule(rule, decisions, adviceDone).map((item) => ({ rule, item })))
+    .filter((row) => !keySet || keySet.has(row.item.key))
     .sort((a, b) => Number(a.item.kind === "advice") - Number(b.item.kind === "advice"));
+  const visible = actionFilter === "all" ? cards : cards.filter((row) => row.rule.lossId === actionFilter);
+  const onlyKeySig = onlyKeys.join(",");
+
+  useEffect(() => {
+    setActionFilter("all");
+  }, [onlyKeySig]);
 
   return (
     <section className="ag-decisions">
       <div className="ag-section-head">
         <h2>本期要你决定的事</h2>
+        {cards.length ? (
+          <div className="ag-section-extra ag-action-filters" role="group" aria-label="按增长动作筛选">
+            {ACTION_GROUPS.map((group) => {
+              const count = cards.filter((row) => row.rule.lossId === group.id).length;
+              const active = actionFilter === group.id;
+              return (
+                <button
+                  key={group.id}
+                  type="button"
+                  className={`ag-action-chip is-${group.id}${active ? " is-active" : ""}`}
+                  aria-pressed={active}
+                  onClick={() => setActionFilter((current) => (current === group.id ? "all" : group.id))}
+                >
+                  <span>{group.title}</span>
+                  <b>{count}</b>
+                </button>
+              );
+            })}
+          </div>
+        ) : null}
       </div>
-      {cards.length ? (
-        cards.map(({ rule, item }) => (
+      {keySet ? (
+        <div className="ag-key-filter">
+          <span>已按流失点筛出 {cards.length} 项策略</span>
+          <button type="button" onClick={onShowAll}>查看全部策略</button>
+        </div>
+      ) : null}
+      {visible.length ? (
+        visible.map(({ rule, item }) => (
           <TaskCard
             key={item.key}
             item={{ ...item, extra: extraNotes[item.key] }}
@@ -496,7 +550,16 @@ export function DecisionSection({
         ))
       ) : (
         <Card className="ag-empty">
-          <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description={quiet ? "这一周网站没有需要你决定的修改。" : "这一期需要你决定的事，你都处理完了。"} />
+          <Empty
+            image={Empty.PRESENTED_IMAGE_SIMPLE}
+            description={
+              quiet
+                ? "这一周网站没有需要你决定的修改。"
+                : actionFilter !== "all"
+                  ? "这个动作下本期没有需要你决定的策略。"
+                  : "这一期需要你决定的事，你都处理完了。"
+            }
+          />
         </Card>
       )}
     </section>

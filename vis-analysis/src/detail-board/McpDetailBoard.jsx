@@ -19,9 +19,10 @@ import {
   Tooltip,
 } from "antd"
 import { ArrowDownOutlined, ArrowUpOutlined } from "@ant-design/icons"
-import { fmtInt, pct, rateBrokeDown } from "../funnel-review/data.js"
+import { fmtInt, LOSSES as FUNNEL_LOSSES, pct } from "../funnel-review/data.js"
 import { BOARD_BLUE_THEME as BOARD_THEME, DANGER, PORTAL_BLUE as ACCENT } from "../board-theme.js"
 import { getMcpBoard } from "./mcpBoardData.js"
+import { MetricLabel } from "./metricTips.jsx"
 import "./detail-board.css"
 
 const Line = lazy(() => import("@ant-design/plots").then((mod) => ({ default: mod.Line })))
@@ -49,10 +50,10 @@ const INTENTS = [
 ]
 
 const FUNNEL_COLORS = ["#155a7d", "#1f6f96", "#2f8bb8", "#4b9fc8"]
-const LOSSES = [
-  { id: "l1", title: "访问入口 → 有效浏览", meaning: "看进去没", primary: "有效浏览率" },
-  { id: "l2", title: "有效浏览 → 转化交互", meaning: "看了没动手", primary: "转化交互率" },
-  { id: "l3", title: "转化交互 → 成功留资", meaning: "动手没留下", primary: "留资完成率" },
+const METRIC_GROUPS = [
+  { id: "layer", label: "漏斗" },
+  { id: "page", label: "页面" },
+  { id: "land", label: "落地页" },
 ]
 
 function channelName(id) {
@@ -85,7 +86,7 @@ function KpiCard({ title, cur, prev, mode = "count", note, alert, compare }) {
   return (
     <Card className={`db-kpi${alert ? " is-alert" : ""}`} variant="outlined">
       <div className="db-kpi-top">
-        <span className="db-kpi-title">{title}</span>
+        <span className="db-kpi-title"><MetricLabel tip={title}>{title}</MetricLabel></span>
         {alert ? <Tag color="error">异常</Tag> : null}
       </div>
       <Statistic value={rateMode ? cur * 100 : cur} precision={rateMode ? 1 : 0} suffix={rateMode ? "%" : undefined} />
@@ -135,7 +136,7 @@ function funnelData(stages) {
   }))
 }
 
-function StageFunnel({ stages, height, withShare = false }) {
+function StageFunnel({ stages, height, withShare = false, showTips = true }) {
   const config = {
     data: funnelData(stages),
     xField: "stage",
@@ -163,9 +164,18 @@ function StageFunnel({ stages, height, withShare = false }) {
     },
   }
   return (
-    <Suspense fallback={<div className="db-chart-wait" style={{ height }} />}>
-      <Funnel {...config} />
-    </Suspense>
+    <>
+      <Suspense fallback={<div className="db-chart-wait" style={{ height }} />}>
+        <Funnel {...config} />
+      </Suspense>
+      {showTips ? (
+        <div className="db-stage-tips">
+          {stages.map((stage) => (
+            <MetricLabel key={stage.name} tip={stage.name}>{stage.name}</MetricLabel>
+          ))}
+        </div>
+      ) : null}
+    </>
   )
 }
 
@@ -176,47 +186,109 @@ function formatStrip(item) {
   return fmtInt(item.value)
 }
 
-function LossDetail({ loss, gate, sliceName, compare }) {
+function metricValue(gate, name, primary) {
+  if (name === primary || name === "留资访客 / 转化交互访客") return { value: gate.pass, fmt: "pct" }
+  return gate.items.find((item) => item.name === name) || { value: null, fmt: "pct" }
+}
+
+function LossDetail({ gate, sliceName }) {
+  const loss = FUNNEL_LOSSES.find((item) => item.id === gate.lossId)
+  const rest = loss.metrics.filter(
+    (item) => item.name !== loss.primary && item.role !== "定位主指标" && item.name !== "留资访客 / 转化交互访客",
+  )
+  const groups = rest.some((item) => item.group)
+    ? METRIC_GROUPS.map((group) => ({ ...group, items: rest.filter((item) => item.group === group.id) })).filter((group) => group.items.length)
+    : [{ id: "all", label: null, items: rest }]
   return (
     <section className="db-loss">
       <div className="db-loss-top">
-        <span className="db-loss-kicker">流失点 · 关键指标</span>
+        <span className="db-loss-kicker">流失点 {loss.seq} · 关键指标</span>
       </div>
       <h3 className="db-loss-title">{loss.title}</h3>
       <p className="db-loss-meta">
         <span>{loss.meaning}</span>
-        <span>本期掉 {fmtInt(Math.max(0, gate.from - gate.to))} 人</span>
+        <span>本期掉 {fmtInt(gate.dropped)} 人</span>
         <span>{sliceName}</span>
       </p>
       <div className="db-loss-hero">
         <div>
-          <span className="db-loss-hero-k">{loss.primary}</span>
+          <span className="db-loss-hero-k"><MetricLabel tip={loss.primary}>{loss.primary}</MetricLabel></span>
           <strong className="db-loss-hero-v">{showRate(gate.pass)}</strong>
         </div>
-        {compare && gate.passPrev != null ? (
-          <div className="db-loss-hero-side">
-            <span>上期 {pct(gate.passPrev)}</span>
-          </div>
-        ) : null}
       </div>
-      <dl>
-        {gate.items.map((item) => (
-          <div key={item.name} className="db-loss-row">
-            <dt>
-              <Tooltip title={item.empty || item.name}>
-                <span className="db-loss-tip">{item.name}</span>
-              </Tooltip>
-            </dt>
-            <dd>{formatStrip(item)}</dd>
-          </div>
-        ))}
-      </dl>
+      {groups.map((group) => (
+        <div key={group.id} className="db-loss-group">
+          {group.label ? <h4>{group.label}</h4> : null}
+          <dl>
+            {group.items.map((item) => (
+              <div key={item.name} className="db-loss-row">
+                <dt>
+                  <MetricLabel tip={STRIP_TIP[item.name] || item.name}>{item.name}</MetricLabel>
+                </dt>
+                <dd>{formatStrip(metricValue(gate, item.name, loss.primary))}</dd>
+              </div>
+            ))}
+          </dl>
+        </div>
+      ))}
     </section>
   )
 }
 
-const numCol = (title, dataIndex, render) => ({
-  title,
+function FunnelDetail({ stages, gates, sliceName }) {
+  const [active, setActive] = useState(gates[0]?.lossId || "l1")
+  const activeGate = gates.find((gate) => gate.lossId === active) || gates[0]
+  const height = 88 * stages.length
+  if (!activeGate) return null
+  return (
+    <Row gutter={[24, 16]}>
+      <Col xs={24} lg={13}>
+        <div className="db-fd" style={{ height }}>
+          <div className="db-fd-chart">
+            <StageFunnel stages={stages} height={height} withShare showTips={false} />
+          </div>
+          <div className="db-fd-rail">
+            {gates.map((gate, index) => {
+              const on = gate.lossId === activeGate.lossId
+              return (
+                <button
+                  key={gate.lossId}
+                  type="button"
+                  className={`db-fd-loss${on ? " is-on" : ""}`}
+                  style={{ top: `${((index + 1) / stages.length) * 100}%` }}
+                  aria-pressed={on}
+                  onMouseEnter={() => setActive(gate.lossId)}
+                  onFocus={() => setActive(gate.lossId)}
+                  onClick={() => setActive(gate.lossId)}
+                >
+                  <span className="db-fd-loss-k">流失点 {index + 1}</span>
+                  <span className="db-fd-loss-v">留存 {showRate(gate.pass)} · 流失 {fmtInt(gate.dropped)} 人</span>
+                </button>
+              )
+            })}
+          </div>
+        </div>
+        <p className="db-card-hint db-fd-hint">指向流失点，右侧看这一层的关键指标。漏斗宽度只示意逐层收窄，人数以标注为准。</p>
+      </Col>
+      <Col xs={24} lg={11}>
+        <LossDetail gate={activeGate} sliceName={sliceName} />
+      </Col>
+    </Row>
+  )
+}
+
+const STRIP_TIP = {
+  合格浏览率: "全站合格浏览率",
+  页面平均停留时长: "全站页面停留",
+  平均滚动深度: "全站滚动",
+  落地接住率: "全站落地接住率",
+  落地平均停留时长: "全站落地停留",
+  秒退率: "全站秒退率",
+  表单完成率: "全站表单完成率",
+}
+
+const numCol = (title, dataIndex, render, tip = title) => ({
+  title: <MetricLabel tip={tip}>{title}</MetricLabel>,
   dataIndex,
   key: dataIndex,
   align: "right",
@@ -235,9 +307,7 @@ export default function McpDetailBoard({ getBoard = getMcpBoard }) {
   const [termTab, setTermTab] = useState("site")
   const [openDetail, setOpenDetail] = useState("")
   const [detailQuery, setDetailQuery] = useState("")
-  const [lossId, setLossId] = useState("l1")
 
-  const compare = model.compare
   const entry = model.stages.all[0]
   const view = model.stages.all[1]
   const lead = model.stages.all[3]
@@ -253,7 +323,15 @@ export default function McpDetailBoard({ getBoard = getMcpBoard }) {
   const sliceId = catchCat
   const stages = model.stages[sliceId] || model.stages.all
   const strip = model.strips[sliceId] || model.strips.all
-  const activeLoss = LOSSES.find((item) => item.id === lossId) || LOSSES[0]
+  const funnelGates = FUNNEL_LOSSES.map((loss) => {
+    const gate = strip[loss.id]
+    return {
+      lossId: loss.id,
+      pass: gate?.pass ?? null,
+      dropped: Math.max(0, (gate?.from || 0) - (gate?.to || 0)),
+      items: gate?.items || [],
+    }
+  })
   const pages = model.pages[sliceId] || []
   const lands = model.lands[sliceId] || []
   const userStages = model.intents[userCat] || []
@@ -329,15 +407,15 @@ export default function McpDetailBoard({ getBoard = getMcpBoard }) {
     { title: "页面名称", dataIndex: "name", fixed: "left", width: 160 },
     { title: "url", dataIndex: "url", width: 280, ellipsis: true },
     { title: "页面类型", dataIndex: "type", width: 140 },
-    numCol("浏览次数PV", "pv"),
-    numCol("独立访客UV", "uv"),
-    numCol("页面平均停留时长", "pageStay", showSec),
-    numCol("合格浏览率", "qualifyRate", (value, row) => (compare && row.qualifyRatePrev != null ? `${pct(value)} ` : showRate(value))),
-    numCol("平均滚动深度", "scroll", showRate),
-    numCol("有效浏览访客", "viewed"),
+    numCol("浏览次数PV", "pv", undefined, "页面PV"),
+    numCol("独立访客UV", "uv", undefined, "页面访客"),
+    numCol("页面平均停留时长", "pageStay", showSec, "页面停留"),
+    numCol("合格浏览率", "qualifyRate", showRate, "页面合格浏览率"),
+    numCol("平均滚动深度", "scroll", showRate, "页面滚动"),
+    numCol("有效浏览访客", "viewed", undefined, "页面有效浏览"),
     numCol("页面转化交互率", "interactRate", showRate),
     numCol("开始交互访客", "started"),
-    numCol("表单完成率", "formDone", showRate),
+    numCol("表单完成率", "formDone", showRate, "页面表单完成率"),
     numCol("开聊留资率", "chatLead", () => "—"),
     numCol("页面留资数", "pageLeads"),
   ]
@@ -345,14 +423,12 @@ export default function McpDetailBoard({ getBoard = getMcpBoard }) {
   const landColumns = [
     { title: "页面名称", dataIndex: "name", fixed: "left", width: 160 },
     { title: "url", dataIndex: "url", width: 280, ellipsis: true },
-    numCol("独立访客UV", "landUv"),
+    numCol("独立访客UV", "landUv", undefined, "落地访客"),
     numCol("秒退访客数", "bounceUv"),
-    numCol("秒退率", "bounce", showRate),
-    numCol("落地接住率", "catchRate", (value, row) => (
-      compare && row.catchRatePrev != null ? `${pct(value)}（上周 ${pct(row.catchRatePrev)}）` : showRate(value)
-    )),
-    numCol("落地平均停留时长", "landStay", showSec),
-    numCol("平均滚动深度", "scroll", showRate),
+    numCol("秒退率", "bounce", showRate, "落地秒退率"),
+    numCol("落地接住率", "catchRate", showRate),
+    numCol("落地平均停留时长", "landStay", showSec, "落地停留"),
+    numCol("平均滚动深度", "scroll", showRate, "落地滚动"),
     numCol("落地页留资数", "landLeads"),
   ]
 
@@ -373,38 +449,22 @@ export default function McpDetailBoard({ getBoard = getMcpBoard }) {
             columns={[
               { title: "渠道", dataIndex: "cat", render: (value) => channelName(value) },
               { title: "具体来源", dataIndex: "name" },
-              numCol("UV", "uv"),
-              numCol("PV", "pv"),
-              numCol("留资访客", "leads"),
+              numCol("UV", "uv", undefined, "来源UV"),
+              numCol("PV", "pv", undefined, "来源PV"),
+              numCol("留资访客", "leads", undefined, "来源留资"),
             ]}
           />
         </>
       )
     }
     if (openDetail === "funnel") {
-      return (
-        <Row gutter={[24, 16]}>
-          <Col xs={24} lg={13}>
-            <StageFunnel stages={stages} height={360} withShare />
-            <div className="db-fd-rail" style={{ marginTop: 12 }}>
-              {LOSSES.map((loss) => (
-                <Button key={loss.id} type={lossId === loss.id ? "primary" : "default"} size="small" onClick={() => setLossId(loss.id)} style={{ marginRight: 8, marginBottom: 8 }}>
-                  {loss.primary} {showRate(strip[loss.id].pass)}
-                </Button>
-              ))}
-            </div>
-          </Col>
-          <Col xs={24} lg={11}>
-            <LossDetail loss={activeLoss} gate={strip[activeLoss.id]} sliceName={channelName(sliceId)} compare={compare} />
-          </Col>
-        </Row>
-      )
+      return <FunnelDetail stages={stages} gates={funnelGates} sliceName={channelName(sliceId)} />
     }
     if (openDetail === "pages") {
       const rows = pages.filter(matchQuery)
       return (
         <>
-          <p className="db-card-hint">榜上只显示前 5。这里是这个渠道在窗口里访问过的全部页面，共 {fmtInt(pages.length)} 个。地址后面的追踪参数已经并进原页面。停留按访问路径里的秒数来算。滚动、合格浏览、表单留资这几列，页面统计表没有记到的地址先空着。</p>
+          <p className="db-card-hint">榜上只显示前 5。这里是这个渠道在窗口里访问过的全部页面，共 {fmtInt(pages.length)} 个。浏览次数、访客和停留按访问路径算，追踪参数已经并进原页面。合格浏览率、平均滚动深度、有效浏览、转化交互和表单提交接到页面日表，同一条路径上的带参地址先加总。页面日表没有的地址，这几列空着。没有滚动样本时平均滚动深度空着，没有人开始填表时表单完成率空着。开聊留资没有字段。AI 在页面日表里没有单列。</p>
           <Input.Search allowClear placeholder="搜页面名称或地址" value={detailQuery} onChange={(event) => setDetailQuery(event.target.value)} style={{ marginBottom: 12, maxWidth: 360 }} />
           <Table size="small" rowKey="url" pagination={{ pageSize: 20, showSizeChanger: true, pageSizeOptions: [20, 50, 100], showTotal: (total) => `共 ${total} 个页面` }} scroll={{ x: "max-content", y: 460 }} dataSource={rows} columns={pageColumns} />
         </>
@@ -430,9 +490,9 @@ export default function McpDetailBoard({ getBoard = getMcpBoard }) {
           columns={[
             { title: "意图", dataIndex: "name" },
             { title: "含义", dataIndex: "id", render: (id) => INTENTS.find((item) => item.id === id)?.meaning },
-            numCol("人数", "count"),
-            { title: "占比", align: "right", render: (_, row) => pct(intentTotal ? row.count / intentTotal : 0) },
-            numCol("留资访客", "leads"),
+            numCol("人数", "count", undefined, "意图人数"),
+            { title: <MetricLabel tip="意图占比">占比</MetricLabel>, align: "right", render: (_, row) => pct(intentTotal ? row.count / intentTotal : 0) },
+            numCol("留资访客", "leads", undefined, "意图留资"),
           ]}
         />
       )
@@ -452,8 +512,8 @@ export default function McpDetailBoard({ getBoard = getMcpBoard }) {
             dataSource={rows}
             columns={[
               { title: "页面类型路径", dataIndex: "label" },
-              numCol("人数", range),
-              { title: "占比", align: "right", render: (_, row) => pct(pathSum ? row[range] / pathSum : 0) },
+              numCol("人数", range, undefined, "路径人数"),
+              { title: <MetricLabel tip="路径占比">占比</MetricLabel>, align: "right", render: (_, row) => pct(pathSum ? row[range] / pathSum : 0) },
             ]}
           />
         </>
@@ -554,7 +614,7 @@ export default function McpDetailBoard({ getBoard = getMcpBoard }) {
         <Row gutter={[16, 16]}>
           <Col span={24}>
             <Card title="独立访客走势">
-              <div className="db-chart-unit">单位：人（日独立访客）</div>
+              <div className="db-chart-unit">单位：人（<MetricLabel tip="日独立访客">日独立访客</MetricLabel>）</div>
               <Suspense fallback={<div className="db-chart-wait" />}>
                 <Line key={range} {...trendConfig} />
               </Suspense>
@@ -596,16 +656,16 @@ export default function McpDetailBoard({ getBoard = getMcpBoard }) {
                       </span>
                     ),
                   },
-                  numCol("UV", "uv"),
+                  numCol("UV", "uv", undefined, "渠道UV"),
                   {
-                    title: "占比",
+                    title: <MetricLabel tip="渠道占比">占比</MetricLabel>,
                     width: 150,
                     render: (_, row) => (
                       <Progress percent={Math.round(row.share * 1000) / 10} size="small" strokeColor={ACCENT} format={(value) => `${value.toFixed(1)}%`} />
                     ),
                   },
-                  numCol("PV", "pv"),
-                  numCol("留资访客", "leadUv"),
+                  numCol("PV", "pv", undefined, "渠道PV"),
+                  numCol("留资访客", "leadUv", undefined, "渠道留资"),
                 ]}
                 summary={() => (
                   <Table.Summary.Row className="db-sum-row">
@@ -621,7 +681,7 @@ export default function McpDetailBoard({ getBoard = getMcpBoard }) {
           </Col>
           <Col xs={24} xl={12}>
             <Card title="具体渠道 TOP10" extra={detailLink("sources")}>
-              <p className="db-card-hint">按会话去重后的 UV 排序。直接访问、外部链接没有更细的来源名。</p>
+              <p className="db-card-hint">按会话去重后的 <MetricLabel tip="来源UV">UV</MetricLabel> 排序。直接访问、外部链接没有更细的来源名。</p>
               <RankList
                 items={topSources.map((row) => ({
                   key: `${row.cat}-${row.name}`,
@@ -674,7 +734,6 @@ export default function McpDetailBoard({ getBoard = getMcpBoard }) {
                   tip: row.url,
                   valueText: `UV ${fmtInt(row.uv)}`,
                   percent: (row.uv / pageMax) * 100,
-                  sub: `停留 ${showSec(row.pageStay)} · 留资 ${row.leadUv == null ? "—" : fmtInt(row.leadUv)}`,
                 }))}
               />
             </Card>
@@ -684,19 +743,13 @@ export default function McpDetailBoard({ getBoard = getMcpBoard }) {
               <p className="db-card-hint">按会话里的落地地址统计。</p>
               <RankList
                 empty={lands.length ? "" : "还没有落地页数据"}
-                items={lands.slice(0, 5).map((row) => {
-                  const bad = compare && rateBrokeDown(row.catchRate, row.catchRatePrev)
-                  return {
-                    key: row.url,
-                    name: row.name,
-                    tip: row.url,
-                    tag: bad ? <Tag color="error" className="db-tag-mini">接住率下滑</Tag> : null,
-                    valueText: `UV ${fmtInt(row.landUv)}`,
-                    percent: (row.landUv / landMax) * 100,
-                    alert: bad,
-                    sub: `接住 ${showRate(row.catchRate)}${compare && row.catchRatePrev != null ? `（上周 ${pct(row.catchRatePrev)}）` : ""} · 秒退 ${showRate(row.bounce)}`,
-                  }
-                })}
+                items={lands.slice(0, 5).map((row) => ({
+                  key: row.url,
+                  name: row.name,
+                  tip: row.url,
+                  valueText: `UV ${fmtInt(row.landUv)}`,
+                  percent: (row.landUv / landMax) * 100,
+                }))}
               />
             </Card>
           </Col>
@@ -760,7 +813,6 @@ export default function McpDetailBoard({ getBoard = getMcpBoard }) {
                             <span className="db-rank-value">{fmtInt(hit.count)} 人 · {pct(intentTotal ? hit.count / intentTotal : 0)}</span>
                           </span>
                           <Progress percent={intentTotal ? (hit.count / intentTotal) * 100 : 0} showInfo={false} size="small" strokeColor={ACCENT} />
-                          <span className="db-rank-sub">留资访客 {fmtInt(hit.leads)} 人</span>
                         </span>
                       </button>
                     </li>
@@ -806,7 +858,6 @@ export default function McpDetailBoard({ getBoard = getMcpBoard }) {
                     name: row.term,
                     valueText: `${fmtInt(row.searches)} 次`,
                     percent: model.terms[0]?.searches ? (row.searches / model.terms[0].searches) * 100 : 0,
-                    sub: `0结果 ${showRate(row.zeroRate)} · 搜后离站 ${showRate(row.leaveRate)}`,
                   }))}
                 />
               ) : (
