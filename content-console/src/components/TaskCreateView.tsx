@@ -175,6 +175,10 @@ export function TaskCreateView({ directionId }: { directionId?: string }) {
             </div>
           </div>
           <div className="form-row">
+            <div className="push-explain">任务主题: <b>{topics.length}</b>个 关键词: <b>{kws.length}</b>个</div>
+            <div className="push-explain">系统将为您自动推送 <b>{topics.length * kws.length}</b>篇 AI内容,推送任务完成将推送停止。</div>
+          </div>
+          <div className="form-row">
             <div className="sw-row">
               <div>
                 <div className="sw-lab">开启配图</div>

@@ -1,4 +1,4 @@
-import { stratName, useStore } from '../store'
+import { useStore } from '../store'
 
 export function ColdStart() {
   const { directions, confirmDirection, navigate } = useStore()
@@ -9,7 +9,7 @@ export function ColdStart() {
     <section className="cold-start">
       <div className="section-head">
         <h2>冷启动推荐任务</h2>
-        <p>网站刚上线，智能体推荐以下发布任务，确认后开始产出内容</p>
+        <p>网站刚上线，优化策略推荐以下发布任务，确认后开始产出内容</p>
       </div>
       {pending.map((d) => (
         <div className="cold-card" key={d.id}>
@@ -18,15 +18,7 @@ export function ColdStart() {
             <div className="cold-title">{d.title}</div>
             <div className="cold-sub">
               <span className="type-tag">{d.type}</span>
-              <span>{d.freqText} · 每次 {d.countText}</span>
-              <span>目标 {d.date}</span>
-            </div>
-            <div className="cold-tags">
-              {d.strat.map((s) => (
-                <span className="strat-tag" key={s}>
-                  {stratName(s)}
-                </span>
-              ))}
+              <span>{d.freqText}{d.countText}</span>
             </div>
           </div>
           <div className="cold-acts">

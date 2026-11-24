@@ -40,8 +40,8 @@ export const TASK_STATUS_LABEL: Record<TaskStatus, string> = {
 
 // —— 待办来源标签 ——
 export const TODO_SOURCE_LABEL: Record<TodoSource, string> = {
-  'behavior-fix': '行为分析 · 修改',
-  'behavior-new': '行为分析 · 新增',
+  'behavior-fix': '优化策略 · 修改',
+  'behavior-new': '优化策略 · 新增',
   'self-new': '自建发布任务 · 新增',
 }
 
@@ -168,6 +168,8 @@ interface StoreState {
   setTaskStatus: (id: string, status: TaskStatus) => void
   publishTodo: (id: string) => void
   rejectTodo: (id: string) => void
+  cancelFix: (id: string) => void
+  reopenFix: (id: string) => void
   gotoKb: (id: string) => void
   continueAfterKb: (id: string) => void
 }
@@ -273,7 +275,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         status: 'published',
         tid: '',
         strat: td.strat.map(stratKey),
-        body: '',
+        body: td.body || '',
       },
     ])
   }
@@ -296,6 +298,16 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         body: '',
       },
     ])
+  }
+
+  // 修改任务：取消 —— 保留任务，状态改为「已取消」，可再次进入详情发布
+  const cancelFix = (id: string) => {
+    setTodos((prev) => prev.map((x) => (x.id === id ? { ...x, fixStatus: '已取消' } : x)))
+  }
+
+  // 修改任务：重新修改 —— 状态改为「重新生成中」，在当前详情界面展示生成状态
+  const reopenFix = (id: string) => {
+    setTodos((prev) => prev.map((x) => (x.id === id ? { ...x, fixStatus: '重新生成中' } : x)))
   }
 
   // 去补充知识：跳转知识库（演示态：仅提示）
@@ -330,6 +342,8 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     setTaskStatus,
     publishTodo,
     rejectTodo,
+    cancelFix,
+    reopenFix,
     gotoKb,
     continueAfterKb,
   }
