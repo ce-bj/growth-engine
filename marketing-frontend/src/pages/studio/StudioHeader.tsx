@@ -31,6 +31,7 @@ export default function StudioHeader(props: StudioHeaderProps) {
           </Button>
         )}
         <div className="marketing-header__title">
+          <span className="ai-mark">{inLibrary ? 'AI 页面库' : 'AI 草稿'}</span>
           <strong title={inLibrary ? '智能营销页' : props.pageTitle}>
             {inLibrary ? '智能营销页' : props.pageTitle}
           </strong>

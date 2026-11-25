@@ -1,5 +1,5 @@
-import { useEffect, useRef, useState } from "react";
-import { App as AntApp, Alert, Button, Card, ConfigProvider, Dropdown, Flex, Modal, Skeleton, Spin, Statistic, Steps, Table, Tag, Tooltip } from "antd";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { App as AntApp, Alert, Button, Card, ConfigProvider, Dropdown, Empty, Flex, Modal, Segmented, Skeleton, Spin, Steps, Table, Tag, Tooltip } from "antd";
 import {
   CheckCircleFilled,
   DownOutlined,
@@ -13,7 +13,6 @@ import {
   LEADS,
   LAUNCH_STAGE,
   PREVIEW_STAGE,
-  PROGRESS_STAGE,
   MONTHLY_REPORT,
   SUGGESTIONS,
   TRACK_STAGES,
@@ -21,13 +20,42 @@ import {
   VERDICTS,
 } from "../diagnosisPeriod.js";
 import { BOARD_THEME } from "../board-theme.js";
-import { DecisionSection } from "./DecisionCards.jsx";
+import InsightStrategyWorkspace from "./InsightStrategyWorkspace.jsx";
 
 const SKIP_REASONS = [
   { key: "doing", label: "这件事我已经在做了", effect: "下周如果还是这个问题，不再重复发给你。" },
   { key: "disagree", label: "我不同意这个判断", effect: "我们记下来，以后换一种做法。" },
   { key: "later", label: "以后再说", effect: "下周如果问题还在，会再提醒你。" },
 ];
+
+function displayExecutor(name) {
+  if (name === "内容运营智能体" || name === "内容发布智能体") return "官网内容发布";
+  if (name === "智能营销页智能体") return "智能营销页";
+  return name || "";
+}
+
+function liveHref(row) {
+  const path = row?.target || "";
+  if (!path) return "";
+  if (/^https?:\/\//.test(path)) return path;
+  return `https://www.demo-cnc-oem.com${path.startsWith("/") ? path : `/${path}`}`;
+}
+
+function embeddedFrame() {
+  return typeof window !== "undefined" && window.parent && window.parent !== window;
+}
+
+function decisionsFromFlow(flow) {
+  const map = {};
+  Object.keys(flow?.approvedStrategies || {}).forEach((key) => {
+    map[key] = { status: "approved" };
+  });
+  Object.entries(flow?.skippedStrategies || {}).forEach(([key, reasonLabel]) => {
+    const reason = SKIP_REASONS.find((item) => item.label === reasonLabel) || SKIP_REASONS[2];
+    map[key] = { status: "skipped", reason };
+  });
+  return map;
+}
 
 const ARMED_DECISIONS = {
   "t-detail": { status: "approved" },
@@ -119,14 +147,14 @@ function GateScreen({ onStart }) {
     <div className="ag-gate">
       <div className="ag-gate-inner">
         <div className="ag-gate-kicker">
-          <span className="ag-gate-pill">优化策略</span>
-          <span>洞察与诊断 · 每周转化诊断</span>
+          <span className="ag-gate-pill">访客洞察与策略</span>
+          <span>诊断与决策 · 每周转化诊断</span>
         </div>
         <h1>让访客看得进、留得下</h1>
         <p>
-          每周看访客洞察，找出没接住的页面。
+          每周看访客漏斗与趋势，找出没接住的页面。
           <br />
-          开出改版任务，<em>改哪些由你点</em>。
+          同页列出网站问题与改版策略，<em>改哪些由你点</em>。
           <br />
           同意之后，营销页和内容智能体接着做。
         </p>
@@ -168,16 +196,6 @@ function RunNote({ mode }) {
         icon={<LoadingOutlined spin />}
         title="正在分析"
         description="9月14日 – 9月20日"
-      />
-    );
-  }
-  if (mode === "pending") {
-    return (
-      <Alert
-        type="info"
-        showIcon
-        title="还有未审批的任务"
-        description="任务全部审批完成后，才会启用新一轮的分析。"
       />
     );
   }
@@ -240,13 +258,6 @@ function StageTitle({ title, index, row, onOpenAgent }) {
           去预览发布 &gt;
         </button>
       </span>
-    );
-  }
-  if (index === LAUNCH_STAGE && curStage >= LAUNCH_STAGE && AGENT_VIEW[row.executor]) {
-    return (
-      <button type="button" className="ag-stage-link" onClick={() => onOpenAgent(row)}>
-        {title}
-      </button>
     );
   }
   return title;
@@ -351,6 +362,17 @@ function MonthlyModal({ open, onClose }) {
 }
 
 const FLOW_STORAGE_KEY = "growth-workbench-flow-v1";
+const ADVICE_STORAGE_KEY = "growth-workbench-advice-v1";
+
+function readAdviceDone() {
+  try {
+    const raw = window.localStorage.getItem(ADVICE_STORAGE_KEY);
+    const parsed = raw ? JSON.parse(raw) : {};
+    return parsed && typeof parsed === "object" ? parsed : {};
+  } catch {
+    return {};
+  }
+}
 
 function readSharedFlow() {
   try {
@@ -367,53 +389,79 @@ function readSharedFlow() {
   }
 }
 
-export default function AgentPage({ site, weekLabel, quiet, authMap, onAuthorize, monthlyOpen, onCloseMonthly, ledgerOpen, onCloseLedger, runState = "pending", onRunState }) {
+export default function AgentPage({
+  weekId,
+  weekLabel,
+  diagnosed = true,
+  quiet,
+  authMap,
+  onAuthorize,
+  onSelectLatestWeek,
+  toolbarExtra,
+  monthlyOpen,
+  onCloseMonthly,
+  ledgerOpen,
+  onCloseLedger,
+  runState = "pending",
+  onRunState,
+}) {
   const { message } = AntApp.useApp();
-  const [sharedFlow, setSharedFlow] = useState(() => readSharedFlow());
-  const [decisions, setDecisions] = useState(() => {
-    const init = readSharedFlow();
-    const map = {};
-    Object.keys(init.approvedStrategies || {}).forEach((k) => {
-      map[k] = { status: "approved" };
-    });
-    Object.entries(init.skippedStrategies || {}).forEach(([k, reasonLabel]) => {
-      const reason = SKIP_REASONS.find((r) => r.label === reasonLabel) || SKIP_REASONS[2];
-      map[k] = { status: "skipped", reason };
-    });
-    return map;
-  });
-  const [adviceDone, setAdviceDone] = useState({});
+  const framed = embeddedFrame();
+  const [sharedFlow, setSharedFlow] = useState(() => (
+    framed
+      ? { approvedStrategies: {}, skippedStrategies: {}, publishedTasks: {}, handledAdvice: {} }
+      : readSharedFlow()
+  ));
+  const [decisions, setDecisions] = useState(() => (framed ? {} : decisionsFromFlow(readSharedFlow())));
+  const [adviceDone, setAdviceDone] = useState(() => (framed ? {} : readAdviceDone()));
+  const [trackFilter, setTrackFilter] = useState("all");
   const [extraNotes, setExtraNotes] = useState({});
-  const [openKeys, setOpenKeys] = useState([]);
   const [baseTracking] = useState(TRACKING);
   const [flashKey, setFlashKey] = useState("");
-  const [onlyKeys, setOnlyKeys] = useState(() => {
-    const raw = new URLSearchParams(window.location.search).get("keys");
-    return raw ? raw.split(",").filter(Boolean) : [];
-  });
-  const cardRefs = useRef({});
+  const [activeTab, setActiveTab] = useState("strategy");
+  const initialParams = useMemo(() => {
+    const params = new URLSearchParams(window.location.search);
+    return {
+      focus: params.get("focus") || "",
+      lens: params.get("lens") || "funnel",
+    };
+  }, []);
+  const [focusedKey, setFocusedKey] = useState(initialParams.focus);
   const trackRefs = useRef({});
-  const ruleRefs = useRef({});
 
   useEffect(() => {
-    const onStorage = (e) => {
-      if (!e.key || e.key === FLOW_STORAGE_KEY) {
-        const nextFlow = readSharedFlow();
-        setSharedFlow(nextFlow);
-        setDecisions((prev) => {
-          const next = { ...prev };
-          Object.keys(nextFlow.approvedStrategies || {}).forEach((k) => {
-            next[k] = { status: "approved" };
-          });
-          return next;
-        });
-      }
+    if (framed) {
+      window.parent.postMessage({ type: "growth-flow-ready" }, "*");
+    }
+    const onMessage = (event) => {
+      const data = event.data;
+      if (!data || data.type !== "growth-flow-sync" || !data.flow) return;
+      const flow = data.flow;
+      setSharedFlow({
+        approvedStrategies: flow.approvedStrategies || {},
+        skippedStrategies: flow.skippedStrategies || {},
+        publishedTasks: flow.publishedTasks || {},
+        handledAdvice: flow.handledAdvice || {},
+      });
+      setDecisions(decisionsFromFlow(flow));
+      setAdviceDone(flow.handledAdvice || {});
     };
+    const onStorage = (event) => {
+      if (framed) return;
+      if (event.key && event.key !== FLOW_STORAGE_KEY) return;
+      const nextFlow = readSharedFlow();
+      setSharedFlow(nextFlow);
+      setDecisions(decisionsFromFlow(nextFlow));
+    };
+    window.addEventListener("message", onMessage);
     window.addEventListener("storage", onStorage);
-    return () => window.removeEventListener("storage", onStorage);
-  }, []);
+    return () => {
+      window.removeEventListener("message", onMessage);
+      window.removeEventListener("storage", onStorage);
+    };
+  }, [framed]);
 
-  const briefs = quiet ? [] : BRIEFS;
+  const briefs = quiet || !diagnosed ? [] : BRIEFS;
   const viewDecisions = HANDLED_STATES.has(runState) ? { ...ARMED_DECISIONS, ...decisions } : decisions;
   const pending = briefs.filter((brief) => !viewDecisions[brief.key]);
   const approved = briefs.filter((brief) => viewDecisions[brief.key]?.status === "approved");
@@ -448,11 +496,13 @@ export default function AgentPage({ site, weekLabel, quiet, authMap, onAuthorize
         : row,
     ),
   ];
-
-  const counts = [
-    { key: "pending", label: "待审批", value: pending.length, hot: pending.length > 0 },
-    { key: "approved", label: "已审批", value: approved.length + baseTracking.length },
-  ];
+  const doingCount = trackRows.filter((row) => trackStage(row) < LAUNCH_STAGE).length;
+  const liveCount = trackRows.filter((row) => trackStage(row) >= LAUNCH_STAGE).length;
+  const visibleTracks = trackRows.filter((row) => {
+    if (trackFilter === "doing") return trackStage(row) < LAUNCH_STAGE;
+    if (trackFilter === "live") return trackStage(row) >= LAUNCH_STAGE;
+    return true;
+  });
 
   function flash(key) {
     setFlashKey(key);
@@ -461,59 +511,12 @@ export default function AgentPage({ site, weekLabel, quiet, authMap, onAuthorize
     }, 2000);
   }
 
-  useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    const focusKey = params.get("focus");
-    if (!focusKey) return;
-    const timer = window.setTimeout(() => {
-      const isTrackOnly = baseTracking.some((t) => t.key === focusKey) && !briefs.some((b) => b.key === focusKey);
-      if (isTrackOnly || viewDecisions[focusKey]?.status === "approved") {
-        trackRefs.current[focusKey]?.scrollIntoView({ behavior: "smooth", block: "center" });
-        flash(focusKey);
-      } else {
-        setOpenKeys((prev) => (prev.includes(focusKey) ? prev : [...prev, focusKey]));
-        const node = cardRefs.current[focusKey] || document.getElementById(`task-${focusKey}`);
-        node?.scrollIntoView({ behavior: "smooth", block: "center" });
-        flash(focusKey);
-      }
-    }, 180);
-    return () => window.clearTimeout(timer);
-  }, []);
-
-  function toggle(key) {
-    setOpenKeys((prev) => (prev.includes(key) ? prev.filter((item) => item !== key) : [...prev, key]));
-  }
-
-  function locateBriefOrTrack(key) {
-    if (viewDecisions[key]?.status === "approved") {
-      locateTrack(key);
-      return;
-    }
-    setOpenKeys((prev) => (prev.includes(key) ? prev : [...prev, key]));
-    cardRefs.current[key]?.scrollIntoView({ behavior: "smooth", block: "center" });
-    flash(key);
-  }
-
   function locateTrack(key) {
-    trackRefs.current[key]?.scrollIntoView({ behavior: "smooth", block: "center" });
-    flash(key);
-  }
-
-  function locateAdvice(key) {
-    setOpenKeys((prev) => (prev.includes(key) ? prev : [...prev, key]));
-    const node = cardRefs.current[key] || document.getElementById(`task-${key}`);
-    node?.scrollIntoView({ behavior: "smooth", block: "center" });
-    flash(key);
-  }
-
-  function locateRule(key) {
-    ruleRefs.current[key]?.scrollIntoView({ behavior: "smooth", block: "center" });
-    flash(key);
-  }
-
-  function locateMove(item) {
-    if (item.kind === "brief") locateBriefOrTrack(item.key);
-    else locateAdvice(item.key);
+    setActiveTab("tracking");
+    window.setTimeout(() => {
+      trackRefs.current[key]?.scrollIntoView({ behavior: "smooth", block: "center" });
+      flash(key);
+    }, 80);
   }
 
   function syncToParent(action, focusKey, extra = {}) {
@@ -542,7 +545,7 @@ export default function AgentPage({ site, weekLabel, quiet, authMap, onAuthorize
   function approve(brief) {
     setDecisions((prev) => ({ ...prev, [brief.key]: { status: "approved" } }));
     syncToParent("approve", brief.key, { title: brief.title });
-    message.success(`已经交给${brief.executor}。做好后会先给你看，你确认了才会上线。`);
+    message.success(`已经交给${displayExecutor(brief.executor)}生成草稿，你预览确认后才会正式上线。`);
   }
 
   function skip(brief, reasonKey) {
@@ -584,6 +587,32 @@ export default function AgentPage({ site, weekLabel, quiet, authMap, onAuthorize
     window.location.assign(url.toString());
   }
 
+  function openPreviewByKey(key) {
+    const found = trackRows.find((r) => r.key === key);
+    if (found) {
+      openAgentTask(found);
+      return;
+    }
+    const brief = BRIEFS.find((b) => b.key === key);
+    if (brief) {
+      openAgentTask({
+        key: brief.key,
+        title: brief.title,
+        executor: brief.executor,
+        from: `${weekLabel}诊断`,
+        approvedAt: sharedFlow.approvedStrategies?.[brief.key] || "刚刚",
+        stage: PREVIEW_STAGE,
+        note: brief.summary,
+        summary: brief.summary,
+        target: brief.target,
+        requirements: requirementLines(brief),
+        requirementSections: brief.requirementSections || [],
+        constraints: brief.constraints || [],
+        extra: extraNotes[brief.key]?.trim() || "",
+      });
+    }
+  }
+
   function undo(brief) {
     setDecisions((prev) => {
       const next = { ...prev };
@@ -593,82 +622,169 @@ export default function AgentPage({ site, weekLabel, quiet, authMap, onAuthorize
     syncToParent("undo", brief.key);
   }
 
+  function toggleAdviceDone(key) {
+    setAdviceDone((prev) => {
+      const next = { ...prev, [key]: !prev[key] };
+      try {
+        window.localStorage.setItem(ADVICE_STORAGE_KEY, JSON.stringify(next));
+      } catch {
+        /* 演示环境写不进本地存储时，本次会话内仍然生效 */
+      }
+      const done = !!next[key];
+      message.success(done ? "已标记为人工处理完成" : "已撤回完成状态");
+      if (window.parent && window.parent !== window) {
+        window.parent.postMessage({
+          type: "growth-flow-update",
+          action: done ? "advice-done" : "advice-undo",
+          focusKey: key,
+        }, "*");
+      }
+      return next;
+    });
+  }
+
   const showWorkbench = WORKBENCH_STATES.has(runState);
+  const trackingAttention = trackRows.filter((row) => trackStage(row) < LAUNCH_STAGE).length;
 
   return (
     <ConfigProvider theme={BOARD_THEME}>
       <div className="ag-page">
+        <header className="dan-toolbar is-unified">
+          <div className="dan-toolbar-tabs">
+            {runState !== "off" ? <h1 className="ag-page-title">访客洞察与策略</h1> : null}
+            <Segmented
+              value={activeTab}
+              onChange={setActiveTab}
+              options={[
+                {
+                  value: "strategy",
+                  label: (
+                    <span className="isw-tab-label">
+                      洞察与策略
+                      {diagnosed && pending.length > 0 ? (
+                        <em className="isw-tab-badge is-orange">{pending.length}</em>
+                      ) : null}
+                    </span>
+                  ),
+                },
+                {
+                  value: "tracking",
+                  label: (
+                    <span className="isw-tab-label" title="还没上线、需要你继续看的策略">
+                      执行追踪
+                      {trackingAttention > 0 ? (
+                        <em className="isw-tab-badge is-blue">{trackingAttention}</em>
+                      ) : null}
+                    </span>
+                  ),
+                },
+              ]}
+            />
+          </div>
+          <div className="dan-toolbar-right">{toolbarExtra}</div>
+        </header>
+
         {runState === "off" ? <GateScreen onStart={() => onRunState("running")} /> : null}
         <RunNote mode={runState} />
         {runState === "running" ? <AnalyzingMotion /> : null}
-        {showWorkbench ? <LeadStrip counts={counts} /> : null}
-        {showWorkbench ? (
-          <DecisionSection
+
+        {showWorkbench && activeTab === "strategy" ? (
+          <InsightStrategyWorkspace
+            weekId={weekId}
+            diagnosed={diagnosed}
             quiet={quiet}
             decisions={viewDecisions}
+            publishedMap={publishedMap}
             adviceDone={adviceDone}
             extraNotes={extraNotes}
             authMap={authMap}
-            openKeys={openKeys}
-            flashKey={flashKey}
-            onToggle={toggle}
+            initialFocusKey={focusedKey}
+            initialLens={initialParams.lens}
+            onSelectLatestWeek={onSelectLatestWeek}
             onApprove={approve}
             onSkip={skip}
             onUndo={undo}
+            onToggleAdviceDone={toggleAdviceDone}
             onExtra={(key, value) => setExtraNotes((prev) => ({ ...prev, [key]: value }))}
             onAuthorize={onAuthorize}
-            onLocateTrack={locateTrack}
-            onlyKeys={onlyKeys}
-            onShowAll={() => setOnlyKeys([])}
-            cardRef={(key, node) => {
-              cardRefs.current[key] = node;
-            }}
+            onOpenPreview={openPreviewByKey}
+            onOpenTracking={locateTrack}
           />
         ) : null}
 
-        {showWorkbench ? (
-          <>
-        <SectionTitle title="已经在做的事" />
-        <Card className="ag-track">
-          {trackRows.map((row) => (
-            <div
-              key={row.key}
-              ref={(node) => {
-                trackRefs.current[row.key] = node;
-              }}
-              className={`ag-track-row${flashKey === row.key ? " is-flash" : ""}`}
-            >
-              <div className="ag-track-info">
-                <div className="ag-track-name">
-                  <b>{row.title}</b>
-                </div>
-                <span>
-                  {row.executor} · {row.approvedAt} 批准{row.launchedAt ? ` · ${row.launchedAt} 上线` : ""}
+        {showWorkbench && activeTab === "tracking" ? (
+          <section className="isw-tracking-pane" aria-label="策略执行追踪">
+            <SectionTitle
+              title="已经在做的事"
+              extra={
+                <span className="isw-tracking-sub">
+                  进行中 {doingCount} 项，已上线 {liveCount} 项
                 </span>
-              </div>
-              <div className="ag-track-main">
-                <Steps
-                  className="ag-track-steps"
-                  type="dot"
-                  size="small"
-                  current={trackStage(row)}
-                  status={trackStage(row) === LAUNCH_STAGE ? "finish" : "process"}
-                  items={TRACK_STAGES.map((title, index) => ({
-                    title: (
-                      <StageTitle
-                        title={title}
-                        index={index}
-                        row={row}
-                        onOpenAgent={openAgentTask}
-                      />
-                    ),
-                  }))}
-                />
-              </div>
+              }
+            />
+            <div className="isw-track-filter">
+              <Segmented
+                size="small"
+                value={trackFilter}
+                onChange={setTrackFilter}
+                options={[
+                  { label: `全部 ${trackRows.length}`, value: "all" },
+                  { label: `进行中 ${doingCount}`, value: "doing" },
+                  { label: `已上线 ${liveCount}`, value: "live" },
+                ]}
+              />
             </div>
-          ))}
-        </Card>
-          </>
+            {visibleTracks.length ? (
+              <Card className="ag-track">
+                {visibleTracks.map((row) => (
+                  <div
+                    key={row.key}
+                    ref={(node) => {
+                      trackRefs.current[row.key] = node;
+                    }}
+                    className={`ag-track-row${flashKey === row.key ? " is-flash" : ""}`}
+                  >
+                    <div className="ag-track-info">
+                      <div className="ag-track-name">
+                        <b>{row.title}</b>
+                      </div>
+                      <span>
+                        {displayExecutor(row.executor)} · {row.approvedAt} 批准{row.launchedAt ? ` · ${row.launchedAt} 上线` : ""}
+                      </span>
+                      {trackStage(row) >= LAUNCH_STAGE && liveHref(row) ? (
+                        <Button type="link" size="small" className="ag-live-link" href={liveHref(row)} target="_blank">
+                          查看线上效果 &gt;
+                        </Button>
+                      ) : null}
+                    </div>
+                    <div className="ag-track-main">
+                      <Steps
+                        className="ag-track-steps"
+                        type="dot"
+                        size="small"
+                        current={trackStage(row)}
+                        status={trackStage(row) === LAUNCH_STAGE ? "finish" : "process"}
+                        items={TRACK_STAGES.map((title, index) => ({
+                          title: (
+                            <StageTitle
+                              title={title}
+                              index={index}
+                              row={row}
+                              onOpenAgent={openAgentTask}
+                            />
+                          ),
+                        }))}
+                      />
+                    </div>
+                  </div>
+                ))}
+              </Card>
+            ) : (
+              <Card className="ag-empty">
+                <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description="当前还没有已批准进入执行的策略" />
+              </Card>
+            )}
+          </section>
         ) : null}
       </div>
 
@@ -683,9 +799,12 @@ export default function AgentPage({ site, weekLabel, quiet, authMap, onAuthorize
         onOpen={(record) => {
           onCloseLedger();
           window.setTimeout(() => {
-            if (record.kind === "brief") locateBriefOrTrack(record.key);
-            else if (record.kind === "track") locateTrack(record.key);
-            else locateAdvice(record.key);
+            if (record.kind === "track") {
+              locateTrack(record.key);
+            } else {
+              setActiveTab("strategy");
+              setFocusedKey(record.key);
+            }
           }, 0);
         }}
       />

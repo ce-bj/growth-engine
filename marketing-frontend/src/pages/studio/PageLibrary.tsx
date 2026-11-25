@@ -131,7 +131,7 @@ export default function PageLibrary({ pages, store, onStore, versionOf, typeOf, 
 
 
   return <section className="results-page history-library">
-    <div className="result-heading"><div><p className="eyebrow">PAGE LIBRARY</p><h1>营销页面</h1><p>管理页面的发布、链接与推广。</p></div><div className="row"><Button variant="outline" onClick={() => setDialog({ kind: 'placements' })}><Megaphone size={15} />推广位置</Button><Button onClick={onNew}><Plus size={16} />创建页面</Button></div></div>
+    <div className="result-heading"><div><span className="ai-mark">草稿与发布</span><h1>营销页面</h1><p>管理已生成页面的发布、链接与推广。</p></div><div className="row"><Button variant="outline" onClick={() => setDialog({ kind: 'placements' })}><Megaphone size={15} />推广位置</Button><Button onClick={onNew}><Plus size={16} />创建页面</Button></div></div>
     <div className="history-filters library-filters">
       <Input aria-label="搜索页面" placeholder="搜索页面名称或企业" value={query} onChange={e => setQuery(e.target.value)} />
       <StudioSelect label="发布状态" options={PUBLISH_FILTERS} value={publishFilter} onChange={setPublishFilter} />

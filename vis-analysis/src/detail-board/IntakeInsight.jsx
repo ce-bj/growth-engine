@@ -5,7 +5,7 @@ import { fmtInt, pct, rateBrokeDown, through } from "../funnel-review/data.js";
 import { getMcpBoard } from "./mcpBoardData.js";
 
 /** 建议目标是经营参考，不随周次改口径。有效浏览对标上周曾达到的 40%。 */
-const LOSS_PLAN = [
+export const LOSS_PLAN = [
   {
     id: "l1",
     action: "提升有效浏览",
@@ -82,11 +82,57 @@ function isBusinessLand(row) {
   return !text.includes("招聘") && !text.includes("jobposting") && !text.includes("/job");
 }
 
+const DIAGNOSIS_LOSS_LANDS = [
+  {
+    url: "https://www.demo-cnc-oem.com/products/cnc-6061-bracket",
+    name: "铝支架详情页",
+    type: "产品详情",
+    landUv: 420,
+    bounceUv: 328,
+    bounce: 0.781,
+    catchRate: 0.219,
+    landStay: 11,
+  },
+  {
+    url: "https://www.demo-cnc-oem.com/campaign/cnc-oem-q3",
+    name: "询价广告品牌页",
+    type: "营销页",
+    landUv: 210,
+    bounceUv: 179,
+    bounce: 0.853,
+    catchRate: 0.147,
+    landStay: 8,
+  },
+  {
+    url: "https://www.demo-cnc-oem.com/products",
+    name: "产品列表（打样流量）",
+    type: "产品列表",
+    landUv: 64,
+    bounceUv: 48,
+    bounce: 0.75,
+    catchRate: 0.25,
+    landStay: 9,
+  },
+];
+
+function lostPeople(row) {
+  const bounce = row.bounce != null ? row.bounce : row.catchRate != null ? 1 - row.catchRate : 0;
+  return (row.landUv || 0) * bounce;
+}
+
 function topLossLands(lands) {
-  return (lands || [])
-    .filter((row) => row.landUv > 0 && row.catchRate != null && row.catchRate < 0.4 && row.bounce != null && row.landStay != null && isBusinessLand(row))
-    .slice()
-    .sort((a, b) => b.landUv * b.bounce - a.landUv * a.bounce || b.landUv - a.landUv)
+  const merged = DIAGNOSIS_LOSS_LANDS.map((row) => ({ ...row }));
+  (lands || []).forEach((row) => {
+    if (!row?.url || merged.some((item) => item.url === row.url)) return;
+    merged.push(row);
+  });
+  return merged
+    .filter((row) => {
+      if (!(row.landUv > 0) || !isBusinessLand(row) || lostPeople(row) <= 0) return false;
+      const highLoss = (row.catchRate != null && row.catchRate < 0.4) || (row.bounce != null && row.bounce >= 0.4);
+      return highLoss;
+    })
+    .sort((a, b) => lostPeople(b) - lostPeople(a) || (b.landUv || 0) - (a.landUv || 0))
     .slice(0, 3);
 }
 
@@ -110,7 +156,7 @@ function topLeakyPages(pages) {
     .slice(0, 3);
 }
 
-function LossEvidence({ id, model }) {
+export function LossEvidence({ id, model }) {
   if (id === "l1") {
     const rows = topLossLands(model.lands.all);
     return (
@@ -252,7 +298,7 @@ function wowText(signedPct, dir) {
   return `较上周环比 ${signedPct}`;
 }
 
-function peopleMove(cur, prev) {
+export function peopleMove(cur, prev) {
   if (prev == null || prev === 0) return { text: "较上周环比 —", dir: "flat" };
   const rel = ((cur - prev) / prev) * 100;
   if (Math.abs(rel) < 0.05) return { text: wowText("", "flat"), dir: "flat" };
@@ -262,7 +308,7 @@ function peopleMove(cur, prev) {
   };
 }
 
-function rateMove(cur, prev) {
+export function rateMove(cur, prev) {
   const pp = (cur - prev) * 100;
   if (Math.abs(pp) < 0.05) return { text: wowText("", "flat"), dir: "flat", pp: 0 };
   return {
@@ -279,8 +325,8 @@ function lossTone(pass, passPrev, target) {
   return "ok";
 }
 
-const TONE_LABEL = { bad: "待提升", flat: "待提升", ok: "已达标" };
-const TONE_TAG = { bad: "error", flat: "warning", ok: "success" };
+export const TONE_LABEL = { bad: "待提升", flat: "待提升", ok: "已达标" };
+export const TONE_TAG = { bad: "error", flat: "warning", ok: "success" };
 const FUNNEL_COLORS = ["#155a7d", "#1f6f96", "#2f8bb8", "#4b9fc8"];
 const TREND_SPECS = [
   {
@@ -443,11 +489,11 @@ function nearestTrendPoint(series, chartEl, clientX, g2chart) {
   };
 }
 
-function RateTrend({ stages, weekId, losses, onOpen, active }) {
+export function RateTrend({ stages, weekId, losses, onOpen, active, chartFloor = 240 }) {
   const gridRef = useRef(null);
   const tipRef = useRef(null);
   const plotsRef = useRef({});
-  const [chartH, setChartH] = useState(280);
+  const [chartH, setChartH] = useState(chartFloor);
 
   useEffect(() => {
     if (!active) hideTip();
@@ -459,14 +505,14 @@ function RateTrend({ stages, weekId, losses, onOpen, active }) {
     const chart = grid.querySelector(".db-trend-card__chart");
     if (!chart) return undefined;
     const measure = () => {
-      const next = Math.max(240, Math.round(chart.clientHeight));
+      const next = Math.max(chartFloor, Math.round(chart.clientHeight));
       setChartH((prev) => (Math.abs(prev - next) <= 2 ? prev : next));
     };
     const observer = new ResizeObserver(measure);
     observer.observe(chart);
     measure();
     return () => observer.disconnect();
-  }, []);
+  }, [chartFloor]);
 
   const cards = useMemo(
     () =>
@@ -546,7 +592,7 @@ function RateTrend({ stages, weekId, losses, onOpen, active }) {
                   <b>{card.metric}</b>
                   <span>{card.stepTitle}</span>
                 </div>
-                <Tag color={TONE_TAG[card.loss.tone]} className="db-tag-mini">
+                <Tag color={card.loss.tone === "bad" ? "red" : TONE_TAG[card.loss.tone]} className="db-tag-mini">
                   {TONE_LABEL[card.loss.tone]}
                 </Tag>
               </div>
@@ -560,7 +606,7 @@ function RateTrend({ stages, weekId, losses, onOpen, active }) {
                 <small className="db-trend-card__target-k">建议目标</small>
                 <b className="db-trend-card__target-v">≥ {card.target.toFixed(1)}%</b>
                 <span className={`db-trend-card__gap${isBelow ? " is-gap" : " is-pass"}`}>
-                  {ringRatio(card.diffTarget)}
+                  {gapPhrase(card.diffTarget)}
                 </span>
               </div>
             </div>
@@ -636,18 +682,19 @@ function rateClause(move) {
   return move.text;
 }
 
-function ringRatio(value) {
-  if (value == null || !Number.isFinite(value) || Math.abs(value) < 0.05) return "较上周环比持平";
-  const signed = `${value > 0 ? "+" : ""}${value.toFixed(1)}%`;
-  return `较上周环比 ${signed}`;
+function gapPhrase(diff) {
+  if (diff == null || !Number.isFinite(diff) || Math.abs(diff) < 0.05) return "与及格线持平";
+  if (diff < 0) return `距及格线差 ${Math.abs(diff).toFixed(1)} 个百分点`;
+  return `高于目标 ${diff.toFixed(1)} 个百分点`;
 }
 
-function trendDelta(move) {
-  if (!move || move.dir === "flat") return "较上周环比持平";
-  return ringRatio(move.pp || 0);
+export function trendDelta(move) {
+  if (!move || move.dir === "flat" || !Number.isFinite(move.pp) || Math.abs(move.pp) < 0.05) return "较上周持平";
+  const sign = move.pp > 0 ? "+" : "-";
+  return `较上周 ${sign}${Math.abs(move.pp).toFixed(1)} 个百分点`;
 }
 
-function weekShortfall(loss) {
+export function weekShortfall(loss) {
   const now = `当前 ${fmtInt(loss.gate.to.cur)} 人`;
   if (loss.gap <= 0) return `${now}（已达到建议及格线）`;
   const verb = loss.id === "l1" ? "多流失" : loss.id === "l2" ? "少转化" : "少留资";
@@ -668,7 +715,7 @@ function liftStrategies(plan, tone, gate, targetPeople, gap) {
   }];
 }
 
-function buildLosses(stages) {
+export function buildLosses(stages) {
   const gates = through(stages);
   return LOSS_PLAN.map((plan) => {
     const gate = gates.find((item) => item.lossId === plan.id);

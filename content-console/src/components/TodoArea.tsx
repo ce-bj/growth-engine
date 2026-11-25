@@ -17,7 +17,7 @@ export function TodoArea() {
   return (
     <section className="todo-area">
       <div className="section-head">
-        <h2>内容进展</h2>
+        <h2><span className="ai-mark">策略产出</span>内容进展</h2>
         <p>优化策略与自建发布任务产出的内容，查看各类内容的处理与推送进度</p>
       </div>
 

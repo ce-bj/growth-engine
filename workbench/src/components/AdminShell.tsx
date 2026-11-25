@@ -24,6 +24,7 @@ import {
   GROWTH_FLOW_STORAGE_KEY,
   approveStrategyInFlow,
   computeGrowthBoard,
+  markAdviceHandledInFlow,
   publishTaskInFlow,
   readGrowthFlowState,
   skipStrategyInFlow,
@@ -68,11 +69,10 @@ type NavItem = {
 }
 
 /**
- * 贴合老板四幕式决策动线的菜单架构：
+ * 贴合老板决策动线的菜单架构（已合并「洞察」与「决策」，消除跳页断点）：
  * 第一幕（置顶独立项，无分组标题）：增长首页
- * 第二幕：诊断与洞察 -> 访客与漏斗洞察 / AI 友好度体检
- * 第三幕（Gate 1 控算力）：增长决策 -> 优化策略（橙/红待定策略角标）
- * 第四幕（Gate 2 保安全）：内容与页面 -> 智能营销页 / 官网内容发布（蓝色待预览发布草稿角标）
+ * 第二幕（Gate 1 看数即拍板）：诊断与决策 -> AI 友好度体检 / 访客洞察与策略（橙色待定策略角标）
+ * 第三幕（Gate 2 保安全）：内容与页面 -> 智能营销页 / 官网内容发布（蓝色待预览发布草稿角标）
  * 底座支撑：企业大脑与助手 -> 企业知识库 / AI 运营助手
  */
 const TOP_HOME_ITEM: NavItem = {
@@ -105,9 +105,9 @@ const PAGE_META: Record<string, { title: string; crumb: string }> = {
   analysisLeads: { title: '线索转化分析', crumb: '数据分析' },
   analysisOpsReport: { title: '运营报告推送', crumb: '数据分析' },
   dashboard: { title: '增长首页', crumb: '总览' },
-  ready: { title: 'AI 友好度体检', crumb: '诊断与洞察' },
-  intake: { title: '访客与漏斗洞察', crumb: '诊断与洞察' },
-  visitor: { title: '优化策略', crumb: '增长决策' },
+  ready: { title: 'AI 友好度体检', crumb: '诊断与决策' },
+  intake: { title: '访客洞察与策略', crumb: '诊断与决策' },
+  visitor: { title: '访客洞察与策略', crumb: '诊断与决策' },
   marketing: { title: '智能营销页', crumb: '内容与页面' },
   content: { title: '官网内容发布', crumb: '内容与页面' },
   assistant: { title: 'AI 运营助手', crumb: '企业大脑与助手' },
@@ -172,18 +172,12 @@ export function AdminShell({ children }: { children: ReactNode }) {
   const navGroups = useMemo(
     () => [
       {
-        title: '诊断与洞察',
+        title: '诊断与决策',
         items: [
           { id: 'ready' as ViewId, label: 'AI 友好度体检', icon: ShieldCheck },
-          { id: 'intake' as ViewId, label: '访客与漏斗洞察', icon: Filter },
-        ],
-      },
-      {
-        title: '增长决策',
-        items: [
           {
             id: 'visitor' as ViewId,
-            label: '优化策略',
+            label: '访客洞察与策略',
             icon: ScanSearch,
             badgeCount: board.pendingStrategyCount,
             badgeTone: 'orange' as BadgeTone,
@@ -225,7 +219,7 @@ export function AdminShell({ children }: { children: ReactNode }) {
 
   const embedView = EMBED_VIEWS.includes(view)
   const analysisView = isAnalysisView(view)
-  const selectedKey = view === 'scanning' ? 'dashboard' : view
+  const selectedKey = view === 'scanning' ? 'dashboard' : view === 'intake' ? 'visitor' : view
   const dataAnalysisCurrent = analysisView
 
   useEffect(() => {
@@ -246,21 +240,29 @@ export function AdminShell({ children }: { children: ReactNode }) {
         view?: string
         focusKey?: string
         focusKeys?: string[]
-        action?: 'approve' | 'skip' | 'undo' | 'publish'
+        action?: 'approve' | 'skip' | 'undo' | 'publish' | 'advice-done' | 'advice-undo'
         reason?: string
         title?: string
       } | null
       if (!data?.type) return
 
-      if (data.type === 'growth-navigate' && data.view && known.has(data.view)) {
-        if (data.view === 'visitor' || data.focusKey || data.focusKeys?.length) {
+      if (data.type === 'growth-navigate' && data.view) {
+        const normalizedView = data.view === 'intake' ? 'visitor' : data.view
+        if (!known.has(normalizedView)) return
+        if (normalizedView === 'visitor' || data.focusKey || data.focusKeys?.length) {
           window.dispatchEvent(
             new CustomEvent('growth-focus-strategy', {
-              detail: { view: data.view, focusKey: data.focusKey, focusKeys: data.focusKeys },
+              detail: { view: normalizedView, focusKey: data.focusKey, focusKeys: data.focusKeys },
             }),
           )
         }
-        navigate(data.view as ViewId)
+        navigate(normalizedView as ViewId)
+        return
+      }
+
+      if (data.type === 'growth-flow-ready') {
+        const target = event.source as Window | null
+        target?.postMessage({ type: 'growth-flow-sync', flow: readGrowthFlowState() }, '*')
         return
       }
 
@@ -275,6 +277,10 @@ export function AdminShell({ children }: { children: ReactNode }) {
         } else if (data.action === 'publish') {
           publishTaskInFlow(data.focusKey)
           pushToast('success', `「${data.title || '草稿'}」已确认发布上线，并计入增长首页本周已完成`)
+        } else if (data.action === 'advice-done') {
+          markAdviceHandledInFlow(data.focusKey, true)
+        } else if (data.action === 'advice-undo') {
+          markAdviceHandledInFlow(data.focusKey, false)
         }
       }
     }

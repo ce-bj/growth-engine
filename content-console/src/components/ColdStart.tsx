@@ -8,7 +8,7 @@ export function ColdStart() {
   return (
     <section className="cold-start">
       <div className="section-head">
-        <h2>冷启动推荐任务</h2>
+        <h2><span className="ai-mark">待你确认</span>冷启动推荐</h2>
         <p>网站刚上线，优化策略推荐以下发布任务，确认后开始产出内容</p>
       </div>
       {pending.map((d) => (

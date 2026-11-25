@@ -65,7 +65,7 @@ export function TaskArea() {
             const st = taskStatus(t)
             return (
               <div
-                className={'task-card' + (moreOpen === t.id ? ' menu-open' : '')}
+                className={'task-card' + (t.from === 'manual' ? ' is-manual' : ' is-strategy') + (moreOpen === t.id ? ' menu-open' : '')}
                 key={t.id}
                 onClick={() => navigate({ name: 'task-detail', id: t.id })}
               >
@@ -76,7 +76,7 @@ export function TaskArea() {
                     <span className={'status-badge ' + statusBadgeClass(st)}>
                       {TASK_STATUS_LABEL[st]}
                     </span>
-                    <span className="task-src">{t.from === 'manual' ? '手动创建' : '优化策略'}</span>
+                    <span className={'task-src' + (t.from === 'manual' ? '' : ' is-ai')}>{t.from === 'manual' ? '手动创建' : '优化策略'}</span>
                   </div>
                   <div className="task-meta">
                     <span className="type-tag">{t.app} · {t.col}</span>

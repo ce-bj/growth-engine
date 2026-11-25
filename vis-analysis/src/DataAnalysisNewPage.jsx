@@ -1,8 +1,8 @@
 /** 网站策略页（Growth/vis-analysis）。与数字门户「数据分析-旧」已拆开。 */
 import { useMemo, useState } from "react";
-import { App as AntApp, Button, ConfigProvider, DatePicker, Segmented } from "antd";
+import { App as AntApp, Button, ConfigProvider, DatePicker, Dropdown, Segmented } from "antd";
 import zhCN from "antd/locale/zh_CN";
-import { ArrowLeftOutlined, FileTextOutlined, HistoryOutlined } from "@ant-design/icons";
+import { ArrowLeftOutlined, SwapOutlined } from "@ant-design/icons";
 import dayjs from "dayjs";
 import isoWeek from "dayjs/plugin/isoWeek";
 import "dayjs/locale/zh-cn";
@@ -18,6 +18,12 @@ dayjs.extend(isoWeek);
 dayjs.locale("zh-cn");
 
 const LATEST_CLOSED = dayjs(LATEST_CLOSED_WEEK_END);
+
+const BOARD_SITES = [
+  { id: "demo", lang: "英文", host: "www.demo-cnc-oem.com", name: "Demo · CNC 精密加工件外贸站" },
+  { id: "live", lang: "中文简体", host: MCP_SITE.host, name: MCP_SITE.name },
+  { id: "live2", lang: "中文简体", host: GOODY_SITE.host, name: GOODY_SITE.name },
+];
 
 function weekIdFromDayjs(value) {
   const start = value.startOf("isoWeek");
@@ -80,6 +86,39 @@ const BOARD_PAGE_THEME = {
     Select: { optionSelectedBg: "#e8f4fb" },
   },
 };
+
+function SiteSwitch({ value, onChange }) {
+  const current = BOARD_SITES.find((site) => site.id === value) || BOARD_SITES[0];
+  return (
+    <div className="dan-site-switch">
+      <span className="dan-site-switch__current" title={current.name}>
+        {current.lang} {current.host}
+      </span>
+      <Dropdown
+        trigger={["click"]}
+        menu={{
+          selectable: true,
+          selectedKeys: [current.id],
+          items: BOARD_SITES.map((site) => ({
+            key: site.id,
+            label: (
+              <span className="dan-site-option">
+                <b>{site.lang}</b>
+                <span>{site.host}</span>
+              </span>
+            ),
+          })),
+          onClick: ({ key }) => onChange(key),
+        }}
+      >
+        <button type="button" className="dan-site-switch__action" aria-label={`切换网站，当前 ${current.lang} ${current.host}`}>
+          <SwapOutlined />
+          切换网站
+        </button>
+      </Dropdown>
+    </div>
+  );
+}
 
 function AuthConnect({ sourceKey, backLabel, onBack, onDone }) {
   const { message } = AntApp.useApp();
@@ -153,7 +192,7 @@ function Workbench({ boardOnly, intakeOnly }) {
   const auth = authKey ? (
     <AuthConnect
       sourceKey={authKey}
-      backLabel={boardOnly ? "返回数据看板" : intakeOnly ? "返回网站承接数据" : "返回网站策略"}
+      backLabel={boardOnly ? "返回数据看板" : "返回访客洞察与策略"}
       onBack={() => setAuthKey(null)}
       onDone={finishAuth}
     />
@@ -166,30 +205,28 @@ function Workbench({ boardOnly, intakeOnly }) {
         {auth}
         <div className="dan-page is-board" style={pageStyle}>
           <div className="dan-inner is-agent">
-            <div className="dan-board-switch">
-              <span>看板</span>
-              <Segmented
-                value={boardKind}
-                onChange={setBoardKind}
-                options={[
-                  { value: "demo", label: "演示数据" },
-                  { value: "live", label: "实际数据" },
-                  { value: "live2", label: "实际数据2" },
-                ]}
-              />
-              <span className="dan-board-switch-note">
-                {boardKind === "demo"
-                  ? "样例站点，模块和数字都是演示数据。"
-                  : boardKind === "live2"
-                    ? `${GOODY_SITE.name} · ${GOODY_SITE.host} · 截至 ${GOODY_SITE.asOf}`
-                    : `${MCP_SITE.name} · ${MCP_SITE.host} · 截至 ${MCP_SITE.asOf}`}
-              </span>
+            <div className="dan-board-bar">
+              <SiteSwitch value={boardKind} onChange={setBoardKind} />
+              <div className="dan-board-switch">
+                <span>Mock</span>
+                <Segmented
+                  value={boardKind}
+                  onChange={setBoardKind}
+                  options={[
+                    { value: "demo", label: "演示数据" },
+                    { value: "live", label: "实际数据" },
+                    { value: "live2", label: "实际数据2" },
+                  ]}
+                />
+                <span className="dan-board-switch-note">
+                  {boardKind === "demo"
+                    ? "样例站点，模块和数字都是演示数据。"
+                    : boardKind === "live2"
+                      ? `${GOODY_SITE.name} · ${GOODY_SITE.host} · 截至 ${GOODY_SITE.asOf}`
+                      : `${MCP_SITE.name} · ${MCP_SITE.host} · 截至 ${MCP_SITE.asOf}`}
+                </span>
+              </div>
             </div>
-            {boardKind !== "demo" ? (
-              <header className="dan-toolbar">
-                <span className="dan-live-site">{boardKind === "live2" ? GOODY_SITE.name : MCP_SITE.name}</span>
-              </header>
-            ) : null}
             {boardKind === "demo" ? (
               <DetailBoard authMap={authMap} onAuthorize={setAuthKey} />
             ) : boardKind === "live2" ? (
@@ -203,65 +240,61 @@ function Workbench({ boardOnly, intakeOnly }) {
     );
   }
 
-  if (intakeOnly) {
-    return (
-      <>
-        {auth}
-        <div className="dan-page" style={pageStyle}>
-          <div className="dan-inner is-agent">
-            <DetailBoard authMap={authMap} onAuthorize={setAuthKey} mode="intake" />
-          </div>
-        </div>
-      </>
-    );
+  function openFullBoard() {
+    if (window.parent && window.parent !== window) {
+      window.parent.postMessage({ type: "growth-navigate", view: "board" }, "*");
+      return;
+    }
+    const url = new URL(window.location.href);
+    url.searchParams.set("view", "board");
+    window.location.assign(url.toString());
   }
+
+  const diagnosed = site.diagnosed && week.id === WEEKS[0].id;
+
+  const toolbarExtra = (
+    <>
+      {site.diagnosed ? (
+        <DatePicker
+          picker="week"
+          className="dan-week-select"
+          size="small"
+          allowClear={false}
+          inputReadOnly
+          placeholder="选择自然周"
+          value={dayjsFromWeekId(week.id)}
+          format={formatClosedWeek}
+          maxDate={LATEST_CLOSED}
+          disabledDate={(date) => date.endOf("isoWeek").isAfter(LATEST_CLOSED, "day")}
+          classNames={{ popup: { root: "dan-week-popup" } }}
+          aria-label="选择已结束的自然周（周一至周日）"
+          onChange={(value) => {
+            if (value) setWeekId(weekIdFromDayjs(value));
+          }}
+        />
+      ) : null}
+      <Button size="small" onClick={openFullBoard}>完整数据看板 &gt;</Button>
+      <span className="dan-mock">
+        <MockStateSwitch value={runState} onChange={setRunState} />
+      </span>
+    </>
+  );
 
   return (
     <>
       {auth}
       <div className="dan-page" style={pageStyle}>
         <div className="dan-inner is-agent">
-          <header className="dan-toolbar">
-            {site.diagnosed ? (
-              <Button icon={<HistoryOutlined />} onClick={() => setLedgerOpen(true)}>
-                以前建议过的事
-              </Button>
-            ) : null}
-            {site.diagnosed ? (
-              <>
-                <DatePicker
-                  picker="week"
-                  className="dan-week-select"
-                  size="middle"
-                  allowClear={false}
-                  inputReadOnly
-                  placeholder="选择自然周"
-                  value={dayjsFromWeekId(week.id)}
-                  format={formatClosedWeek}
-                  maxDate={LATEST_CLOSED}
-                  disabledDate={(date) => date.endOf("isoWeek").isAfter(LATEST_CLOSED, "day")}
-                  classNames={{ popup: { root: "dan-week-popup" } }}
-                  aria-label="选择已结束的自然周（周一至周日）"
-                  onChange={(value) => {
-                    if (value) setWeekId(weekIdFromDayjs(value));
-                  }}
-                />
-                <Button icon={<FileTextOutlined />} onClick={() => setMonthlyOpen(true)}>
-                  这个月做了什么
-                </Button>
-              </>
-            ) : null}
-            <span className="dan-mock">
-              <MockStateSwitch value={runState} onChange={setRunState} />
-            </span>
-          </header>
           <AgentPage
             key={`${site.id}-${week.id}`}
-            site={site}
+            weekId={week.id}
             weekLabel={week.label}
+            diagnosed={diagnosed}
             quiet={quiet}
             authMap={authMap}
             onAuthorize={setAuthKey}
+            onSelectLatestWeek={() => setWeekId(WEEKS[0].id)}
+            toolbarExtra={toolbarExtra}
             monthlyOpen={monthlyOpen}
             onCloseMonthly={() => setMonthlyOpen(false)}
             ledgerOpen={ledgerOpen}

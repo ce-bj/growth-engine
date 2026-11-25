@@ -9,7 +9,7 @@ import type { ViewId } from '../types'
 export const GROWTH_FLOW_STORAGE_KEY = 'growth-workbench-flow-v1'
 export const GROWTH_FLOW_EVENT = 'growth-flow-change'
 
-export type GateStage = 'pending_strategy' | 'pending_publish' | 'pending_optimize' | 'done' | 'skipped'
+export type GateStage = 'pending_strategy' | 'pending_publish' | 'pending_manual' | 'pending_optimize' | 'done' | 'skipped'
 
 export interface GrowthKpiItem {
   id: 'uv' | 'viewRate' | 'leads' | 'leadRate'
@@ -30,7 +30,7 @@ export interface GrowthTodoItem {
   title: string
   desc: string
   /** 来源智能体标签 */
-  sourceAgent: '优化策略' | '智能营销页' | '官网内容发布' | 'AI 友好度体检'
+  sourceAgent: '洞察与策略' | '智能营销页' | '官网内容发布' | 'AI 友好度体检'
   /** 执行端页面 */
   targetView: 'visitor' | 'marketing' | 'content' | 'ready'
   /** 当前所处两步确认闸门状态 */
@@ -77,12 +77,15 @@ export interface GrowthFlowState {
   skippedStrategies: Record<string, string>
   /** Gate 2 已确认发布上线的任务 key -> 时间 */
   publishedTasks: Record<string, string>
+  /** 需人工处理的建议 key -> 完成时间 */
+  handledAdvice: Record<string, string>
 }
 
 const DEFAULT_FLOW_STATE: GrowthFlowState = {
   approvedStrategies: {},
   skippedStrategies: {},
   publishedTasks: {},
+  handledAdvice: {},
 }
 
 export const overviewMonth = {
@@ -124,11 +127,11 @@ export const CORE_KPIS: GrowthKpiItem[] = [
     title: '访问人数',
     value: '1,650',
     rawValue: 1650,
-    prevValue: '上周 1,640 人',
-    deltaText: '+0.6%',
-    trend: 'up',
+    prevValue: '上周 1,650 人',
+    deltaText: '持平',
+    trend: 'flat',
     abnormal: false,
-    hint: '进站总人数基本持平，流量入口稳定',
+    hint: '进站总人数与上周相同，流量入口稳定',
   },
   {
     id: 'viewRate',
@@ -194,7 +197,7 @@ export const BASE_GROWTH_TODOS: GrowthTodoItem[] = [
     focusKey: 't-detail',
     title: 'CNC-6061 铝支架详情页 · 首屏补齐型号参数与打样周期',
     desc: '近 7 天 420 人进站仅 21.9% 继续浏览；将 6061-T6 材质、±0.02mm 公差与 48h 打样提至第一屏。',
-    sourceAgent: '优化策略',
+    sourceAgent: '洞察与策略',
     targetView: 'content',
     stage: 'pending_strategy',
     submittedAt: '09-21 02:20',
@@ -243,7 +246,7 @@ export const BASE_GROWTH_TODOS: GrowthTodoItem[] = [
     focusKey: 't-landing',
     title: '新建「CNC OEM 询价」专属营销落地页，替换原品牌宣传页',
     desc: '询价广告 210 人进站 85% 秒退；新建面向 cnc machining quote 买家的报价承接页。',
-    sourceAgent: '优化策略',
+    sourceAgent: '洞察与策略',
     targetView: 'marketing',
     stage: 'pending_strategy',
     submittedAt: '09-21 02:20',
@@ -292,7 +295,7 @@ export const BASE_GROWTH_TODOS: GrowthTodoItem[] = [
     focusKey: 't-article',
     title: '新建技术选型文章：6061 支架 DWG 图纸规范与阳极氧化膜厚指南',
     desc: '站内高频搜索 custom bracket drawing dwg 与 anodizing thickness 6061 共 13 次全为 0 结果。',
-    sourceAgent: '优化策略',
+    sourceAgent: '洞察与策略',
     targetView: 'content',
     stage: 'pending_strategy',
     submittedAt: '09-21 02:20',
@@ -337,6 +340,38 @@ export const BASE_GROWTH_TODOS: GrowthTodoItem[] = [
     },
   },
   {
+    id: 'todo-plan-dwg',
+    focusKey: 't-plan',
+    title: '建立持续内容发布计划：图纸格式与氧化膜厚度技术专栏',
+    desc: '围绕 custom bracket drawing dwg 与 anodizing thickness 6061 按周持续供稿（每周 2 篇）。',
+    sourceAgent: '洞察与策略',
+    targetView: 'content',
+    stage: 'pending_strategy',
+    submittedAt: '09-21 02:20',
+    waitingText: '今日新增诊断',
+    targetUrl: '/blog/series/cnc-6061-drawing-anodizing',
+    draftPreview: {
+      pageType: '官网周度内容发布计划',
+      targetUrl: '/blog/series/cnc-6061-drawing-anodizing',
+      heroHeadline: '图纸格式与氧化膜厚度内容计划（每周 2 篇）',
+      heroSubhead: '关键词：custom bracket drawing dwg、anodizing thickness 6061 · 严守企业知识库工艺规范',
+      highlights: [
+        {
+          tag: '持续覆盖',
+          label: '按周持续覆盖高频零结果搜索词',
+          before: '单篇文章难以覆盖买家不同维度的工艺追问',
+          after: '按周更新 2 篇常见问题/知识百科，持续承接站内与自然搜索',
+        },
+      ],
+      sections: [
+        {
+          title: '计划配置',
+          content: '推送频率：每周 2 篇；主题：常见问题、知识百科；文末统一内链至 CNC-6061 Aluminum Bracket。',
+        },
+      ],
+    },
+  },
+  {
     id: 'todo-sample-page',
     focusKey: 'k-sample',
     title: '「CNC 48小时快样」专属营销落地页草稿待确认上线',
@@ -376,54 +411,6 @@ export const BASE_GROWTH_TODOS: GrowthTodoItem[] = [
         {
           title: '首屏 Hero 与快样询价表单',
           content: '针对 48 hour sample 搜索意图定制，首屏左列展示核心卖点（打样：48 小时 / 认证：ISO9001），右列为快速获取报价表单。',
-        },
-      ],
-    },
-  },
-  {
-    id: 'todo-content-sdph',
-    focusKey: 'td1',
-    title: 'SDPH 产品介绍修正 + PT100 选型指南（2 篇内容待确认发布）',
-    desc: '已完成 EEAT 专业度强化与电流规格参数校核，自检评分 92 分，确认后即刻上线官网。',
-    sourceAgent: '官网内容发布',
-    targetView: 'content',
-    stage: 'pending_publish',
-    submittedAt: '09-19 10:05',
-    waitingText: 'AI 已生成完毕 · 待预览发布',
-    targetUrl: '/products/sdph-series & /blog/pt100-selection-guide',
-    draftPreview: {
-      pageType: '官网内容修正与专业文章（2 篇待发）',
-      targetUrl: '/products/sdph-series · /blog/pt100-selection-guide',
-      heroHeadline: 'SDPH 系列全国产大电流型产品介绍 & PT100 温度传感器选型指南',
-      heroSubhead: '已完成参数勘误、EEAT 权威信源补强与 GEO 结构化问答排版',
-      highlights: [
-        {
-          tag: '参数勘误',
-          label: '修正 SDPH 系列额定电流与温升规格表',
-          before: '原页面电流规格表述存在前后不一致，易引发工程采购疑虑',
-          after: '对照产品与参数库统一修正额定电流与散热曲线说明',
-        },
-        {
-          tag: '结构化摘要',
-          label: '新增 GEO 友好型核心结论框与 FAQ',
-          before: '纯长文段落，AI 搜索引擎与买家均难以快速抓取选型结论',
-          after: '篇首新增 3 条选型速查表与 A/B 级精度对照参数',
-        },
-        {
-          tag: '询盘引导',
-          label: '底部挂载选型咨询与样品申请入口',
-          before: '文末无转化动作',
-          after: '新增「索取完整规格书 / 预约工程师选型」入口',
-        },
-      ],
-      sections: [
-        {
-          title: '篇目 1：SDPH 系列全国产大电流型 — 产品介绍',
-          content: '已修正额定电流参数表，补齐国产化元器件批次说明与高负载温升测试数据。',
-        },
-        {
-          title: '篇目 2：PT100 温度传感器选型指南',
-          content: '已补齐 Class A / Class B 精度等级对照表及三线制/四线制接线建议，通过合规与质量自检。',
         },
       ],
     },
@@ -498,6 +485,7 @@ export function readGrowthFlowState(): GrowthFlowState {
       approvedStrategies: parsed.approvedStrategies || {},
       skippedStrategies: parsed.skippedStrategies || {},
       publishedTasks: parsed.publishedTasks || {},
+      handledAdvice: parsed.handledAdvice || {},
     }
   } catch {
     return DEFAULT_FLOW_STATE
@@ -549,6 +537,16 @@ export function undoStrategyInFlow(focusKey: string) {
   return next
 }
 
+export function markAdviceHandledInFlow(focusKey: string, done: boolean, stamp = '刚刚') {
+  const cur = readGrowthFlowState()
+  const handledAdvice = { ...(cur.handledAdvice || {}) }
+  if (done) handledAdvice[focusKey] = stamp
+  else delete handledAdvice[focusKey]
+  const next: GrowthFlowState = { ...cur, handledAdvice }
+  writeGrowthFlowState(next)
+  return next
+}
+
 export function publishTaskInFlow(focusKey: string, stamp = '刚刚') {
   const cur = readGrowthFlowState()
   const next: GrowthFlowState = {
@@ -585,7 +583,7 @@ export function computeGrowthBoard(flow: GrowthFlowState) {
       continue
     }
 
-    if (flow.skippedStrategies[item.focusKey]) {
+    if (flow.skippedStrategies[item.focusKey] || flow.handledAdvice?.[item.focusKey]) {
       continue
     }
 
@@ -602,8 +600,9 @@ export function computeGrowthBoard(flow: GrowthFlowState) {
     activeTodos.push(item)
   }
 
-  // 离商机变现越近越靠前：待确认发布 > 待定策略 > AI 友好度体检
+  // 离商机变现越近越靠前：待确认发布 > 待定策略 > 需你处理 > AI 友好度体检
   const pendingStrategyList = activeTodos.filter((t) => t.stage === 'pending_strategy')
+  const pendingManualList = activeTodos.filter((t) => t.stage === 'pending_manual')
   const pendingOptimizeList = activeTodos.filter((t) => t.stage === 'pending_optimize')
   const pendingPublishList = activeTodos.filter((t) => t.stage === 'pending_publish')
   const marketingPublishCount = pendingPublishList.filter((t) => t.targetView === 'marketing').length
@@ -613,8 +612,9 @@ export function computeGrowthBoard(flow: GrowthFlowState) {
   const weekDoneList = doneList.filter((item) => isInCurrentWeek(item.time))
 
   return {
-    todos: [...pendingPublishList, ...pendingStrategyList, ...pendingOptimizeList],
+    todos: [...pendingPublishList, ...pendingStrategyList, ...pendingManualList, ...pendingOptimizeList],
     pendingStrategyCount: pendingStrategyList.length,
+    pendingManualCount: pendingManualList.length,
     pendingOptimizeCount: pendingOptimizeList.length,
     pendingPublishCount: pendingPublishList.length,
     marketingPublishCount,

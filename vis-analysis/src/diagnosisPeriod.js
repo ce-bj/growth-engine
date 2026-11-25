@@ -698,13 +698,13 @@ https://www.demo-cnc-oem.com/campaign/cnc-oem-q3`,
  * 适配两步确认闸门（Gate 1 策略拍板 → Gate 2 预览发布 → 已完成）：
  * 第 4 步统一更名为「待预览发布」，仅当老板在第四幕点击确认发布上线后，任务才进入第五步状态「已完成」。
  */
-export const TRACK_STAGES = ["待你同意", "你已同意", "进行中", "待预览发布", "已完成"];
-export const APPROVED_STAGE = 1;
-export const PROGRESS_STAGE = 2;
-export const PREVIEW_STAGE = 3;
-export const LAUNCH_STAGE = 4;
-export const MONITOR_STAGE = 4;
-export const RESULT_STAGE = 5;
+export const TRACK_STAGES = ["已批策略", "AI生成中", "待预览发布", "已上线"];
+export const APPROVED_STAGE = 0;
+export const PROGRESS_STAGE = 1;
+export const PREVIEW_STAGE = 2;
+export const LAUNCH_STAGE = 3;
+export const MONITOR_STAGE = 3;
+export const RESULT_STAGE = 3;
 
 /** 6 类客观结论标签（由程序按统计检验输出，模型不改判）。 */
 export const VERDICTS = {
@@ -728,7 +728,7 @@ export const TRACKING = [
     executor: "智能营销页智能体",
     from: "8月31日–9月6日诊断",
     approvedAt: "09-08",
-    stage: 3,
+    stage: 2,
     note: "草稿已经生成完毕（待预览发布）。你预览确认发布上线之后，我们会马上检查页面能不能打开，并开始看 14 天的效果。",
     summary: "智能营销页智能体已经按创建页入参新建了一页草稿。页面类型是产品营销，转化目标是获取报价，写明 48 小时打样和 ISO9001。",
     target: "/campaign/cnc-sample",
@@ -788,7 +788,7 @@ export const TRACKING = [
     from: "8月17日–23日诊断",
     approvedAt: "08-25",
     launchedAt: "09-17",
-    stage: 4,
+    stage: 3,
     summary: "询价页的第二版已经发布到网站上。",
     target: "/campaign/inquiry-v2",
     requirements: ["首屏对齐询价入口", "09-17 已发布生产环境"],
@@ -825,7 +825,7 @@ export const TRACKING = [
     from: "8月10日–16日诊断",
     approvedAt: "08-18",
     launchedAt: "08-20",
-    stage: 5,
+    stage: 3,
     summary: "关于我们页面已经补上 ISO9001 证书，以及三坐标检测设备的实拍图。",
     target: "/about",
     requirements: ["证书图置于资质首屏", "补充检测设备说明"],
@@ -853,7 +853,8 @@ export const TRACKING = [
     from: "7月诊断",
     approvedAt: "07-06",
     launchedAt: "07-10",
-    stage: 5,
+    stage: 3,
+    target: "/",
     result: {
       verdict: "effective",
       metric: "从首页进入产品详情的人占多少",

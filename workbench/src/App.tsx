@@ -6,7 +6,6 @@ import {
   EmbedFrame,
   contentAgentUrl,
   dataBoardUrl,
-  intakeDataUrl,
   marketingAgentUrl,
   opsAssistantUrl,
   visitorAnalysisUrl,
@@ -60,6 +59,7 @@ type AgentHandoff = {
   task?: AgentTaskPayload
   focusKey?: string
   focusKeys?: string[]
+  lens?: 'funnel' | 'trend'
 }
 
 function encodeTask(task: AgentTaskPayload) {
@@ -81,6 +81,9 @@ function withTask(url: string, handoff: AgentHandoff | null, view: string) {
   if (handoff.focusKeys?.length) {
     next.searchParams.set('keys', handoff.focusKeys.join(','))
   }
+  if (handoff.lens) {
+    next.searchParams.set('lens', handoff.lens)
+  }
   if (handoff.task) {
     next.searchParams.set('task', encodeTask(handoff.task))
   }
@@ -99,6 +102,7 @@ function Pages() {
         view?: string
         focusKey?: string
         focusKeys?: string[]
+        lens?: 'funnel' | 'trend'
         task?: AgentTaskPayload
       } | null
       if (!data) return
@@ -112,26 +116,36 @@ function Pages() {
         navigate(data.view as ViewId)
         return
       }
-      if (data.type === 'growth-navigate' && data.view === 'visitor') {
+      if (data.type === 'growth-navigate' && (data.view === 'visitor' || data.view === 'intake')) {
         setHandoff({
           view: 'visitor',
           stamp: Date.now(),
           focusKey: data.focusKey,
           focusKeys: data.focusKeys,
+          lens: data.lens,
         })
         navigate('visitor')
       }
     }
 
     const onFocusStrategy = (event: Event) => {
-      const detail = (event as CustomEvent<{ view?: string; focusKey?: string; focusKeys?: string[]; task?: AgentTaskPayload }>).detail
+      const detail = (
+        event as CustomEvent<{
+          view?: string
+          focusKey?: string
+          focusKeys?: string[]
+          lens?: 'funnel' | 'trend'
+          task?: AgentTaskPayload
+        }>
+      ).detail
       if (!detail) return
-      const targetView = detail.view || 'visitor'
+      const targetView = detail.view === 'intake' ? 'visitor' : detail.view || 'visitor'
       setHandoff({
         view: targetView,
         stamp: Date.now(),
         focusKey: detail.focusKey,
         focusKeys: detail.focusKeys,
+        lens: detail.lens,
         task: detail.task,
       })
       navigate(targetView as ViewId)
@@ -146,18 +160,18 @@ function Pages() {
   }, [navigate])
 
   useEffect(() => {
-    if (handoff && handoff.view !== view) setHandoff(null)
+    const normalized = view === 'intake' ? 'visitor' : view
+    if (handoff && handoff.view !== normalized) setHandoff(null)
   }, [view, handoff])
 
   return (
     <AdminShell>
       {view === 'board' && <EmbedFrame src={dataBoardUrl()} title="数据分析总览" />}
       {isLegacyAnalysisView(view) && <LegacyAnalysisView view={view} />}
-      {view === 'intake' && <EmbedFrame src={intakeDataUrl()} title="访客与漏斗洞察" />}
       {view === 'dashboard' && <AgentOverviewView />}
       {view === 'scanning' && <ScanProgressView />}
-      {view === 'visitor' && (
-        <EmbedFrame src={withTask(visitorAnalysisUrl(), handoff, 'visitor')} title="优化策略" />
+      {(view === 'visitor' || view === 'intake') && (
+        <EmbedFrame src={withTask(visitorAnalysisUrl(), handoff, 'visitor')} title="访客洞察与策略" />
       )}
       {view === 'marketing' && (
         <EmbedFrame src={withTask(marketingAgentUrl(), handoff, 'marketing')} title="智能营销页" />

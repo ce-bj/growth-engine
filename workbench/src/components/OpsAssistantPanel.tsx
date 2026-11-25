@@ -49,8 +49,8 @@ function remember(place: FabPlace) {
 const PAGE: Record<string, { name: string; hint: string }> = {
   board: { name: '数据看板', hint: '看访问、询盘、有效浏览和渠道' },
   dashboard: { name: '智能体概览', hint: '看各智能体是否在跑、有没有待处理的事' },
-  intake: { name: '访客洞察', hint: '看访客在站内走到哪一步、卡在哪' },
-  visitor: { name: '优化策略', hint: '根据访客洞察，找出没接住的页面并开出改页任务' },
+  intake: { name: '访客洞察与策略', hint: '看访客漏斗与趋势变化，逐条拍板页面优化策略' },
+  visitor: { name: '访客洞察与策略', hint: '看访客漏斗与趋势变化，逐条拍板页面优化策略' },
   marketing: { name: '智能营销页', hint: '看在投的落地页和留资' },
   content: { name: '内容发布', hint: '看在线产品和文章，准备发布或修改' },
   knowledge: { name: '知识库', hint: '看已发布的企业资料' },

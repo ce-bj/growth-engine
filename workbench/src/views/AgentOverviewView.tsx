@@ -8,11 +8,11 @@ import {
   RotateCcw,
   Sparkles,
 } from 'lucide-react'
-import { Button, Card, DatePicker, Modal, Select, Statistic, Table, Tag } from 'antd'
+import { Button, Card, DatePicker, Modal, Segmented, Select, Table, Tag } from 'antd'
 import type { TableColumnsType } from 'antd'
 import dayjs, { type Dayjs } from 'dayjs'
 import isoWeek from 'dayjs/plugin/isoWeek'
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useState, type ReactNode } from 'react'
 
 dayjs.extend(isoWeek)
 
@@ -49,16 +49,31 @@ import {
   type GrowthTodoItem,
 } from '../data/overviewMock'
 
-type TodoFilter = 'all' | 'pending_strategy' | 'pending_optimize' | 'pending_publish'
+type TodoFilter = 'all' | 'pending_strategy' | 'pending_manual' | 'pending_optimize' | 'pending_publish'
 
 const GUIDE_COLLAPSED_KEY = 'growth-overview-guide-collapsed'
 
 function readGuideCollapsed() {
   try {
-    return window.localStorage.getItem(GUIDE_COLLAPSED_KEY) === '1'
+    return window.localStorage.getItem(GUIDE_COLLAPSED_KEY) !== '0'
   } catch {
-    return false
+    return true
   }
+}
+
+function todoKind(stage: GrowthTodoItem['stage']) {
+  if (stage === 'pending_optimize') return 'optimize' as const
+  if (stage === 'pending_strategy' || stage === 'pending_manual') return 'strategy' as const
+  return 'publish' as const
+}
+
+function filterLabel(name: string, count: number) {
+  return (
+    <span className="ov-filter-label">
+      {name}
+      <b>{count}</b>
+    </span>
+  )
 }
 
 export function AgentOverviewView() {
@@ -67,6 +82,7 @@ export function AgentOverviewView() {
   const [filterStage, setFilterStage] = useState<TodoFilter>('all')
   const [guideCollapsed, setGuideCollapsed] = useState(readGuideCollapsed)
   const [historyOpen, setHistoryOpen] = useState(false)
+  const [resetOpen, setResetOpen] = useState(false)
   const [historyYear, setHistoryYear] = useState<'all' | number>('all')
   const [historyWeek, setHistoryWeek] = useState<Dayjs | null>(null)
   const [historyPage, setHistoryPage] = useState(1)
@@ -168,8 +184,7 @@ export function AgentOverviewView() {
       )
       return
     }
-    if (item.stage === 'pending_strategy') {
-      // 点击 [待定策略] → 跳转第三幕【优化策略】并锚点高亮对应策略卡
+    if (item.stage === 'pending_strategy' || item.stage === 'pending_manual') {
       window.dispatchEvent(
         new CustomEvent('growth-focus-strategy', {
           detail: { view: 'visitor', focusKey: item.focusKey },
@@ -202,6 +217,21 @@ export function AgentOverviewView() {
     )
   }
 
+  function openInsightPage(lens: 'funnel' | 'trend' = 'funnel') {
+    window.dispatchEvent(
+      new CustomEvent('growth-focus-strategy', {
+        detail: { view: 'visitor', lens },
+      }),
+    )
+  }
+
+  const todoFilters: { value: TodoFilter; label: ReactNode }[] = [
+    { value: 'all', label: filterLabel('全部', board.totalPendingCount) },
+    { value: 'pending_strategy', label: filterLabel('待定策略', board.pendingStrategyCount) },
+    { value: 'pending_publish', label: filterLabel('待确认发布', board.pendingPublishCount) },
+    { value: 'pending_optimize', label: filterLabel('AI 友好度', board.pendingOptimizeCount) },
+  ]
+
   return (
     <div className="agent-overview">
       <section
@@ -209,13 +239,10 @@ export function AgentOverviewView() {
         aria-label="网站增长决策工作台"
       >
         <div className="ov-narrative__head">
-          <div>
-            <h2>这是您的网站增长决策工作台</h2>
-            {guideCollapsed ? null : (
-              <p>
-                {overviewMonth.span} · 更新于 {overviewMonth.updatedAt}
-              </p>
-            )}
+          <div className="ov-narrative__title">
+            <span className="ai-mark">AI 本周诊断</span>
+            <h1>这是您的网站增长决策工作台</h1>
+            <span className="ov-narrative__meta">更新于 {overviewMonth.updatedAt}</span>
           </div>
           <div className="ov-head__actions">
             {(Object.keys(flowState.approvedStrategies).length > 0 ||
@@ -223,17 +250,27 @@ export function AgentOverviewView() {
               Object.keys(flowState.skippedStrategies).length > 0) && (
               <Button
                 size="small"
-                icon={<RotateCcw size={13} />}
-                onClick={() => {
-                  resetGrowthFlowState()
-                  pushToast('info', '演示状态已重置为初始待办')
-                }}
+                icon={<RotateCcw size={14} />}
+                onClick={() => setResetOpen(true)}
               >
                 重置演示状态
               </Button>
             )}
-            <button type="button" className="ov-weak-board-link" onClick={() => navigate('board')}>
-              进入完整数据看板 &gt;
+            <button
+              type="button"
+              className="ov-narrative__toggle"
+              aria-expanded={!guideCollapsed}
+              onClick={() => toggleGuide(!guideCollapsed)}
+            >
+              {guideCollapsed ? (
+                <>
+                  说明 <ChevronDown size={14} />
+                </>
+              ) : (
+                <>
+                  收起 <ChevronUp size={14} />
+                </>
+              )}
             </button>
           </div>
         </div>
@@ -242,154 +279,86 @@ export function AgentOverviewView() {
             系统持续为您盯紧网站访客与留资转化，自动诊断客户流失原因并给出优化方案，您只需在下方「待办」中拍板策略方向、预览确认后发布上线。
           </p>
         )}
-        <button
-          type="button"
-          className="ov-narrative__toggle"
-          aria-expanded={!guideCollapsed}
-          onClick={() => toggleGuide(!guideCollapsed)}
-        >
-          {guideCollapsed ? (
-            <>
-              展开 <ChevronDown size={14} />
-            </>
-          ) : (
-            <>
-              收起 <ChevronUp size={14} />
-            </>
-          )}
-        </button>
       </section>
 
-      <section className="ov-kpi-section" aria-label="核心获客指标">
+      <section className="ov-kpi-section" aria-label="核心转化表现">
+        <div className="ov-kpi-section__bar">
+          <div className="ov-kpi-section__title">
+            <h3>核心转化表现</h3>
+            <span className="ov-kpi-section__period">{overviewMonth.span}</span>
+          </div>
+          <button
+            type="button"
+            className="ov-kpi-insight-link"
+            onClick={() => openInsightPage('trend')}
+          >
+            查看趋势与数据洞察
+          </button>
+        </div>
+
         <div className="ov-kpi-grid">
           {CORE_KPIS.map((kpi) => (
-            <div
+            <button
+              type="button"
               key={kpi.id}
-              className={`ov-kpi-card${kpi.trend === 'down' ? ' is-abnormal' : ' is-healthy'}`}
-              role="button"
-              tabIndex={0}
-              onClick={() => navigate('intake')}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter' || e.key === ' ') {
-                  e.preventDefault()
-                  navigate('intake')
-                }
-              }}
+              className={`ov-kpi-card${kpi.trend === 'down' ? ' is-abnormal' : kpi.trend === 'up' ? ' is-healthy' : ' is-flat'}`}
+              aria-label={`${kpi.title} ${kpi.value}，${kpi.prevValue}`}
+              onClick={() => openInsightPage('funnel')}
             >
-              <div className="ov-kpi-card__top">
-                <span className="ov-kpi-card__label">{kpi.title}</span>
-              </div>
-
-              <div className="ov-kpi-card__value-row">
-                <strong className="ov-kpi-card__num">{kpi.value}</strong>
-                <span className={`ov-kpi-card__delta ${kpi.trend === 'down' ? 'is-down' : 'is-up'}`}>
-                  {kpi.trend === 'down' ? <ArrowDownRight size={14} /> : <ArrowUpRight size={14} />}
-                  较上周环比 {kpi.deltaText}
-                </span>
-              </div>
-
-              <div className="ov-kpi-card__meta">
-                <span>{kpi.prevValue}</span>
-              </div>
-            </div>
+              <span className="ov-kpi-card__label">{kpi.title}</span>
+              <strong className="ov-kpi-card__num">{kpi.value}</strong>
+              <span className={`ov-kpi-card__delta ${kpi.trend === 'down' ? 'is-down' : kpi.trend === 'up' ? 'is-up' : 'is-flat'}`}>
+                {kpi.trend === 'down' ? <ArrowDownRight size={12} /> : kpi.trend === 'up' ? <ArrowUpRight size={12} /> : null}
+                {kpi.trend === 'flat'
+                  ? '与上周持平'
+                  : kpi.id === 'viewRate' || kpi.id === 'leadRate'
+                    ? `${kpi.deltaText.replace('%', '').replace(/^[+-]/, '')} 个百分点`
+                    : kpi.deltaText.replace(/^[+-]/, '')}
+              </span>
+              <span className="ov-kpi-card__meta">{kpi.prevValue}</span>
+            </button>
           ))}
         </div>
       </section>
 
-      {/* ② 当前待办 + 与顶部周周期对齐的本周已完成 */}
-      <section className="ov-stats ov-stats--two" aria-label="待办与本周已完成">
-        <Card size="small" classNames={{ root: 'ov-panel is-attention' }}>
-          <div className="ov-summary-split">
-            <div>
-              <Statistic title="当前待办" value={board.totalPendingCount} suffix="项" />
-            </div>
-          </div>
-        </Card>
-
-        <Card size="small" classNames={{ root: 'ov-panel' }}>
-          <div className="ov-summary-split">
-            <div>
-              <Statistic title="本周已完成" value={board.weekDoneList.length} suffix="项" />
-            </div>
-          </div>
-        </Card>
-      </section>
-
-      {/* ③ 底部待办总表：任务名称 + 来源模块标签，按来源筛选 */}
       <Card
-        classNames={{ root: 'ov-panel', body: 'ov-list' }}
+        classNames={{ root: 'ov-panel ov-queue', body: 'ov-list' }}
         title={
           <span className="ov-card-title">
             待办
-            <Tag color="orange">{board.totalPendingCount}</Tag>
-            {filterStage !== 'all' && (
-              <Button type="link" size="small" onClick={() => setFilterStage('all')}>
-                显示全部
-              </Button>
-            )}
+            <Tag>{board.totalPendingCount}</Tag>
+            <span className="ai-mark">已排好顺序</span>
           </span>
         }
         extra={
-          <div className="ov-summary-badges ov-todo-filters" role="group" aria-label="按来源筛选待办">
-            <button
-              type="button"
-              className={`ov-gate-chip is-orange${filterStage === 'pending_strategy' ? ' is-active' : ''}`}
-              aria-pressed={filterStage === 'pending_strategy'}
-              onClick={() =>
-                setFilterStage((cur) => (cur === 'pending_strategy' ? 'all' : 'pending_strategy'))
-              }
-            >
-              <span>待定策略</span>
-              <b>{board.pendingStrategyCount}</b>
-            </button>
-            <button
-              type="button"
-              className={`ov-gate-chip is-blue${filterStage === 'pending_publish' ? ' is-active' : ''}`}
-              aria-pressed={filterStage === 'pending_publish'}
-              onClick={() =>
-                setFilterStage((cur) => (cur === 'pending_publish' ? 'all' : 'pending_publish'))
-              }
-            >
-              <span>待确认发布</span>
-              <b>{board.pendingPublishCount}</b>
-            </button>
-            <button
-              type="button"
-              className={`ov-gate-chip is-purple${filterStage === 'pending_optimize' ? ' is-active' : ''}`}
-              aria-pressed={filterStage === 'pending_optimize'}
-              onClick={() =>
-                setFilterStage((cur) => (cur === 'pending_optimize' ? 'all' : 'pending_optimize'))
-              }
-            >
-              <span>AI 友好度体检</span>
-              <b>{board.pendingOptimizeCount}</b>
-            </button>
+          <div className="ov-queue__filters" role="group" aria-label="按来源筛选待办">
+            <Segmented
+              size="small"
+              value={filterStage}
+              options={todoFilters}
+              onChange={(value) => setFilterStage(value as TodoFilter)}
+            />
           </div>
         }
       >
         {visibleTodos.length === 0 ? (
           <div className="ov-empty-todos">
-            <CheckCircle2 size={22} />
-            <span>当前筛选下所有待办均已处理完毕！</span>
+            <CheckCircle2 size={16} />
+            <span>当前筛选下所有待办均已处理完毕</span>
           </div>
         ) : (
-          visibleTodos.map((task) => {
-            const isStrategy = task.stage === 'pending_strategy'
-            const isOptimize = task.stage === 'pending_optimize'
+          visibleTodos.map((task, index) => {
+            const kind = todoKind(task.stage)
+            const isNext = index === 0
             return (
               <div
                 key={task.id}
-                className={`ov-pending ${isOptimize ? 'is-gate-ready' : isStrategy ? 'is-gate-strategy' : 'is-gate-publish'}`}
+                className={`ov-pending is-gate-${kind}${isNext ? ' is-next' : ''}`}
               >
                 <div className="ov-pending__main">
                   <div className="ov-pending__top">
-                    <span
-                      className={`ov-status-badge ${isOptimize ? 'is-optimize' : isStrategy ? 'is-strategy' : 'is-publish'}`}
-                      onClick={() => handleOpenTodo(task)}
-                      role="button"
-                      tabIndex={0}
-                    >
-                      {isOptimize ? '[待优化]' : isStrategy ? '[待定策略]' : '[待确认发布]'}
+                    <span className={`ov-status-badge is-${kind}`}>
+                      {kind === 'optimize' ? '待优化' : kind === 'strategy' ? '待定策略' : '待确认发布'}
                     </span>
                     <b>{task.title}</b>
                     <Tag variant="filled">{task.sourceAgent}</Tag>
@@ -398,28 +367,14 @@ export function AgentOverviewView() {
                 </div>
 
                 <div className="ov-pending__cta">
-                  {isOptimize ? (
-                    <Button type="primary" onClick={() => handleOpenTodo(task)}>
-                      去优化
-                    </Button>
-                  ) : isStrategy ? (
-                    <Button
-                      type="primary"
-                      icon={<Sparkles size={14} />}
-                      onClick={() => handleOpenTodo(task)}
-                    >
-                      去批策略
-                    </Button>
-                  ) : (
-                    <Button
-                      type="primary"
-                      className="ov-btn-publish"
-                      icon={<Eye size={14} />}
-                      onClick={() => handleOpenTodo(task)}
-                    >
-                      去预览发布
-                    </Button>
-                  )}
+                  <Button
+                    size="small"
+                    type={kind === 'publish' ? 'primary' : 'default'}
+                    icon={kind === 'strategy' ? <Sparkles size={14} /> : kind === 'publish' ? <Eye size={14} /> : undefined}
+                    onClick={() => handleOpenTodo(task)}
+                  >
+                    {kind === 'optimize' ? '去优化' : kind === 'strategy' ? '去批策略' : '去预览发布'}
+                  </Button>
                 </div>
               </div>
             )
@@ -428,15 +383,17 @@ export function AgentOverviewView() {
       </Card>
 
       <Card
-        classNames={{ root: 'ov-panel' }}
-        title="本周已完成"
-        extra={
-          <span className="ov-done-extra">
-            <span className="ov-card-extra">共 {board.weekDoneList.length} 项</span>
-            <button type="button" className="ov-weak-board-link" onClick={openHistory}>
-              查看历史记录 &gt;
-            </button>
+        classNames={{ root: 'ov-panel ov-done' }}
+        title={
+          <span className="ov-card-title">
+            本周已完成
+            <span className="ov-card-extra">{board.weekDoneList.length}</span>
           </span>
+        }
+        extra={
+          <button type="button" className="ov-weak-board-link" onClick={openHistory}>
+            查看历史记录
+          </button>
         }
       >
         <Table<DoneTask>
@@ -447,6 +404,22 @@ export function AgentOverviewView() {
           dataSource={board.weekDoneList}
         />
       </Card>
+
+      <Modal
+        title="重置演示状态"
+        open={resetOpen}
+        okText="重置"
+        cancelText="取消"
+        okButtonProps={{ danger: true }}
+        onOk={() => {
+          resetGrowthFlowState()
+          pushToast('info', '演示状态已重置为初始待办')
+          setResetOpen(false)
+        }}
+        onCancel={() => setResetOpen(false)}
+      >
+        待办、已同意和已跳过会回到初始状态。
+      </Modal>
 
       <Modal
         title="历史上线记录"
