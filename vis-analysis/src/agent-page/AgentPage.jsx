@@ -246,21 +246,14 @@ function LeadStrip({ counts }) {
 
 function StageTitle({ title, index, row, onOpenAgent }) {
   const curStage = trackStage(row);
-  if (index === PREVIEW_STAGE && curStage === PREVIEW_STAGE && AGENT_VIEW[row.executor]) {
-    return (
-      <span className="ag-stage-preview-wrap">
-        <span className="ag-stage-preview-label">{title}</span>
-        <button
-          type="button"
-          className="ag-stage-preview-btn"
-          onClick={() => onOpenAgent(row)}
-        >
-          去预览发布 &gt;
-        </button>
-      </span>
-    );
-  }
-  return title;
+  const openPreview = index === PREVIEW_STAGE && curStage === PREVIEW_STAGE && AGENT_VIEW[row.executor];
+  const openList = index === LAUNCH_STAGE && curStage === LAUNCH_STAGE && AGENT_VIEW[row.executor];
+  if (!openPreview && !openList) return title;
+  return (
+    <button type="button" className="ag-stage-link" onClick={() => onOpenAgent(row, openList ? "list" : "preview")}>
+      {title}
+    </button>
+  );
 }
 
 function suggestionStatus(item, decisions, adviceDone, trackRows) {
@@ -555,13 +548,14 @@ export default function AgentPage({
     message.info(reason.effect);
   }
 
-  function openAgentTask(row) {
+  function openAgentTask(row, intent = "preview") {
     const view = AGENT_VIEW[row.executor];
     if (!view) return;
     const task = {
       id: row.key,
       focusKey: row.key,
       view,
+      intent,
       title: row.title,
       executor: row.executor,
       from: row.from,
@@ -718,7 +712,7 @@ export default function AgentPage({
               title="已经在做的事"
               extra={
                 <span className="isw-tracking-sub">
-                  进行中 {doingCount} 项，已上线 {liveCount} 项
+                  进行中 {doingCount} 项，已完成 {liveCount} 项
                 </span>
               }
             />
@@ -730,7 +724,7 @@ export default function AgentPage({
                 options={[
                   { label: `全部 ${trackRows.length}`, value: "all" },
                   { label: `进行中 ${doingCount}`, value: "doing" },
-                  { label: `已上线 ${liveCount}`, value: "live" },
+                  { label: `已完成 ${liveCount}`, value: "live" },
                 ]}
               />
             </div>
@@ -749,7 +743,7 @@ export default function AgentPage({
                         <b>{row.title}</b>
                       </div>
                       <span>
-                        {displayExecutor(row.executor)} · {row.approvedAt} 批准{row.launchedAt ? ` · ${row.launchedAt} 上线` : ""}
+                        {displayExecutor(row.executor)} · {row.approvedAt} 批准{row.launchedAt ? ` · ${row.launchedAt} 完成` : ""}
                       </span>
                       {trackStage(row) >= LAUNCH_STAGE && liveHref(row) ? (
                         <Button type="link" size="small" className="ag-live-link" href={liveHref(row)} target="_blank">

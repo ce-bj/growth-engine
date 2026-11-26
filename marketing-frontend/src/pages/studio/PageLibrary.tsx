@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { ArrowDown, ArrowUp, CircleHelp, Copy, ExternalLink, Layers3, Megaphone, Plus, X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -62,6 +62,14 @@ export default function PageLibrary({ pages, store, onStore, versionOf, typeOf, 
   const allSelected = selectable.length > 0 && selectable.every(r => selected.includes(r.id))
   const promotable = pages.filter(canPromote)
   const counts = Object.fromEntries(SLOTS.map(s => [s, (store.assignments[s] || []).length]))
+
+  useEffect(() => {
+    if (!highlightTitle) return undefined
+    const timer = window.setTimeout(() => {
+      document.querySelector('.history-library tr.is-handoff')?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+    }, 60)
+    return () => window.clearTimeout(timer)
+  }, [highlightTitle])
 
   const openPageDialog = (p: VersionedPage) => { setEditing({ cfg: { ...promotionOf(store, p) }, placements: placementsOf(store, p.id) }); setDialog({ kind: 'page', id: p.id }) }
   const savePage = (id: string) => {

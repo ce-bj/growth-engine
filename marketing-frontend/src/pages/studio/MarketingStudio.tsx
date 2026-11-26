@@ -2,7 +2,7 @@ import PublishVersionPicker from './PublishVersionPicker'
 import PublicationHistory from './PublicationHistory'
 import {currentVersion,releaseHistory,versionLabel,publishVersion,incrementVersion,type ReleaseBump,type VersionedPage} from './releaseVersions'
 import { generateId } from '@/lib/utils'
-import { readHandoffTask } from '@/AgentTaskDetail'
+import AgentTaskDetail, { readHandoffTask } from '@/AgentTaskDetail'
 import {intentTaskKey,type IntentTask} from './intentTask'
 import {draftFromIntentTask} from './intentMapping'
 import {inspectBrandConsistency,brandSnapshotKey,applyBrandSolution,optimizeBrandFinding,type WebsiteAudit} from './websiteAudit'
@@ -281,6 +281,7 @@ export default function MarketingStudio() {
  if(localPreview&&requestedId&&!previewRecord)return <div className="empty-result"><h1>页面不可用</h1><p>该演示页面不在当前浏览器的本地记录中。</p><a href={location.pathname}>返回工作台</a></div>
  if(localPreview)return <div className="studio-public"><div className="demo-ribbon">本地页面预览 · 前端演示，不代表真实发布 <a href={location.pathname}>返回工作台</a></div><LandingCanvas draft={previewDraft} template={mockTemplatesData.find(t=>t.id===previewDraft.templateId)||template} onAction={openForm}/>{formModal}</div>
  return <div className="studio-app" style={{'--accent':draft.color||'#3989ff'} as CSSProperties}>
+  <AgentTaskDetail />
   <div className="studio-main">
    <StudioHeader
     stage={draft.stage}

@@ -24,6 +24,7 @@ export type HandoffTask = {
   from?: string
   approvedAt?: string
   stage?: string
+  intent?: 'preview' | 'list' | string
   note?: string
   summary?: string
   target?: string
@@ -152,7 +153,7 @@ export default function AgentTaskDetail() {
     setSubhead(draft.heroSubhead)
   }, [draft.heroHeadline, draft.heroSubhead])
 
-  if (!task) return null
+  if (!task || task.intent === 'list') return null
 
   function stay() {
     const url = new URL(window.location.href)

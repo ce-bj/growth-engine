@@ -102,13 +102,13 @@ function buildStore(items: CalendarItem[], tasks: PublishTask[]): ContentRow[] {
   return rows
 }
 
-function readHandoffTask(): { id?: string; title?: string; summary?: string } | null {
+function readHandoffTask(): { id?: string; title?: string; summary?: string; intent?: string } | null {
   try {
     const raw = new URLSearchParams(window.location.search).get('task')
     if (!raw) return null
     const binary = atob(raw)
     const bytes = Uint8Array.from(binary, (char) => char.charCodeAt(0))
-    const task = JSON.parse(new TextDecoder().decode(bytes)) as { id?: string; title?: string; summary?: string }
+    const task = JSON.parse(new TextDecoder().decode(bytes)) as { id?: string; title?: string; summary?: string; intent?: string }
     if (!task?.title) return null
     return task
   } catch {
@@ -159,6 +159,7 @@ interface StoreState {
   store: ContentRow[]
   view: View
   handoffTitle: string
+  handoffIntent: string
   navigate: (v: View) => void
   // actions
   confirmDirection: (id: string) => void
@@ -192,6 +193,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   const [directions, setDirections] = useState<Direction[]>(DIRECTIONS)
   const [view, setView] = useState<View>(() => (HANDOFF_TASK?.title ? { name: 'task-list' } : { name: 'home' }))
   const handoffTitle = HANDOFF_TASK?.title || ''
+  const handoffIntent = HANDOFF_TASK?.intent || ''
 
   const navigate = (v: View) => setView(v)
 
@@ -334,6 +336,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     store,
     view,
     handoffTitle,
+    handoffIntent,
     navigate,
     confirmDirection,
     createTask,

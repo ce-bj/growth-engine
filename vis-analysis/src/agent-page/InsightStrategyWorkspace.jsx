@@ -14,7 +14,6 @@ import {
   ApiOutlined,
   BarChartOutlined,
   BookOutlined,
-  CheckCircleFilled,
   DownOutlined,
   GlobalOutlined,
   LeftOutlined,
@@ -47,16 +46,18 @@ const SKIP_REASONS = [
 
 const REF_CHANNELS = [
   { key: "site", name: "本站页面", icon: <GlobalOutlined /> },
-  { key: "websearch", name: "WebSearch", icon: <SearchOutlined /> },
-  { key: "mcp", name: "MCP明细数据", icon: <ApiOutlined /> },
-  { key: "knowledge", name: "企业知识库", icon: <BookOutlined /> },
+  { key: "websearch", name: "公开检索", icon: <SearchOutlined /> },
+  { key: "mcp", name: "站内数据", icon: <ApiOutlined /> },
+  { key: "knowledge", name: "知识库", icon: <BookOutlined /> },
 ];
 
 const ACTION_MAP = {
-  l1: { id: "l1", no: 1, title: "提升有效浏览", short: "流失点 1 · 有效浏览", filter: "有效浏览" },
-  l2: { id: "l2", no: 2, title: "提升转化交互", short: "流失点 2 · 转化交互", filter: "转化交互" },
-  l3: { id: "l3", no: 3, title: "提升留资完成", short: "流失点 3 · 留资完成", filter: "留资完成" },
+  l1: { id: "l1", no: 1, title: "提升有效浏览", short: "流失点 1 · 有效浏览", filter: "有效浏览", tone: "loss-1" },
+  l2: { id: "l2", no: 2, title: "提升转化交互", short: "流失点 2 · 转化交互", filter: "转化交互", tone: "loss-2" },
+  l3: { id: "l3", no: 3, title: "提升留资完成", short: "流失点 3 · 留资完成", filter: "留资完成", tone: "loss-3" },
 };
+
+const GATE1_CODES = new Set(["waiting", "advice"]);
 
 const QUICK_IMPACT = {
   "t-detail": "影响 420 人 · 有效浏览率 21.9%（建议 ≥ 40%）",
@@ -86,23 +87,28 @@ function resolveRefs(refs, authMap) {
 
 function citeLabel(row) {
   if (row.key === "site") {
+    if (row.title) return row.title;
     if (row.url) {
       try {
         const path = new URL(row.url).pathname.replace(/\/$/, "");
-        return path.split("/").filter(Boolean).pop() || row.title;
+        return path.split("/").filter(Boolean).pop() || row.url;
       } catch {
-        return row.title || row.url;
+        return row.url;
       }
     }
-    return row.title;
+    return "本站页面";
   }
-  if (row.key === "websearch") return row.query;
+  if (row.key === "websearch") return row.query || "公开检索结果";
   if (row.key === "mcp") {
-    if (row.tool === "page_metrics.get") return "页面访问与停留数据（近 7 天）";
+    if (row.tool === "page_metrics.get") return "页面访问与停留（近 7 天）";
     if (row.tool === "site_search.queries.get") return "站内搜索词（近 7 天）";
-    return "页面数据";
+    return "页面访问数据";
   }
-  return row.title;
+  return row.title || "企业资料";
+}
+
+function citeChipText(row) {
+  return `${row.name}：${citeLabel(row)}`;
 }
 
 function SourceDrawerBody({ row, onAuthorize }) {
@@ -186,6 +192,15 @@ function bossCopy(text) {
     .replace(/不改[^。；\n]*[。；]?/g, "")
     .replace(/\s{2,}/g, " ")
     .trim();
+}
+
+function emphasizeMetrics(text) {
+  const raw = String(text || "");
+  if (!raw) return raw;
+  const parts = raw.split(/(\d[\d,]*(?:\.\d+)?%?|\d+\s*人|\d+\s*秒|\d+\s*次)/g);
+  return parts.map((part, index) =>
+    index % 2 === 1 ? <strong key={`${part}-${index}`}>{part}</strong> : part,
+  );
 }
 
 function RequirementBody({ sections, fallback }) {
@@ -357,10 +372,12 @@ function funnelShape(stages) {
 }
 
 /** 旧版梯形漏斗 + 右侧流失点说明。外框高度由近期趋势撑开，这里铺满同一块。 */
-function ClassicFunnel({ stages, losses, activeId, diagnosed, evidenceModel, onSelect }) {
+function ClassicFunnel({ stages, losses, activeId, diagnosed, evidenceModel, strategyCount, onSelect, onJumpStrategies }) {
   const boxRef = useRef(null);
   const [chartH, setChartH] = useState(360);
   const active = losses.find((item) => item.id === activeId) || losses[0];
+  const activeIndex = Math.max(0, losses.findIndex((item) => item.id === active?.id));
+  const activeTone = ACTION_MAP[active?.id]?.tone || `loss-${activeIndex + 1}`;
 
   useEffect(() => {
     const el = boxRef.current;
@@ -411,30 +428,33 @@ function ClassicFunnel({ stages, losses, activeId, diagnosed, evidenceModel, onS
           </Suspense>
         </div>
         <div className="db-fd-rail">
-          {losses.map((loss, index) => (
-            <button
-              key={loss.id}
-              type="button"
-              className={`db-fd-loss${active.id === loss.id ? " is-on" : ""}${loss.tone === "bad" ? " is-bad" : loss.tone === "flat" ? " is-flat" : ""}`}
-              style={{ top: `${((index + 1) / stages.length) * 100}%` }}
-              aria-pressed={active.id === loss.id}
-              onClick={() => onSelect(loss.id)}
-            >
-              <span className="db-fd-loss-k">
-                流失点 {index + 1}
-                <Tag color={TONE_TAG[loss.tone]} className="db-tag-mini">
-                  {TONE_LABEL[loss.tone]}
-                </Tag>
-              </span>
-              <span className="db-fd-loss-v">{loss.action}</span>
-            </button>
-          ))}
+          {losses.map((loss, index) => {
+            const lossTone = ACTION_MAP[loss.id]?.tone || `loss-${index + 1}`;
+            return (
+              <button
+                key={loss.id}
+                type="button"
+                className={`db-fd-loss is-${lossTone}${active.id === loss.id ? " is-on" : ""}${loss.tone === "bad" ? " is-bad" : loss.tone === "flat" ? " is-flat" : ""}`}
+                style={{ top: `${((index + 1) / stages.length) * 100}%` }}
+                aria-pressed={active.id === loss.id}
+                onClick={() => onSelect(loss.id)}
+              >
+                <span className="db-fd-loss-k">
+                  流失点 {index + 1}
+                  <Tag color={TONE_TAG[loss.tone]} className="db-tag-mini">
+                    {TONE_LABEL[loss.tone]}
+                  </Tag>
+                </span>
+                <span className="db-fd-loss-v">{loss.action}</span>
+              </button>
+            );
+          })}
         </div>
       </div>
-      <aside className={`db-insight-detail is-${active.tone}`}>
+      <aside className={`db-insight-detail is-${active.tone} is-${activeTone}`}>
         <div className="db-insight-detail__title">
           <h2>
-            流失点 {losses.findIndex((item) => item.id === active.id) + 1} · {active.action}
+            流失点 {activeIndex + 1} · {active.action}
           </h2>
           <Tag className={`db-insight-tone is-${active.tone}`}>{TONE_LABEL[active.tone]}</Tag>
         </div>
@@ -455,6 +475,15 @@ function ClassicFunnel({ stages, losses, activeId, diagnosed, evidenceModel, onS
           </div>
         </div>
         {diagnosed ? <LossEvidence id={active.id} model={evidenceModel} /> : null}
+        {diagnosed ? (
+          <button
+            type="button"
+            className="isw-funnel-jump"
+            onClick={() => onJumpStrategies?.(active.id)}
+          >
+            查看针对「{ACTION_MAP[active.id]?.filter || active.action}」的 {strategyCount} 项优化策略 ↓
+          </button>
+        ) : null}
       </aside>
     </div>
   );
@@ -492,39 +521,80 @@ export default function InsightStrategyWorkspace({
 
   const allRows = useMemo(() => (diagnosed ? buildItems(quiet) : []), [diagnosed, quiet]);
 
+  const gate1Rows = useMemo(
+    () =>
+      allRows.filter((row) => {
+        if (row.kind === "track") return false;
+        return GATE1_CODES.has(resolveItemState(row, decisions, publishedMap, adviceDone).code);
+      }),
+    [allRows, decisions, publishedMap, adviceDone],
+  );
+
   const [insightCollapsed, setInsightCollapsed] = useState(() => Boolean(initialFocusKey));
   const [lens, setLens] = useState(() => (initialLens === "trend" ? "trend" : "funnel"));
   const [lossFilter, setLossFilter] = useState("all");
   const [activeLossId, setActiveLossId] = useState("");
   const [selectedKey, setSelectedKey] = useState(() => {
     if (initialFocusKey && allRows.some((r) => r.key === initialFocusKey)) return initialFocusKey;
-    return allRows[0]?.key || "";
+    return "";
   });
   const [drawerSource, setDrawerSource] = useState(null);
   const [drawerLossId, setDrawerLossId] = useState("");
   const [planOpen, setPlanOpen] = useState(false);
   const detailHeadRef = useRef(null);
+  const strategyBoxRef = useRef(null);
   const skipDetailScroll = useRef(true);
+  const defaultedFilter = useRef(false);
+  const handedOffFocus = useRef("");
+
+  const shortLoss = losses.find((item) => item.tone === "bad") || losses[0];
 
   const visibleRows = useMemo(() => {
-    if (lossFilter === "all") return allRows;
-    return allRows.filter((row) => row.rule.lossId === lossFilter);
-  }, [allRows, lossFilter]);
+    if (lossFilter === "all") return gate1Rows;
+    return gate1Rows.filter((row) => row.rule.lossId === lossFilter);
+  }, [gate1Rows, lossFilter]);
 
   useEffect(() => {
-    if (!visibleRows.length) return;
+    if (defaultedFilter.current || initialFocusKey) return;
+    if (!gate1Rows.length) return;
+    const preferred = shortLoss?.id;
+    if (preferred && gate1Rows.some((row) => row.rule.lossId === preferred)) {
+      setLossFilter(preferred);
+      setActiveLossId(preferred);
+    } else {
+      setLossFilter(gate1Rows[0].rule.lossId);
+      setActiveLossId(gate1Rows[0].rule.lossId);
+    }
+    defaultedFilter.current = true;
+  }, [gate1Rows, shortLoss, initialFocusKey]);
+
+  useEffect(() => {
+    if (!visibleRows.length) {
+      setSelectedKey("");
+      return;
+    }
     if (!visibleRows.some((r) => r.key === selectedKey)) {
       setSelectedKey(visibleRows[0].key);
     }
   }, [visibleRows, selectedKey]);
 
   useEffect(() => {
-    if (initialFocusKey && allRows.some((r) => r.key === initialFocusKey)) {
-      setLossFilter("all");
+    if (!initialFocusKey) return;
+    const focused = allRows.find((r) => r.key === initialFocusKey);
+    if (!focused) return;
+    const state = resolveItemState(focused, decisions, publishedMap, adviceDone);
+    if (GATE1_CODES.has(state.code)) {
+      setLossFilter(focused.rule.lossId);
+      setActiveLossId(focused.rule.lossId);
       setSelectedKey(initialFocusKey);
       setInsightCollapsed(true);
+      defaultedFilter.current = true;
+      return;
     }
-  }, [initialFocusKey, allRows]);
+    if (handedOffFocus.current === initialFocusKey) return;
+    handedOffFocus.current = initialFocusKey;
+    onOpenTracking?.(initialFocusKey);
+  }, [initialFocusKey, allRows, decisions, publishedMap, adviceDone, onOpenTracking]);
 
   useEffect(() => {
     setPlanOpen(false);
@@ -544,30 +614,16 @@ export default function InsightStrategyWorkspace({
   const activeRow = visibleRows[selectedIndex] || visibleRows[0] || null;
 
   const waitingRows = useMemo(
-    () => allRows.filter((row) => resolveItemState(row, decisions, publishedMap, adviceDone).code === "waiting"),
-    [allRows, decisions, publishedMap, adviceDone],
+    () => gate1Rows.filter((row) => resolveItemState(row, decisions, publishedMap, adviceDone).code === "waiting"),
+    [gate1Rows, decisions, publishedMap, adviceDone],
   );
 
-  const shortLoss = losses.find((item) => item.tone === "bad") || losses[0];
   const leadRate = entry.cur ? lead.cur / entry.cur : 0;
   const weekLabel = WEEKS.find((item) => item.id === weekId)?.label || "";
   const steadyLosses = losses.filter((item) => item.id !== shortLoss.id);
   const steadyHeld = steadyLosses.every((item) => item.tone === "ok");
-  const ledger = useMemo(() => {
-    const counts = { waiting: 0, preview: 0, advice: 0, skipped: 0, live: 0, done: 0, total: allRows.length };
-    allRows.forEach((row) => {
-      const code = resolveItemState(row, decisions, publishedMap, adviceDone).code;
-      counts[code] = (counts[code] || 0) + 1;
-    });
-    const parts = [];
-    if (counts.waiting) parts.push(`${counts.waiting} 项待定策略`);
-    if (counts.preview) parts.push(`${counts.preview} 项待确认发布`);
-    if (counts.advice) parts.push(`${counts.advice} 条人工处理建议`);
-    if (counts.skipped) parts.push(`${counts.skipped} 项这次先不做`);
-    if (counts.live) parts.push(`${counts.live} 项已上线`);
-    if (counts.done) parts.push(`${counts.done} 项已处理`);
-    return { ...counts, text: parts.join("、") };
-  }, [allRows, decisions, publishedMap, adviceDone]);
+  const activeFunnelLossId = activeLossId || shortLoss?.id || "";
+  const activeFunnelStrategyCount = gate1Rows.filter((row) => row.rule.lossId === activeFunnelLossId).length;
 
   function toggleLossFilter(lossId) {
     setActiveLossId(lossId);
@@ -575,16 +631,34 @@ export default function InsightStrategyWorkspace({
   }
 
   function selectLoss(lossId) {
+    const nextRows = gate1Rows.filter((row) => row.rule.lossId === lossId);
+    const nextKey = nextRows.some((row) => row.key === selectedKey) ? selectedKey : nextRows[0]?.key || "";
+    if (nextKey !== selectedKey) skipDetailScroll.current = true;
     setActiveLossId(lossId);
-    const count = allRows.filter((row) => row.rule.lossId === lossId).length;
-    if (count > 0) setLossFilter(lossId);
+    setLossFilter(lossId);
+  }
+
+  function jumpToStrategies(lossId) {
+    selectLoss(lossId);
+    setInsightCollapsed(false);
+    window.requestAnimationFrame(() => {
+      const box = strategyBoxRef.current;
+      if (!box) return;
+      box.scrollIntoView({ behavior: "smooth", block: "start" });
+      const first = gate1Rows.find((row) => row.rule.lossId === lossId);
+      if (first) setSelectedKey(first.key);
+    });
   }
 
   function jumpNextWaiting(excludeKey) {
     const next = waitingRows.find((row) => row.key !== excludeKey);
-    if (!next) return;
+    if (!next) {
+      setSelectedKey("");
+      return;
+    }
     if (lossFilter !== "all" && next.rule.lossId !== lossFilter) {
-      setLossFilter("all");
+      setLossFilter(next.rule.lossId);
+      setActiveLossId(next.rule.lossId);
     }
     setSelectedKey(next.key);
   }
@@ -604,7 +678,6 @@ export default function InsightStrategyWorkspace({
   const activeRule = activeRow?.rule;
   const activeAction = activeRule ? ACTION_MAP[activeRule.lossId] || ACTION_MAP.l1 : ACTION_MAP.l1;
   const activeRefs = activeItem ? resolveRefs(activeItem.refs, authMap) : [];
-  const nextWaiting = activeRow ? waitingRows.find((row) => row.key !== activeRow.key) : null;
 
   return (
     <div className="isw-root">
@@ -694,15 +767,25 @@ export default function InsightStrategyWorkspace({
                     ))}
                     {steadyHeld ? "。只要买家愿意发起交互，最终留资意愿依然较强。" : "。"}
                   </li>
-                  {diagnosed && ledger.total ? (
-                    <li>
-                      <strong>本周共 {ledger.total} 个问题</strong>
-                      ：{ledger.text}。就在下方优化策略箱里，点开即可处理。
-                    </li>
-                  ) : (
-                    <li>这一周没有单独挂出的待拍板策略。要处理已经生成的策略，请切回最新一期。</li>
-                  )}
+                  {diagnosed && !waitingRows.length ? (
+                    <li>这一周没有单独挂出的待拍板策略。要处理已经生成的策略，请切回最新一期，或到「执行追踪」继续确认发布。</li>
+                  ) : null}
                 </ul>
+                {diagnosed && waitingRows.length ? (
+                  <button
+                    type="button"
+                    className="isw-guide-line"
+                    onClick={() => {
+                      const preferred =
+                        (shortLoss?.id && gate1Rows.some((row) => row.rule.lossId === shortLoss.id) && shortLoss.id) ||
+                        gate1Rows[0]?.rule.lossId;
+                      jumpToStrategies(preferred);
+                    }}
+                  >
+                    <span>本周共 {waitingRows.length} 项待定策略，往下到策略箱拍板</span>
+                    <span className="isw-bridge-arrow" aria-hidden="true">↓</span>
+                  </button>
+                ) : null}
                 </div>
               </div>
             </div>
@@ -723,10 +806,12 @@ export default function InsightStrategyWorkspace({
                 <ClassicFunnel
                   stages={stages}
                   losses={losses}
-                  activeId={activeLossId || shortLoss.id}
+                  activeId={activeFunnelLossId}
                   diagnosed={diagnosed}
                   evidenceModel={evidenceModel}
+                  strategyCount={activeFunnelStrategyCount}
                   onSelect={selectLoss}
+                  onJumpStrategies={jumpToStrategies}
                 />
               </div>
             </div>
@@ -746,24 +831,34 @@ export default function InsightStrategyWorkspace({
             </Button>
           </Empty>
         </section>
-      ) : quiet || !allRows.length ? (
+      ) : quiet || !gate1Rows.length ? (
         <section className="isw-empty-card">
-          <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description="这一周网站没有需要你拍板的转化问题。" />
+          <Empty
+            image={Empty.PRESENTED_IMAGE_SIMPLE}
+            description={
+              allRows.length
+                ? "待定策略已全部拍板。批准后的草稿在「执行追踪」里确认发布。"
+                : "这一周网站没有需要你拍板的转化问题。"
+            }
+          >
+            {allRows.length ? (
+              <Button type="primary" onClick={() => onOpenTracking?.(allRows[0].key)}>
+                去执行追踪
+              </Button>
+            ) : null}
+          </Empty>
         </section>
       ) : (
-        <section className="isw-split" aria-label="优化策略箱">
-          {/* 左栏：问题 1234 极简清单 */}
+        <section className="isw-split" aria-label="优化策略箱" ref={strategyBoxRef}>
+          {/* 左栏：任务队列 */}
           <aside className="isw-list-col">
             <div className="isw-list-head">
               <div className="isw-list-title">
                 <h2>
                   优化策略箱
-                  <span className="ai-mark">已归类</span>
+                  <span className="ai-mark">待拍板</span>
                 </h2>
-                <span className="isw-list-total">
-                  {lossFilter === "all" ? `${allRows.length} 项` : `${visibleRows.length} / ${allRows.length} 项`}
-                  {waitingRows.length ? ` · ${waitingRows.length} 待拍板` : ""}
-                </span>
+                <span className="isw-list-total">共 {gate1Rows.length} 项待拍板</span>
               </div>
               <div className="isw-filter-chips" role="group" aria-label="按流失点筛选策略">
                 <button
@@ -771,15 +866,18 @@ export default function InsightStrategyWorkspace({
                   className={`isw-chip${lossFilter === "all" ? " is-active" : ""}`}
                   onClick={() => setLossFilter("all")}
                 >
-                  全部 <b>{allRows.length}</b>
+                  全部 <b>{gate1Rows.length}</b>
                 </button>
-                {LOSS_PLAN.filter((p) => allRows.some((r) => r.rule.lossId === p.id)).map((plan) => {
-                  const count = allRows.filter((r) => r.rule.lossId === plan.id).length;
+                {LOSS_PLAN.filter(
+                  (p) => allRows.some((r) => r.rule.lossId === p.id) || lossFilter === p.id,
+                ).map((plan) => {
+                  const count = gate1Rows.filter((r) => r.rule.lossId === plan.id).length;
+                  const tone = ACTION_MAP[plan.id]?.tone || "";
                   return (
                     <button
                       key={plan.id}
                       type="button"
-                      className={`isw-chip is-${plan.id}${lossFilter === plan.id ? " is-active" : ""}`}
+                      className={`isw-chip is-${plan.id} is-${tone}${lossFilter === plan.id ? " is-active" : ""}`}
                       onClick={() => toggleLossFilter(plan.id)}
                     >
                       {ACTION_MAP[plan.id]?.filter || plan.action} <b>{count}</b>
@@ -792,7 +890,6 @@ export default function InsightStrategyWorkspace({
             {visibleRows.length ? (
               <div className="isw-problem-list">
                 {visibleRows.map((row, idx) => {
-                  const st = resolveItemState(row, decisions, publishedMap, adviceDone);
                   const selected = activeRow?.key === row.key;
                   const act = ACTION_MAP[row.rule.lossId] || ACTION_MAP.l1;
                   return (
@@ -800,26 +897,32 @@ export default function InsightStrategyWorkspace({
                       key={row.key}
                       type="button"
                       aria-current={selected ? "true" : undefined}
-                      className={`isw-problem-item is-state-${st.code}${selected ? " is-selected" : ""}`}
-                      onClick={() => setSelectedKey(row.key)}
+                      className={`isw-problem-item is-${act.tone}${selected ? " is-selected" : ""}`}
+                      onClick={() => {
+                        setSelectedKey(row.key);
+                        setActiveLossId(row.rule.lossId);
+                      }}
                     >
                       <div className="isw-problem-top">
                         <span className="isw-problem-no">{String(idx + 1).padStart(2, "0")}</span>
                         <span className="isw-problem-title">{row.issueTitle}</span>
-                        <span className={`isw-status is-${st.code}`}>{st.label}</span>
                       </div>
-                      <p className="isw-problem-impact">{row.impact}</p>
-                      <div className="isw-problem-foot">
-                        <span className={`isw-loss-dot is-${act.id}`}>{act.short}</span>
-                        <span className="isw-problem-dir">{row.item.direction}</span>
-                      </div>
+                      <p className="isw-problem-impact">
+                        {row.impact}
+                        {row.item.executor ? (
+                          <>
+                            <span className="isw-impact-sep">｜</span>
+                            {displayExecutor(row.item.executor)}
+                          </>
+                        ) : null}
+                      </p>
                     </button>
                   );
                 })}
               </div>
             ) : (
               <div className="isw-list-empty">
-                <p>当前流失点下没有策略</p>
+                <p>当前流失点下没有待拍板策略</p>
                 <Button size="small" onClick={() => setLossFilter("all")}>
                   查看全部策略
                 </Button>
@@ -832,14 +935,13 @@ export default function InsightStrategyWorkspace({
             {activeRow && activeItem ? (
               <article className="isw-detail-card">
                 {/* 卡片顶部：标题 + 决策主操作 */}
-                <header className="isw-detail-head" ref={detailHeadRef}>
+                <header className="isw-detail-head isw-layer-core" ref={detailHeadRef}>
                   <div className="isw-detail-meta">
                     <div className="isw-detail-tags">
                       <span className="isw-detail-index">
                         {String(selectedIndex + 1).padStart(2, "0")} / {String(visibleRows.length).padStart(2, "0")}
                       </span>
-                      <span className={`isw-action-pill is-${activeAction.id}`}>{activeAction.short}</span>
-                      <span className={`isw-status is-${activeState.code}`}>{activeState.label}</span>
+                      <span className={`isw-action-pill is-${activeAction.id} is-${activeAction.tone}`}>{activeAction.short}</span>
                       <span className="isw-executor">{displayExecutor(activeItem.executor)}</span>
                     </div>
                     <div className="isw-pager">
@@ -865,7 +967,7 @@ export default function InsightStrategyWorkspace({
 
                   <div className="isw-detail-title-row">
                     <div>
-                      <p className="isw-detail-issue-ref">针对问题：{activeRow.issueTitle}</p>
+                      <p className="isw-detail-issue-ref">转化卡点：{activeRow.issueTitle}</p>
                       <h2>{activeItem.title}</h2>
                     </div>
                   </div>
@@ -875,7 +977,7 @@ export default function InsightStrategyWorkspace({
                     {activeState.code === "waiting" ? (
                       <>
                         <div className="isw-decision-hint">
-                          确认后将交由 <strong>{displayExecutor(activeItem.executor)}</strong> 生成草稿，你预览确认后才会正式上线。
+                          确认后将交由 <strong>{displayExecutor(activeItem.executor)}</strong> 生成草稿，并转入「执行追踪」；你预览确认后才会正式上线。
                         </div>
                         <div className="isw-decision-btns">
                           <Dropdown
@@ -896,77 +998,32 @@ export default function InsightStrategyWorkspace({
                       </>
                     ) : null}
 
-                    {activeState.code === "preview" ? (
+                    {activeState.code === "advice" ? (
                       <>
-                        <div className="isw-decision-hint">
-                          <CheckCircleFilled style={{ color: "#3989ff", marginRight: 6 }} />
-                          <strong>草稿已就绪</strong>，可立即预览确认发布，或先继续拍板剩余策略。
-                        </div>
+                        <div className="isw-decision-hint">这条需要人工处理，处理完后可标记完成。</div>
                         <div className="isw-decision-btns">
-                          {nextWaiting ? (
-                            <Button onClick={() => jumpNextWaiting(activeRow.key)}>
-                              下一条待拍板 ({waitingRows.length}) &gt;
-                            </Button>
-                          ) : null}
-                          <Button onClick={() => onOpenTracking(activeRow.key)}>查看执行追踪</Button>
-                          <Button type="primary" onClick={() => onOpenPreview(activeRow.key)}>
-                            去预览发布 &gt;
+                          <Button type="primary" onClick={() => onToggleAdviceDone(activeRow.key)}>
+                            {adviceDone[activeRow.key] ? "撤回完成" : "标记已处理"}
                           </Button>
                         </div>
                       </>
                     ) : null}
-
-                    {activeState.code === "live" ? (
-                      <>
-                        <div className="isw-decision-hint">
-                          <CheckCircleFilled style={{ color: "#10b981", marginRight: 6 }} />
-                          <strong>已确认上线</strong>，系统正在按评估计划持续观察转化变化。
-                        </div>
-                        <div className="isw-decision-btns">
-                          <Button onClick={() => onOpenTracking(activeRow.key)}>查看执行追踪</Button>
-                        </div>
-                      </>
-                    ) : null}
-
-                    {activeState.code === "skipped" ? (
-                      <>
-                        <div className="isw-decision-hint">
-                          已标记「这次先不做」
-                          {decisions[activeRow.key]?.reason?.label
-                            ? `（${decisions[activeRow.key].reason.label}）`
-                            : ""}
-                          。
-                        </div>
-                        <div className="isw-decision-btns">
-                          {nextWaiting ? (
-                            <Button onClick={() => jumpNextWaiting(activeRow.key)}>
-                              下一条待拍板 ({waitingRows.length}) &gt;
-                            </Button>
-                          ) : null}
-                          <Button type="link" onClick={() => onUndo(activeItem)}>
-                            撤回，重新决定
-                          </Button>
-                        </div>
-                      </>
-                    ) : null}
-
                   </div>
-                </header>
 
-                {/* 模块 1：精简诊断依据 + 证据抽屉入口 */}
-                <section className="isw-block">
-                  <h3 className="isw-block-title">问题诊断与数据依据</h3>
-                  <div className="isw-diag-grid">
+                  <div className="isw-diag-grid isw-diag-core">
                     <div className="isw-diag-item">
                       <span>数据事实</span>
-                      <p>{activeRule?.face?.data || activeItem.why || activeRow.impact}</p>
+                      <p>{emphasizeMetrics(activeRule?.face?.data || activeItem.why || activeRow.impact)}</p>
                     </div>
                     <div className="isw-diag-item">
                       <span>原因洞察</span>
-                      <p>{activeRule?.face?.cause || activeRule?.phenomenon}</p>
+                      <p>{emphasizeMetrics(activeRule?.face?.cause || activeRule?.phenomenon)}</p>
                     </div>
                   </div>
-                  <div className="isw-evidence-row">
+                </header>
+
+                <section className="isw-block isw-layer-trust" aria-label="证据与参考">
+                  <div className="isw-evidence-row is-compact">
                     <span className="isw-evidence-label">证据与参考</span>
                     <div className="isw-cites">
                       <button
@@ -975,8 +1032,7 @@ export default function InsightStrategyWorkspace({
                         onClick={() => setDrawerLossId(activeRule.lossId)}
                       >
                         <BarChartOutlined />
-                        <span className="ag-cite-kind">漏斗明细</span>
-                        <span className="ag-cite-title">{activeAction.short} TOP 3</span>
+                        <span className="ag-cite-title">漏斗明细：{activeAction.short} TOP 3</span>
                       </button>
                       {activeRefs.map((row) => (
                         <button
@@ -984,55 +1040,32 @@ export default function InsightStrategyWorkspace({
                           type="button"
                           className={`ag-cite${row.state === "unauthorized" ? " is-warn" : ""}`}
                           onClick={() => setDrawerSource(row)}
+                          title={citeChipText(row)}
                         >
                           {row.icon}
-                          <span className="ag-cite-kind">{row.name}</span>
-                          <span className="ag-cite-title">{citeLabel(row)}</span>
+                          <span className="ag-cite-title">{citeChipText(row)}</span>
                         </button>
                       ))}
                     </div>
                   </div>
                 </section>
 
-                {/* 模块 2：优化策略与修改方案 */}
-                <section className="isw-block">
+                {/* 第三层：执行规格预览 */}
+                <section className="isw-block isw-layer-spec">
                   <h3 className="isw-block-title">优化方案与执行要求</h3>
-                  <Descriptions
-                    bordered
-                    size="small"
-                    column={1}
-                    styles={{ label: { width: 88, whiteSpace: "nowrap", verticalAlign: "top" } }}
-                    items={[
-                      {
-                        key: "name",
-                        label: "任务名称",
-                        children: (
-                          <div>
-                            <div>{activeItem.title}</div>
-                            {activeItem.target ? (
-                              <div className="ag-req-target">
-                                <TargetValue value={activeItem.target} />
-                              </div>
-                            ) : null}
-                          </div>
-                        ),
-                      },
-                      {
-                        key: "spec",
-                        label: "任务说明",
-                        children: (
-                          <div className="ag-req">
-                            {activeItem.summary ? <p className="ag-sentence">{bossCopy(activeItem.summary)}</p> : null}
-                            <RequirementBody
-                              sections={activeItem.requirementSections}
-                              fallback={activeItem.requirements}
-                              constraints={activeItem.constraints}
-                            />
-                          </div>
-                        ),
-                      },
-                    ]}
-                  />
+                  {activeItem.target ? (
+                    <p className="isw-spec-target">
+                      执行目标：
+                      <TargetValue value={activeItem.target} />
+                    </p>
+                  ) : null}
+                  <div className="isw-spec-body">
+                    {activeItem.summary ? <p className="ag-sentence">{bossCopy(activeItem.summary)}</p> : null}
+                    <RequirementBody
+                      sections={activeItem.requirementSections}
+                      fallback={activeItem.requirements}
+                    />
+                  </div>
 
                   {activeRow.adviceNotes?.length ? (
                     <div className="isw-advice-note">

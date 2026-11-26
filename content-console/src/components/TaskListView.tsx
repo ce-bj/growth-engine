@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { TASK_STATUS_LABEL, taskStatus, useStore } from '../store'
 import { moreItems } from '../taskActions'
 import type { PublishTask } from '../types'
@@ -14,8 +14,21 @@ function topicCount(t: PublishTask): number {
 }
 
 export function TaskListView() {
-  const { tasks, store, cancelTask, togglePauseTask, navigate, handoffTitle } = useStore()
+  const { tasks, store, cancelTask, togglePauseTask, navigate, handoffTitle, handoffIntent } = useStore()
   const [page, setPage] = useState(1)
+
+  useEffect(() => {
+    if (handoffIntent !== 'list' || !handoffTitle) return
+    const index = tasks.findIndex((item) => item.title === handoffTitle)
+    if (index < 0) return
+    const target = Math.floor(index / PAGE_SIZE) + 1
+    setPage((current) => (current === target ? current : target))
+  }, [handoffIntent, handoffTitle, tasks])
+
+  useEffect(() => {
+    if (handoffIntent !== 'list' || !handoffTitle) return
+    document.querySelector('.list-table tr.is-handoff')?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+  }, [handoffIntent, handoffTitle, page, tasks])
   const [moreOpen, setMoreOpen] = useState<string | null>(null)
 
   const total = tasks.length
